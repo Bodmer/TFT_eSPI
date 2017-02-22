@@ -16,9 +16,9 @@
 
 // Only ONE line should be uncommented.  Add extra lines and files as needed.
 
-//#include <User_Setup.h>           // Default setup is root library folder
+#include <User_Setup.h>           // Default setup is root library folder
 
 //#include <User_Setups\Setup1_ILI9341.h>  // Setup file configured for my ILI9341
-#include <User_Setups\Setup2_ST7735.h>   // Setup file configured for my ST7735
+//#include <User_Setups\Setup2_ST7735.h>   // Setup file configured for my ST7735
 
 //#include <User_Setups\SetupX_Template.h> // Setup file template for copying/editting
