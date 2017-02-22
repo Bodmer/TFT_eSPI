@@ -12,9 +12,13 @@
 // Create a shortcut to this file on your desktop to permit quick access for editting.
 // Re-compile and upload after making and saving any changes to this file.
 
-// Only ONE line should be uncommented
+// Customised User_Setup files are stored in the "User_Setups" folder.
 
-#include <User_Setup.h>           // Default setup
-//#include <User_Setup1_ILI9341.h>  // Setup file configured for my ILI9341
-//#include <User_Setup2_ST7735.h>   // Setup file configured for my ST7735
-//#include <User_Setup3_Template.h> // Setup file template for copying/editting
+// Only ONE line should be uncommented.  Add extra lines and files as needed.
+
+//#include <User_Setup.h>           // Default setup is root library folder
+
+//#include <User_Setups\Setup1_ILI9341.h>  // Setup file configured for my ILI9341
+#include <User_Setups\Setup2_ST7735.h>   // Setup file configured for my ST7735
+
+//#include <User_Setups\SetupX_Template.h> // Setup file template for copying/editting
