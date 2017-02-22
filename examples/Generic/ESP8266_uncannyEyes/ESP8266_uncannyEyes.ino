@@ -25,7 +25,7 @@
 /*
 //--------------------------------------------------------------------------
 // Uncanny eyes for PJRC Teensy 3.1 with Adafruit 1.5" OLED (product #1431)
-// or 1.44" eye[e].tft LCD (#2088).  This uses Teensy-3.1-specific features and
+// or 1.44" TFT LCD (#2088).  This uses Teensy-3.1-specific features and
 // WILL NOT work on normal Arduino or other boards!  Use 72 MHz (Optimized)
 // board speed -- OLED does not work at 96 MHz.
 //
