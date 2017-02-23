@@ -1,3 +1,5 @@
+Note: This library is at a first draft. It is working but some of the examples need minor changes to update the header text and to add yield() at key points. The yield() is needed so the ESP8266 does not "watchdog timeout" in long duration loops as then the processor will blank the screen. These changes will be made over the next few days.
+
 # TFT_eSPI
 
 An Arduino IDE compatible graphics and fonts library for ESP8266 processors with a driver for the ILI9341 and ST7735 based TFT displays.
