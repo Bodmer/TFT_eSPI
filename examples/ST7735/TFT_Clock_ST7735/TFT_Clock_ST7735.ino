@@ -1,11 +1,11 @@
 /*
-  An example analogue clock using a TFT LCD screen to show the time
+ An example analogue clock using a TFT LCD screen to show the time
  use of some of the drawing commands with the ST7735 library.
+
  For a more accurate clock, it would be better to use the RTClib library.
  But this is just a demo. 
- 
- This examples uses the hardware SPI only. Non-hardware SPI
- is just too slow (~8 times slower!)
+
+ Uses compile time to set the time so a reset will start with the compile time again
  
  Gilchrist 6/2/2014 1.0
  Updated by Bodmer
@@ -21,7 +21,7 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 float sx = 0, sy = 1, mx = 1, my = 0, hx = -1, hy = 0;    // Saved H, M, S x & y multipliers
 float sdeg=0, mdeg=0, hdeg=0;
 uint16_t osx=64, osy=64, omx=64, omy=64, ohx=64, ohy=64;  // Saved H, M, S x & y coords
-uint16_t x0=0, x1=0, y0=0, y1=0;
+uint16_t x0=0, x1=0, yy0=0, yy1=0;
 uint32_t targetTime = 0;                    // for next 1 second timeout
 
 static uint8_t conv2d(const char* p) {
@@ -50,11 +50,11 @@ void setup(void) {
     sx = cos((i-90)*0.0174532925);
     sy = sin((i-90)*0.0174532925);
     x0 = sx*57+64;
-    y0 = sy*57+64;
+    yy0 = sy*57+64;
     x1 = sx*50+64;
-    y1 = sy*50+64;
+    yy1 = sy*50+64;
 
-    tft.drawLine(x0, y0, x1, y1, ST7735_BLUE);
+    tft.drawLine(x0, yy0, x1, yy1, ST7735_BLUE);
   }
 
   // Draw 60 dots
@@ -62,13 +62,13 @@ void setup(void) {
     sx = cos((i-90)*0.0174532925);
     sy = sin((i-90)*0.0174532925);
     x0 = sx*53+64;
-    y0 = sy*53+64;
+    yy0 = sy*53+64;
     
-    tft.drawPixel(x0, y0, ST7735_BLUE);
-    if(i==0 || i==180) tft.fillCircle(x0, y0, 1, ST7735_CYAN);
-    if(i==0 || i==180) tft.fillCircle(x0+1, y0, 1, ST7735_CYAN);
-    if(i==90 || i==270) tft.fillCircle(x0, y0, 1, ST7735_CYAN);
-    if(i==90 || i==270) tft.fillCircle(x0+1, y0, 1, ST7735_CYAN);
+    tft.drawPixel(x0, yy0, ST7735_BLUE);
+    if(i==0 || i==180) tft.fillCircle(x0, yy0, 1, ST7735_CYAN);
+    if(i==0 || i==180) tft.fillCircle(x0+1, yy0, 1, ST7735_CYAN);
+    if(i==90 || i==270) tft.fillCircle(x0, yy0, 1, ST7735_CYAN);
+    if(i==90 || i==270) tft.fillCircle(x0+1, yy0, 1, ST7735_CYAN);
   }
 
   tft.fillCircle(65, 65, 3, ST7735_RED);

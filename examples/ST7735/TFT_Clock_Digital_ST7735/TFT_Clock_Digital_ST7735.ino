@@ -95,7 +95,7 @@ void loop() {
     if (omm != mm) { // Only redraw every minute to minimise flicker
       // Uncomment ONE of the next 2 lines, using the ghost image demonstrates text overlay as time is drawn over it
       tft.setTextColor(0x39C4, ST7735_BLACK);  // Leave a 7 segment ghost image, comment out next line!
-      //tft.setTextColor(ST7735_BLACK, ST7735_BLACK); // Set font colour to back to wipe image
+      //tft.setTextColor(ST7735_BLACK, ST7735_BLACK); // Set font colour to black to wipe image
       // Font 7 is to show a pseudo 7 segment display.
       // Font 7 only contains characters [space] 0 1 2 3 4 5 6 7 8 9 0 : .
       tft.drawString("88:88",xpos,ypos,7); // Overwrite the text to clear it
@@ -118,7 +118,7 @@ void loop() {
     else {
       tft.drawChar(':',xcolon,ypos,7);
       colour = random(0xFFFF);
-      // Erase the text with a rectangle
+      // Erase the old text with a rectangle, the disadvantage of this method is increased display flicker
       tft.fillRect (0, 64, 160, 20, ST7735_BLACK);
       tft.setTextColor(colour);
       tft.drawRightString("Colour",75,64,4); // Right justified string drawing to x position 75

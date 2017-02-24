@@ -2,20 +2,32 @@
 //devised by the British mathematician John Horton Conway in 1970.
 // https://en.wikipedia.org/wiki/Conway's_Game_of_Life
 
+// See license at end of file.
 
+// Adapted by Bodmer
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
-#define GRIDX 32
-#define GRIDY 24
-#define CELLXY 5
+// Maximum number of generations until the screen is refreshed
+#define MAX_GEN_COUNT 500
 
-#define GEN_DELAY 0
+// The ESP8266 has plenty of memory so we can create a large array
+// 2 x 2 pixel cells, array size = 5120 bytes per array, runs fast
+#define GRIDX 80
+#define GRIDY 64
+#define CELLXY 2
 
-//Current grid
+// 1 x 1 pixel cells, array size = 20480 bytes per array
+//#define GRIDX 160
+//#define GRIDY 128
+//#define CELLXY 1
+
+#define GEN_DELAY 10 // Set a delay between each generation to slow things down
+
+//Current grid and newgrid arrays are needed
 uint8_t grid[GRIDX][GRIDY];
 
 //The new grid for the next generation
@@ -55,7 +67,7 @@ void loop() {
 
   initGrid();
 
-  genCount = 300;
+  genCount = MAX_GEN_COUNT;
 
   drawGrid();
 

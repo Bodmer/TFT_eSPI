@@ -143,7 +143,7 @@ void analogMeter()
   }
 
   tft.drawString("%RH", M_SIZE*(3 + 230 - 40), M_SIZE*(119 - 20), 2); // Units at bottom right
-  //tft.drawCentreString("%RH", M_SIZE*120, M_SIZE*75, 4); // Comment out to avoid font 4
+  tft.drawCentreString("%RH", M_SIZE*120, M_SIZE*75, 4); // Comment out to avoid font 4
   tft.drawRect(1, M_SIZE*3, M_SIZE*236, M_SIZE*126, ST7735_BLACK); // Draw bezel line
 
   plotNeedle(0, 0); // Put meter needle at 0
@@ -187,7 +187,7 @@ void plotNeedle(int value, byte ms_delay)
 
     // Re-plot text under needle
     tft.setTextColor(ST7735_BLACK, ST7735_WHITE);
-    //tft.drawCentreString("%RH", M_SIZE*120, M_SIZE*75, 4); // // Comment out to avoid font 4
+    tft.drawCentreString("%RH", M_SIZE*120, M_SIZE*75, 4); // // Comment out to avoid font 4
 
     // Store new needle end coords for next erase
     ltx = tx;

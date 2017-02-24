@@ -8,6 +8,7 @@
 // Icons are stored in tabs, e.g. Alert.h etc
 // more than one icon can be in a header file.
 
+// Original sketch header follow:
 /*
  This sketch demonstrates loading images from arrays stored in program (FLASH) memory.
 
@@ -42,7 +43,7 @@ void setup()
   tft.fillScreen(TFT_BLACK);
 
   // Draw the icons
-  drawIcon(info,  (tft.width() -  infoWidth)/2 - 50, (tft.height() -  infoHeight)/2, infoWidth,  infoHeight);
+  drawIcon(info,  (tft.width() -  infoWidth)/2 - 50, (tft.height() -  infoHeight)/2,  infoWidth,  infoHeight);
   drawIcon(alert, (tft.width() - alertWidth)/2,      (tft.height() - alertHeight)/2, alertWidth, alertHeight);
   drawIcon(close, (tft.width() - closeWidth)/2 + 50, (tft.height() - closeHeight)/2, closeWidth, closeHeight);
 
@@ -54,7 +55,7 @@ void setup()
 void loop()
 {
   // Loop filling and clearing screen
-  drawIcon(info, random(tft.width() - infoWidth), random(tft.height() - infoHeight), infoWidth, infoHeight);
+  drawIcon(info,  random(tft.width() -  infoWidth), random(tft.height() -  infoHeight), infoWidth,  infoHeight);
   drawIcon(alert, random(tft.width() - alertWidth), random(tft.height() - alertHeight), alertWidth, alertHeight);
   drawIcon(close, random(tft.width() - closeWidth), random(tft.height() - closeHeight), alertWidth, closeHeight);
 

@@ -1,6 +1,6 @@
 /*
   Ellipse drawing example
-
+  
   This sketch does not use any fonts.
 */
 
@@ -20,7 +20,7 @@ void loop() {
 
   tft.fillScreen(TFT_BLACK);
 
-  // Draw some random circles
+  // Draw some random filled elipses
   for (int i = 0; i < 20; i++)
   {
     int rx = random(40);
@@ -33,6 +33,7 @@ void loop() {
   delay(2000);
   tft.fillScreen(TFT_BLACK);
 
+  // Draw some random outline elipses
   for (int i = 0; i < 20; i++)
   {
     int rx = random(40);

@@ -16,7 +16,7 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 int16_t h = 128;
 int16_t w = 160;
 
-int dly = 5;
+int dly = 10;
 
 int16_t paddle_h = 25;
 int16_t paddle_w = 2;
@@ -98,7 +98,7 @@ void initgame() {
   tft.fillRect(0,h-26,w,h-1,BLACK);
 
   tft.setTextDatum(TC_DATUM);
-  tft.setTextColor(WHITE,GREY);
+  tft.setTextColor(WHITE);
   tft.drawString("TFT_eSPI example", w/2, h-26 , 2);
 }
 
