@@ -20,7 +20,7 @@ void loop() {
 
   tft.fillScreen(TFT_BLACK);
 
-  // Draw some random circles
+  // Draw some random ellipses
   for (int i = 0; i < 40; i++)
   {
     int rx = random(60);

@@ -261,7 +261,7 @@ void loop() {
 }
 
 // Print the header for a display screen
-void header(char *string, uint16_t color)
+void header(const char *string, uint16_t color)
 {
   tft.fillScreen(color);
   tft.setTextSize(1);

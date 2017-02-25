@@ -1,7 +1,4 @@
-// Animates 256 white pixels to simulate flying through a star field
-
-// Demonstrates use of the fastPixel() function in the library
-// which is about 15% faster than drawPixel()
+// Animates white pixels to simulate flying through a star field
 
 #include <SPI.h>
 #include <TFT_eSPI.h>
@@ -9,8 +6,8 @@
 // Use hardware SPI
 TFT_eSPI tft = TFT_eSPI();
 
-// With 256 stars the update frame rate is about 45Hz
-#define NSTARS 256
+// With 1024 stars the update rate is ~65 frames per second
+#define NSTARS 1024
 uint8_t sx[NSTARS] = {};
 uint8_t sy[NSTARS] = {};
 uint8_t sz[NSTARS] = {};
@@ -85,7 +82,8 @@ void loop()
   unsigned long t1 = micros();
   //static char timeMicros[8] = {};
 
-  Serial.println(t1 - t0);
+ // Calcualte frames per second
+  Serial.println(1.0/((t1 - t0)/1000000.0));
 }
 
 

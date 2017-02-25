@@ -1,6 +1,6 @@
 // Mandlebrot
 
-// This will run slowly due to the large number of calculations per pixel
+// This will run quite slowly due to the large number of floating point calculations per pixel
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
@@ -17,10 +17,7 @@ uint16_t x0 = 0, x1 = 0, yy0 = 0, yy1 = 0;
 void setup()
 {
   //randomSeed(analogRead(A0));
-  //pinMode(7, OUTPUT);
-  //digitalWrite(7, LOW);
-  //delay(10);
-  //digitalWrite(7, HIGH);
+
   // Setup the LCD
   tft.init();
   tft.setRotation(3);
@@ -59,7 +56,7 @@ unsigned int rainbow(int value)
 {
   // Value is expected to be in range 0-127
   // The value is converted to a spectrum colour from 0 = blue through to red = blue
-  //int value = random (128);
+
   byte red = 0; // Red is the top 5 bits of a 16 bit colour value
   byte green = 0;// Green is the middle 6 bits
   byte blue = 0; // Blue is the bottom 5 bits

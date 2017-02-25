@@ -1,13 +1,13 @@
 /*
  An example analogue meter using a ILI9341 TFT LCD screen
 
- This example uses the hardware SPI only
  Needs Font 2 (also Font 4 if using large scale label)
 
+ Make sure all the display driver and pin comnenctions are correct by
+ editting the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################
  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
- ######       TO SELECT THE FONTS AND PINS YOU USE, SEE ABOVE       ######
  #########################################################################
  
 Updated by Bodmer for variable meter size

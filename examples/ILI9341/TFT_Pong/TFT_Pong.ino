@@ -100,7 +100,7 @@ void initgame() {
 
   tft.setTextDatum(TC_DATUM);
   tft.setTextColor(WHITE,GREY);
-  //tft.drawString("TFT_eSPI example", w/2, h-26 , 4);
+  tft.drawString("TFT_eSPI example", w/2, h-26 , 4);
 }
 
 void midline() {

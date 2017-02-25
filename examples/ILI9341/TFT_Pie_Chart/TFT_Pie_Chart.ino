@@ -22,7 +22,8 @@ void setup(void)
 }
 
 void loop() {
-  
+
+  // Draw 4 pie chart segments
   fillSegment(160, 120, 0, 60, 100, TFT_RED);
   fillSegment(160, 120, 60, 30, 100, TFT_GREEN);
   fillSegment(160, 120, 60 + 30, 120, 100, TFT_BLUE);
@@ -30,6 +31,7 @@ void loop() {
 
   delay(4000);
 
+  // Erase old chart with 360 degree black plot
   fillSegment(160, 120, 0, 360, 100, TFT_BLACK);
 }
 

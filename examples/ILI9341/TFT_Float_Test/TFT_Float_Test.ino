@@ -21,10 +21,11 @@ BR_DATUM  8 //Bottom right
  
  Needs fonts 2 and 6
 
+ Make sure all the display driver and pin comnenctions are correct by
+ editting the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################
  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
- ######       TO SELECT THE FONTS AND PINS YOU USE, SEE ABOVE       ######
  #########################################################################
  */
 

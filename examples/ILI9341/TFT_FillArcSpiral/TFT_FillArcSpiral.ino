@@ -28,7 +28,7 @@ void setup(void) {
 
 
 void loop() {
-  fillArc(160, 120, segment*6, 1, 120-segment/4, 120-segment/4, 6, rainbow(col));
+  fillArc(160, 120, segment*6, 1, 120-segment/4, 120-segment/4, 3, rainbow(col));
 
   segment+=delta;
   col+=1;

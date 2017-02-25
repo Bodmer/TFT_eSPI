@@ -9,9 +9,13 @@
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
-#define GRIDX 64
-#define GRIDY 48
-#define CELLXY 5
+//#define GRIDX 80
+//#define GRIDY 60
+//#define CELLXY 4
+
+#define GRIDX 160
+#define GRIDY 120
+#define CELLXY 2
 
 #define GEN_DELAY 0
 
@@ -23,6 +27,7 @@ uint8_t newgrid[GRIDX][GRIDY];
 
 //Number of generations
 #define NUMGEN 600
+
 uint16_t genCount = 0;
 
 void setup()   {

@@ -9,18 +9,14 @@
 
  This sketch does not use/need any fonts at all...
 
- Arrays containing FLASH images can be created with UTFT library tool:
- (libraries\UTFT\Tools\ImageConverter565.exe)
- Convert to .c format then copy into a new tab
-
- The number and size of icons is limited by available FLASH memory. The icon array will
- use width x height x 2 bytes of FLASH, i.e. 32 x 32 icon uses ~2048 bytes
-
- Performance is good enough for most applications:
- A 32 x 32 icon can be drawn by a humble ESP8266 in ~3.6 milliseconds, i.e. ~280 icons per second!
- A 320 x 240 screen can be completely filled with icons in about 270ms
-
  Code derived from ILI9341_due example
+
+ Make sure all the display driver and pin comnenctions are correct by
+ editting the User_Setup.h file in the TFT_eSPI library folder.
+
+ #########################################################################
+ ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
+ #########################################################################
 */
 
 #include <TFT_eSPI.h> // Hardware-specific library
@@ -48,14 +44,14 @@ void setup()
   drawIcon(close, 180, 100, closeWidth, closeHeight);
 
   // Pause here to admire the icons!
-  delay(4000);
+  delay(2000);
 
 }
 
 void loop()
 {
-  // Loop filling and clearing screen to show draw speed
-  drawIcon(info, random(tft.width() - infoWidth), random(tft.height() - infoHeight), infoWidth, infoHeight);
+  // Loop filling and clearing screen
+  drawIcon(info,  random(tft.width() -  infoWidth), random(tft.height() -  infoHeight),  infoWidth,  infoHeight);
   drawIcon(alert, random(tft.width() - alertWidth), random(tft.height() - alertHeight), alertWidth, alertHeight);
   drawIcon(close, random(tft.width() - closeWidth), random(tft.height() - closeHeight), alertWidth, closeHeight);
 
@@ -65,7 +61,7 @@ void loop()
     tft.setRotation(2 * random(2)); // Rotate randomly to clear display left>right or right>left to reduce monotony!
     tft.fillScreen(TFT_BLACK);
     tft.setRotation(1);
-    Serial.println(millis());
+    //Serial.println(millis());
   }
 }
 

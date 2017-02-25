@@ -6,6 +6,8 @@
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
+#define DEG2RAD 0.0174532925 // Convert angles in degrees to radians
+
 unsigned long runTime = 0;
 
 float sx = 0, sy = 0;
@@ -14,10 +16,7 @@ uint16_t x0 = 0, x1 = 0, yy0 = 0, yy1 = 0;
 void setup()
 {
   //randomSeed(analogRead(A0));
-  //pinMode(7, OUTPUT);
-  //digitalWrite(7, LOW);
-  //delay(10);
-  //digitalWrite(7, HIGH);
+
   // Setup the LCD
   tft.init();
   tft.setRotation(3);
@@ -31,14 +30,14 @@ void loop()
   int n = random(2, 23), r = random(20, 100), colour = 0; //rainbow();
 
   for (long i = 0; i < (360 * n); i++) {
-    sx = cos((i / n - 90) * 0.0174532925);
-    sy = sin((i / n - 90) * 0.0174532925);
+    sx = cos((i / n - 90) * DEG2RAD);
+    sy = sin((i / n - 90) * DEG2RAD);
     x0 = sx * (120 - r) + 159;
     yy0 = sy * (120 - r) + 119;
 
 
-    sy = cos(((i % 360) - 90) * 0.0174532925);
-    sx = sin(((i % 360) - 90) * 0.0174532925);
+    sy = cos(((i % 360) - 90) * DEG2RAD);
+    sx = sin(((i % 360) - 90) * DEG2RAD);
     x1 = sx * r + x0;
     yy1 = sy * r + yy0;
     tft.drawPixel(x1, yy1, rainbow(map(i%360,0,360,0,127))); //colour);
@@ -46,14 +45,14 @@ void loop()
   
   r = random(20, 100);//r = r / random(2,4);
   for (long i = 0; i < (360 * n); i++) {
-    sx = cos((i / n - 90) * 0.0174532925);
-    sy = sin((i / n - 90) * 0.0174532925);
+    sx = cos((i / n - 90) * DEG2RAD);
+    sy = sin((i / n - 90) * DEG2RAD);
     x0 = sx * (120 - r) + 159;
     yy0 = sy * (120 - r) + 119;
 
 
-    sy = cos(((i % 360) - 90) * 0.0174532925);
-    sx = sin(((i % 360) - 90) * 0.0174532925);
+    sy = cos(((i % 360) - 90) * DEG2RAD);
+    sx = sin(((i % 360) - 90) * DEG2RAD);
     x1 = sx * r + x0;
     yy1 = sy * r + yy0;
     tft.drawPixel(x1, yy1, rainbow(map(i%360,0,360,0,127))); //colour);

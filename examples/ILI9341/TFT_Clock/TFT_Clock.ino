@@ -1,15 +1,17 @@
 /*
  An example analogue clock using a TFT LCD screen to show the time
- use of some of the drawing commands with the modified Adafruit_TFT_AS library.
+ use of some of the drawing commands with the library.
+
  For a more accurate clock, it would be better to use the RTClib library.
  But this is just a demo. 
  
  This sketch uses font 4 only.
 
+ Make sure all the display driver and pin comnenctions are correct by
+ editting the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################
  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
- ######       TO SELECT THE FONTS AND PINS YOU USE, SEE ABOVE       ######
  #########################################################################
  
  Based on a sketch by Gilchrist 6/2/2014 1.0
@@ -35,7 +37,7 @@ boolean initial = 1;
 
 void setup(void) {
   tft.init();
-  tft.setRotation(2);
+  tft.setRotation(0);
   
   //tft.fillScreen(TFT_BLACK);
   //tft.fillScreen(TFT_RED);
@@ -88,7 +90,7 @@ void setup(void) {
 
 void loop() {
   if (targetTime < millis()) {
-    targetTime = millis()+1000;
+    targetTime += 1000;
     ss++;              // Advance second
     if (ss==60) {
       ss=0;

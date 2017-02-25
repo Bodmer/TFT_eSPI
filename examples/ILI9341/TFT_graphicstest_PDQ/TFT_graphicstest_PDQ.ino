@@ -1,22 +1,20 @@
 /*
  Adapted from the Adafruit and Xark's PDQ graphicstest sketch.
 
+ See end of file for original header text and MIT license info.
+ 
  This sketch uses the GLCD font only.
+
+ Make sure all the display driver and pin comnenctions are correct by
+ editting the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################
  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
- ######       TO SELECT THE FONTS AND PINS YOU USE, SEE ABOVE       ######
  #########################################################################
  */
 
-
 #include "SPI.h"
 #include "TFT_eSPI.h"
-
-// These are used to get information about static SRAM and flash memory sizes
-extern "C" char __data_start[];		// start of SRAM data
-extern "C" char _end[];			// end of SRAM data (used to check amount of SRAM this program's variables use)
-extern "C" char __data_load_end[];	// end of FLASH (used to check amount of Flash this program's code and data uses)
 
 // Use hardware SPI
 TFT_eSPI tft = TFT_eSPI();
@@ -26,17 +24,14 @@ unsigned long tn = 0;
 void setup() {
   Serial.begin(115200);
   while (!Serial);
-  Serial.println("Bodmer's 2.2\" SPI TFT Test!"); 
+  Serial.println(""); Serial.println("");
+  Serial.println("Bodmer's TFT_eSPI library Test!"); 
  
   tft.init();
 }
 
 void loop(void)
 {
-  Serial.print(F(__DATE__ " " __TIME__ " - Flash=0x"));
-	//Serial.print((uint16_t)__data_load_end, HEX);
-	Serial.print(F(" RAM=0x"));
-	//Serial.println((uint16_t)_end - (uint16_t)__data_start, HEX);
 
 	Serial.println(F("Benchmark                Time (microseconds)"));
 
@@ -126,20 +121,17 @@ void loop(void)
 	tft.setTextColor(TFT_MAGENTA);
 	tft.setTextSize(2);
 
- 	tft.println(F("  TFT_eSPI  "));
+ 	tft.println(F("   TFT_eSPI test"));
 
 	tft.setTextSize(1);
 	tft.setTextColor(TFT_WHITE);
-	tft.println(F(" SPI LCD Benchmark (Atmega328p @ 16MHz)"));
+	tft.println(F(""));
 	tft.setTextSize(1);
 	tft.println(F(""));
 	tft.setTextColor(tft.color565(0x80, 0x80, 0x80));
-	tft.print(F("  Memory Used:  Flash=0x"));
-        //tft.print((uint16_t)__data_load_end, HEX);
-	tft.print(F(" RAM=0x"));
-       // tft.println((uint16_t)_end - (uint16_t)__data_start, HEX);
+
 	tft.println(F(""));
-	tft.println(F(""));
+
 
 	tft.setTextColor(TFT_GREEN);
 	tft.println(F(" Benchmark               microseconds"));

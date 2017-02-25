@@ -22,7 +22,7 @@
 // out the different options below if the screen does not display graphics correctly,
 // e.g. colours wrong, mirror images, or tray pixels at the edges.
 // Comment out ALL BUT ONE of these options for a ST7735 display driver, save this
-// this User_Setup file, then rebuild and upload the sketch to the board again:
+// User_Setup file, then rebuild and upload the sketch to the board again:
 
 //#define ST7735_INITB
 //#define ST7735_GREENTAB

@@ -23,14 +23,6 @@
   redistribution
  *************************************************************/
 
-// In most cases characters don't get lost at 9600 baud but
-// it is a good idea to increase the serial Rx buffer from 64
-// to 512 or 1024 bytes especially if higher baud rates are
-// used (this sketch does not need much RAM).
-// The method described here works well:
-// http://www.hobbytronics.co.uk/arduino-serial-buffer-size
-//
-
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
 

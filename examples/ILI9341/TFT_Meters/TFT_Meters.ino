@@ -1,12 +1,15 @@
 /*
- Example animated analogue meters using a ILI9341 TFT LCD screen
+  Example animated analogue meters using a ILI9341 TFT LCD screen
 
- Needs Font 2 (also Font 4 if using large scale label)
+  Needs Font 2 (also Font 4 if using large scale label)
 
- Comment out lines 153 and 197 to reduce needle flicker and
- to remove need for Font 4 (which uses ~5k of FLASH!)
+  Make sure all the display driver and pin comnenctions are correct by
+  editting the User_Setup.h file in the TFT_eSPI library folder.
 
- */
+  #########################################################################
+  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
+  #########################################################################
+*/
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
@@ -14,6 +17,8 @@
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 #define TFT_GREY 0x5AEB
+
+#define LOOP_PERIOD 35 // Display updates every 35 ms
 
 float ltx = 0;    // Saved x coord of bottom of needle
 uint16_t osx = 120, osy = 120; // Saved x & y coords
@@ -49,16 +54,11 @@ void setup(void) {
 
 void loop() {
   if (updateTime <= millis()) {
-    updateTime = millis() + 35;
- 
+    updateTime = millis() + LOOP_PERIOD;
+
     d += 4; if (d >= 360) d = 0;
 
     //value[0] = map(analogRead(A0), 0, 1023, 0, 100); // Test with value form Analogue 0
-    //value[1] = map(analogRead(A1), 0, 1023, 0, 100); // Test with value form Analogue 1
-    //value[2] = map(analogRead(A2), 0, 1023, 0, 100); // Test with value form Analogue 2
-    //value[3] = map(analogRead(A3), 0, 1023, 0, 100); // Test with value form Analogue 3
-    //value[4] = map(analogRead(A4), 0, 1023, 0, 100); // Test with value form Analogue 4
-    //value[5] = map(analogRead(A5), 0, 1023, 0, 100); // Test with value form Analogue 5
 
     // Create a Sine wave for testing
     value[0] = 50 + 50 * sin((d + 0) * 0.0174532925);
@@ -67,11 +67,13 @@ void loop() {
     value[3] = 50 + 50 * sin((d + 180) * 0.0174532925);
     value[4] = 50 + 50 * sin((d + 240) * 0.0174532925);
     value[5] = 50 + 50 * sin((d + 300) * 0.0174532925);
-    
-    //unsigned long t = millis(); 
-    plotPointer(); // It takes aout 3.5ms to plot each gauge for a 1 pixel move, 21ms for 6 gauges
-     
-    plotNeedle(value[0], 0); // It takes between 2 and 12ms to replot the needle with zero delay
+
+    //unsigned long t = millis();
+
+    plotPointer();
+
+    plotNeedle(value[0], 0);
+
     //Serial.println(millis()-t); // Print time taken for meter update
   }
 }
@@ -235,7 +237,7 @@ void plotLinear(char *label, int x, int y)
 {
   int w = 36;
   tft.drawRect(x, y, w, 155, TFT_GREY);
-  tft.fillRect(x+2, y + 19, w-3, 155 - 38, TFT_WHITE);
+  tft.fillRect(x + 2, y + 19, w - 3, 155 - 38, TFT_WHITE);
   tft.setTextColor(TFT_CYAN, TFT_BLACK);
   tft.drawCentreString(label, x + w / 2, y + 2, 2);
 
@@ -248,10 +250,10 @@ void plotLinear(char *label, int x, int y)
   {
     tft.drawFastHLine(x + 20, y + 27 + i, 9, TFT_BLACK);
   }
-  
-  tft.fillTriangle(x+3, y + 127, x+3+16, y+127, x + 3, y + 127 - 5, TFT_RED);
-  tft.fillTriangle(x+3, y + 127, x+3+16, y+127, x + 3, y + 127 + 5, TFT_RED);
-  
+
+  tft.fillTriangle(x + 3, y + 127, x + 3 + 16, y + 127, x + 3, y + 127 - 5, TFT_RED);
+  tft.fillTriangle(x + 3, y + 127, x + 3 + 16, y + 127, x + 3, y + 127 + 5, TFT_RED);
+
   tft.drawCentreString("---", x + w / 2, y + 155 - 18, 2);
 }
 

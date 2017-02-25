@@ -2,7 +2,16 @@
 // Screen will flicker initially until fully drawn
 // then scroll smoothly
 
-// Needs GLCD font enabled in User_Setup.h
+// Needs GLCD font
+
+/*
+ Make sure all the display driver and pin comnenctions are correct by
+ editting the User_Setup.h file in the TFT_eSPI library folder.
+
+ #########################################################################
+ ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
+ #########################################################################
+*/
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
@@ -11,7 +20,7 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 #define TEXT_HEIGHT 8 // Height of text to be printed and scrolled
 #define BOT_FIXED_AREA 0  // Number of lines in bottom fixed area (lines counted from bottom of screen)
-#define TOP_FIXED_AREA 0 // Number of lines in top fixed area (lines counted from top of screen)
+#define TOP_FIXED_AREA 0  // Number of lines in top fixed area (lines counted from top of screen)
 
 uint16_t yStart = TOP_FIXED_AREA;
 uint16_t yArea = 320 - TOP_FIXED_AREA - BOT_FIXED_AREA;
@@ -21,21 +30,21 @@ uint16_t xPos = 0;
 
 void setup() {
   Serial.begin(115200);
-  //randomSeed(analogRead(A0));
+  randomSeed(analogRead(A0));
   tft.init();
-  tft.setRotation(0);
+  tft.setRotation(2);
   tft.fillScreen(ILI9341_BLACK);
   setupScrollArea(TOP_FIXED_AREA, BOT_FIXED_AREA);
 }
 
 void loop(void) {
-  // First fill the screen with randomt streaks of characters
+  // First fill the screen with random streaks of characters
   for (int j = 0; j < 600; j += TEXT_HEIGHT) {
     for (int i = 0; i < 40; i++) {
       if (pos[i] > 20) pos[i] -= 3; // Rapid fade initially brightness values
       if (pos[i] > 0) pos[i] -= 1; // Slow fade later
       if ((random(20) == 1) && (j<400)) pos[i] = 63; // ~1 in 20 probability of a new character
-      tft.setTextColor(pos[i] << 5, ILI9341_BLACK); // Set the character brightness
+      tft.setTextColor(pos[i] << 5, ILI9341_BLACK); // Set the green character brightness
       if (pos[i] == 63) tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK); // Draw white character
       xPos += tft.drawChar(random(32, 128), xPos, yDraw, 1); // Draw the character
     }
@@ -49,7 +58,7 @@ void loop(void) {
   //tft.setRotation(0);
 
   // Now scroll smoothly forever
-  while (1) yDraw = scroll_slow(320,8); // Scroll 320 lines, 8ms per line
+  while (1) {yield(); yDraw = scroll_slow(320,5); }// Scroll 320 lines, 5ms per line
 
 }
 
