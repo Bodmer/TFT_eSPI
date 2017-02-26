@@ -1,6 +1,6 @@
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for ESP8266 processors with a driver for the ILI9341 and ST7735 based TFT displays.
+An Arduino IDE compatible graphics and fonts library for ESP8266 processors with a driver for the ILI9341, ILI9163, ST7735 and S6D02A1 based TFT displays.
 
 The library contains proportional fonts, different sizes can be enabled/disabled at compile time to optimise the use of FLASH memory.  The library has been tested with the NodeMCU (ESP8266 based)
 

@@ -178,6 +178,11 @@ void TFT_eSPI::init(void)
 #elif defined (ST7735_DRIVER)
      #include "TFT_Drivers\ST7735_Init.h"
 
+#elif defined (ILI9163_DRIVER)
+     #include "TFT_Drivers\ILI9163_Init.h"
+
+#elif defined (S6D02A1_DRIVER)
+     #include "TFT_Drivers\S6D02A1_Init.h"
 #endif
 
   spi_end();
@@ -200,6 +205,13 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (ST7735_DRIVER)
      #include "TFT_Drivers\ST7735_Rotation.h"
+
+#elif defined (ILI9163_DRIVER)
+     #include "TFT_Drivers\ILI9163_Rotation.h"
+
+#elif defined (S6D02A1_DRIVER)
+     #include "TFT_Drivers\S6D02A1_Rotation.h"
+
 #endif
 
   spi_end();
