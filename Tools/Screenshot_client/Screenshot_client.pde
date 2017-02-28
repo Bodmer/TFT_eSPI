@@ -60,9 +60,9 @@ int indexRed   = 0;     // Colour byte index in the array
 int indexGreen = 1;
 int indexBlue  = 2;
 
-long end = 10;          // Whether we've heard from the microcontroller
+long end = 10;
 
-int n = 0;              // Whether we've heard from the microcontroller
+int n = 0;
 
 boolean got_image = false;
 
@@ -164,7 +164,7 @@ void draw() {
     state = 3;
     break;
 
-  case 3: // Request pixels and reder them
+  case 3: // Request pixels and render them
     if ( serial.available() > 0 ) {
 
       // Add the latest byte from the serial port to array:
@@ -232,7 +232,7 @@ void draw() {
   case 5: // Save the image tot he sketch folder
     println();
     String filename = "tft_screen_" + n  + image_type;
-    println("Saving image as \"" + filename);  // Does not execute
+    println("Saving image as \"" + filename);
     if (save_border)
     {
       PImage partialSave = get(x_offset - border, y_offset - border, tft_width + 2*border, tft_height + 2*border);
