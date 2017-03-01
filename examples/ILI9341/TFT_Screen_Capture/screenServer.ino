@@ -3,7 +3,7 @@
 // This is a sketch support tab containing function calls to read a screen image
 // off a TFT and send it to a processing client sketch over the serial port.
 
-// See the processing_sketch tab, it contains a capy of the processing sketch.
+// See the processing_sketch tab, it contains a copy of the processing sketch.
 
 // Use a high baud rate, for an ESP8266:
 /*
