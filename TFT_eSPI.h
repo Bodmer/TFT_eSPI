@@ -24,13 +24,13 @@
 
 // Load the right driver definitions <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
 #if   defined (ILI9341_DRIVER)
-     #include <TFT_Drivers\ILI9341_Defines.h>
+     #include <TFT_Drivers/ILI9341_Defines.h>
 #elif defined (ST7735_DRIVER)
-     #include <TFT_Drivers\ST7735_Defines.h>
+     #include <TFT_Drivers/ST7735_Defines.h>
 #elif defined (ILI9163_DRIVER)
-     #include <TFT_Drivers\ILI9163_Defines.h>
+     #include <TFT_Drivers/ILI9163_Defines.h>
 #elif defined (S6D02A1_DRIVER)
-     #include <TFT_Drivers\S6D02A1_Defines.h>
+     #include <TFT_Drivers/S6D02A1_Defines.h>
 #endif
 
 // If the frequency is not defined, set a default
