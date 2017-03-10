@@ -19,19 +19,9 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-// Include header file that defines the fonts loaded and the pins to be used
+// Include header file that defines the fonts loaded, the TFT drivers
+// available and the pins to be used
 #include <User_Setup_Select.h>
-
-// Load the right driver definitions <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
-#if   defined (ILI9341_DRIVER)
-     #include <TFT_Drivers/ILI9341_Defines.h>
-#elif defined (ST7735_DRIVER)
-     #include <TFT_Drivers/ST7735_Defines.h>
-#elif defined (ILI9163_DRIVER)
-     #include <TFT_Drivers/ILI9163_Defines.h>
-#elif defined (S6D02A1_DRIVER)
-     #include <TFT_Drivers/S6D02A1_Defines.h>
-#endif
 
 // If the frequency is not defined, set a default
 #ifndef SPI_FREQUENCY
@@ -107,14 +97,10 @@
 
 #include <Fonts/GFXFF/gfxfont.h>
 
-// New custom fonts
-#include <Fonts/Custom/Orbitron_Light_24.h> // CF_OL24
-#include <Fonts/Custom/Orbitron_Light_32.h> // CF_OL32
-#include <Fonts/Custom/Roboto_Thin_24.h>    // CF_RT24
-#include <Fonts/Custom/Satisfy_24.h>        // CF_S24
-#include <Fonts/Custom/Yellowtail_32.h>     // CF_Y32
+// Call up any user custom fonts
+#include <User_Setups/User_Custom_Fonts.h>
 
-// Free fonts
+// Original Adafruit_GFX "Free Fonts"
 #include <Fonts/GFXFF/TomThumb.h>  // TT1
 
 #include <Fonts/GFXFF/FreeMono9pt7b.h>  // FF1 or FM9
@@ -179,9 +165,6 @@
 #include <Fonts/GFXFF/FreeSerifBoldItalic18pt7b.h> // FF47 or FSBI18
 #include <Fonts/GFXFF/FreeSerifBoldItalic24pt7b.h> // FF48 or FSBI24
 
-// Swap any type
-template <typename T> static inline void
-swap(T& a, T& b) { T t = a; a = b; b = t; }
 
 //These enumerate the text plotting alignment (reference datum point)
 #define TL_DATUM 0 // Top left (default)
@@ -221,6 +204,11 @@ swap(T& a, T& b) { T t = a; a = b; b = t; }
 #define TFT_ORANGE      0xFD20      /* 255, 165,   0 */
 #define TFT_GREENYELLOW 0xAFE5      /* 173, 255,  47 */
 #define TFT_PINK        0xF81F
+
+
+// Swap any type
+template <typename T> static inline void
+swap(T& a, T& b) { T t = a; a = b; b = t; }
 
 // This is a structure to conveniently hold infomation on the default fonts
 // Stores pointer to font character image address table, width table and height

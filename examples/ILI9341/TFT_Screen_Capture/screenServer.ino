@@ -1,68 +1,62 @@
-// TFT screenshot server
+// Reads a screen image off the TFT and send it to a processing client sketch
+// over the serial port. Use a high baud rate, e.g. for an ESP8266:
+// Serial.begin(921600);
 
-// This is a sketch support tab containing function calls to read a screen image
-// off a TFT and send it to a processing client sketch over the serial port.
-
-// See the processing_sketch tab, it contains a copy of the processing sketch.
-
-// Use a high baud rate, for an ESP8266:
-/*
-   Serial.begin(921600);
-*/
-// 240 x 320 images take about 3.5s to transfer at 921600 baud(minimum is ~2.5s)
+// At 921600 baud a 320 x 240 image with 16 bit colour transfers can be sent to the
+// PC client in ~1.67s and 24 bit colour in ~2.5s which is close to the theoretical
+// minimum transfer time.
 
 // This sketch has been created to work with the TFT_eSPI library here:
 // https://github.com/Bodmer/TFT_eSPI
 
 // Created by: Bodmer 27/1/17
+// Updated by: Bodmer 10/3/17
+// Version: 0.06
 
-// The MIT permissive free software license applies, include all text above in
-// derivatives.
+// MIT licence applies, all text above must be included in derivative works
 
-#define BAUD_RATE 250000      // Maximum Arduino IDE Serial Monitor rate
-#define DUMP_BAUD_RATE 921600 // Rate used for screen dumps by ESP8266
 
-#define PIXEL_TIMEOUT 100    // 100ms Time-out between pixel requests
-#define START_TIMEOUT 10000  // 10s Maximum time to wait at start transfer
+#define BAUD_RATE 250000      // Maximum Serial Monitor rate for other messages
+#define DUMP_BAUD_RATE 921600 // Rate used for screen dumps
+
+#define PIXEL_TIMEOUT 100     // 100ms Time-out between pixel requests
+#define START_TIMEOUT 10000   // 10s Maximum time to wait at start transfer
+
+#define BITS_PER_PIXEL 16     // 24 for RGB colour format, 16 for 565 colour format
+
+// Number of pixels to send in a burst (minimum of 1), no benefit above 8
+// NPIXELS values and render times: 1 = 5.0s, 2 = 1.75s, 4 = 1.68s, 8 = 1.67s
+#define NPIXELS 8  // Must be integer division of both TFT width and TFT height
+
 
 // Start a screen dump server (serial or network)
 boolean screenServer(void)
 {
   Serial.end();                 // Stop the serial port (clears buffers too)
   Serial.begin(DUMP_BAUD_RATE); // Force baud rate to be high
-  yield();
-  
+  delay(0); // Equivalent to yield() for ESP8266;
+
   boolean result = serialScreenServer(); // Screenshot serial port server
-  //boolean result = wifiDump();           // Screenshot WiFi UDP port server (WIP)
-  
+  //boolean result = wifiScreenServer();   // Screenshot WiFi UDP port server (WIP)
+
   Serial.end();                 // Stop the serial port (clears buffers too)
   Serial.begin(BAUD_RATE);      // Return baud rate to normal
-  yield();
+  delay(0); // Equivalent to yield() for ESP8266;
 
   //Serial.println();
   //if (result) Serial.println(F("Screen dump passed :-)"));
   //else        Serial.println(F("Screen dump failed :-("));
-  
+
   return result;
 }
 
 // Screenshot serial port server (Processing sketch acts as client)
 boolean serialScreenServer(void)
 {
-  // Serial commands from client:
-  //    'S' to start the transfer process (To do: reply with width + height)
-  //    'R' or any character except 'X' to request pixel
-  //    'X' to abort and return immediately to caller
-  // Returned boolean values:
-  //     true = image despatched OK
-  //    false = time-out or abort command received
 
   // Precautionary receive buffer garbage flush for 50ms
   uint32_t clearTime = millis() + 50;
-  while ( millis() < clearTime ) {
-    Serial.read();
-    yield();
-  }
+  while ( millis() < clearTime && Serial.read() >= 0) delay(0); // Equivalent to yield() for ESP8266;
 
   boolean wait = true;
   uint32_t lastCmdTime = millis();     // Initialise start of command time-out
@@ -70,7 +64,7 @@ boolean serialScreenServer(void)
   // Wait for the starting flag with a start time-out
   while (wait)
   {
-    yield();
+    delay(0); // Equivalent to yield() for ESP8266;
     // Check serial buffer
     if (Serial.available() > 0) {
       // Read the command byte
@@ -79,21 +73,21 @@ boolean serialScreenServer(void)
       if ( cmd == 'S' ) {
         // Precautionary receive buffer garbage flush for 50ms
         clearTime = millis() + 50;
-        while ( millis() < clearTime ) {
-          Serial.read();
-          yield();
-        }
+        while ( millis() < clearTime && Serial.read() >= 0) delay(0); // Equivalent to yield() for ESP8266;
+
         wait = false;           // No need to wait anymore
         lastCmdTime = millis(); // Set last received command time
 
-        // Send screen size, not supported by processing sketch yet
-        //Serial.write('W');
-        //Serial.write(tft.width()  >> 8);
-        //Serial.write(tft.width()  & 0xFF);
-        //Serial.write('H');
-        //Serial.write(tft.height() >> 8);
-        //Serial.write(tft.height() & 0xFF);
-        //Serial.write('Y');
+        // Send screen size using a simple header with delimiters for client checks
+        Serial.write('W');
+        Serial.write(tft.width()  >> 8);
+        Serial.write(tft.width()  & 0xFF);
+        Serial.write('H');
+        Serial.write(tft.height() >> 8);
+        Serial.write(tft.height() & 0xFF);
+        Serial.write('Y');
+        Serial.write(BITS_PER_PIXEL);
+        Serial.write('?');
       }
     }
     else
@@ -103,49 +97,49 @@ boolean serialScreenServer(void)
     }
   }
 
-  uint8_t color[3]; // RGB color buffer for 1 pixel
-  
-  // Send all the pixels on the whole screen (typically 5 seconds at 921600 baud)
+  uint8_t color[3 * NPIXELS]; // RGB and 565 format color buffer for N pixels
+
+  // Send all the pixels on the whole screen
   for ( uint32_t y = 0; y < tft.height(); y++)
   {
-    // Increment x by 2 as we send 2 pixels for every byte received
-    for ( uint32_t x = 0; x < tft.width(); x += 1)
+    // Increment x by NPIXELS as we send NPIXELS for every byte received
+    for ( uint32_t x = 0; x < tft.width(); x += NPIXELS)
     {
-      yield();
+      delay(0); // Equivalent to yield() for ESP8266;
 
       // Wait here for serial data to arrive or a time-out elapses
       while ( Serial.available() == 0 )
       {
-        yield;
         if ( millis() > lastCmdTime + PIXEL_TIMEOUT) return false;
+        delay(0); // Equivalent to yield() for ESP8266;
       }
 
       // Serial data must be available to get here, read 1 byte and
-      // respond with N pixels, i.e. N x 3 RGB bytes
+      // respond with N pixels, i.e. N x 3 RGB bytes or N x 2 565 format bytes
       if ( Serial.read() == 'X' ) {
         // X command byte means abort, so clear the buffer and return
         clearTime = millis() + 50;
-        while ( millis() < clearTime ) Serial.read();
+        while ( millis() < clearTime && Serial.read() >= 0) delay(0); // Equivalent to yield() for ESP8266;
         return false;
       }
       // Save arrival time of the read command (for later time-out check)
       lastCmdTime = millis();
 
-      // Fetch data for N pixels starting at x,y
-      tft.readRectRGB(x, y, 1, 1, color);
-      // Send values to client
-      Serial.write(color[0]); // Pixel 1 red
-      Serial.write(color[1]); // Pixel 1 green
-      Serial.write(color[2]); // Pixel 1 blue
-      //Serial.write(color[3]); // Pixel 2 red
-      //Serial.write(color[4]); // Pixel 2 green
-      //Serial.write(color[5]); // Pixel 2 blue
+#if defined BITS_PER_PIXEL && BITS_PER_PIXEL >= 24
+      // Fetch N RGB pixels from x,y and put in buffer
+      tft.readRectRGB(x, y, NPIXELS, 1, color);
+      // Send buffer to client
+      Serial.write(color, 3 * NPIXELS); // Write all pixels in the buffer
+#else
+      // Fetch N 565 format pixels from x,y and put in buffer
+      tft.readRect(x, y, NPIXELS, 1, (uint16_t *)color);
+      // Send buffer to client
+      Serial.write(color, 2 * NPIXELS); // Write all pixels in the buffer
+#endif
     }
   }
-
-  // Receive buffer excess command flush for 50ms
-  clearTime = millis() + 50;
-  while ( millis() < clearTime ) Serial.read();
+  
+  Serial.flush(); // Make sure all pixel bytes have been despatched
 
   return true;
 }

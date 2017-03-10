@@ -24,3 +24,25 @@
 //#include <User_Setups/Setup4_S6D02A1.h>  // Setup file configured for my S6D02A1
 
 //#include <User_Setups/SetupX_Template.h> // Setup file template for copying/editting
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//                                                                                 //
+//     DON'T TINKER WITH ANY OF THE FOLLOWING LINES, THESE ADD THE TFT DRIVERS     //
+//                     THEY ARE HERE FOR BODMER'S CONVENIENCE!                     //
+//                                                                                 //
+/////////////////////////////////////////////////////////////////////////////////////
+
+// Load the right driver definition - do not tinker here !
+#if   defined (ILI9341_DRIVER)
+     #include <TFT_Drivers/ILI9341_Defines.h>
+#elif defined (ST7735_DRIVER)
+     #include <TFT_Drivers/ST7735_Defines.h>
+#elif defined (ILI9163_DRIVER)
+     #include <TFT_Drivers/ILI9163_Defines.h>
+#elif defined (S6D02A1_DRIVER)
+     #include <TFT_Drivers/S6D02A1_Defines.h>
+#endif
