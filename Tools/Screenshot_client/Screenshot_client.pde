@@ -1,3 +1,5 @@
+// Latest at 03/03/17
+
 // This is a Processing sketch, see https://processing.org/ to download the IDE
 
 // The sketch is a client that requests TFT screenshots from an Arduino board.
@@ -39,7 +41,7 @@ String image_type = ".png";   //                                                
 //                                                                                           #
 boolean save_border = true;   // Save the image with a border                                #
 int border = 5;               // Border pixel width                                          #
-boolean fade = false;         // Fade out image after saving                                 #
+boolean fade = true ;         // Fade out image after saving                                 #
 //                                                                                           #
 int max_images = 10; // Maximum of numbered saved images before over-writing files           #
 //                                                                                           #
@@ -71,7 +73,7 @@ int y_offset = 20; //
 int xpos, ypos;                // Pixel position
 
 int beginTime     = 0;
-int pixelWaitTime = 100;  // Wait a maximum of 100ms gap for image pixels to arrive
+int pixelWaitTime = 1000;  // Maximum 1000ms wait for image pixels to arrive
 int lastPixelTime = 0;     // Time that "image send" command was sent
 
 int state = 0;  // State machine current state
@@ -128,10 +130,7 @@ void draw() {
   switch(state) {
 
   case 0: // Init varaibles, send start request
-    tint(255, 255);
-    textAlign(CENTER);
-    textSize(20);
-
+    tint(0, 0, 0, 255);
     println("");
     //println("Clearing pipe...");
     beginTime = millis() + 200;
@@ -140,7 +139,7 @@ void draw() {
       serial.read();
     }
     println("Ready to receive image");
-    serial.write("S");
+
     xpos = 0;
     ypos = 0;
     serialCount = 0;
@@ -154,6 +153,7 @@ void draw() {
 
   case 1: // Console message, give server some time
     println("Requesting image");
+    serial.write("S");
     delay(10); 
     state = 2;
     break;
@@ -161,23 +161,26 @@ void draw() {
   case 2: // Get size and set start time for render time report
     // To do: Read image size info, currently hard coded
     beginTime = millis();
+    noTint();
     state = 3;
     break;
 
-  case 3: // Request pixels and render them
+  case 3: // Request pixels and render returned RGB values
+
     if ( serial.available() > 0 ) {
 
       // Add the latest byte from the serial port to array:
       while (serial.available()>0)
       {
-        rgb[serialCount] = serial.read();
-        serialCount++;
+        rgb[serialCount++] = serial.read();
 
         // If we have 3 colour bytes:
         if (serialCount >= 3 ) {
           serialCount = 0;
           pixel_count++;
-          stroke(rgb[indexRed], rgb[indexGreen], rgb[indexBlue]);
+          stroke(rgb[indexRed], rgb[indexGreen], rgb[indexBlue],1000);
+          // We seem to get some pixel transparency so draw twice
+          point(xpos + x_offset, ypos + y_offset);
           point(xpos + x_offset, ypos + y_offset);
           lastPixelTime = millis();
           xpos++;
@@ -203,19 +206,15 @@ void draw() {
       }
     } else
     {
-
       if (millis() > (lastPixelTime + pixelWaitTime))
       {
         println("");
         System.err.println("No response, trying again...");
         state = 4;
-      } else
-      {
-        // Request 64 more pixels (ESP8266 buffer size)
-        serial.write("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
-        serial.write("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
       }
     }
+    // Request 32pixels
+    serial.write("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
     break;
 
   case 4: // Time-out, flush serial buffer
@@ -226,7 +225,7 @@ void draw() {
     {
       serial.read();
     }
-    state = 0;
+    state = 6;
     break;
 
   case 5: // Save the image tot he sketch folder
@@ -243,19 +242,25 @@ void draw() {
     }
 
     n = n + 1;
-    if (n>9) n = 0;
+    if (n>=max_images) n = 0;
     drawLoopCount = 0; // Reset value ready for counting in step 6
     state = 6;
     break;
 
   case 6: // Fade the old image if enabled
+    int opacity = drawLoopCount;  // So we get increasing fade
+    if (drawLoopCount > 50)       // End fade after 50 cycles
+    {
+      opacity = 255;
+      state = 0;
+    }
     delay(10);
     if (fade)
     {
-      tint(255, drawLoopCount);
+      tint(255, opacity);
       image(tft_img, x_offset, y_offset);
     }
-    if (drawLoopCount > 50) state = 0; // Wait for fade to end
+
     break;
 
   case 99: // Draw image viewer window
@@ -271,7 +276,7 @@ void draw() {
 
     rect(x_offset - border, y_offset - border, tft_width - 1 + 2*border, tft_height - 1 + 2*border);
 
-    fill(100);
+    fill(255);
     rect(x_offset, y_offset, tft_width-1, tft_height-1);
 
     state = 0;
