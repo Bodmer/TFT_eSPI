@@ -151,6 +151,10 @@ void TFT_eSPI::init(void)
 
   // SPI1U1 |= SPIUSIO; // Single I/O pin on MOSI (bi-directional) - not tested
  
+  // Set to output once again incase D6 (MISO) is used for DC
+  digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
+  pinMode(TFT_DC, OUTPUT);
+
   // toggle RST low to reset
 #ifdef TFT_RST
   if (TFT_RST >= 0) {
