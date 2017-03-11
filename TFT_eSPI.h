@@ -399,22 +399,17 @@ class TFT_eSPI : public Print {
 inline void spi_begin() __attribute__((always_inline));
 inline void spi_end() __attribute__((always_inline));
 
-void        writeBytes_(uint8_t * data, uint8_t size);
-inline void setDataBits(uint16_t bits);
-
+    void   readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
+	
   uint8_t  tabcolor,
            colstart = 0, rowstart = 0; // some ST7735 displays need this changed
 
-  boolean  hwSPI;
-
   volatile uint32_t *dcport, *csport;//, *mosiport, *clkport, *rsport;
-  //int32_t  _cs, _dc, _rst, _mosi, _miso, _sclk;
+
   uint32_t  cspinmask, dcpinmask;//, mosipinmask, clkpinmask;
 
-  uint8_t  mySPCR, savedSPCR;
-
   //uint8_t  fifoBuffer[64]; // SPI graphics pipeline buffer - not used yet
-  uint8_t  colorBin[2];
+
   uint32_t lastColor = 0xFFFF;
 
  protected:

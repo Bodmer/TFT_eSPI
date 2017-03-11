@@ -55,8 +55,6 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 
   _SPI = &SPI; // Initialise class pointer
   
-  hwSPI = true;
-
 // The control pins are deliberately set to the inactive state (CS high) as setup()
 // might call and initialise another SPI peripherals which would could cause conflicts
 // if CS is floating or undefined.
@@ -364,11 +362,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 {
   spi_begin();
 
-  setAddrWindow(x0, y0, x0, y0); // Sets CS low, don't care it sent RAMWR
-
-  DC_C;
-  _SPI->transfer(TFT_RAMRD); // Read CGRAM command
-  DC_D;
+  readAddrWindow(x0, y0, x0, y0); // Sets CS low
 
   // Dummy read to throw away don't care value
   _SPI->transfer(0);
@@ -396,11 +390,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   
   spi_begin();
 
-  setAddrWindow(x, y, x + w - 1, y + h - 1); // Sets CS low, don't care it sent RAMWR
-
-  DC_C;
-  _SPI->transfer(TFT_RAMRD); // Read CGRAM command
-  DC_D;
+  readAddrWindow(x, y, x + w - 1, y + h - 1); // Sets CS low
 
   // Dummy read to throw away don't care value
   _SPI->transfer(0);
@@ -460,11 +450,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 {
 	spi_begin();
 
-    setAddrWindow(x0, y0, x0 + w - 1, y0 + h - 1); // Sets CS low,, don't care it sent RAMWR
-
-	DC_C;
-    _SPI->transfer(TFT_RAMRD); // Read CGRAM command
-	DC_D;
+    readAddrWindow(x0, y0, x0 + w - 1, y0 + h - 1); // Sets CS low
 
     // Dummy read to throw away don't care value
     _SPI->transfer(0);
@@ -1521,6 +1507,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t 
 
   spi_end();
 }
+
 #else
 
 inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
@@ -1572,6 +1559,123 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 
 #endif
 
+
+/***************************************************************************************
+** Function name:           readAddrWindow
+** Description:             define an area to read a stream of pixels
+***************************************************************************************/
+// Chip select stays low
+#ifdef ESP8266
+void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
+{
+  //spi_begin();
+
+  addr_col = 0xFFFF;
+  addr_row = 0xFFFF;
+  
+#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (GREENTAB2))
+  xs+=colstart;
+  xe+=colstart;
+  ys+=rowstart;
+  ye+=rowstart;
+#endif
+
+  // Column addr set
+  DC_C;
+  CS_L;
+
+  uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+  mask = SPI1U1 & mask;
+
+  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+
+  SPI1W0 = TFT_CASET;
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  DC_D;
+
+  SPI1U1 = mask | (31 << SPILMOSI) | (31 << SPILMISO);
+  // Load the two coords as a 32 bit value and shift in one go
+  SPI1W0 = (xs >> 8) | (uint16_t)(xs << 8) | ((uint8_t)(xe >> 8)<<16 | (xe << 24));
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  // Row addr set
+  DC_C;
+
+  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+
+  SPI1W0 = TFT_PASET;
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  DC_D;
+
+  SPI1U1 = mask | (31 << SPILMOSI) | (31 << SPILMISO);
+  // Load the two coords as a 32 bit value and shift in one go
+  SPI1W0 = (ys >> 8) | (uint16_t)(ys << 8) | ((uint8_t)(ye >> 8)<<16 | (ye << 24));
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  // read from RAM
+  DC_C;
+
+  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+  SPI1W0 = TFT_RAMRD;
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  DC_D;
+  //spi_end();
+}
+#else
+
+void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+{
+  //spi_begin();
+
+  addr_col = 0xFFFF;
+  addr_row = 0xFFFF;
+
+#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (GREENTAB2))
+  x0+=colstart;
+  x1+=colstart;
+  y0+=rowstart;
+  y1+=rowstart;
+#endif
+
+  // Column addr set
+  DC_C;
+  CS_L;
+
+  _SPI->write(TFT_CASET);
+
+  DC_D;
+
+  _SPI->write16((x0 >> 8) | (x0 << 8));
+
+  _SPI->write16((x1 >> 8) | (x1 << 8));
+
+  // Row addr set
+  DC_C;
+
+  _SPI->write(TFT_PASET);
+
+  DC_D;
+
+  _SPI->write16((y0 >> 8) | (y0 << 8));
+
+  _SPI->write16((y1 >> 8) | (y1 << 8));
+
+  DC_C;
+  _SPI->transfer(TFT_RAMRD); // Read CGRAM command
+  DC_D;
+
+  //spi_end();
+}
+
+#endif
 
 /***************************************************************************************
 ** Function name:           drawPixel
