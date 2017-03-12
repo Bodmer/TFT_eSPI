@@ -2674,10 +2674,19 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
   }
 
 #ifdef LOAD_GFXFF
+  int8_t xo = 0;
   if ((font == 1) && (gfxFont) && (textcolor!=textbgcolor))
     {
       cheight = (glyph_ab + glyph_bb) * textsize;
-      fillRect(poX, poY - glyph_ab * textsize, cwidth, cheight, textbgcolor);
+	  // Get the offset for the first character only to allow for negative offsets
+	  uint8_t   c2    = *string - pgm_read_byte(&gfxFont->first);
+      GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
+      xo = pgm_read_byte(&glyph->xOffset) * textsize;
+	  // Adjust for negative xOffset, also see line 2708 below
+	  if (xo < 0) cwidth -= xo;
+	  // Add 1 pixel of padding all round
+	  cheight +=2;
+      fillRect(poX+xo-1, poY - 1 - glyph_ab * textsize, cwidth+2, cheight, textbgcolor);
       padding -=100;
     }
 #endif
@@ -2693,11 +2702,12 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
 
   if((padX>cwidth) && (textcolor!=textbgcolor))
   {
-    int16_t padXc = poX+cwidth;
+    int16_t padXc = poX+cwidth;//+xo;
 #ifdef LOAD_GFXFF
     if ((font == 1) && (gfxFont))
     {
-      poY -= glyph_ab * textsize;
+      poX +=xo; // Adjust for negative offset start character
+      poY -= 1 + glyph_ab * textsize;
     }
 #endif
     switch(padding) {
@@ -2907,14 +2917,31 @@ void TFT_eSPI::setFreeFont(const GFXfont *f) {
   textfont = 1;
   gfxFont = (GFXfont *)f;
 
+  glyph_ab = 0;
+  glyph_bb = 0;
+  uint8_t numChars = pgm_read_byte(&gfxFont->last) - pgm_read_byte(&gfxFont->first);
+  
+  // Find the biggest above and below baseline offsets
+  for (uint8_t c = 0; c < numChars; c++)
+  {
+    GFXglyph *glyph1  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c]);
+    int8_t ab = -pgm_read_byte(&glyph1->yOffset);
+    if (ab > glyph_ab) glyph_ab = ab;
+    int8_t bb = pgm_read_byte(&glyph1->height) - ab;
+    if (bb > glyph_bb) glyph_bb = bb;
+  }
+  //Serial.print("new glyph_ab=");Serial.println(glyph_ab);
+  //Serial.print("new glyph_bb=");Serial.println(glyph_bb);
   // Save above baseline (for say H)  and below baseline (for y tail) heights
-  uint16_t uniCode = FF_HEIGHT - pgm_read_byte(&gfxFont->first);
-  GFXglyph *glyph1  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[uniCode]);
-  glyph_ab = -pgm_read_byte(&glyph1->yOffset);
+  //uint16_t uniCode = FF_HEIGHT - pgm_read_byte(&gfxFont->first);
+  //GFXglyph *glyph1  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[uniCode]);
+  //glyph_ab = -pgm_read_byte(&glyph1->yOffset);
 
-  uniCode = FF_BOTTOM - pgm_read_byte(&gfxFont->first);
-  GFXglyph *glyph2  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[uniCode]);
-  glyph_bb = pgm_read_byte(&glyph2->height) + (int8_t)pgm_read_byte(&glyph2->yOffset);
+  //uniCode = FF_BOTTOM - pgm_read_byte(&gfxFont->first);
+  //GFXglyph *glyph2  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[uniCode]);
+  //glyph_bb = pgm_read_byte(&glyph2->height) + (int8_t)pgm_read_byte(&glyph2->yOffset);
+  //Serial.print("glyph_ab=");Serial.println(glyph_ab);
+  //Serial.print("glyph_bb=");Serial.println(glyph_bb);
 }
 
 
