@@ -395,7 +395,6 @@ class TFT_eSPI : public Print {
 
  private:
 
-            SPIClass *_SPI;
 inline void spi_begin() __attribute__((always_inline));
 inline void spi_end() __attribute__((always_inline));
 
