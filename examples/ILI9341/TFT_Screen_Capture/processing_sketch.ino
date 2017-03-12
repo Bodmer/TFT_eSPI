@@ -299,8 +299,10 @@ int renderPixels()
         {
           stroke(rgb[indexRed], rgb[indexGreen], rgb[indexBlue], 1000);
         } else
-        {
-          stroke( (rgb[1] & 0x1F)<<3, (rgb[1] & 0xE0)>>3 | (rgb[0] & 0x07)<<5, (rgb[0] & 0xF8));
+        { // Can cater for various byte orders
+          //stroke( (rgb[0] & 0x1F)<<3, (rgb[0] & 0xE0)>>3 | (rgb[1] & 0x07)<<5, (rgb[1] & 0xF8));
+          //stroke( (rgb[1] & 0x1F)<<3, (rgb[1] & 0xE0)>>3 | (rgb[0] & 0x07)<<5, (rgb[0] & 0xF8));
+          stroke( (rgb[0] & 0xF8), (rgb[1] & 0xE0)>>3 | (rgb[0] & 0x07)<<5, (rgb[1] & 0x1F)<<3);
           //stroke( (rgb[1] & 0xF8), (rgb[0] & 0xE0)>>3 | (rgb[1] & 0x07)<<5, (rgb[0] & 0x1F)<<3);
         }
         // We get some pixel merge aliasing if smooth() is defined, so draw pixel twice
