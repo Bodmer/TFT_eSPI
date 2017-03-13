@@ -11,11 +11,13 @@
 
 // Created by: Bodmer 27/1/17
 // Updated by: Bodmer 10/3/17
-// Version: 0.06
+// Version: 0.07
 
 // MIT licence applies, all text above must be included in derivative works
 
-
+//====================================================================================
+//                                  Definitions
+//====================================================================================
 #define BAUD_RATE 250000      // Maximum Serial Monitor rate for other messages
 #define DUMP_BAUD_RATE 921600 // Rate used for screen dumps
 
@@ -24,20 +26,46 @@
 
 #define BITS_PER_PIXEL 16     // 24 for RGB colour format, 16 for 565 colour format
 
+// File names must be alpha-numeric characters (0-9, a-z, A-Z) or "/" underscore "_"
+// other ascii characters are stripped out by client, including / generates
+// sub-directories
+#define DEFAULT_FILENAME "tft_screenshots/screenshot" // In case none is specified
+#define FILE_TYPE "png"       // jpg, bmp, png, tif are valid
+
+// Filename extension
+// '#' = add 0-9, '@' = add timestamp, '%' add millis() timestamp, '*' = add nothing
+// '@' and '%' will generate new unique filenames, so beware of cluttering up your
+// hard drive with lots of images! The PC client sketch is set to limit the number of
+// saved images to 1000 and will then prompt for a restart.
+#define FILE_EXT  '%'         
+
 // Number of pixels to send in a burst (minimum of 1), no benefit above 8
 // NPIXELS values and render times: 1 = 5.0s, 2 = 1.75s, 4 = 1.68s, 8 = 1.67s
 #define NPIXELS 8  // Must be integer division of both TFT width and TFT height
 
-
-// Start a screen dump server (serial or network)
+//====================================================================================
+//                           Screen server call with no filename
+//====================================================================================
+// Start a screen dump server (serial or network) - no filename specified
 boolean screenServer(void)
+{
+  // With no filename the screenshot will be saved with a default name e.g. tft_screen_#.xxx
+  // where # is a number 0-9 and xxx is a file type specified below
+  return screenServer(DEFAULT_FILENAME);
+}
+
+//====================================================================================
+//                           Screen server call with filename
+//====================================================================================
+// Start a screen dump server (serial or network) - filename specified
+boolean screenServer(String filename)
 {
   Serial.end();                 // Stop the serial port (clears buffers too)
   Serial.begin(DUMP_BAUD_RATE); // Force baud rate to be high
   delay(0); // Equivalent to yield() for ESP8266;
 
-  boolean result = serialScreenServer(); // Screenshot serial port server
-  //boolean result = wifiScreenServer();   // Screenshot WiFi UDP port server (WIP)
+  boolean result = serialScreenServer(filename); // Screenshot serial port server
+  //boolean result = wifiScreenServer(filename);   // Screenshot WiFi UDP port server (WIP)
 
   Serial.end();                 // Stop the serial port (clears buffers too)
   Serial.begin(BAUD_RATE);      // Return baud rate to normal
@@ -50,10 +78,11 @@ boolean screenServer(void)
   return result;
 }
 
-// Screenshot serial port server (Processing sketch acts as client)
-boolean serialScreenServer(void)
+//====================================================================================
+//                Serial server function that sends the data to the client
+//====================================================================================
+boolean serialScreenServer(String filename)
 {
-
   // Precautionary receive buffer garbage flush for 50ms
   uint32_t clearTime = millis() + 50;
   while ( millis() < clearTime && Serial.read() >= 0) delay(0); // Equivalent to yield() for ESP8266;
@@ -78,16 +107,8 @@ boolean serialScreenServer(void)
         wait = false;           // No need to wait anymore
         lastCmdTime = millis(); // Set last received command time
 
-        // Send screen size using a simple header with delimiters for client checks
-        Serial.write('W');
-        Serial.write(tft.width()  >> 8);
-        Serial.write(tft.width()  & 0xFF);
-        Serial.write('H');
-        Serial.write(tft.height() >> 8);
-        Serial.write(tft.height() & 0xFF);
-        Serial.write('Y');
-        Serial.write(BITS_PER_PIXEL);
-        Serial.write('?');
+        // Send screen size etc using a simple header with delimiters for client checks
+        sendParameters(filename);
       }
     }
     else
@@ -138,9 +159,36 @@ boolean serialScreenServer(void)
 #endif
     }
   }
-  
+
   Serial.flush(); // Make sure all pixel bytes have been despatched
 
   return true;
 }
+
+//====================================================================================
+//    Send screen size etc using a simple header with delimiters for client checks
+//====================================================================================
+void sendParameters(String filename)
+{
+  Serial.write('W'); // Width
+  Serial.write(tft.width()  >> 8);
+  Serial.write(tft.width()  & 0xFF);
+
+  Serial.write('H'); // Height
+  Serial.write(tft.height() >> 8);
+  Serial.write(tft.height() & 0xFF);
+
+  Serial.write('Y'); // Bits per pixel (16 or 24)
+  Serial.write(BITS_PER_PIXEL);
+
+  Serial.write('?'); // Filename next
+  Serial.print(filename);
+
+  Serial.write('.'); // End of filename marker
+
+  Serial.write(FILE_EXT); // Filename extension identifier
+
+  Serial.write(*FILE_TYPE); // First character defines file type j,b,p,t
+}
+
 

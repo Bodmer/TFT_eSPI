@@ -28,8 +28,8 @@
 // option "Show Sketch Folder" or press Ctrl+K
 
 // Created by: Bodmer  5/3/17
-// Updated by: Bodmer 10/3/17
-// Version: 0.06
+// Updated by: Bodmer 12/3/17
+// Version: 0.07
 
 // MIT licence applies, all text above must be included in derivative works
 
@@ -53,7 +53,9 @@ boolean save_border = true;   // Save the image with a border                   
 int border = 5;               // Border pixel width                                          #
 boolean fade = false;         // Fade out image after saving                                 #
 //                                                                                           #
-int max_images = 10; // Maximum of numbered saved images before over-writing files           #
+int max_images = 100; // Maximum of numbered file images before over-writing files           #
+//                                                                                           #
+int max_allowed  = 1000; // Maximum number of save images allowed before a restart           #
 //                                                                                           #
 // #                   End of the values to change for a particular setup                    #
 // ###########################################################################################
@@ -77,6 +79,13 @@ color bgcolor2 = color(77, 183, 187);     // Arduino IDE style background color 
 // TFT image frame greyscale value (dark grey)
 color frameColor = 42;
 
+color buttonStopped = color(255, 0, 0);
+color buttonRunning = color(128, 204, 206);
+color buttonDimmed  = color(180, 0, 0);
+boolean dimmed   = false;
+boolean running  = true;
+boolean mouseClick = false;
+
 int[] rgb = new int[3]; // Buffer for the colour bytes
 int indexRed   = 0;     // Colour byte index in the array
 int indexGreen = 1;
@@ -93,6 +102,9 @@ int beginTime     = 0;
 int pixelWaitTime = 1000;  // Maximum 1000ms wait for image pixels to arrive
 int lastPixelTime = 0;     // Time that "image send" command was sent
 
+int requestTime = 0;
+int requestCount = 0;
+
 int state = 0;  // State machine current state
 
 int   progress_bar = 0; // Console progress bar dot count
@@ -101,6 +113,7 @@ float percentage   = 0; // Percentage of pixels received
 
 int  saved_image_count = 0; // Stats - number of images processed
 int  bad_image_count  = 0;  // Stats - number of images that had lost pixels
+String filename = "";
 
 int drawLoopCount = 0;      // Used for the fade out
 
@@ -134,42 +147,65 @@ void setup() {
 }
 
 void draw() {
+
+  if (mouseClick) buttonClicked();
+
   switch(state) {
 
   case 0: // Init varaibles, send start request
-    tint(0, 0, 0, 255);
-    println();
-    flushBuffer();
-    println("");
-    print("Ready: ");
+    if (running) {
+      tint(0, 0, 0, 255);
+      flushBuffer();
+      println("");
+      print("Ready: ");
 
-    xpos = 0;
-    ypos = 0;
-    serialCount = 0;
-    progress_bar = 0;
-    pixel_count = 0;
-    percentage   = 0;
-    drawLoopCount = frameCount;
-    lastPixelTime = millis() + 1000;
+      xpos = 0;
+      ypos = 0;
+      serialCount = 0;
+      progress_bar = 0;
+      pixel_count = 0;
+      percentage   = 0;
+      drawLoopCount = frameCount;
+      lastPixelTime = millis() + 1000;
 
-    state = 1;
+      state = 1;
+    } else {
+      if (millis() > beginTime) {
+        beginTime = millis() + 500;
+        dimmed = !dimmed;
+        if (dimmed) drawButton(buttonDimmed);
+        else drawButton(buttonStopped);
+      }
+    }
     break;
 
   case 1: // Console message, give server some time
     print("requesting image ");
     serial.write("S");
     delay(10);
-    beginTime = millis() + 1000;
+    beginTime = millis();
+    requestTime = millis() + 1000;
+    requestCount = 1;
     state = 2;
     break;
 
   case 2: // Get size and set start time for rendering duration report
-    if (millis() > beginTime) {
-      System.err.println(" - no response!");
-      state = 0;
+    if (millis() > requestTime) {
+      requestCount++;
+      print("*");
+      serial.clear();
+      serial.write("S");
+      if (requestCount > 32) {
+        requestCount = 0;
+        System.err.println(" - no response!");
+        state = 0;
+      }
+      requestTime = millis() + 1000;
     }
     if ( getSize() == true ) { // Go to next state when we have the size and bits per pixel
+      getFilename();
       flushBuffer(); // Precaution in case image header size increases in later versions
+      lastPixelTime = millis() + 1000;
       beginTime = millis();
       state = 3;
     }
@@ -177,7 +213,7 @@ void draw() {
 
   case 3: // Request pixels and render returned RGB values
     state = renderPixels(); // State will change when all pixels are rendered
-    
+
     // Request more pixels, changing the number requested allows the average transfer rate to be controlled
     // The pixel transfer rate is dependant on four things:
     //    1. The frame rate defined in this Processing sketch in setup()
@@ -191,17 +227,17 @@ void draw() {
     //serial.write("RRRR"); // 4 x NPIXELS more
     //serial.write("RR"); // 2 x NPIXELS more
     //serial.write("R"); // 1 x NPIXELS more
+    if (!running) state = 4;
     break;
 
   case 4: // Pixel receive time-out, flush serial buffer
-    println();
     flushBuffer();
     state = 6;
     break;
 
   case 5: // Save the image to the sketch folder (Ctrl+K to access)
     saveScreenshot();
-     saved_image_count++;
+    saved_image_count++;
     println("Saved image count = " + saved_image_count);
     if (bad_image_count > 0) System.err.println(" Bad image count = " + bad_image_count);
     drawLoopCount = frameCount; // Reset value ready for counting in step 6
@@ -240,13 +276,16 @@ void drawWindow()
   textSize(20);
   fill(0);
   text("Bodmer's TFT image viewer", width/2, height-6);
+
+  if (running) drawButton(buttonRunning);
+  else drawButton(buttonStopped);
 }
 
 void flushBuffer()
 {
   //println("Clearing serial pipe after a time-out");
   int clearTime = millis() + 50;
-  while ( millis() < clearTime ) serial.read();
+  while ( millis() < clearTime ) serial.clear();
 }
 
 boolean getSize()
@@ -280,6 +319,71 @@ boolean getSize()
     }
   }
   return false;
+}
+
+void saveScreenshot()
+{
+  println();
+  if (saved_image_count < max_allowed)
+  {
+  if (filename == "") filename = "tft_screen_" + (n++);
+  filename = filename  + image_type;
+  println("Saving image as \"" + filename + "\"");
+  if (save_border)
+  {
+    PImage partialSave = get(x_offset - border, y_offset - border, tft_width + 2*border, tft_height + 2*border);
+    partialSave.save(filename);
+  } else {
+    PImage partialSave = get(x_offset, y_offset, tft_width, tft_height);
+    partialSave.save(filename);
+  }
+
+  if (n>=max_images) n = 0;
+  }
+  else
+  {
+    System.err.println(max_allowed + " saved image count exceeded, restart the sketch");
+  }
+}
+
+void getFilename()
+{
+  int readTime = millis() + 20;
+  int inByte = 0;
+  filename = "";
+  while ( serial.available() > 0 && millis() < readTime && inByte != '.')
+  {
+    inByte = serial.read();
+    if (inByte == ' ') inByte = '_';
+    if ( unicodeCheck(inByte) ) filename += (char)inByte;
+  }
+
+  inByte = serial.read();
+       if (inByte == '@') filename += "_" + timeCode();
+  else if (inByte == '#') filename += "_" + saved_image_count%100;
+  else if (inByte == '%') filename += "_" + millis();
+  else if (inByte != '*') filename  = "";
+
+  inByte = serial.read();
+       if (inByte == 'j') image_type =".jpg";
+  else if (inByte == 'b') image_type =".bmp";
+  else if (inByte == 'p') image_type =".png";
+  else if (inByte == 't') image_type =".tif";
+}
+
+boolean unicodeCheck(int unicode)
+{
+  if (  unicode >= '0' && unicode <= '9' ) return true;
+  if ( (unicode >= 'A' && unicode <= 'Z' ) || (unicode >= 'a' && unicode <= 'z')) return true;
+  if (  unicode == '_' || unicode == '/' ) return true;
+  return false;
+}
+
+String timeCode()
+{
+ String timeCode  = (int)year() + "_" + (int)month()  + "_" + (int)day() + "_";
+        timeCode += (int)hour() + "_" + (int)minute() + "_" + (int)second(); 
+ return timeCode;
 }
 
 int renderPixels()
@@ -318,7 +422,7 @@ int renderPixels()
           if (ypos>=tft_height) {
             ypos = 0;
             if ((int)percentage <100) {
-              while(progress_bar++ < 64) print(" ");
+              while (progress_bar++ < 64) print(" ");
               percent(100);
             }
             println("Image fetch time = " + (millis()-beginTime)/1000.0 + " s");
@@ -371,24 +475,6 @@ void percent(float percentage)
   text(" [ " + (int)percentage + "% ]", 10, height-8);
 }
 
-void saveScreenshot()
-{
-  println();
-  String filename = "tft_screen_" + n  + image_type;
-  println("Saving image as \"" + filename);
-  if (save_border)
-  {
-    PImage partialSave = get(x_offset - border, y_offset - border, tft_width + 2*border, tft_height + 2*border);
-    partialSave.save(filename);
-  } else {
-    PImage partialSave = get(x_offset, y_offset, tft_width, tft_height);
-    partialSave.save(filename);
-  }
-
-  n = n + 1;
-  if (n>=max_images) n = 0;
-}
-
 boolean fadedImage()
 {
   int opacity = frameCount - drawLoopCount;  // So we get increasing fade
@@ -408,5 +494,42 @@ boolean fadedImage()
   return false;
 }
 
+void drawButton(color buttonColor)
+{
+  stroke(0);
+  fill(buttonColor);
+  rect(500 - 100, 540 - 26, 80, 24);
+  textAlign(CENTER);
+  textSize(20);
+  fill(0);
+  if (running) text(" Pause ", 500 - 60, height-7);
+  else text(" Run ", 500 - 60, height-7);
+}
+
+void buttonClicked()
+{
+  mouseClick = false;
+  if (running) {
+    running = false;
+    drawButton(buttonStopped);
+    System.err.println("");
+    System.err.println("Stopped - click 'Run' button: ");
+    //noStroke();
+    //fill(50);
+    //rect( (width - tft_width)/2, y_offset, tft_width, tft_height);
+    beginTime = millis() + 500;
+    dimmed = false;
+    state = 4;
+  } else {
+    running = true;
+    drawButton(buttonRunning);
+  }
+}
+
+void mousePressed() {
+  if (mouseX > (500 - 100) && mouseX < (500 - 20) && mouseY > (540 - 26) && mouseY < (540 - 2)) {
+    mouseClick = true;
+  }
+}
 
 */
