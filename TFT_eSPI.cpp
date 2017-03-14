@@ -332,7 +332,7 @@ void TFT_eSPI::writedata(uint8_t c)
 ***************************************************************************************/
   uint16_t  TFT_eSPI::readcommand16(uint8_t cmd_function, uint8_t index)
 {
-  uint32_t reg;
+  uint32_t reg = 0;
   reg |= (readcommand8(cmd_function, index + 0) <<  8);
   reg |= (readcommand8(cmd_function, index + 1) <<  0);
 
