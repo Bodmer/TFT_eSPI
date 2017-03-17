@@ -163,6 +163,12 @@
          colstart = 2;
          rowstart = 1;
        }
+       else if (tabcolor == INITR_GREENTAB3)
+       {
+         commandList(Rcmd2green);
+         colstart = 2;
+         rowstart = 3;
+       }
        else if (tabcolor == INITR_REDTAB)
        {
          commandList(Rcmd2red);

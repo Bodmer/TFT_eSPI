@@ -27,8 +27,14 @@
 //#define ST7735_INITB
 //#define ST7735_GREENTAB
 //#define ST7735_GREENTAB2
+//#define ST7735_GREENTAB3
 #define ST7735_REDTAB
 //#define ST7735_BLACKTAB
+
+// For ST7735 ONLY define the width and height in portrait orientation
+#define TFT_WIDTH  128
+#define TFT_HEIGHT 160
+//#define TFT_HEIGHT 128
 
 // ##################################################################################
 //

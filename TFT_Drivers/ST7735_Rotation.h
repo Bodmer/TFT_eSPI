@@ -12,7 +12,11 @@
        writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_RGB);
        colstart = 2;
        rowstart = 1;
-     } else {
+     } else if(tabcolor == INITR_GREENTAB3) {
+       writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
+       colstart = 2;
+       rowstart = 3;
+	 } else {
        writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
      }
       _width  = TFT_WIDTH;
@@ -25,7 +29,11 @@
        writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_RGB);
        colstart = 1;
        rowstart = 2;
-     } else {
+     } else if(tabcolor == INITR_GREENTAB3) {
+       writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
+       colstart = 3;
+       rowstart = 2;
+	 } else {
        writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
      }
       _width  = TFT_HEIGHT;
@@ -36,6 +44,10 @@
        writedata(TFT_MAD_RGB);
      } else if(tabcolor == INITR_GREENTAB2) {
        writedata(TFT_MAD_RGB);
+       colstart = 2;
+       rowstart = 1;
+     } else if(tabcolor == INITR_GREENTAB3) {
+       writedata(TFT_MAD_BGR);
        colstart = 2;
        rowstart = 1;
      } else {
@@ -51,7 +63,11 @@
        writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_RGB);
        colstart = 1;
        rowstart = 2;
-     } else {
+     } else if(tabcolor == INITR_GREENTAB3) {
+       writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_BGR);
+       colstart = 1;
+       rowstart = 2;
+	   } else {
        writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_BGR);
      }
       _width  = TFT_HEIGHT;

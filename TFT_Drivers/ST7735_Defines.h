@@ -1,7 +1,11 @@
 // Change the width and height if required (defined in portrait mode)
 // or use the constructor to over-ride defaults
-#define TFT_WIDTH  128
-#define TFT_HEIGHT 160
+#ifndef TFT_WIDTH
+  #define TFT_WIDTH  128
+#endif
+#ifndef TFT_HEIGHT
+  #define TFT_HEIGHT 160
+#endif
 
 
 // Enumerate the different configurations
@@ -9,6 +13,7 @@
 #define INITR_REDTAB    0x1
 #define INITR_BLACKTAB  0x2
 #define INITR_GREENTAB2 0x3 // Use if you get random pixels on two edges of green tab display
+#define INITR_GREENTAB3 0x4 // Use if you get random pixels on edge(s) of 128x128 screen
 #define INITB           0xB
 
 
@@ -21,7 +26,10 @@
   
 #elif defined (ST7735_GREENTAB2)
   #define TAB_COLOUR INITR_GREENTAB2
-  
+
+#elif defined (ST7735_GREENTAB3)
+  #define TAB_COLOUR INITR_GREENTAB3
+
 #elif defined (ST6635_REDTAB)
   #define TAB_COLOUR INITR_REDTAB
   

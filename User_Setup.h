@@ -14,10 +14,29 @@
 // ##################################################################################
 
 // Only define one driver, the other ones must be commented out
-//#define ILI9341_DRIVER
-#define ST7735_DRIVER
+#define ILI9341_DRIVER
+//#define ST7735_DRIVER
 //#define ILI9163_DRIVER
 //#define S6D02A1_DRIVER
+
+// For ST7735 ONLY, define the type of display, originally this was based on the
+// colour of the tab on the screen protector film but this is not always true, so try
+// out the different options below if the screen does not display graphics correctly,
+// e.g. colours wrong, mirror images, or tray pixels at the edges.
+// Comment out ALL BUT ONE of these options for a ST7735 display driver, save this
+// this User_Setup file, then rebuild and upload the sketch to the board again:
+
+//#define ST7735_INITB
+//#define ST7735_GREENTAB
+//#define ST7735_GREENTAB2
+//#define ST7735_GREENTAB3
+//#define ST7735_REDTAB
+//#define ST7735_BLACKTAB
+
+// For ST7735 ONLY, define the pixel width and height in portrait orientation
+//#define TFT_WIDTH  128
+//#define TFT_HEIGHT 160
+//#define TFT_HEIGHT 128
 
 // ##################################################################################
 //

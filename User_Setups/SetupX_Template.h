@@ -32,6 +32,11 @@
 //#define ST7735_REDTAB
 //#define ST7735_BLACKTAB
 
+// For ST7735 ONLY define the width and height in portrait orientation
+//#define TFT_WIDTH  128
+//#define TFT_HEIGHT 160
+//#define TFT_HEIGHT 128
+
 // ##################################################################################
 //
 // Section 1. Define the pins that are used to interface with the display here

@@ -1438,7 +1438,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t 
   addr_col = 0xFFFF;
   addr_row = 0xFFFF;
   
-#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (GREENTAB2))
+#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (ST7735_GREENTAB2) || defined (ST7735_GREENTAB3))
   xs+=colstart;
   xe+=colstart;
   ys+=rowstart;
@@ -1520,7 +1520,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   addr_col = 0xFFFF;
   addr_row = 0xFFFF;
 
-#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (GREENTAB2))
+#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (ST7735_GREENTAB2) || defined (ST7735_GREENTAB3))
   x0+=colstart;
   x1+=colstart;
   y0+=rowstart;
@@ -1576,7 +1576,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
   addr_col = 0xFFFF;
   addr_row = 0xFFFF;
   
-#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (GREENTAB2))
+#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (ST7735_GREENTAB2) || defined (ST7735_GREENTAB3))
   xs+=colstart;
   xe+=colstart;
   ys+=rowstart;
@@ -1641,7 +1641,7 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   addr_col = 0xFFFF;
   addr_row = 0xFFFF;
 
-#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (GREENTAB2))
+#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (ST7735_GREENTAB2) || defined (ST7735_GREENTAB3))
   x0+=colstart;
   x1+=colstart;
   y0+=rowstart;
@@ -1690,7 +1690,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
   // Faster range checking, possible because x and y are unsigned
   if ((x >= _width) || (y >= _height)) return;
   
-#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (GREENTAB2))
+#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (ST7735_GREENTAB2) || defined (ST7735_GREENTAB3))
   x+=colstart;
   y+=rowstart;
 #endif
@@ -1774,7 +1774,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
   if ((x >= _width) || (y >= _height)) return;
   spi_begin();
 
-#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (GREENTAB2))
+#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (ST7735_GREENTAB2) || defined (ST7735_GREENTAB3))
   x+=colstart;
   y+=rowstart;
 #endif
