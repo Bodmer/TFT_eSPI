@@ -14,6 +14,7 @@
   size.
 
   Created by Bodmer 2/12/16
+  Bodmer: Added RPi 16 bit display support
  ****************************************************/
 
 #include "TFT_eSPI.h"
@@ -25,6 +26,14 @@
 #include "wiring_private.h"
 #include <SPI.h>
 
+// If it is a 16bit serial display we must transfer 16 bits every time
+#ifdef RPI_ILI9486_DRIVER
+  #define SEND_16_BITS
+  #define CMD_BITS 16-1
+#else
+  #define CMD_BITS 8-1
+#endif
+
 // If the SPI library has transaction support, these functions
 // establish settings and protect from interference from other
 // libraries.  Otherwise, they simply do nothing.
@@ -32,7 +41,11 @@
 inline void TFT_eSPI::spi_begin(void){
 #ifdef SPI_HAS_TRANSACTION
   #ifdef SUPPORT_TRANSACTIONS
-  SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
+    #ifdef SET_SPI_TO_LSB_FIRST
+	SPI.beginTransaction(SPISettings(SPI_FREQUENCY, LSBFIRST, SPI_MODE0));
+	#else
+    SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
+    #endif
   #endif
 #endif
 }
@@ -140,7 +153,11 @@ void TFT_eSPI::init(void)
   SPI.begin(); // This will set MISO to input
 
 #ifndef SUPPORT_TRANSACTIONS
-  SPI.setBitOrder(MSBFIRST);
+  #ifdef SET_SPI_TO_LSB_FIRST
+    SPI.setBitOrder(LSBFIRST);
+  #else
+    SPI.setBitOrder(MSBFIRST);
+  #endif
   SPI.setDataMode(SPI_MODE0);
   SPI.setFrequency(SPI_FREQUENCY);
 #endif
@@ -188,6 +205,9 @@ void TFT_eSPI::init(void)
 
 #elif defined (S6D02A1_DRIVER)
      #include "TFT_Drivers\S6D02A1_Init.h"
+	 
+#elif defined (RPI_ILI9486_DRIVER)
+     #include "TFT_Drivers\RPI_ILI9486_Init.h"
 #endif
 
   spi_end();
@@ -217,7 +237,10 @@ void TFT_eSPI::setRotation(uint8_t m)
 #elif defined (S6D02A1_DRIVER)
      #include "TFT_Drivers\S6D02A1_Rotation.h"
 
-#endif
+#elif defined (RPI_ILI9486_DRIVER)
+     #include "TFT_Drivers\RPI_ILI9486_Rotation.h"
+
+	 #endif
 
   spi_end();
 
@@ -280,6 +303,9 @@ void TFT_eSPI::writecommand(uint8_t c)
 {
   DC_C;
   CS_L;
+  #ifdef SEND_16_BITS
+    SPI.transfer(0);
+  #endif
   SPI.transfer(c);
   CS_H;
   DC_D;
@@ -293,6 +319,9 @@ void TFT_eSPI::writecommand(uint8_t c)
 void TFT_eSPI::writedata(uint8_t c)
 {
   CS_L;
+  #ifdef SEND_16_BITS
+    SPI.transfer(0);
+  #endif
   SPI.transfer(c);
   CS_H;
 }
@@ -1201,22 +1230,25 @@ spi_begin();
     setAddrWindow(x, y, x+5, y+8);
     for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(font + (c * 5) + i);
     column[5] = 0;
-
+    uint32_t spimask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+	SPI1U1 = spimask | (15 << SPILMOSI) | (15 << SPILMISO);
     for (int8_t j = 0; j < 8; j++) {
       for (int8_t k = 0; k < 5; k++ ) {
         if (column[k] & mask) {
-          //SPI.transfer(color >> 8);
-          SPI.write16(color);
+          SPI1W0 = (color >> 8) | (color << 8);
         }
         else {
-          //SPI.transfer(bg >> 8);
-          SPI.write16(bg);
+          SPI1W0 = (bg >> 8) | (bg << 8);
         }
+		SPI1CMD |= SPIBUSY;
+		while(SPI1CMD & SPIBUSY) {}
       }
 
       mask <<= 1;
-      //SPI.transfer(bg >> 8);
-      SPI.write16(bg);
+
+	  SPI1W0 = (bg >> 8) | (bg << 8);
+      SPI1CMD |= SPIBUSY;
+      while(SPI1CMD & SPIBUSY) {}
     }
     CS_H;
   }
@@ -1430,7 +1462,7 @@ void TFT_eSPI::setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 ***************************************************************************************/
 // Chip select stays low, use setWindow() from sketches
 
-#ifdef ESP8266
+#if defined (ESP8266) && !defined (RPI_ILI9486_DRIVER)
 inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 {
   spi_begin();
@@ -1452,7 +1484,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t 
   uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
   mask = SPI1U1 & mask;
 
-  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
   SPI1W0 = TFT_CASET;
   SPI1CMD |= SPIBUSY;
@@ -1484,7 +1516,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t 
   // Row addr set
   DC_C;
 
-  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
   SPI1W0 = TFT_PASET;
   SPI1CMD |= SPIBUSY;
@@ -1501,10 +1533,118 @@ inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t 
   // write to RAM
   DC_C;
 
-  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
   SPI1W0 = TFT_RAMWR;
   SPI1CMD |= SPIBUSY;
   while(SPI1CMD & SPIBUSY) {}
+
+  DC_D;
+
+  spi_end();
+}
+
+#elif defined (ESP8266) && defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits
+
+inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
+{
+  spi_begin();
+
+  addr_col = 0xFFFF;
+  addr_row = 0xFFFF;
+  
+  // Column addr set
+  DC_C;
+  CS_L;
+
+  uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+  mask = SPI1U1 & mask;
+
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+
+  SPI1W0 = TFT_CASET<<8;
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  DC_D;
+
+  uint8_t xBin[] = { 0, (uint8_t) (xs>>8), 0, (uint8_t) (xs>>0), 0, (uint8_t) (xe>>8), 0, (uint8_t) (xe>>0), };
+  SPI.writePattern(&xBin[0], 8, 1);
+
+  // Row addr set
+  DC_C;
+
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+
+  SPI1W0 = TFT_PASET<<8;
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  DC_D;
+
+  uint8_t yBin[] = { 0, (uint8_t) (ys>>8), 0, (uint8_t) (ys>>0), 0, (uint8_t) (ye>>8), 0, (uint8_t) (ye>>0), };
+  SPI.writePattern(&yBin[0], 8, 1);
+
+  // write to RAM
+  DC_C;
+
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+  SPI1W0 = TFT_RAMWR<<8;
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  DC_D;
+
+  spi_end();
+}
+
+#else // This is for the ESP32 where we cannot use low level register access (yet)
+
+#if defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits
+inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+{
+  spi_begin();
+
+  addr_col = 0xFFFF;
+  addr_row = 0xFFFF;
+
+#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (ST7735_GREENTAB2) || defined (ST7735_GREENTAB3))
+  x0+=colstart;
+  x1+=colstart;
+  y0+=rowstart;
+  y1+=rowstart;
+#endif
+
+  // Column addr set
+  DC_C;
+  CS_L;
+
+  SPI.write16(TFT_CASET);
+
+  DC_D;
+
+  SPI.write16(x0 >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  SPI.write16(x0);
+
+  SPI.write16(x1 >> 8);
+  SPI.write16(x1);
+  
+  // Row addr set
+  DC_C;
+
+  SPI.write16(TFT_PASET);
+
+  DC_D;
+
+  SPI.write16(y0 >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  SPI.write16(y0);
+  
+  SPI.write16(y1 >> 8);
+  SPI.write16(y1);
+  
+  // write to RAM
+  DC_C;
+
+  SPI.write16(TFT_RAMWR);
 
   DC_D;
 
@@ -1559,8 +1699,8 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 
   spi_end();
 }
-
-#endif
+#endif // end RPI_ILI9486_DRIVER check
+#endif // end ESP32 check
 
 
 /***************************************************************************************
@@ -1590,7 +1730,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
   uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
   mask = SPI1U1 & mask;
 
-  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
   SPI1W0 = TFT_CASET;
   SPI1CMD |= SPIBUSY;
@@ -1607,7 +1747,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
   // Row addr set
   DC_C;
 
-  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
   SPI1W0 = TFT_PASET;
   SPI1CMD |= SPIBUSY;
@@ -1624,7 +1764,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
   // read from RAM
   DC_C;
 
-  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
   SPI1W0 = TFT_RAMRD;
   SPI1CMD |= SPIBUSY;
   while(SPI1CMD & SPIBUSY) {}
@@ -1632,6 +1772,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
   DC_D;
   //spi_end();
 }
+
 #else
 
 void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
@@ -1684,7 +1825,7 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 ** Function name:           drawPixel
 ** Description:             push a single pixel at an arbitrary position
 ***************************************************************************************/
-#ifdef ESP8266
+#if defined (ESP8266)
 void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 {
   // Faster range checking, possible because x and y are unsigned
@@ -1706,19 +1847,24 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
     DC_C;
 
-    SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
-    SPI1W0 = TFT_CASET;
+    SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = TFT_CASET<<(CMD_BITS + 1 - 8);
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
 
     DC_D;
 
+#if defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits per byte
+    uint8_t cBin[] = { 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0)};
+    SPI.writePattern(&cBin[0], 4, 2);
+#else
     SPI1U1 = mask | (31 << SPILMOSI) | (31 << SPILMISO);
     // Load the two coords as a 32 bit value and shift in one go
 	uint32_t xswap = (x >> 8) | (uint16_t)(x << 8);
     SPI1W0 = xswap | (xswap << 16);
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
+#endif
 
     addr_col = x;
   }
@@ -1728,28 +1874,34 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
     DC_C;
 
-    SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+    SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
-    SPI1W0 = TFT_PASET;
+    SPI1W0 = TFT_PASET<<(CMD_BITS + 1 - 8);
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
+
     DC_D;
 
+#if defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits per byte
+    uint8_t cBin[] = { 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0)};
+    SPI.writePattern(&cBin[0], 4, 2);
+#else
     SPI1U1 = mask | (31 << SPILMOSI) | (31 << SPILMISO);
     // Load the two coords as a 32 bit value and shift in one go
 	uint32_t yswap = (y >> 8) | (uint16_t)(y << 8);
     SPI1W0 = yswap | (yswap << 16);
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
+#endif
 
     addr_row = y;
   }
 
   DC_C;
 
-  SPI1U1 = mask | (7 << SPILMOSI) | (7 << SPILMISO);
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
-  SPI1W0 = TFT_RAMWR;
+  SPI1W0 = TFT_RAMWR<<(CMD_BITS + 1 - 8);
   SPI1CMD |= SPIBUSY;
   while(SPI1CMD & SPIBUSY) {}
 
@@ -1768,7 +1920,69 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
 #else
 
-	void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
+#if defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits
+
+void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
+{
+  // Faster range checking, possible because x and y are unsigned
+  if ((x >= _width) || (y >= _height)) return;
+  spi_begin();
+
+  CS_L;
+
+  // No need to send x if it has not changed (speeds things up)
+  if (addr_col != x) {
+
+    DC_C;
+
+    SPI.write16(TFT_CASET<<8);
+
+    DC_D;
+
+    SPI.write16(x >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    SPI.write16(x);
+
+    SPI.write16(x >> 8);
+    SPI.write16(x);
+
+
+    addr_col = x;
+  }
+
+  // No need to send y if it has not changed (speeds things up)
+  if (addr_row != y) {
+
+    DC_C;
+
+    SPI.write16(TFT_PASET<<8);
+
+    DC_D;
+
+    SPI.write16(y >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    SPI.write16(y);
+
+    SPI.write16(y >> 8);
+    SPI.write16(y);
+
+    addr_row = y;
+  }
+
+  DC_C;
+
+  SPI.write16(TFT_RAMWR<<8);
+
+  DC_D;
+
+  SPI.write16((color >> 8) | (color << 8));
+
+  CS_H;
+
+  spi_end();
+}
+
+#else
+
+void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 {
   // Faster range checking, possible because x and y are unsigned
   if ((x >= _width) || (y >= _height)) return;
@@ -1827,7 +2041,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
   spi_end();
 }
-
+#endif
 #endif
 
 

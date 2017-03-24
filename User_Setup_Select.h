@@ -6,7 +6,7 @@
 
 // The advantage of this hardware configuration method is that the examples provided
 // with the library should work with different setups immediately without any other
-// changes being needed. It also improves the poratability of users sketches to other
+// changes being needed. It also improves the portability of users sketches to other
 // hardware configurations and compatible libraries.
 //
 // Create a shortcut to this file on your desktop to permit quick access for editting.
@@ -45,4 +45,6 @@
      #include <TFT_Drivers/ILI9163_Defines.h>
 #elif defined (S6D02A1_DRIVER)
      #include <TFT_Drivers/S6D02A1_Defines.h>
+#elif defined (RPI_ILI9486_DRIVER)
+     #include <TFT_Drivers/RPI_ILI9486_Defines.h>
 #endif
