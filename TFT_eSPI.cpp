@@ -74,6 +74,10 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   pinMode(TFT_CS, OUTPUT);
 #endif
 
+#ifdef TFT_WR
+  digitalWrite(TFT_WR, HIGH); // Chip select high (inactive)
+  pinMode(TFT_WR, OUTPUT);
+#endif
 
   digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
   pinMode(TFT_DC, OUTPUT);
@@ -149,6 +153,10 @@ void TFT_eSPI::init(void)
   cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
   dcport    = portOutputRegister(digitalPinToPort(TFT_DC));
   dcpinmask = (uint32_t) digitalPinToBitMask(TFT_DC);
+
+#ifdef TFT_WR
+  wrpinmask = (uint32_t) digitalPinToBitMask(TFT_WR);
+#endif
 
   SPI.begin(); // This will set MISO to input
 
@@ -1462,7 +1470,7 @@ void TFT_eSPI::setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 ***************************************************************************************/
 // Chip select stays low, use setWindow() from sketches
 
-#if defined (ESP8266) && !defined (RPI_ILI9486_DRIVER)
+#if defined (ESP8266) && !defined (RPI_WRITE_STROBE) && !defined (RPI_ILI9486_DRIVER)
 inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 {
   spi_begin();
@@ -1543,7 +1551,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t 
   spi_end();
 }
 
-#elif defined (ESP8266) && defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits
+#elif defined (ESP8266) && !defined (RPI_WRITE_STROBE) && defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits
 
 inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 {
@@ -1607,12 +1615,97 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   addr_col = 0xFFFF;
   addr_row = 0xFFFF;
 
-#if defined (ST7735_DRIVER) && (defined (ST7735_GREENTAB) || defined (ST7735_GREENTAB2) || defined (ST7735_GREENTAB3))
-  x0+=colstart;
-  x1+=colstart;
-  y0+=rowstart;
-  y1+=rowstart;
-#endif
+  CS_L;
+  uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+  mask = SPI1U1 & mask;
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+
+  // Column addr set
+  DC_C;
+
+    //SPI.write16(TFT_CASET);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = TFT_CASET<<(CMD_BITS + 1 - 8);
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+    DC_D;
+
+    //SPI.write16(x >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = x0 >> 0;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(x);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = x0 << 8;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(x >> 8);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = x1 >> 0;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(x);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = x1 << 8;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	
+  // Row addr set
+  DC_C;
+
+    //SPI.write16(TFT_PASET);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = TFT_PASET<<(CMD_BITS + 1 - 8);
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+    DC_D;
+
+    //SPI.write16(y >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = y0 >> 0;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(y);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = y0 << 8;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(y >> 8);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = y1 >> 0;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(y);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = y1 << 8;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	
+  // write to RAM
+  DC_C;
+
+  SPI1W0 = TFT_RAMWR<<(CMD_BITS + 1 - 8);
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  DC_D;
+
+  spi_end();
+}
+/*
+inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+{
+  spi_begin();
+
+  addr_col = 0xFFFF;
+  addr_row = 0xFFFF;
 
   // Column addr set
   DC_C;
@@ -1650,7 +1743,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 
   spi_end();
 }
-
+*/
 #else
 
 inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
@@ -1708,7 +1801,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 ** Description:             define an area to read a stream of pixels
 ***************************************************************************************/
 // Chip select stays low
-#ifdef ESP8266
+#if defined (ESP8266) && !defined (RPI_WRITE_STROBE)
 void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 {
   //spi_begin();
@@ -1825,7 +1918,7 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 ** Function name:           drawPixel
 ** Description:             push a single pixel at an arbitrary position
 ***************************************************************************************/
-#if defined (ESP8266)
+#if defined (ESP8266) && !defined (RPI_WRITE_STROBE)
 void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 {
   // Faster range checking, possible because x and y are unsigned
@@ -1929,51 +2022,100 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
   spi_begin();
 
   CS_L;
-
+  uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+  mask = SPI1U1 & mask;
+  SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != x) {
-
     DC_C;
 
-    SPI.write16(TFT_CASET<<8);
-
+    //SPI.write16(TFT_CASET);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = TFT_CASET<<(CMD_BITS + 1 - 8);
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
     DC_D;
 
-    SPI.write16(x >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    SPI.write16(x);
-
-    SPI.write16(x >> 8);
-    SPI.write16(x);
-
-
+    //SPI.write16(x >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = x >> 0;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(x);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = x << 8;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(x >> 8);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = x >> 0;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(x);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = x << 8;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	
     addr_col = x;
   }
 
   // No need to send y if it has not changed (speeds things up)
   if (addr_row != y) {
-
     DC_C;
 
-    SPI.write16(TFT_PASET<<8);
-
+    //SPI.write16(TFT_PASET);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = TFT_PASET<<(CMD_BITS + 1 - 8);
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
     DC_D;
 
-    SPI.write16(y >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    SPI.write16(y);
-
-    SPI.write16(y >> 8);
-    SPI.write16(y);
-
+    //SPI.write16(y >> 8);  // Not tested on ESP32 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = y >> 0;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(y);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = y << 8;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(y >> 8);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = y >> 0;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	//DC_D; // Small delay
+    //SPI.write16(y);
+    //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+    SPI1W0 = y << 8;
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+	
     addr_row = y;
   }
 
   DC_C;
 
-  SPI.write16(TFT_RAMWR<<8);
+  //SPI.write16(TFT_RAMWR);
+  //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+  SPI1W0 = TFT_RAMWR<<(CMD_BITS + 1 - 8);
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
 
   DC_D;
 
-  SPI.write16((color >> 8) | (color << 8));
+  //SPI.write16((color));// >> 8) | (color << 8));
+  //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
+  SPI1W0 = (color >> 8) | (color << 8);
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
 
   CS_H;
 
@@ -2074,8 +2216,14 @@ void TFT_eSPI::pushColor(uint16_t color, uint16_t len)
   CS_L;
 
   uint8_t colorBin[] = { (uint8_t) (color >> 8), (uint8_t) color };
+
+#ifdef RPI_WRITE_STROBE
+  if(len) SPI.writePattern(&colorBin[0], 2, 1); len--;
+  while(len--) {WR_L; WR_H;}
+#else
   while(len>32) { SPI.writePattern(&colorBin[0], 2, 32); len-=32;}
   SPI.writePattern(&colorBin[0], 2, len);
+#endif
 
   CS_H;
 
@@ -2118,10 +2266,14 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
 
   CS_L;
 
-      while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
-      if (len) SPI.writePattern(data, len, 1);
+#if defined (RPI_WRITE_STROBE)
+  while ( len ) {SPI.writePattern(data, 2, 1); data += 2; len -= 2; }
+#else
+  while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
+  if (len) SPI.writePattern(data, len, 1);
+#endif
 
-	  CS_H;
+  CS_H;
 
   spi_end();
 }
@@ -2134,10 +2286,11 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
 // Bresenham's algorithm - thx wikipedia - speed enhanced by Bodmer to use
 // an eficient FastH/V Line draw routine for line segments of 2 pixels or more
 
-#ifdef ESP32
+#if defined (ESP32) || defined (RPI_WRITE_STROBE)
 
 void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color)
 {
+
   boolean steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
     swap(x0, y0);
@@ -2150,7 +2303,6 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
   }
 
   int32_t dx = x1 - x0, dy = abs(y1 - y0);;
-
 
   int32_t err = dx >> 1, ystep = -1, xs = x0, dlen = 0;
 
@@ -2281,7 +2433,7 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 				if ((y0 < 0) || (y0 >= _height)) break;
 				err += dx;
 				while(SPI1CMD & SPIBUSY) {}
-                     setAddrWindow(x0+1, y0, _width, y0);
+                setAddrWindow(x0+1, y0, _width, y0);
 				SPI1U1 = mask;
 			}
 		}
@@ -2298,6 +2450,7 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 ** Function name:           drawFastVLine
 ** Description:             draw a vertical line
 ***************************************************************************************/
+#if defined (ESP8266) && !defined (RPI_WRITE_STROBE)
 void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 {
   // Rudimentary clipping
@@ -2315,13 +2468,38 @@ void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 
   spi_end();
 }
+#else
+void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
+{
+  // Rudimentary clipping
+  if ((x >= _width) || (y >= _height) || (h < 1)) return;
+  if ((y + h - 1) >= _height) h = _height - y;
 
-//Done! Total = 1028742
+  spi_begin();
+
+  setAddrWindow(x, y, x, y + h - 1);
+	
+#ifdef RPI_WRITE_STROBE
+  SPI1W0 = (color >> 8) | (color << 8);
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+  h--;
+  while(h--) {WR_L; WR_H;}
+#else
+  while(h--) SPI.write16(color);
+#endif
+
+  CS_H;
+
+  spi_end();
+}
+#endif
 
 /***************************************************************************************
 ** Function name:           drawFastHLine
 ** Description:             draw a horizontal line
 ***************************************************************************************/
+#if defined (ESP8266) && !defined (RPI_WRITE_STROBE)
 void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 {
   // Rudimentary clipping
@@ -2339,12 +2517,37 @@ void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 
   spi_end();
 }
+#else
+void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
+{
+  // Rudimentary clipping
+  if ((x >= _width) || (y >= _height) || (w < 1)) return;
+  if ((x + w - 1) >= _width)  w = _width - x;
 
+  spi_begin();
+  setAddrWindow(x, y, x + w - 1, y);
+
+#ifdef RPI_WRITE_STROBE
+  SPI1W0 = (color >> 8) | (color << 8);
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+  w--;
+  while(w--) {WR_L; WR_H;}
+#else
+  while(w--) SPI.write16(color);
+#endif
+
+  CS_H;
+
+  spi_end();
+}
+#endif
 
 /***************************************************************************************
 ** Function name:           fillRect
 ** Description:             draw a filled rectangle
 ***************************************************************************************/
+#if defined (ESP8266) && !defined (RPI_WRITE_STROBE)
 void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
   // rudimentary clipping (drawChar w/big text requires this)
@@ -2363,7 +2566,31 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
 
   spi_end();
 }
+#else
+void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
+{
+  // rudimentary clipping (drawChar w/big text requires this)
+  if ((x > _width) || (y > _height) || (w < 1) || (h < 1)) return;
+  if ((x + w - 1) > _width)  w = _width  - x;
+  if ((y + h - 1) > _height) h = _height - y;
 
+  spi_begin();
+  setAddrWindow(x, y, x + w - 1, y + h - 1);
+
+  uint32_t n = (uint32_t)w * (uint32_t)h;
+
+#ifdef RPI_WRITE_STROBE
+  if(n) {SPI.write16(color); n--;}
+  while(n--) {WR_L; WR_H;}
+#else
+  while(n--) SPI.write16(color);
+#endif
+
+  CS_H;
+
+  spi_end();
+}
+#endif
 
 /***************************************************************************************
 ** Function name:           color565
@@ -2753,13 +2980,23 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
         if (line & 0x80) {
           line &= 0x7F;
           line++; w -= line;
+#ifdef RPI_WRITE_STROBE
+          SPI.writePattern(&textcolorBin[0], 2, 1); line--;
+          while(line--) {WR_L; WR_H;}
+#else
           while(line>32) { SPI.writePattern(&textcolorBin[0], 2, 32); line-=32;}
           SPI.writePattern(&textcolorBin[0], 2, line);
+#endif
         }
         else {
           line++; w -= line;
+#ifdef RPI_WRITE_STROBE
+          SPI.writePattern(&textbgcolorBin[0], 2, 1); line--;
+          while(line--) {WR_L; WR_H;}
+#else
           while(line>32) { SPI.writePattern(&textbgcolorBin[0], 2, 32); line-=32;}
           SPI.writePattern(&textbgcolorBin[0], 2, line);
+#endif
         }
       }
       CS_H;

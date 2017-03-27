@@ -22,6 +22,8 @@
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file configured for my ST7735
 //#include <User_Setups/Setup3_ILI9163.h>  // Setup file configured for my ILI9163
 //#include <User_Setups/Setup4_S6D02A1.h>  // Setup file configured for my S6D02A1
+//#include <User_Setups/Setup5_RPi_ILI9486.h>     // Setup file configured for my stock RPi TFT
+//#include <User_Setups/Setup6_RPi_Wr_ILI9486.h>  // Setup file configured for my modified RPi TFT
 
 //#include <User_Setups/SetupX_Template.h> // Setup file template for copying/editting
 

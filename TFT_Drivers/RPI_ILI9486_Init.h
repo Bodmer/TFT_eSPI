@@ -63,7 +63,7 @@
     writecommand(0x20);                     // display inversion OFF
   
     writecommand(0x36);
-    writedata(0x0A);
+    writedata(0x48);
 
     writecommand(0x29);                     // display on
     delay(150);

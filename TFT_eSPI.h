@@ -92,6 +92,11 @@
   #endif
 #endif
 
+#ifdef TFT_WR
+  #define WR_L GPOC=wrpinmask
+  #define WR_H GPOS=wrpinmask
+#endif
+
 // We can include all the free fonts and they will only be built into
 // the sketch if they are used
 
@@ -405,7 +410,7 @@ inline void spi_end() __attribute__((always_inline));
 
   volatile uint32_t *dcport, *csport;//, *mosiport, *clkport, *rsport;
 
-  uint32_t  cspinmask, dcpinmask;//, mosipinmask, clkpinmask;
+  uint32_t  cspinmask, dcpinmask, wrpinmask;//, mosipinmask, clkpinmask;
 
   //uint8_t  fifoBuffer[64]; // SPI graphics pipeline buffer - not used yet
 

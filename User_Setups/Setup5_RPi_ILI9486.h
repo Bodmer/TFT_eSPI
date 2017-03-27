@@ -14,11 +14,11 @@
 // ##################################################################################
 
 // Only define one driver, the other ones must be commented out
-#define ILI9341_DRIVER
+//#define ILI9341_DRIVER
 //#define ST7735_DRIVER
 //#define ILI9163_DRIVER
 //#define S6D02A1_DRIVER
-//#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
+#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
 
 // For ST7735 ONLY, define the type of display, originally this was based on the
 // colour of the tab on the screen protector film but this is not always true, so try
@@ -125,9 +125,12 @@
 
 // ##################################################################################
 //
-// Section 4. Not used section
+// Section 4. Define the character to be used to detemine the text bounding box for datum changes
 //
 // ##################################################################################
+
+#define FF_HEIGHT '/'  // '/' character used to set free font height above the baseline
+#define FF_BOTTOM 'y'  // 'y' character used to set free font height below baseline
 
 
 // ##################################################################################
@@ -144,8 +147,8 @@
 // #define SPI_FREQUENCY   1000000
 // #define SPI_FREQUENCY   5000000
 // #define SPI_FREQUENCY  10000000
-// #define SPI_FREQUENCY  20000000
- #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
+ #define SPI_FREQUENCY  20000000
+// #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
 // #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000
 

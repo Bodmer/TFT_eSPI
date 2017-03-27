@@ -3,6 +3,10 @@
 #define TFT_WIDTH  320
 #define TFT_HEIGHT 480
 
+// For Raspberry Pi ILI9486 only with a modified board to add a write strobe:
+#ifdef TFT_WR
+  #define RPI_WRITE_STROBE
+#endif
 
 // Color definitions for backwards compatibility with old sketches
 // use colour definitions like TFT_BLACK to make sketches more portable
