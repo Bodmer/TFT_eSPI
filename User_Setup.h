@@ -76,9 +76,9 @@
 // ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR SETUP ######
 
 // ModeMCU
-//#define TFT_CS   D8  // Chip select control pin D8
-//#define TFT_DC   D0  // Data Command control pin
-//#define TFT_RST  D4  // Reset pin (could connect to NodeMCU RST, see next line)
+#define TFT_CS   D8  // Chip select control pin D8
+#define TFT_DC   D3  // Data Command control pin
+#define TFT_RST  D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
 //#define TFT_WR D2    // Write strobe for modified Raspberry Pi TFT only
