@@ -203,19 +203,19 @@ void TFT_eSPI::init(void)
   
   // This loads the driver specific initialisation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
 #if   defined (ILI9341_DRIVER)
-     #include "TFT_Drivers\ILI9341_Init.h"
+     #include "TFT_Drivers/ILI9341_Init.h"
 
 #elif defined (ST7735_DRIVER)
-     #include "TFT_Drivers\ST7735_Init.h"
+     #include "TFT_Drivers/ST7735_Init.h"
 
 #elif defined (ILI9163_DRIVER)
-     #include "TFT_Drivers\ILI9163_Init.h"
+     #include "TFT_Drivers/ILI9163_Init.h"
 
 #elif defined (S6D02A1_DRIVER)
-     #include "TFT_Drivers\S6D02A1_Init.h"
+     #include "TFT_Drivers/S6D02A1_Init.h"
 	 
 #elif defined (RPI_ILI9486_DRIVER)
-     #include "TFT_Drivers\RPI_ILI9486_Init.h"
+     #include "TFT_Drivers/RPI_ILI9486_Init.h"
 #endif
 
   spi_end();
@@ -234,19 +234,19 @@ void TFT_eSPI::setRotation(uint8_t m)
 
     // This loads the driver specific rotation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
 #if   defined (ILI9341_DRIVER)
-     #include "TFT_Drivers\ILI9341_Rotation.h"
+     #include "TFT_Drivers/ILI9341_Rotation.h"
 
 #elif defined (ST7735_DRIVER)
-     #include "TFT_Drivers\ST7735_Rotation.h"
+     #include "TFT_Drivers/ST7735_Rotation.h"
 
 #elif defined (ILI9163_DRIVER)
-     #include "TFT_Drivers\ILI9163_Rotation.h"
+     #include "TFT_Drivers/ILI9163_Rotation.h"
 
 #elif defined (S6D02A1_DRIVER)
-     #include "TFT_Drivers\S6D02A1_Rotation.h"
+     #include "TFT_Drivers/S6D02A1_Rotation.h"
 
 #elif defined (RPI_ILI9486_DRIVER)
-     #include "TFT_Drivers\RPI_ILI9486_Rotation.h"
+     #include "TFT_Drivers/RPI_ILI9486_Rotation.h"
 
 	 #endif
 
