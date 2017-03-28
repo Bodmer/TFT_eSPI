@@ -293,10 +293,6 @@ class TFT_eSPI : public Print {
 
            fillScreen(uint32_t color),
 
-           writeEnd(void),
-           backupSPCR(void),
-           restoreSPCR(void),
-
            drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
            drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
            drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
@@ -411,8 +407,6 @@ inline void spi_end() __attribute__((always_inline));
   volatile uint32_t *dcport, *csport;//, *mosiport, *clkport, *rsport;
 
   uint32_t  cspinmask, dcpinmask, wrpinmask;//, mosipinmask, clkpinmask;
-
-  //uint8_t  fifoBuffer[64]; // SPI graphics pipeline buffer - not used yet
 
   uint32_t lastColor = 0xFFFF;
 

@@ -67,7 +67,7 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 {
 
 // The control pins are deliberately set to the inactive state (CS high) as setup()
-// might call and initialise another SPI peripherals which would could cause conflicts
+// might call and initialise other SPI peripherals which would could cause conflicts
 // if CS is floating or undefined.
 #ifdef TFT_CS
   digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
@@ -75,12 +75,14 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 #endif
 
 #ifdef TFT_WR
-  digitalWrite(TFT_WR, HIGH); // Chip select high (inactive)
+  digitalWrite(TFT_WR, HIGH); // Set write strobe high (inactive)
   pinMode(TFT_WR, OUTPUT);
 #endif
 
+#ifdef TFT_DC
   digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
   pinMode(TFT_DC, OUTPUT);
+#endif
 
 #ifdef TFT_RST
   if (TFT_RST >= 0) {
@@ -149,11 +151,16 @@ void TFT_eSPI::begin(void)
 ***************************************************************************************/
 void TFT_eSPI::init(void)
 {
+#ifdef TFT_CS
   csport    = portOutputRegister(digitalPinToPort(TFT_CS));
   cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
+#endif
+
+#ifdef TFT_DC
   dcport    = portOutputRegister(digitalPinToPort(TFT_DC));
   dcpinmask = (uint32_t) digitalPinToBitMask(TFT_DC);
-
+#endif
+  
 #ifdef TFT_WR
   wrpinmask = (uint32_t) digitalPinToBitMask(TFT_WR);
 #endif
@@ -167,21 +174,25 @@ void TFT_eSPI::init(void)
     SPI.setBitOrder(MSBFIRST);
   #endif
   SPI.setDataMode(SPI_MODE0);
+  //SPI.setHwCs(1); // Use hardware SS toggling on GPIO15 (D8) - not supported - benefit is only ~0.8% performance boost
   SPI.setFrequency(SPI_FREQUENCY);
 #endif
 
-  // SPI1U1 |= SPIUSIO; // Single I/O pin on MOSI (bi-directional) - not tested
+  // SPI1U1 |= SPIUSIO; // Single I/O pin on MOSI (bi-directional) - do not use, not working as expected
  
-  // Set to output once again incase D6 (MISO) is used for CS or DC
+  // Set to output once again in case D6 (MISO) is used for CS
 #ifdef TFT_CS
   digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
   pinMode(TFT_CS, OUTPUT);
 #endif
 
+  // Set to output once again in case D6 (MISO) is used for DC
+#ifdef TFT_DC
   digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
   pinMode(TFT_DC, OUTPUT);
+#endif
 
-  // toggle RST low to reset
+  // Toggle RST low to reset
 #ifdef TFT_RST
   if (TFT_RST >= 0) {
     digitalWrite(TFT_RST, HIGH);
@@ -1238,15 +1249,17 @@ spi_begin();
     setAddrWindow(x, y, x+5, y+8);
     for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(font + (c * 5) + i);
     column[5] = 0;
+	color = (color >> 8) | (color << 8);
+	bg = (bg >> 8) | (bg << 8);
     uint32_t spimask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
 	SPI1U1 = spimask | (15 << SPILMOSI) | (15 << SPILMISO);
     for (int8_t j = 0; j < 8; j++) {
       for (int8_t k = 0; k < 5; k++ ) {
         if (column[k] & mask) {
-          SPI1W0 = (color >> 8) | (color << 8);
+          SPI1W0 = color;
         }
         else {
-          SPI1W0 = (bg >> 8) | (bg << 8);
+          SPI1W0 = bg;
         }
 		SPI1CMD |= SPIBUSY;
 		while(SPI1CMD & SPIBUSY) {}
@@ -1254,7 +1267,7 @@ spi_begin();
 
       mask <<= 1;
 
-	  SPI1W0 = (bg >> 8) | (bg << 8);
+	  SPI1W0 = bg;
       SPI1CMD |= SPIBUSY;
       while(SPI1CMD & SPIBUSY) {}
     }
@@ -1553,7 +1566,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t 
 
 #elif defined (ESP8266) && !defined (RPI_WRITE_STROBE) && defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits
 
-inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
+void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 {
   spi_begin();
 
@@ -1612,9 +1625,6 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 {
   spi_begin();
 
-  addr_col = 0xFFFF;
-  addr_row = 0xFFFF;
-
   CS_L;
   uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
   mask = SPI1U1 & mask;
@@ -1627,6 +1637,8 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
     //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
     SPI1W0 = TFT_CASET<<(CMD_BITS + 1 - 8);
     SPI1CMD |= SPIBUSY;
+	addr_col = 0xFFFF;
+	addr_row = 0xFFFF;
     while(SPI1CMD & SPIBUSY) {}
     DC_D;
 
@@ -1634,11 +1646,12 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
     //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
     SPI1W0 = x0 >> 0;
     SPI1CMD |= SPIBUSY;
+	x0 = x0 << 8;
     while(SPI1CMD & SPIBUSY) {}
 	//DC_D; // Small delay
     //SPI.write16(x);
     //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
-    SPI1W0 = x0 << 8;
+    SPI1W0 = x0;
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
 	//DC_D; // Small delay
@@ -1646,11 +1659,12 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
     //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
     SPI1W0 = x1 >> 0;
     SPI1CMD |= SPIBUSY;
+	x1 = x1 << 8;
     while(SPI1CMD & SPIBUSY) {}
 	//DC_D; // Small delay
     //SPI.write16(x);
     //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
-    SPI1W0 = x1 << 8;
+    SPI1W0 = x1;
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
 	
@@ -1668,11 +1682,12 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
     //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
     SPI1W0 = y0 >> 0;
     SPI1CMD |= SPIBUSY;
+	y0 = y0 << 8;
     while(SPI1CMD & SPIBUSY) {}
 	//DC_D; // Small delay
     //SPI.write16(y);
     //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
-    SPI1W0 = y0 << 8;
+    SPI1W0 = y0;
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
 	//DC_D; // Small delay
@@ -1680,11 +1695,12 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
     //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
     SPI1W0 = y1 >> 0;
     SPI1CMD |= SPIBUSY;
+	y1 = y1 << 8;
     while(SPI1CMD & SPIBUSY) {}
 	//DC_D; // Small delay
     //SPI.write16(y);
     //SPI1U1 = mask | (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
-    SPI1W0 = y1 << 8;
+    SPI1W0 = y1;
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
 	
