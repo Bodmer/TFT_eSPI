@@ -166,6 +166,10 @@ void TFT_eSPI::init(void)
 #endif
 
   SPI.begin(); // This will set MISO to input
+  
+#ifdef D6_NOT_USED_FOR_MISO
+  pinMode(D6, OUTPUT);
+#endif
 
 #ifndef SUPPORT_TRANSACTIONS
   #ifdef SET_SPI_TO_LSB_FIRST
