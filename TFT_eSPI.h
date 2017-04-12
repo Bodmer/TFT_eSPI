@@ -213,7 +213,7 @@
 
 // Swap any type
 template <typename T> static inline void
-swap(T& a, T& b) { T t = a; a = b; b = t; }
+swap_coord(T& a, T& b) { T t = a; a = b; b = t; }
 
 // This is a structure to conveniently hold infomation on the default fonts
 // Stores pointer to font character image address table, width table and height

@@ -916,13 +916,13 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
 
   // Sort coordinates by Y order (y2 >= y1 >= y0)
   if (y0 > y1) {
-    swap(y0, y1); swap(x0, x1);
+    swap_coord(y0, y1); swap_coord(x0, x1);
   }
   if (y1 > y2) {
-    swap(y2, y1); swap(x2, x1);
+    swap_coord(y2, y1); swap_coord(x2, x1);
   }
   if (y0 > y1) {
-    swap(y0, y1); swap(x0, x1);
+    swap_coord(y0, y1); swap_coord(x0, x1);
   }
 
   if (y0 == y2) { // Handle awkward all-on-same-line case as its own thing
@@ -960,7 +960,7 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
     sa += dx01;
     sb += dx02;
 
-    if (a > b) swap(a, b);
+    if (a > b) swap_coord(a, b);
     drawFastHLine(a, y, b - a + 1, color);
   }
 
@@ -974,7 +974,7 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
     sa += dx12;
     sb += dx02;
 
-    if (a > b) swap(a, b);
+    if (a > b) swap_coord(a, b);
     drawFastHLine(a, y, b - a + 1, color);
   }
 }
@@ -2309,13 +2309,13 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 
   boolean steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
-    swap(x0, y0);
-    swap(x1, y1);
+    swap_coord(x0, y0);
+    swap_coord(x1, y1);
   }
 
   if (x0 > x1) {
-    swap(x0, x1);
-    swap(y0, y1);
+    swap_coord(x0, x1);
+    swap_coord(y0, y1);
   }
 
   int32_t dx = x1 - x0, dy = abs(y1 - y0);;
@@ -2364,13 +2364,13 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
   boolean steep = abs(y1 - y0) > abs(x1 - x0);
 
 	if (steep) {
-		swap(x0, y0);
-		swap(x1, y1);
+		swap_coord(x0, y0);
+		swap_coord(x1, y1);
 	}
 
 	if (x0 > x1) {
-		swap(x0, x1);
-		swap(y0, y1);
+		swap_coord(x0, x1);
+		swap_coord(y0, y1);
 	}
 
 	if (x1 < 0) return;
