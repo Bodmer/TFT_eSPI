@@ -11,8 +11,8 @@
 	static const uint8_t ILI9163_cmds[] PROGMEM =
 	{
 	17,             // 17 commands follow
-	0x01,  0,       // Software reset
-	0x11,  0,       // Exit sleep mode
+	0x01,  0 + TFT_INIT_DELAY, 120,      // Software reset
+	//0x11,  0,       // Exit sleep mode
 	0x3A,  1, 0x05, // Set pixel format
 	0x26,  1, 0x04, // Set Gamma curve
 	0xF2,  1, 0x01, // Gamma adjustment enabled
@@ -26,8 +26,8 @@
 	0xC1,  1, 0x02,       // Power control 2
 	0xC5,  2, 0x50, 0x5B, // Vcom control 1
 	0xC7,  1, 0x40,       // Vcom offset
-	0x2A,  4+DELAY, 0x00, 0x00, 0x00, 0x7F, 250, // Set column address
-	0x2B,  4, 0x00, 0x00, 0x00, 0x9F,            // Set page address
+	0x2A,  4, 0x00, 0x00, 0x00, 0x7F, // Set column address
+	0x2B,  4 + TFT_INIT_DELAY, 0x00, 0x00, 0x00, 0x9F, 250, // Set page address
 	0x36,  1, 0xC8,       // Set address mode
 	0x29,  0,             // Set display on
 	};

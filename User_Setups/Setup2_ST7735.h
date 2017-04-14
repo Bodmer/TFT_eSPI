@@ -120,13 +120,14 @@
 
 // ##################################################################################
 //
-// Section 4. Define the character to be used to detemine the text bounding box for datum changes
+// Section 4. Define Dx pin allocations if needed
 //
 // ##################################################################################
 
-#define FF_HEIGHT '/'  // '/' character used to set free font height above the baseline
-#define FF_BOTTOM 'y'  // 'y' character used to set free font height below baseline
+// Some board selections do not include the Dx format of the NodeMCU so
+// uncomment the next line to ensure they are defined.
 
+// #define DEFINE_DX_PINS
 
 // ##################################################################################
 //

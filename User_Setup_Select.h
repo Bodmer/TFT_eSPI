@@ -29,14 +29,13 @@
 
 
 
-
-
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
 //     DON'T TINKER WITH ANY OF THE FOLLOWING LINES, THESE ADD THE TFT DRIVERS     //
 //                     THEY ARE HERE FOR BODMER'S CONVENIENCE!                     //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
+
 
 // Load the right driver definition - do not tinker here !
 #if   defined (ILI9341_DRIVER)
@@ -49,4 +48,19 @@
      #include <TFT_Drivers/S6D02A1_Defines.h>
 #elif defined (RPI_ILI9486_DRIVER)
      #include <TFT_Drivers/RPI_ILI9486_Defines.h>
+#endif
+
+// Define the pins if needed (See Section 4 of User_Setup.h)
+#ifdef DEFINE_DX_PINS
+     #define D0 16
+     #define D1 5
+     #define D2 4
+     #define D3 0
+     #define D4 2
+     #define D5 14
+     #define D6 12
+     #define D7 13
+     #define D8 15
+     #define D9 3
+     #define D10 1
 #endif

@@ -66,7 +66,6 @@
 
 // Delay between some initialisation commands
 #define TFT_INIT_DELAY 0x80
-#define DELAY 0x80
 
 
 // Generic commands used by TFT_eSPI.cpp
