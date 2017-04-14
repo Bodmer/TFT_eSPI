@@ -21,9 +21,9 @@
 
 #include <pgmspace.h>
 
-#include <limits.h>
-#include "pins_arduino.h"
-#include "wiring_private.h"
+//#include <limits.h>
+//#include "pins_arduino.h"
+//#include "wiring_private.h"
 #include <SPI.h>
 
 // If it is a 16bit serial display we must transfer 16 bits every time

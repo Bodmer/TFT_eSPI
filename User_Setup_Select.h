@@ -50,17 +50,15 @@
      #include <TFT_Drivers/RPI_ILI9486_Defines.h>
 #endif
 
-// Define the pins if needed (See Section 4 of User_Setup.h)
-#ifdef DEFINE_DX_PINS
-     #define D0 16
-     #define D1 5
-     #define D2 4
-     #define D3 0
-     #define D4 2
-     #define D5 14
-     #define D6 12
-     #define D7 13
-     #define D8 15
-     #define D9 3
-     #define D10 1
-#endif
+// These are the pins for all ESP8266 boards
+#define PIN_D0 16
+#define PIN_D1 5
+#define PIN_D2 4
+#define PIN_D3 0
+#define PIN_D4 2
+#define PIN_D5 14
+#define PIN_D6 12
+#define PIN_D7 13
+#define PIN_D8 15
+#define PIN_D9 3
+#define PIN_D10 1

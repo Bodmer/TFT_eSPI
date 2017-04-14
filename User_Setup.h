@@ -75,13 +75,14 @@
 
 // ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR SETUP ######
 
-// ModeMCU
-#define TFT_CS   D8  // Chip select control pin D8
-#define TFT_DC   D3  // Data Command control pin
-#define TFT_RST  D4  // Reset pin (could connect to NodeMCU RST, see next line)
+// ModeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
+
+#define TFT_CS   PIN_D8  // Chip select control pin D8
+#define TFT_DC   PIN_D3  // Data Command control pin
+#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
-//#define TFT_WR D2    // Write strobe for modified Raspberry Pi TFT only
+//#define TFT_WR PIN_D2    // Write strobe for modified Raspberry Pi TFT only
 
 // ESP32 Dev board (planned, not supported yet)
 //#define TFT_CS   5  // Chip select control pin
@@ -125,14 +126,10 @@
 
 // ##################################################################################
 //
-// Section 4. Define Dx pin allocations if needed
+// Section 4. Not used
 //
 // ##################################################################################
 
-// Some board selections do not include the Dx format of the NodeMCU so
-// uncomment the next line to ensure they are defined.
-
-// #define DEFINE_DX_PINS
 
 // ##################################################################################
 //
