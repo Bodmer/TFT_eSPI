@@ -31,6 +31,7 @@
 //#define ST7735_GREENTAB
 //#define ST7735_GREENTAB2
 //#define ST7735_GREENTAB3
+//#define ST7735_GREENTAB128 // For 128 x 128 display
 //#define ST7735_REDTAB
 //#define ST7735_BLACKTAB
 
@@ -52,13 +53,15 @@
 // Display LED       to NodeMCU pin VIN (or 5V, see below)
 // Display SCK       to NodeMCU pin D5
 // Display SDI/MOSI  to NodeMCU pin D7
-// Display DC (or AO)to NodeMCU pin D3
+// Display DC (RS/AO)to NodeMCU pin D3
 // Display RESET     to NodeMCU pin D4 (or RST, see below)
 // Display CS        to NodeMCU pin D8 (or GND, see below)
 // Display GND       to NodeMCU pin GND (0V)
 // Display VCC       to NodeMCU 5V or 3.3V
 //
 // The TFT RESET pin can be connected to the NodeMCU RST pin or 3.3V to free up a control pin
+//
+// The DC (Data Command) pin may be labell AO or RS (Register Select)
 //
 // With some displays such as the ILI9341 the TFT CS pin can be connected to GND if no more
 // SPI deivces (e.g. an SD Card) are connected, in this case comment out the #define TFT_CS
@@ -146,8 +149,8 @@
 // #define SPI_FREQUENCY   5000000
 // #define SPI_FREQUENCY  10000000
 // #define SPI_FREQUENCY  20000000
- #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
-// #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
+// #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
+ #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000
 
 

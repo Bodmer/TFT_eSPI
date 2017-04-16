@@ -24,6 +24,7 @@
 //#include <User_Setups/Setup4_S6D02A1.h>  // Setup file configured for my S6D02A1
 //#include <User_Setups/Setup5_RPi_ILI9486.h>     // Setup file configured for my stock RPi TFT
 //#include <User_Setups/Setup6_RPi_Wr_ILI9486.h>  // Setup file configured for my modified RPi TFT
+//#include <User_Setups/Setup7_ST7735_128x128.h>  // Setup file configured for my ST7735 128x128 display
 
 //#include <User_Setups/SetupX_Template.h> // Setup file template for copying/editting
 
@@ -32,7 +33,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
 //     DON'T TINKER WITH ANY OF THE FOLLOWING LINES, THESE ADD THE TFT DRIVERS     //
-//                     THEY ARE HERE FOR BODMER'S CONVENIENCE!                     //
+//       AND ESP8266 PIN DEFINITONS THEY ARE HERE FOR BODMER'S CONVENIENCE!        //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
