@@ -53,9 +53,3 @@
 
 #define TFT_INVOFF  0x20
 #define TFT_INVON   0x21
-
-
-// All S6D02A1 specific commands some are used by setRotation()
-#define S6D02A1_RDID1   0xDA
-#define S6D02A1_RDID2   0xDB
-#define S6D02A1_RDID3   0xDC

@@ -1,5 +1,5 @@
 
-// This is the command sequence that rotates the ILI9341 driver coordinate frame
+// This is the command sequence that rotates the ST7735 driver coordinate frame
 
   rotation = m % 4; // Limit the range of values to 0-3
 

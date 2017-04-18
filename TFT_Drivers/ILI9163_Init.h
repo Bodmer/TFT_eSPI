@@ -1,5 +1,5 @@
 
-// This is the command sequence that initialises the ST7735 driver
+// This is the command sequence that initialises the ILI9163 driver
 //
 // This setup information is in a format accecpted by the commandList() function
 // which reduces FLASH space, but on an ESP8266 there is plenty available!

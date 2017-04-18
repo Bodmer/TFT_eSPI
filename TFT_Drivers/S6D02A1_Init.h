@@ -4,7 +4,7 @@
 // This setup information is in a format accecpted by the commandList() function
 // which reduces FLASH space, but on an ESP8266 there is plenty available!
 //
-// See S6D02A1_Setup.h file for an alternative simpler format
+// See ILI9341_Setup.h file for an alternative simpler format
 
 {
 	// Initialization commands for S6D02A1 screens

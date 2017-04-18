@@ -60,9 +60,3 @@
 
 #define TFT_INVOFF  0x20
 #define TFT_INVON   0x21
-
-
-// All ILI9163 specific commands some are used by setRotation()
-#define ILI9163_RDID1   0xDA
-#define ILI9163_RDID2   0xDB
-#define ILI9163_RDID3   0xDC

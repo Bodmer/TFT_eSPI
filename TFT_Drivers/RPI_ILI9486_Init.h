@@ -1,5 +1,5 @@
 
-// This is the command sequence that initialises the ILI9481 driver
+// This is the command sequence that initialises the ILI9486 driver
 //
 // This setup information uses simple 8 bit SPI writecommand() and writedata() functions
 //

@@ -19,6 +19,11 @@
 #define ILI9341_DRIVER
 //#define ST7735_DRIVER
 
+// For ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
+//#define TFT_WIDTH  128
+//#define TFT_HEIGHT 160
+//#define TFT_HEIGHT 128
+
 // For ST7735 ONLY, define the type of display, originally this was based on the
 // colour of the tab on the screen protector film but this is not always true, so try
 // out the different options below if the screen does not display graphics correctly,
@@ -31,11 +36,6 @@
 //#define ST7735_GREENTAB2
 //#define ST7735_REDTAB
 //#define ST7735_BLACKTAB
-
-// For ST7735 ONLY define the width and height in portrait orientation
-//#define TFT_WIDTH  128
-//#define TFT_HEIGHT 160
-//#define TFT_HEIGHT 128
 
 // ##################################################################################
 //

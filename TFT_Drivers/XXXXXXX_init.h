@@ -1,9 +1,9 @@
+// These are various test setups and are not used by the library!
 
-// This is the command sequence that initialises the ILI9481 driver
+// This is the command sequence that initialises the ????? driver
 //
 // This setup information uses simple 8 bit SPI writecommand() and writedata() functions
-//
-// See ST7735_Setup.h file for an alternative format
+
 
 {
 #if defined (TINYLCD)

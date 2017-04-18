@@ -1,7 +1,7 @@
 
 // This is the command sequence that initialises the ST7735 driver
 //
-// This setup information is in a format accecpted by the commandList() function
+// This setup information is in a format accepted by the commandList() function
 // which reduces FLASH space, but on an ESP8266 there is plenty available!
 //
 // See ILI9341_Setup.h file for an alternative simpler format

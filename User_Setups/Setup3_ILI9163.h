@@ -18,6 +18,10 @@
 //#define ST7735_DRIVER
 #define ILI9163_DRIVER
 
+// For ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
+#define TFT_WIDTH  128
+#define TFT_HEIGHT 160
+//#define TFT_HEIGHT 128
 
 // ##################################################################################
 //
