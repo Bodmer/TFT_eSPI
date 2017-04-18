@@ -10,11 +10,11 @@
 	// Initialization commands for ILI9163 screens
 	static const uint8_t ILI9163_cmds[] PROGMEM =
 	{
-	17,             // 17 commands follow
-	0x01,  0 + TFT_INIT_DELAY, 120,      // Software reset
-	//0x11,  0,       // Exit sleep mode
+	17,    // 17 commands follow
+	0x01,  0 + TFT_INIT_DELAY, 120,  // Software reset
+	0x11,  0 + TFT_INIT_DELAY, 5,    // Exit sleep mode
 	0x3A,  1, 0x05, // Set pixel format
-	0x26,  1, 0x04, // Set Gamma curve
+	0x26,  1, 0x04, // Set Gamma curve 3
 	0xF2,  1, 0x01, // Gamma adjustment enabled
 	0xE0, 15, 0x3F, 0x25, 0x1C, 0x1E, 0x20, 0x12, 0x2A, 0x90,
 	          0x24, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, // Positive Gamma
@@ -34,4 +34,8 @@
 
 	commandList(ILI9163_cmds);
 
+    #ifdef CGRAM_OFFSET
+      colstart = 0;
+      rowstart = 32;
+    #endif
 }

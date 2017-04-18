@@ -1,9 +1,9 @@
 //                            USER DEFINED SETTINGS
+//
+//   The User_Setup header that will be called up is defined in User_Setup_Select.h
+//
 //   Set driver type, fonts to be loaded, pins used and SPI control method etc
-//
-//   See the User_Setup_Select.h file if you wish to be able to define multiple
-//   setups and then easily select which setup file is used by the compiler.
-//
+//   
 //   If this file is editted correctly then all the library example sketches should
 //   run without the need to make any more changes for a particular hardware setup!
 
@@ -14,16 +14,13 @@
 // ##################################################################################
 
 // Only define one driver, the other ones must be commented out
-#define ILI9341_DRIVER
-//#define ST7735_DRIVER
-//#define ILI9163_DRIVER
-//#define S6D02A1_DRIVER
-//#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
+//#define ILI9341_DRIVER
+#define ST7735_DRIVER
 
 // For ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
-//#define TFT_WIDTH  128
+#define TFT_WIDTH  128
 //#define TFT_HEIGHT 160
-//#define TFT_HEIGHT 128
+#define TFT_HEIGHT 128
 
 // For ST7735 ONLY, define the type of display, originally this was based on the
 // colour of the tab on the screen protector film but this is not always true, so try
@@ -32,12 +29,12 @@
 // Comment out ALL BUT ONE of these options for a ST7735 display driver, save this
 // this User_Setup file, then rebuild and upload the sketch to the board again:
 
-//#define ST7735_INITB
-//#define ST7735_GREENTAB
-//#define ST7735_GREENTAB2
-//#define ST7735_GREENTAB3
-//#define ST7735_GREENTAB128 // For 128 x 128 display
-//#define ST7735_REDTAB
+//#define ST7735_INITB // No display
+//#define ST7735_GREENTAB // 2 pixel left border
+//#define ST7735_GREENTAB2 // Colours wrong RB swap
+//#define ST7735_GREENTAB3 // 2 pixel left border
+#define ST7735_GREENTAB128 // For 128 x 128 display
+//#define ST7735_REDTAB // colours wrong rotation 0 needs y shift of 32, 1 an x shift of 32
 //#define ST7735_BLACKTAB
 
 // ##################################################################################
@@ -78,16 +75,13 @@
 
 // ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR SETUP ######
 
-// ModeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
-
+// ModeMCU
 #define TFT_CS   PIN_D8  // Chip select control pin D8
 #define TFT_DC   PIN_D3  // Data Command control pin
 #define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
-//#define TFT_WR PIN_D2    // Write strobe for modified Raspberry Pi TFT only
-
-// ESP32 Dev board (planned, not supported yet)
+// ESP32 Dev board (planned, not test/supported yet)
 //#define TFT_CS   5  // Chip select control pin
 //#define TFT_DC   2  // Data Command control pin
 //#define TFT_RST  4  // Reset pin (could connect to Arduino RESET pin)
@@ -134,6 +128,8 @@
 // ##################################################################################
 
 
+
+
 // ##################################################################################
 //
 // Section 5. Other options
@@ -143,13 +139,12 @@
 // Define the SPI clock frequency
 // With an ILI9341 display 40MHz works OK, 80MHz sometimes fails
 // With a ST7735 display more than 27MHz may not work (spurious pixels and lines)
-// With an ILI9163 display TBD MHz works OK,
 
 // #define SPI_FREQUENCY   1000000
 // #define SPI_FREQUENCY   5000000
 // #define SPI_FREQUENCY  10000000
 // #define SPI_FREQUENCY  20000000
- #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
+ #define SPI_FREQUENCY  27000000 // Maximum for my ST7735. It is actually 26.67MHz = 80/3
 // #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000
 

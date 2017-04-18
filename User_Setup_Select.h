@@ -25,6 +25,7 @@
 //#include <User_Setups/Setup5_RPi_ILI9486.h>     // Setup file configured for my stock RPi TFT
 //#include <User_Setups/Setup6_RPi_Wr_ILI9486.h>  // Setup file configured for my modified RPi TFT
 //#include <User_Setups/Setup7_ST7735_128x128.h>  // Setup file configured for my ST7735 128x128 display
+//#include <User_Setups/Setup8_ILI9163_128x128.h>  // Setup file configured for my ILI9163 128x128 display
 
 //#include <User_Setups/SetupX_Template.h> // Setup file template for copying/editting
 
