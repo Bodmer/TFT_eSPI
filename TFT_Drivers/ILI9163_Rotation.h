@@ -11,7 +11,7 @@
       _height = TFT_HEIGHT;
 	  #ifdef CGRAM_OFFSET
         colstart = 0;
-        rowstart = 32;
+        rowstart = 0;
 	  #endif
       break;
     case 1:
@@ -19,7 +19,7 @@
       _width  = TFT_HEIGHT;
       _height = TFT_WIDTH;
 	  #ifdef CGRAM_OFFSET
-        colstart = 32;
+        colstart = 0;
         rowstart = 0;
 	  #endif
       break;
@@ -29,7 +29,7 @@
       _height = TFT_HEIGHT;
 	  #ifdef CGRAM_OFFSET
         colstart = 0;
-        rowstart = 0;
+        rowstart = 32;
 	  #endif
       break;
     case 3:
@@ -37,7 +37,7 @@
       _width  = TFT_HEIGHT;
       _height = TFT_WIDTH;
 	  #ifdef CGRAM_OFFSET
-        colstart = 0;
+        colstart = 32;
         rowstart = 0;
 	  #endif
       break;

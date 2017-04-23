@@ -36,6 +36,6 @@
 
     #ifdef CGRAM_OFFSET
       colstart = 0;
-      rowstart = 32;
+      rowstart = 0;
     #endif
 }

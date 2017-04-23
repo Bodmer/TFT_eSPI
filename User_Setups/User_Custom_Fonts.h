@@ -17,12 +17,16 @@
 
 // The comment added is a shorthand reference but this is not essential
 
-// New custom font file #includes
-#include <Fonts/Custom/Orbitron_Light_24.h> // CF_OL24
-#include <Fonts/Custom/Orbitron_Light_32.h> // CF_OL32
-#include <Fonts/Custom/Roboto_Thin_24.h>    // CF_RT24
-#include <Fonts/Custom/Satisfy_24.h>        // CF_S24
-#include <Fonts/Custom/Yellowtail_32.h>     // CF_Y32
+#ifdef LOAD_GFXFF
+
+  // New custom font file #includes
+  #include <Fonts/Custom/Orbitron_Light_24.h> // CF_OL24
+  #include <Fonts/Custom/Orbitron_Light_32.h> // CF_OL32
+  #include <Fonts/Custom/Roboto_Thin_24.h>    // CF_RT24
+  #include <Fonts/Custom/Satisfy_24.h>        // CF_S24
+  #include <Fonts/Custom/Yellowtail_32.h>     // CF_Y32
+
+#endif
 
 // Shorthand references - any coding scheme can be used, here CF_ = Custom Font
 // The #defines below MUST be added to sketches to use shorthand references, so

@@ -34,6 +34,9 @@
   #define CMD_BITS 8-1
 #endif
 
+// Fast SPI block write prototype
+void spiWriteBlock(uint16_t color, uint32_t repeat);
+
 // If the SPI library has transaction support, these functions
 // establish settings and protect from interference from other
 // libraries.  Otherwise, they simply do nothing.
@@ -1255,7 +1258,7 @@ spi_begin();
     color = (color >> 8) | (color << 8);
     bg = (bg >> 8) | (bg << 8);
     uint32_t spimask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
-    SPI1U1 = spimask | (15 << SPILMOSI) | (15 << SPILMISO);
+    SPI1U1 = (SPI1U1 & spimask) | (15 << SPILMOSI) | (15 << SPILMISO);
     for (int8_t j = 0; j < 8; j++) {
       for (int8_t k = 0; k < 5; k++ ) {
         if (column[k] & mask) {
@@ -1588,7 +1591,7 @@ void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
   spi_end();
 }
 
-#else // This is for the ESP32 where we cannot use low level register access (yet)
+#else
 
 #if defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits
 inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
@@ -1666,7 +1669,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   spi_end();
 }
 
-#else
+#else // This is for the ESP32 where we cannot use low level register access (yet)
 
 inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
@@ -2113,14 +2116,12 @@ void TFT_eSPI::pushColor(uint16_t color, uint16_t len)
 
   CS_L;
 
-  uint8_t colorBin[] = { (uint8_t) (color >> 8), (uint8_t) color };
-
 #ifdef RPI_WRITE_STROBE
+  uint8_t colorBin[] = { (uint8_t) (color >> 8), (uint8_t) color };
   if(len) SPI.writePattern(&colorBin[0], 2, 1); len--;
   while(len--) {WR_L; WR_H;}
 #else
-  while(len>32) { SPI.writePattern(&colorBin[0], 2, 32); len-=32;}
-  SPI.writePattern(&colorBin[0], 2, len);
+  spiWriteBlock(color, len);
 #endif
 
   CS_H;
@@ -2144,7 +2145,47 @@ void TFT_eSPI::pushColors(uint16_t *data, uint8_t len)
 
   CS_L;
 
+#if defined (ESP32)
+
   while (len--) SPI.write16(*(data++));
+
+#else
+
+	uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+
+  SPI1U1 = (SPI1U1 & mask) | (63 << SPILMOSI) | (63 << SPILMISO);
+  while(len>3)
+  {
+	uint32_t color0 = (*(data) >> 8) | (uint16_t)(*(data) << 8);
+	data++;
+	color0 |= ((*(data) >> 8) | (*(data) << 8)) << 16;
+	data++;
+	uint32_t color1 = (*(data) >> 8) | (uint16_t)(*(data) << 8);
+	data++;
+	color1 |= ((*(data) >> 8) | (*(data) << 8)) << 16;
+
+	data++;	len -= 4;
+    while(SPI1CMD & SPIBUSY) {}
+    SPI1W0 = color0;
+    SPI1W1 = color1;
+    SPI1CMD |= SPIBUSY;
+  }
+  if (len) 
+  {
+    while(SPI1CMD & SPIBUSY) {}
+    SPI1U1 = (SPI1U1 & mask) | (15 << SPILMOSI) | (15 << SPILMISO);
+    while(len--)
+    {
+      uint16_t color = (*(data) >> 8) | (*(data) << 8);
+      data++;
+      while(SPI1CMD & SPIBUSY) {}
+      SPI1W0 = color;
+      SPI1CMD |= SPIBUSY;
+    }
+  }
+  while(SPI1CMD & SPIBUSY) {}
+
+#endif
 
   CS_H;
 
@@ -2167,8 +2208,12 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
 #if defined (RPI_WRITE_STROBE)
   while ( len ) {SPI.writePattern(data, 2, 1); data += 2; len -= 2; }
 #else
+  #if (SPI_FREQUENCY == 80000000)
   while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
   if (len) SPI.writePattern(data, len, 1);
+  #else
+  SPI.writeBytes(data, len);
+  #endif
 #endif
 
   CS_H;
@@ -2266,7 +2311,7 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 
   uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
   mask = (SPI1U1 & mask) | (15 << SPILMOSI) | (15 << SPILMISO);
-
+  SPI1U = SPIUMOSI | SPIUSSE;
   int16_t swapped_color = (color >> 8) | (color << 8);
 
   if (steep)  // y increments every iteration (y0 is x-axis, and x0 is y-axis)
@@ -2286,9 +2331,9 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 
     setAddrWindow(y0, x0, y0, _height);
     SPI1U1 = mask;
+    SPI1W0 = swapped_color;
     for (; x0 <= x1; x0++) {
       while(SPI1CMD & SPIBUSY) {}
-      SPI1W0 = swapped_color;
       SPI1CMD |= SPIBUSY;
 
       err -= dy;
@@ -2299,6 +2344,7 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
         while(SPI1CMD & SPIBUSY) {}
         setAddrWindow(y0, x0+1, y0, _height);
         SPI1U1 = mask;
+        SPI1W0 = swapped_color;
       }
     }
   }
@@ -2319,10 +2365,9 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 
     setAddrWindow(x0, y0, _width, y0);
     SPI1U1 = mask;
-
+    SPI1W0 = swapped_color;
     for (; x0 <= x1; x0++) {
       while(SPI1CMD & SPIBUSY) {}
-      SPI1W0 = swapped_color;
       SPI1CMD |= SPIBUSY;
 
       err -= dy;
@@ -2333,11 +2378,13 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
         while(SPI1CMD & SPIBUSY) {}
         setAddrWindow(x0+1, y0, _width, y0);
         SPI1U1 = mask;
+		SPI1W0 = swapped_color;
       }
     }
   }
 
   while(SPI1CMD & SPIBUSY) {}
+  SPI1U = SPIUMOSI | SPIUDUPLEX | SPIUSSE;
   CS_H;
   spi_end();
 }
@@ -2359,9 +2406,8 @@ void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 
   setAddrWindow(x, y, x, y + h - 1);
 
-  uint8_t colorBin[] = { (uint8_t) (color >> 8), (uint8_t) color};
-  SPI.writePattern(&colorBin[0], 2, h);
-
+  spiWriteBlock(color, h);
+  
   CS_H;
 
   spi_end();
@@ -2410,9 +2456,8 @@ void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 
   setAddrWindow(x, y, x + w - 1, y);
 
-  uint8_t colorBin[] = { (uint8_t) (color >> 8), (uint8_t) color};
-  SPI.writePattern(&colorBin[0], 2, w);
-
+  spiWriteBlock(color, w);
+  
   CS_H;
 
   spi_end();
@@ -2460,10 +2505,8 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
   spi_begin();
   setAddrWindow(x, y, x + w - 1, y + h - 1);
 
-  uint8_t colorBin[] = { (uint8_t) (color >> 8), (uint8_t) color};
-  uint32_t n = (uint32_t)w * (uint32_t)h;
-  SPI.writePattern(&colorBin[0], 2, n);
-
+  spiWriteBlock(color, w * h);
+  
   CS_H;
 
   spi_end();
@@ -2888,8 +2931,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
           SPI.writePattern(&textcolorBin[0], 2, 1); line--;
           while(line--) {WR_L; WR_H;}
 #else
-          while(line>32) { SPI.writePattern(&textcolorBin[0], 2, 32); line-=32;}
-          SPI.writePattern(&textcolorBin[0], 2, line);
+          spiWriteBlock(textcolor,line);
 #endif
         }
         else {
@@ -2898,8 +2940,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
           SPI.writePattern(&textbgcolorBin[0], 2, 1); line--;
           while(line--) {WR_L; WR_H;}
 #else
-          while(line>32) { SPI.writePattern(&textbgcolorBin[0], 2, 32); line-=32;}
-          SPI.writePattern(&textbgcolorBin[0], 2, line);
+          spiWriteBlock(textbgcolor,line);
 #endif
         }
       }
@@ -3016,7 +3057,7 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
       case C_BASELINE:
         poX -= cwidth/2;
         poY -= baseline;
-        //padding += 1;
+        padding += 1;
         break;
       case R_BASELINE:
         poX -= cwidth;
@@ -3031,8 +3072,9 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
     if (poY+cheight-baseline>_height) poY = _height - cheight;
   }
 
-#ifdef LOAD_GFXFF
+
   int8_t xo = 0;
+#ifdef LOAD_GFXFF
   if ((font == 1) && (gfxFont) && (textcolor!=textbgcolor))
     {
       cheight = (glyph_ab + glyph_bb) * textsize;
@@ -3327,6 +3369,74 @@ void TFT_eSPI::setTextFont(uint8_t f)
 
 #endif
 
+
+/***************************************************************************************
+** Function name:           spiBlockWrite
+** Description:             Write a block of pixels of the same colour
+***************************************************************************************/
+#if (SPI_FREQUENCY != 80000000)
+void spiWriteBlock(uint16_t color, uint32_t repeat)
+{
+  uint16_t color16 = (color >> 8) | (color << 8);
+  uint32_t color32 = color16 | color16 << 16;
+  uint32_t mask = ~(SPIMMOSI << SPILMOSI);
+  mask = SPI1U1 & mask;
+  SPI1U = SPIUMOSI | SPIUSSE;
+
+  SPI1W0 = color32;
+  SPI1W1 = color32;
+  SPI1W2 = color32;
+  SPI1W3 = color32;
+  if (repeat > 8)
+  {
+    SPI1W4 = color32;
+    SPI1W5 = color32;
+    SPI1W6 = color32;
+    SPI1W7 = color32;
+  }
+  if (repeat > 16)
+  {
+    SPI1W8 = color32;
+    SPI1W9 = color32;
+    SPI1W10 = color32;
+    SPI1W11 = color32;
+  }
+  if (repeat > 24)
+  {
+    SPI1W12 = color32;
+    SPI1W13 = color32;
+    SPI1W14 = color32;
+    SPI1W15 = color32;
+  }
+  if (repeat > 31)
+  {
+    SPI1U1 = mask | (511 << SPILMOSI);
+    while(repeat>31)
+    {
+      while(SPI1CMD & SPIBUSY) {}
+      SPI1CMD |= SPIBUSY;
+      repeat -= 32;
+    }
+    while(SPI1CMD & SPIBUSY) {}
+  }
+
+  if (repeat)
+  {
+    repeat = (repeat << 4) - 1;
+    SPI1U1 = mask | (repeat << SPILMOSI);
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+  }
+
+  SPI1U = SPIUMOSI | SPIUDUPLEX | SPIUSSE;
+}
+#else // Runing at 80MHz SPI so slow things down
+void spiWriteBlock(uint16_t color, uint32_t repeat)
+{
+  uint8_t colorBin[] = { (uint8_t) (color >> 8), (uint8_t) color};
+  SPI.writePattern(&colorBin[0], 2, repeat);
+}
+#endif
 
 /***************************************************
   The majority of code in this file is "FunWare", the only condition of use of
