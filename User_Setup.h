@@ -61,7 +61,7 @@
 //
 // The TFT RESET pin can be connected to the NodeMCU RST pin or 3.3V to free up a control pin
 //
-// The DC (Data Command) pin may be labell AO or RS (Register Select)
+// The DC (Data Command) pin may be labelled AO or RS (Register Select)
 //
 // With some displays such as the ILI9341 the TFT CS pin can be connected to GND if no more
 // SPI deivces (e.g. an SD Card) are connected, in this case comment out the #define TFT_CS
