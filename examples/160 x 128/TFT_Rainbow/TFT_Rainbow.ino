@@ -28,7 +28,7 @@ unsigned int colour = red << 11;
 void setup(void) {
   tft.init();
   tft.setRotation(1);
-  tft.fillScreen(ST7735_BLACK);
+  tft.fillScreen(TFT_BLACK);
 
   targetTime = millis() + 1000;
 }
@@ -89,12 +89,12 @@ void loop() {
     }
 
     // The standard ADAFruit font still works as before
-    tft.setTextColor(ST7735_BLACK);
+    tft.setTextColor(TFT_BLACK);
     tft.setCursor (12, 5);
     tft.print("Original ADAfruit font!");
 
     // The new larger fonts do not use the .setCursor call, coords are embedded
-    tft.setTextColor(ST7735_BLACK, ST7735_BLACK); // Do not plot the background colour
+    tft.setTextColor(TFT_BLACK, TFT_BLACK); // Do not plot the background colour
 
     // Overlay the black text on top of the rainbow plot (the advantage of not drawing the backgorund colour!)
     tft.drawCentreString("Font size 2", 80, 14, 2); // Draw text centre at position 80, 12 using font 2

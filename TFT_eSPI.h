@@ -87,7 +87,7 @@
 #else
   #if defined (ESP32) || defined (D0_USED_FOR_CS)
     #define CS_L digitalWrite(TFT_CS, LOW)
-	#define CS_H digitalWrite(TFT_CS, HIGH)
+    #define CS_H digitalWrite(TFT_CS, HIGH)
   #else
     #define CS_L GPOC=cspinmask
     #define CS_H GPOS=cspinmask
@@ -97,7 +97,7 @@
 #ifdef TFT_WR
   #if defined (ESP32)
     #define WR_L digitalWrite(TFT_WR, LOW)
-	#define WR_H digitalWrite(TFT_WR, HIGH)
+    #define WR_H digitalWrite(TFT_WR, HIGH)
   #else
     #define WR_L GPOC=wrpinmask
     #define WR_H GPOS=wrpinmask
@@ -228,11 +228,11 @@ swap_coord(T& a, T& b) { T t = a; a = b; b = t; }
 // Stores pointer to font character image address table, width table and height
 
 typedef struct {
-	const uint8_t *chartbl;
-	const uint8_t *widthtbl;
-	uint8_t height;
-	uint8_t baseline;
-	} fontinfo;
+    const uint8_t *chartbl;
+    const uint8_t *widthtbl;
+    uint8_t height;
+    uint8_t baseline;
+    } fontinfo;
 
 // Now fill the structure
 const PROGMEM fontinfo fontdata [] = {
@@ -357,14 +357,14 @@ class TFT_eSPI : public Print {
   uint16_t readPixel(int32_t x0, int32_t y0);
 
            // The next functions can be used as a pair to copy screen blocks (or horizontal/vertical lines) to another location
-		   // Read a block of pixels to a data buffer, buffer is 16 bit and the array size must be at least w * h
+           // Read a block of pixels to a data buffer, buffer is 16 bit and the array size must be at least w * h
   void     readRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
-		   // Write a block of pixels to the screen
+           // Write a block of pixels to the screen
   void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
 
-		   // This next function has been used successfully to dump the TFT screen to a PC for documentation purposes
-		   // It reads a screen area and returns the RGB 8 bit colour values of each pixel
-		   // Set w and h to 1 to read 1 pixel's colour. The data buffer must be at least w * h * 3 bytes
+           // This next function has been used successfully to dump the TFT screen to a PC for documentation purposes
+           // It reads a screen area and returns the RGB 8 bit colour values of each pixel
+           // Set w and h to 1 to read 1 pixel's colour. The data buffer must be at least w * h * 3 bytes
   void     readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t *data);
 
   uint8_t  getRotation(void);
@@ -373,30 +373,30 @@ class TFT_eSPI : public Print {
            color565(uint8_t r, uint8_t g, uint8_t b);
 
   int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
-		   drawChar(unsigned int uniCode, int x, int y),
+           drawChar(unsigned int uniCode, int x, int y),
            drawNumber(long long_num,int poX, int poY, int font),
-		   drawNumber(long long_num,int poX, int poY),
+           drawNumber(long long_num,int poX, int poY),
            drawFloat(float floatNumber,int decimal,int poX, int poY, int font),
            drawFloat(float floatNumber,int decimal,int poX, int poY),
-		   
-		   // Handle char arrays
+           
+           // Handle char arrays
            drawString(const char *string, int poX, int poY, int font),
            drawString(const char *string, int poX, int poY),
            drawCentreString(const char *string, int dX, int poY, int font), // Deprecated, use setTextDatum() and drawString()
            drawRightString(const char *string, int dX, int poY, int font),  // Deprecated, use setTextDatum() and drawString()
 
-		   // Handle String type
-		   drawString(const String& string, int poX, int poY, int font),
-		   drawString(const String& string, int poX, int poY),
+           // Handle String type
+           drawString(const String& string, int poX, int poY, int font),
+           drawString(const String& string, int poX, int poY),
            drawCentreString(const String& string, int dX, int poY, int font), // Deprecated, use setTextDatum() and drawString()
            drawRightString(const String& string, int dX, int poY, int font);  // Deprecated, use setTextDatum() and drawString()
-		   
+           
   int16_t  height(void),
            width(void),
            textWidth(const char *string, int font),
-		   textWidth(const char *string),
-		   textWidth(const String& string, int font),
-		   textWidth(const String& string),
+           textWidth(const char *string),
+           textWidth(const String& string, int font),
+           textWidth(const String& string),
            fontHeight(int16_t font);
 
     void   setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
@@ -409,7 +409,7 @@ inline void spi_begin() __attribute__((always_inline));
 inline void spi_end() __attribute__((always_inline));
 
     void   readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
-	
+    
   uint8_t  tabcolor,
            colstart = 0, rowstart = 0; // some ST7735 displays need this changed
 

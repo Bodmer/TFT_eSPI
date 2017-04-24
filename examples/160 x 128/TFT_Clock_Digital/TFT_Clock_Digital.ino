@@ -52,9 +52,9 @@ uint8_t hh=conv2d(__TIME__), mm=conv2d(__TIME__+3), ss=conv2d(__TIME__+6);  // G
 void setup(void) {
   tft.init();
   tft.setRotation(1);
-  tft.fillScreen(ST7735_BLACK);
+  tft.fillScreen(TFT_BLACK);
 
-  tft.setTextColor(ST7735_YELLOW, ST7735_BLACK); // Note: the new fonts do not draw the background colour
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK); // Note: the new fonts do not draw the background colour
 
   targetTime = millis() + 1000; 
 }
@@ -78,14 +78,14 @@ void loop() {
 
     if (ss==0 || initial) {
       initial = 0;
-      tft.setTextColor(ST7735_GREEN, ST7735_BLACK);
+      tft.setTextColor(TFT_GREEN, TFT_BLACK);
       tft.setCursor (8, 52);
       tft.print(__DATE__); // This uses the standard ADAFruit small font
 
-      tft.setTextColor(ST7735_BLUE, ST7735_BLACK);
+      tft.setTextColor(TFT_BLUE, TFT_BLACK);
       tft.drawCentreString("It is windy",120,48,2); // Next size up font 2
 
-      //tft.setTextColor(0xF81F, ST7735_BLACK); // Pink
+      //tft.setTextColor(0xF81F, TFT_BLACK); // Pink
       //tft.drawCentreString("12.34",80,100,6); // Large font 6 only contains characters [space] 0 1 2 3 4 5 6 7 8 9 . : a p m
     }
 
@@ -94,12 +94,12 @@ void loop() {
     byte ypos = 0;
     if (omm != mm) { // Only redraw every minute to minimise flicker
       // Uncomment ONE of the next 2 lines, using the ghost image demonstrates text overlay as time is drawn over it
-      tft.setTextColor(0x39C4, ST7735_BLACK);  // Leave a 7 segment ghost image, comment out next line!
-      //tft.setTextColor(ST7735_BLACK, ST7735_BLACK); // Set font colour to black to wipe image
+      tft.setTextColor(0x39C4, TFT_BLACK);  // Leave a 7 segment ghost image, comment out next line!
+      //tft.setTextColor(TFT_BLACK, TFT_BLACK); // Set font colour to black to wipe image
       // Font 7 is to show a pseudo 7 segment display.
       // Font 7 only contains characters [space] 0 1 2 3 4 5 6 7 8 9 0 : .
       tft.drawString("88:88",xpos,ypos,7); // Overwrite the text to clear it
-      tft.setTextColor(0xFBE0, ST7735_BLACK); // Orange
+      tft.setTextColor(0xFBE0, TFT_BLACK); // Orange
       omm = mm;
 
       if (hh<10) xpos+= tft.drawChar('0',xpos,ypos,7);
@@ -111,15 +111,15 @@ void loop() {
     }
 
     if (ss%2) { // Flash the colon
-      tft.setTextColor(0x39C4, ST7735_BLACK);
+      tft.setTextColor(0x39C4, TFT_BLACK);
       xpos+= tft.drawChar(':',xcolon,ypos,7);
-      tft.setTextColor(0xFBE0, ST7735_BLACK);
+      tft.setTextColor(0xFBE0, TFT_BLACK);
     }
     else {
       tft.drawChar(':',xcolon,ypos,7);
       colour = random(0xFFFF);
       // Erase the old text with a rectangle, the disadvantage of this method is increased display flicker
-      tft.fillRect (0, 64, 160, 20, ST7735_BLACK);
+      tft.fillRect (0, 64, 160, 20, TFT_BLACK);
       tft.setTextColor(colour);
       tft.drawRightString("Colour",75,64,4); // Right justified string drawing to x position 75
       String scolour = String(colour,HEX);
