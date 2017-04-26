@@ -55,7 +55,7 @@
 #define TFT_INVON   0x21
 
 
-// All ILI9341 specific commands some are used by setRotation()
+// All ILI9341 specific commands some are used by init()
 #define ILI9341_NOP     0x00
 #define ILI9341_SWRESET 0x01
 #define ILI9341_RDDID   0x04
