@@ -27,10 +27,12 @@
   Time is printed with colons aligned to tidy display
   Min and max forecast temperatures spaced out
   The ` character has been changed to a degree symbol in the 36 point font
-  New smart WU jpeg splash startup screen and updated progress messages
+  New smart WU splash startup screen and updated progress messages
   Display does not need to be blanked between updates
   Icons nudged about slightly to add wind direction + speed
 */
+
+#define SERIAL_MESSAGES
 
 #include <Arduino.h>
 
@@ -99,7 +101,9 @@ void drawSeparator(uint16_t y);
 long lastDownloadUpdate = millis();
 
 void setup() {
+#ifdef SERIAL_MESSAGES
   Serial.begin(250000);
+#endif
   tft.begin();
   tft.fillScreen(TFT_BLACK);
 
@@ -112,8 +116,8 @@ void setup() {
   
   SPIFFS.begin();
   //listFiles();
-  //Uncomment next line if you want to erase SPIFFS and update all internet resources, this takes some time!
-  tft.drawString("Formatting SPIFFS, so wait!", 120, 200); SPIFFS.format();
+  //Uncomment if you want to erase SPIFFS and update all internet resources, this takes some time!
+  //tft.drawString("Formatting SPIFFS, so wait!", 120, 200); SPIFFS.format();
 
   if (SPIFFS.exists("/WU.jpg") == true) ui.drawJpeg("/WU.jpg", 0, 10);
   if (SPIFFS.exists("/Earth.jpg") == true) ui.drawJpeg("/Earth.jpg", 0, 320-56); // Image is 56 pixels high
@@ -147,10 +151,12 @@ void setup() {
   tft.drawString(" ", 120, 260);  // Clear line
   downloadResources();
   //listFiles();
+  tft.setTextDatum(BC_DATUM);
+  tft.setTextPadding(240); // Pad next drawString() text to full width to over-write old text
   tft.drawString(" ", 120, 200);  // Clear line above using set padding width
-  tft.drawString("Fetching weather data...", 120, 220);
+  tft.drawString("Fetching weather data...", 120, 200);
   //delay(500);
-  
+
   // load the weather information
   updateData();
 }
@@ -245,7 +251,7 @@ void updateData() {
   // booted = false; // Test only
 
   if (booted) ui.drawJpeg("/WU.jpg", 0, 10); // May have already drawn this but it does not take long
-  else tft.drawCircle(22, 22, 16, TFT_DARKGREY); // Outer ring - optional
+  else tft.drawCircle(22, 22, 18, TFT_DARKGREY); // Outer ring - optional
 
   if (booted) drawProgress(20, "Updating time...");
   else fillSegment(22, 22, 0, (int) (20 * 3.6), 16, TFT_NAVY);
@@ -278,8 +284,6 @@ void updateData() {
   drawCurrentWeather();
   drawForecast();
   drawAstronomy();
-
-  //if (booted) screenshotToConsole(); // No supporting function in this sketch, documentation support only!
   booted = false;
 }
 
@@ -299,14 +303,6 @@ void drawProgress(uint8_t percentage, String text) {
 
 // draws the clock
 void drawTime() {
-  tft.setFreeFont(&ArialRoundedMTBold_14);
-
-  String date = wunderground.getDate();
-
-  tft.setTextDatum(BC_DATUM);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setTextPadding(tft.textWidth(" Ddd, 44 Mmm 4444 "));  // String width + margin
-  tft.drawString(date, 120, 14);
 
   tft.setFreeFont(&ArialRoundedMTBold_36);
 
@@ -315,9 +311,18 @@ void drawTime() {
   tft.setTextDatum(BC_DATUM);
   tft.setTextColor(TFT_YELLOW, TFT_BLACK);
   tft.setTextPadding(tft.textWidth(" 44:44 "));  // String width + margin
-  tft.drawString(timeNow, 120, 50);
+  tft.drawString(timeNow, 120, 53);
 
-  drawSeparator(52);
+  tft.setFreeFont(&ArialRoundedMTBold_14);
+
+  String date = wunderground.getDate();
+
+  tft.setTextDatum(BC_DATUM);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setTextPadding(tft.textWidth(" Ddd, 44 Mmm 4444 "));  // String width + margin
+  tft.drawString(date, 120, 16);
+
+  drawSeparator(54);
 
   tft.setTextPadding(0);
 }
@@ -370,12 +375,21 @@ void drawCurrentWeather() {
   if (IS_METRIC) tft.drawString("C ", 221, 100);
   else  tft.drawString("F ", 221, 100);
 
-  weatherText = wunderground.getWindDir() + " ";
+  //tft.drawString(wunderground.getPressure(), 180, 30);
+  
+  weatherText = ""; //wunderground.getWindDir() + " ";
   weatherText += String((int)(wunderground.getWindSpeed().toInt() * WIND_SPEED_SCALING)) + WIND_SPEED_UNITS;
 
-  tft.setTextPadding(tft.textWidth("Variable 888 mph ")); // Max string length?
-  tft.drawString(weatherText, 114, 136);
+  tft.setTextDatum(TC_DATUM);
+  tft.setTextPadding(tft.textWidth(" 888 mph")); // Max string length?
+  tft.drawString(weatherText, 128, 136);
 
+  weatherText = wunderground.getPressure();
+
+  tft.setTextDatum(TR_DATUM);
+  tft.setTextPadding(tft.textWidth(" 8888mb")); // Max string length?
+  tft.drawString(weatherText, 230, 136);
+  
   weatherText = wunderground.getWindDir();
 
   int windAngle = 0;
@@ -410,6 +424,7 @@ void drawCurrentWeather() {
 
   drawSeparator(153);
 
+  tft.setTextDatum(TL_DATUM); // Reset datum to normal
   tft.setTextPadding(0); // Reset padding width to none
 }
 
