@@ -2610,7 +2610,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
     {
       // Uses the fontinfo struct array to avoid lots of 'if' or 'switch' statements
       // A tad slower than above but this is not significant and is more convenient for the RLE fonts
-      width = pgm_read_byte( pgm_read_dword( &(fontdata[textfont].widthtbl ) ) + uniCode-32 );
+      width = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[textfont].widthtbl ) ) + uniCode-32 );
       height= pgm_read_byte( &fontdata[textfont].height );
     }
   }
@@ -2758,7 +2758,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
     {
       // This is slower than above but is more convenient for the RLE fonts
       flash_address = pgm_read_dword( pgm_read_dword( &(fontdata[font].chartbl ) ) + uniCode*sizeof(void *) );
-      width = pgm_read_byte( pgm_read_dword( &(fontdata[font].widthtbl ) ) + uniCode );
+      width = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[font].widthtbl ) ) + uniCode );
       height= pgm_read_byte( &fontdata[font].height );
     }
   }
@@ -2783,7 +2783,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
 
         for (int k = 0; k < w; k++)
         {
-          line = pgm_read_byte(flash_address + w * i + k);
+          line = pgm_read_byte((uint8_t *)flash_address + w * i + k);
           if (line) {
             if (textsize == 1) {
               pX = x + k * 8;
@@ -2823,7 +2823,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
       {
         for (int k = 0; k < w; k++)
         {
-          line = pgm_read_byte(flash_address + w * i + k);
+          line = pgm_read_byte((uint8_t *)flash_address + w * i + k);
           pX = x + k * 8;
           mask = 0x80;
           while (mask) {
@@ -2867,7 +2867,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
       // w is total number of pixels to plot to fill character block
       while (pc < w)
       {
-        line = pgm_read_byte(flash_address);
+        line = pgm_read_byte((uint8_t *)flash_address);
         flash_address++; // 20 bytes smaller by incrementing here
         if (line & 0x80) {
           line &= 0x7F;
@@ -2923,7 +2923,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
       // Maximum font size is equivalent to 180x180 pixels in area
       while (w > 0)
       {
-        line = pgm_read_byte(flash_address++); // 8 bytes smaller when incrementing here
+        line = pgm_read_byte((uint8_t *)flash_address++); // 8 bytes smaller when incrementing here
         if (line & 0x80) {
           line &= 0x7F;
           line++; w -= line;
