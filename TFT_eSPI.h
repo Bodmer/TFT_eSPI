@@ -73,9 +73,14 @@
 
 #include <SPI.h>
 
-#if defined (ESP32) || defined (D0_USED_FOR_DC)
+#if defined (ESP8266) && defined (D0_USED_FOR_DC)
   #define DC_C digitalWrite(TFT_DC, LOW)
   #define DC_D digitalWrite(TFT_DC, HIGH)
+#elif defined (ESP32)
+  //#define DC_C digitalWrite(TFT_DC, HIGH); GPIO.out_w1tc = (1 << TFT_DC)//digitalWrite(TFT_DC, LOW)
+  //#define DC_D digitalWrite(TFT_DC, LOW); GPIO.out_w1ts = (1 << TFT_DC)//digitalWrite(TFT_DC, HIGH)
+  #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
+  #define DC_D GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
 #else
   #define DC_C GPOC=dcpinmask
   #define DC_D GPOS=dcpinmask
@@ -85,9 +90,14 @@
   #define CS_L // No macro allocated so it generates no code
   #define CS_H // No macro allocated so it generates no code
 #else
-  #if defined (ESP32) || defined (D0_USED_FOR_CS)
+  #if defined (ESP8266) && defined (D0_USED_FOR_CS)
     #define CS_L digitalWrite(TFT_CS, LOW)
     #define CS_H digitalWrite(TFT_CS, HIGH)
+  #elif defined (ESP32)
+    //#define CS_L digitalWrite(TFT_CS, HIGH); GPIO.out_w1tc = (1 << TFT_CS)//digitalWrite(TFT_CS, LOW)
+    //#define CS_H digitalWrite(TFT_CS, LOW); GPIO.out_w1ts = (1 << TFT_CS)//digitalWrite(TFT_CS, HIGH)
+    #define CS_L GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
+    #define CS_H GPIO.out_w1ts = (1 << TFT_CS)
   #else
     #define CS_L GPOC=cspinmask
     #define CS_H GPOS=cspinmask
@@ -423,8 +433,8 @@ inline void spi_end() __attribute__((always_inline));
 
   int32_t  cursor_x, cursor_y, win_xe, win_ye, padX;
 
-  uint32_t _width, _height, // Display w/h as modified by current rotation
-           textcolor, textbgcolor, fontsloaded, addr_row, addr_col;
+  uint32_t _width, _height; // Display w/h as modified by current rotation
+  uint32_t textcolor, textbgcolor, fontsloaded, addr_row, addr_col;
 
   uint8_t  glyph_ab,  // glyph height above baseline
            glyph_bb,  // glyph height below baseline
@@ -434,6 +444,8 @@ inline void spi_end() __attribute__((always_inline));
            rotation;  // Display rotation (0-3)
 
   boolean  textwrap; // If set, 'wrap' text at right edge of display
+
+  boolean  locked, inTransaction; // Transaction and mutex lock flags for ESP32
 
 #ifdef LOAD_GFXFF
   GFXfont

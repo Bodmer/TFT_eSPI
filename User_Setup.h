@@ -76,9 +76,9 @@
 // If 5V is not available at a pin you can use 3.3V but backlight brightness
 // will be lower.
 
-// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR SETUP ######
+// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP8266 SETUP ######
 
-// ModeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
+// For ModeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
 
 #define TFT_CS   PIN_D8  // Chip select control pin D8
 #define TFT_DC   PIN_D3  // Data Command control pin
@@ -87,15 +87,22 @@
 
 //#define TFT_WR PIN_D2    // Write strobe for modified Raspberry Pi TFT only
 
-// ESP32 Dev board (planned, not supported yet)
-//#define TFT_CS   5  // Chip select control pin
-//#define TFT_DC   2  // Data Command control pin
-//#define TFT_RST  4  // Reset pin (could connect to Arduino RESET pin)
+// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP32 SETUP   ######
+
+// For ESP32 Dev board (only tested with ILI9341 display)
+// The hardware SPI can be mapped to any pins
+
+//#define TFT_MISO 19
+//#define TFT_MOSI 23
+//#define TFT_SCLK 18
+//#define TFT_CS    5  // Chip select control pin
+//#define TFT_DC    2  // Data Command control pin
+//#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
 // ##################################################################################
 //
-// Section 2. Define the way the DC and/or CS lines are driven
+// Section 2. Define the way the DC and/or CS lines are driven (ESP8266 only)
 //
 // ##################################################################################
 
