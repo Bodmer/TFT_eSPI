@@ -2773,7 +2773,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
   }
   else
   {
-    if (textwrap && (cursor_x + width * textsize >= _width))
+    if (textwrap && (cursor_x + width * textsize > _width))
     {
       cursor_y += height;
       cursor_x = 0;
@@ -2801,7 +2801,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
                   h     = pgm_read_byte(&glyph->height);
         if((w > 0) && (h > 0)) { // Is there an associated bitmap?
           int16_t xo = (int8_t)pgm_read_byte(&glyph->xOffset);
-          if(textwrap && ((cursor_x + textsize * (xo + w)) >= _width)) {
+          if(textwrap && ((cursor_x + textsize * (xo + w)) > _width)) {
             // Drawing character would go off right edge; wrap to new line
             cursor_x  = 0;
             cursor_y += (int16_t)textsize *
