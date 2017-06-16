@@ -80,7 +80,7 @@
   //#define DC_C digitalWrite(TFT_DC, HIGH); GPIO.out_w1tc = (1 << TFT_DC)//digitalWrite(TFT_DC, LOW)
   //#define DC_D digitalWrite(TFT_DC, LOW); GPIO.out_w1ts = (1 << TFT_DC)//digitalWrite(TFT_DC, HIGH)
   #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
-  #define DC_D GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
+  #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
 #else
   #define DC_C GPOC=dcpinmask
   #define DC_D GPOS=dcpinmask
@@ -96,7 +96,7 @@
   #elif defined (ESP32)
     //#define CS_L digitalWrite(TFT_CS, HIGH); GPIO.out_w1tc = (1 << TFT_CS)//digitalWrite(TFT_CS, LOW)
     //#define CS_H digitalWrite(TFT_CS, LOW); GPIO.out_w1ts = (1 << TFT_CS)//digitalWrite(TFT_CS, HIGH)
-    #define CS_L GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
+    #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
     #define CS_H GPIO.out_w1ts = (1 << TFT_CS)
   #else
     #define CS_L GPOC=cspinmask
@@ -106,8 +106,10 @@
 
 #ifdef TFT_WR
   #if defined (ESP32)
-    #define WR_L digitalWrite(TFT_WR, LOW)
-    #define WR_H digitalWrite(TFT_WR, HIGH)
+    #define WR_L GPIO.out_w1tc = (1 << TFT_WR)
+    //digitalWrite(TFT_WR, LOW)
+    #define WR_H GPIO.out_w1ts = (1 << TFT_WR)
+    //digitalWrite(TFT_WR, HIGH)
   #else
     #define WR_L GPOC=wrpinmask
     #define WR_H GPOS=wrpinmask
