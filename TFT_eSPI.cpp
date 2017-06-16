@@ -1779,8 +1779,10 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   y1+=rowstart;
 #endif
 
+#if !defined (RPI_ILI9486_DRIVER)
   uint32_t xaw = ((uint32_t)x0 << 16) | x1;
   uint32_t yaw = ((uint32_t)y0 << 16) | y1;
+#endif
 
   // Column addr set
   DC_C;
@@ -1794,8 +1796,14 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 
   DC_D;
 
+
+#if defined (RPI_ILI9486_DRIVER)
+  uint8_t xBin[] = { 0, (uint8_t) (x0>>8), 0, (uint8_t) (x0>>0), 0, (uint8_t) (x1>>8), 0, (uint8_t) (x1>>0), };
+  SPI.writePattern(&xBin[0], 8, 1);
+#else
   SPI.write32(xaw);
-  
+#endif
+
   // Row addr set
   DC_C;
 
@@ -1807,8 +1815,14 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 
   DC_D;
 
+
+#if defined (RPI_ILI9486_DRIVER)
+  uint8_t yBin[] = { 0, (uint8_t) (y0>>8), 0, (uint8_t) (y0>>0), 0, (uint8_t) (y1>>8), 0, (uint8_t) (y1>>0), };
+  SPI.writePattern(&yBin[0], 8, 1);
+#else
   SPI.write32(yaw);
-  
+#endif
+
   // write to RAM
   DC_C;
 
@@ -2140,9 +2154,11 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
   y+=rowstart;
 #endif
 
+#if !defined (RPI_ILI9486_DRIVER)
   uint32_t xaw = ((uint32_t)x << 16) | x;
   uint32_t yaw = ((uint32_t)y << 16) | y;
-  
+#endif
+
   CS_L;
 
   // No need to send x if it has not changed (speeds things up)
@@ -2158,12 +2174,12 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
     DC_D;
 
-    //SPI.write16((x >> 8) | (x << 8));
-
-    // Send same x value again
-    //SPI.write16((x >> 8) | (x << 8));
-
+#if defined (RPI_ILI9486_DRIVER)
+    uint8_t xBin[] = { 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), };
+    SPI.writePattern(&xBin[0], 8, 1);
+#else
     SPI.write32(xaw);
+#endif
     
     addr_col = x;
   }
@@ -2181,12 +2197,12 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
     DC_D;
 
-    //SPI.write16((y >> 8) | (y << 8));
-
-    // Send same y value again
-    //SPI.write16((y >> 8) | (y << 8));
-
+#if defined (RPI_ILI9486_DRIVER)
+    uint8_t yBin[] = { 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), };
+    SPI.writePattern(&yBin[0], 8, 1);
+#else
     SPI.write32(yaw);
+#endif
 
     addr_row = y;
   }
@@ -3574,21 +3590,10 @@ void spiWriteBlock(uint16_t color, uint32_t repeat)
 #define BUFFER_SIZE 64
 void spiWriteBlock(uint16_t color, uint32_t repeat)
 {
-#if defined (ESP32)
-  static uint16_t buffer[BUFFER_SIZE];
-  uint32_t r = (repeat > BUFFER_SIZE)? BUFFER_SIZE:repeat;
-  while(r--) buffer[r] = color;
-  while (repeat> (BUFFER_SIZE - 1))
-  {
-      SPI.writePixels((uint8_t*)buffer , 2 * BUFFER_SIZE);
-      repeat -= BUFFER_SIZE;
-  }
-  if (repeat) SPI.writePixels((uint8_t*)buffer , repeat * 2);
 
-#else
   uint8_t colorBin[] = { (uint8_t) (color >> 8), (uint8_t) color};
   SPI.writePattern(&colorBin[0], 2, repeat);
-#endif
+
 }
 
 #else // Low level register based ESP32 code
@@ -3600,33 +3605,7 @@ void spiWriteBlock(uint16_t color, uint32_t repeat)
 {
   uint16_t color16 = (color >> 8) | (color << 8);
   uint32_t color32 = color16 | color16 << 16;
-/*
-  WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (0 << 2)), color32);
-  WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (1 << 2)), color32);
-  WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (2 << 2)), color32);
-  WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (3 << 2)), color32);
-  if (repeat > 8)
-  {
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (4 << 2)), color32);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (5 << 2)), color32);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (6 << 2)), color32);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (7 << 2)), color32);
-  }
-  if (repeat > 16)
-  {
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (8 << 2)), color32);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (9 << 2)), color32);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (10 << 2)), color32);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (11 << 2)), color32);
-  }
-  if (repeat > 24)
-  {
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (12 << 2)), color32);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (13 << 2)), color32);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (14 << 2)), color32);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (15 << 2)), color32);
-  }
-*/
+
   if (repeat > 15)
   {
     SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 255, SPI_USR_MOSI_DBITLEN_S);
