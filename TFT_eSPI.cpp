@@ -3241,8 +3241,9 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
       //if (xo < 0) 
           cwidth -= xo;
       // Add 1 pixel of padding all round
-      cheight +=2;
-      fillRect(poX+xo-1, poY - 1 - glyph_ab * textsize, cwidth+2, cheight, textbgcolor);
+      //cheight +=2;
+      //fillRect(poX+xo-1, poY - 1 - glyph_ab * textsize, cwidth+2, cheight, textbgcolor);
+      fillRect(poX+xo, poY - glyph_ab * textsize, cwidth, cheight, textbgcolor);
       padding -=100;
     }
 #endif
