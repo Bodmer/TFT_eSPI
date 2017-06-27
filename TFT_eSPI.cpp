@@ -24,7 +24,9 @@
 //#include <limits.h>
 //#include "pins_arduino.h"
 //#include "wiring_private.h"
+#ifndef ST7787_DRIVER
 #include <SPI.h>
+#endif
 
 // If it is a 16bit serial display we must transfer 16 bits every time
 #ifdef RPI_ILI9486_DRIVER
@@ -88,6 +90,16 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
     digitalWrite(TFT_RST, HIGH); // Set high, do not share pin with another SPI device
     pinMode(TFT_RST, OUTPUT);
   }
+#endif
+
+#ifdef TFT_DAT
+  digitalWrite(TFT_DAT, HIGH);
+  pinMode(TFT_DAT, OUTPUT);
+#endif
+
+#ifdef TFT_SCK
+  digitalWrite(TFT_SCK, LOW);
+  pinMode(TFT_SCK, OUTPUT);
 #endif
 
   _width    = w; // Set by specific xxxxx_Defines.h file or by users sketch
@@ -172,7 +184,17 @@ void TFT_eSPI::init(void)
     SPI.pins(6, 7, 8, 0);
   #endif
 
+  #ifdef TFT_DAT
+    cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
+  #endif
+
+  #ifdef TFT_SCK
+    cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
+  #endif
+
+#ifndef ST7787_DRIVER
   SPI.begin(); // This will set HMISO to input
+#endif
 #else
   #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP)
     SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
@@ -185,6 +207,7 @@ void TFT_eSPI::init(void)
   inTransaction = false;
   locked = true;
 
+#ifdef ST7787_DRIVER
 #ifndef SUPPORT_TRANSACTIONS
 
   SPI.setBitOrder(MSBFIRST);
@@ -197,6 +220,7 @@ void TFT_eSPI::init(void)
     locked = false;       // Flag to stop repeat beginTransaction calls
   #endif
 
+#endif
 #endif
 
   // Set to output once again in case D6 (MISO) is used for CS
@@ -249,6 +273,9 @@ void TFT_eSPI::init(void)
 #elif defined (RPI_ILI9486_DRIVER)
     #include "TFT_Drivers/RPI_ILI9486_Init.h"
 
+#elif defined(ST7787_DRIVER)
+    #include "TFT_Drivers/ST7787_Init.h"
+
 #endif
 
   spi_end();
@@ -280,6 +307,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (RPI_ILI9486_DRIVER)
     #include "TFT_Drivers/RPI_ILI9486_Rotation.h"
+
+#elif defined (ST7787_DRIVER)
+    #include "TFT_Drivers/ST7787_Rotation.h"
 
 #endif
 
@@ -338,20 +368,101 @@ void TFT_eSPI::spiwrite(uint8_t c)
 }
 
 
+void TFT_eSPI::docommand(uint8_t c, uint8_t *in, uint32_t in_len, uint8_t *out, uint32_t out_len)
+{
+  uint32_t i;
+  uint32_t val;
+
+  DAT_O;
+  CS_L;
+  delay_ns(ST7787_T_CSS);
+
+  /* Write the command byte. */
+  /* First shift out the data/command bit ('0' for command). */
+  SCK_L;
+  DAT_L;
+  delay_ns(ST7787_T_SLW);
+  SCK_H;
+  delay_ns(ST7787_T_SHW);
+  /* Then shift out the bits, MSB-to-LSB. */
+  val = c;
+  for (i = 8; i; --i) {
+    SCK_L;
+    if ((val>>7) & 1)
+      DAT_H;
+    else
+      DAT_L;
+    val <<= 1;
+    delay_ns(ST7787_T_SLW);
+    SCK_H;
+    delay_ns(ST7787_T_SHW);
+  }
+
+  /* Write any command data. */
+  if (in_len) {
+    do {
+      val = *in++;
+
+      /* Data/command bit ('1' for data). */
+      SCK_L;
+      DAT_H;
+      delay_ns(ST7787_T_SLW);
+      SCK_H;
+      delay_ns(ST7787_T_SHW);
+
+      for (i = 8; i; --i) {
+        SCK_L;
+        if ((val>>7) & 1)
+          DAT_H;
+        else
+          DAT_L;
+        val <<= 1;
+        delay_ns(ST7787_T_SLW);
+        SCK_H;
+        delay_ns(ST7787_T_SHW);
+      }
+    } while (--in_len > 0);
+  }
+
+  DAT_I;
+
+  /* Read reply. */
+  if (out_len) {
+    /* Dummy bit (according to data sheet, data/command placeholder?). */
+    SCK_L;
+    delay_ns(ST7787_T_SLR);
+    SCK_H;
+    delay_ns(ST7787_T_SHR);
+
+    do {
+      val = 0;
+      for (i = 8; i; --i) {
+        SCK_L;
+        delay_ns(ST7787_T_SLR);
+        val = (val << 1);
+        if (DAT_V)
+          val = val | 1;
+        SCK_H;
+        delay_ns(ST7787_T_SHR);
+      }
+      *out++ = val;
+    } while (--out_len > 0);
+  }
+
+  SCK_L;
+  delay_ns(ST7787_T_SCC);
+  CS_H;
+  delay_ns(ST7787_T_CHW);
+}
+
+
 /***************************************************************************************
 ** Function name:           writecommand
 ** Description:             Send an 8 bit command to the TFT
 ***************************************************************************************/
 void TFT_eSPI::writecommand(uint8_t c)
 {
-  DC_C;
-  CS_L;
-  #ifdef SEND_16_BITS
-    SPI.transfer(0);
-  #endif
-  SPI.transfer(c);
-  CS_H;
-  DC_D;
+  docommand(c, NULL, 0, NULL, 0);
 }
 
 
@@ -361,12 +472,38 @@ void TFT_eSPI::writecommand(uint8_t c)
 ***************************************************************************************/
 void TFT_eSPI::writedata(uint8_t c)
 {
+  uint32_t i;
+  uint32_t val;
+
+  DAT_O;
   CS_L;
-  #ifdef SEND_16_BITS
-    SPI.transfer(0);
-  #endif
-  SPI.transfer(c);
+  delay_ns(ST7787_T_CSS);
+
+  /* Data/command bit ('1' for data). */
+  val = c;
+  SCK_L;
+  DAT_H;
+  delay_ns(ST7787_T_SLW);
+  SCK_H;
+  delay_ns(ST7787_T_SHW);
+
+  for (i = 8; i; --i) {
+    SCK_L;
+    if ((val>>7) & 1)
+      DAT_H;
+    else
+      DAT_L;
+    val <<= 1;
+    delay_ns(ST7787_T_SLW);
+    SCK_H;
+    delay_ns(ST7787_T_SHW);
+  }
+
+  DAT_I;
+
+  delay_ns(ST7787_T_SCC);
   CS_H;
+  delay_ns(ST7787_T_CHW);
 }
 
 

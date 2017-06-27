@@ -120,6 +120,19 @@
   #endif
 #endif
 
+#ifdef TFT_DAT
+#define DAT_I pinMode(TFT_DAT, INPUT)
+#define DAT_O pinMode(TFT_DAT, OUTPUT)
+#define DAT_L digitalWrite(TFT_DAT, LOW)
+#define DAT_H digitalWrite(TFT_DAT, HIGH)
+#define DAT_V digitalRead(TFT_DAT)
+#endif
+
+#ifdef TFT_SCK
+#define SCK_L digitalWrite(TFT_SCK, LOW)
+#define SCK_H digitalWrite(TFT_SCK, HIGH)
+#endif
+
 #ifdef LOAD_GFXFF
   // We can include all the free fonts and they will only be built into
   // the sketch if they are used
@@ -361,6 +374,7 @@ class TFT_eSPI : public Print {
            setTextFont(uint8_t font),
 #endif
            spiwrite(uint8_t),
+           docommand(uint8_t c, uint8_t *in, uint32_t in_len, uint8_t *out, uint32_t out_len),
            writecommand(uint8_t c),
            writedata(uint8_t d),
            commandList(const uint8_t *addr);
@@ -458,6 +472,7 @@ inline void spi_end() __attribute__((always_inline));
     *gfxFont;
 #endif
 
+  void delay_ns(uint32_t d) { delayMicroseconds(1); /* ToDo */ }
 };
 
 #endif

@@ -51,6 +51,8 @@
      #include <TFT_Drivers/S6D02A1_Defines.h>
 #elif defined (RPI_ILI9486_DRIVER)
      #include <TFT_Drivers/RPI_ILI9486_Defines.h>
+#elif defined (ST7787_DRIVER)
+     #include <TFT_Drivers/ST7787_Defines.h>
 #endif
 
 // These are the pins for all ESP8266 boards
