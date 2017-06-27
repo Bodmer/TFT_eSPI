@@ -472,8 +472,17 @@ inline void spi_end() __attribute__((always_inline));
     *gfxFont;
 #endif
 
-  void delay_ns(uint32_t d) { delayMicroseconds(1); /* ToDo */ }
 };
+
+static inline void delay_ns(int32_t d)
+{
+  while (d > 0)
+  {
+    asm volatile ("nop ; nop ; nop ; nop" : : : "memory");
+    d -= 25;
+  }
+  /* ToDo */
+}
 
 #endif
 

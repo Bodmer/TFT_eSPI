@@ -1710,7 +1710,41 @@ void TFT_eSPI::setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 ***************************************************************************************/
 // Chip select stays low, use setWindow() from sketches
 
-#if defined (ESP8266) && !defined (RPI_WRITE_STROBE) && !defined (RPI_ILI9486_DRIVER)
+#if defined (ESP8266) && defined(ST7787_DRIVER)
+inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
+{
+  uint8_t buf[4];
+
+  addr_col = 0xFFFF;
+  addr_row = 0xFFFF;
+  
+#ifdef CGRAM_OFFSET
+  xs+=colstart;
+  xe+=colstart;
+  ys+=rowstart;
+  ye+=rowstart;
+#endif
+
+  // Column addr set
+  buf[0] = xs >> 8;
+  buf[1] = xs & 0xff;
+  buf[2] = xe >> 8;
+  buf[3] = xe & 0xff;
+  docommand(TFT_CASET, buf, 4, NULL, 0);
+  // Row addr set
+  buf[0] = ys >> 8;
+  buf[1] = ys & 0xff;
+  buf[2] = ye >> 8;
+  buf[3] = ye & 0xff;
+  docommand(TFT_PASET, buf, 4, NULL, 0);
+
+  // write to RAM
+  docommand(TFT_RAMWR, NULL, 0, NULL, 0);
+  CS_L;
+  /* ToDo: This could be done smarter, for now just made simple to match other code. */
+}
+
+#elif defined (ESP8266) && !defined (RPI_WRITE_STROBE) && !defined (RPI_ILI9486_DRIVER)
 inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 {
   //spi_begin();
@@ -2106,7 +2140,51 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 ** Function name:           drawPixel
 ** Description:             push a single pixel at an arbitrary position
 ***************************************************************************************/
-#if defined (ESP8266) && !defined (RPI_WRITE_STROBE)
+#ifdef ST7787_DRIVER
+void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
+{
+  uint8_t buf[4];
+
+  // Faster range checking, possible because x and y are unsigned
+  if ((x >= _width) || (y >= _height)) return;
+  
+#ifdef CGRAM_OFFSET
+  x+=colstart;
+  y+=rowstart;
+#endif
+
+  spi_begin();
+
+  CS_L;
+
+  // No need to send x if it has not changed (speeds things up)
+  if (addr_col != x) {
+    buf[0] = x >> 8;
+    buf[1] = x & 0xff;
+    buf[2] = x >> 8;
+    buf[3] = x & 0xff;
+    docommand(TFT_CASET, buf, 4, NULL, 0);
+    addr_col = x;
+  }
+
+  // No need to send y if it has not changed (speeds things up)
+  if (addr_row != y) {
+    buf[0] = y >> 8;
+    buf[1] = y & 0xff;
+    buf[2] = y >> 8;
+    buf[3] = y & 0xff;
+    docommand(TFT_PASET, buf, 4, NULL, 0);
+    addr_row = y;
+  }
+
+  buf[0] = color >> 8;
+  buf[1] = color & 0xff;
+  docommand(TFT_RAMWR, buf, 2, NULL, 0);
+
+  spi_end();
+}
+
+#elif defined (ESP8266) && !defined (RPI_WRITE_STROBE)
 void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 {
   // Faster range checking, possible because x and y are unsigned
@@ -3675,7 +3753,62 @@ void TFT_eSPI::setTextFont(uint8_t f)
 ** Function name:           spiBlockWrite
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
-#if defined (ESP8266) && (SPI_FREQUENCY != 80000000)
+#if defined(ESP8266) && defined(ST7787_DRIVER)
+void spiWriteBlock(uint16_t color, uint32_t repeat)
+{
+  uint32_t i;
+  uint32_t val;
+
+  DAT_O;
+  delay_ns(ST7787_T_CSS);
+
+  while (repeat-- > 0)
+  {
+    val = color >> 8;
+    /* Data/command bit ('1' for data). */
+    SCK_L;
+    DAT_H;
+    delay_ns(ST7787_T_SLW);
+    SCK_H;
+    delay_ns(ST7787_T_SHW);
+
+    for (i = 8; i; --i) {
+      SCK_L;
+      if ((val>>7) & 1)
+        DAT_H;
+      else
+        DAT_L;
+      val <<= 1;
+      delay_ns(ST7787_T_SLW);
+      SCK_H;
+      delay_ns(ST7787_T_SHW);
+    }
+
+    val = color & 0xff;
+    /* Data/command bit ('1' for data). */
+    SCK_L;
+    DAT_H;
+    delay_ns(ST7787_T_SLW);
+    SCK_H;
+    delay_ns(ST7787_T_SHW);
+
+    for (i = 8; i; --i) {
+      SCK_L;
+      if ((val>>7) & 1)
+        DAT_H;
+      else
+        DAT_L;
+      val <<= 1;
+      delay_ns(ST7787_T_SLW);
+      SCK_H;
+      delay_ns(ST7787_T_SHW);
+    }
+  }
+
+  DAT_I;
+}
+
+#elif defined (ESP8266) && (SPI_FREQUENCY != 80000000)
 void spiWriteBlock(uint16_t color, uint32_t repeat)
 {
   uint16_t color16 = (color >> 8) | (color << 8);
