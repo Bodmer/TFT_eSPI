@@ -30,6 +30,15 @@
   #define SPI_FREQUENCY  20000000
 #endif
 
+#ifdef ST7787_DRIVER
+  // ST7787 only supports a 3-wire serial interface, where the data/command bit
+  // is sent as a 9th bit in the SPI protocol, not on a separate wire.
+  #define IFACE_3WIRE 1
+  #ifdef ESP8266
+    #define IFACE_3WIRE_ESP8266 1
+  #endif
+#endif
+
 // Only load the fonts defined in User_Setup.h (to save space)
 // Set flag so RLE rendering code is optionally compiled
 #ifdef LOAD_GLCD
