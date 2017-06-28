@@ -37,6 +37,24 @@
 // Fast SPI block write prototype
 void spiWriteBlock(uint16_t color, uint32_t repeat);
 
+// Bit-stuffing for fast ESP8266 9-bit SPI.
+#ifdef IFACE_3WIRE_ESP8266
+#define STARTBITS(cur_, pos_, spireg_) { cur_ = 0; pos_ = 32; spireg_ = &SPI1W0; }
+#define ADDBITS(val_, bits_, cur_, pos_, spireg_) { \
+  if ((pos_) < (bits_))                             \
+  {                                                 \
+    cur_ |= (val_) >> ((bits_) - (pos_));           \
+    *spireg_++ = cur_;                              \
+    pos_ = 32 - ((bits_) - (pos_));                 \
+    cur_ = ((uint32_t)(val_) << (pos_));            \
+  } else {                                          \
+    pos_ -= (bits_);                                \
+    cur_ |= ((uint32_t)(val_) << (pos_));           \
+  }                                                 \
+}
+#define FLUSHBITS(cur_, spireg_) { *spireg_ = cur_; }
+#endif
+
 // If the SPI library has transaction support, these functions
 // establish settings and protect from interference from other
 // libraries.  Otherwise, they simply do nothing.
@@ -1847,7 +1865,48 @@ void TFT_eSPI::setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 ***************************************************************************************/
 // Chip select stays low, use setWindow() from sketches
 
-#if defined (ESP8266) && defined(ST7787_DRIVER)
+#ifdef IFACE_3WIRE
+#ifdef IFACE_3WIRE_ESP8266
+inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
+{
+  //spi_begin();
+  addr_col = 0xFFFF;
+  addr_row = 0xFFFF;
+  
+#ifdef CGRAM_OFFSET
+  xs+=colstart;
+  xe+=colstart;
+  ys+=rowstart;
+  ye+=rowstart;
+#endif
+
+  // Column addr set
+  CS_L;
+
+  uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+  mask = SPI1U1 & mask;
+
+  uint32_t cur, pos;
+  volatile uint32_t *spireg;
+  uint32_t numbits = 9+36+9+36+9-1;
+  STARTBITS(cur, pos, spireg);
+  ADDBITS(((uint32_t)TFT_CASET << 18) | (uint32_t)0x20100 | ((xs & 0xff00) << 1) | (xs & 0xff),
+          27, cur, pos, spireg);
+  ADDBITS((uint32_t)0x20100 | ((xe & 0xff00) << 1) | (xe & 0xff), 18, cur, pos, spireg);
+  ADDBITS(((uint32_t)TFT_PASET << 18) | (uint32_t)0x20100 | ((ys & 0xff00) << 1) | (ys & 0xff),
+          27, cur, pos, spireg);
+  ADDBITS((uint32_t)0x20100 | ((ye & 0xff00) << 1) | (ye & 0xff), 18, cur, pos, spireg);
+  ADDBITS(TFT_RAMWR, 9, cur, pos, spireg);
+  FLUSHBITS(cur, spireg);
+  SPI1U1 = mask | (numbits << SPILMOSI) | (numbits << SPILMISO);
+
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  //spi_end();
+}
+
+#else  /* !IFACE_3WIRE_ESP8266 */
 inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 {
   uint8_t buf[4];
@@ -1881,6 +1940,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t 
   /* ToDo: This could be done smarter, for now just made simple to match other code. */
 }
 
+#endif  /* IFACE_3WIRE_ESP8266 */
 #elif defined (ESP8266) && !defined (RPI_WRITE_STROBE) && !defined (RPI_ILI9486_DRIVER)
 inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 {
@@ -3885,21 +3945,6 @@ void TFT_eSPI::setTextFont(uint8_t f)
 
 #endif
 
-
-#define STARTBITS(cur_, pos_, spireg_) { cur_ = 0; pos_ = 32; spireg_ = &SPI1W0; }
-#define ADDBITS(val_, bits_, cur_, pos_, spireg_) { \
-  if (pos_ < bits_)                                 \
-  {                                                 \
-    cur_ |= val_ >> (bits_ - pos_);                 \
-    *spireg_++ = cur_;                              \
-    pos_ = 32 - (bits_ - pos_);                     \
-    cur_ = ((uint32_t)val_ << pos_);                \
-  } else {                                          \
-    pos_ -= bits_;                                  \
-    cur_ |= ((uint32_t)val_ << pos_);               \
-  }                                                 \
-}
-#define FLUSHBITS(cur_, spireg_) { *spireg_ = cur_; }
 
 /***************************************************************************************
 ** Function name:           spiBlockWrite
