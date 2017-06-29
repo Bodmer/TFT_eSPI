@@ -2337,7 +2337,62 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 ** Function name:           drawPixel
 ** Description:             push a single pixel at an arbitrary position
 ***************************************************************************************/
-#ifdef ST7787_DRIVER
+#ifdef IFACE_3WIRE
+#ifdef IFACE_3WIRE_ESP8266
+void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
+{
+  // Faster range checking, possible because x and y are unsigned
+  if ((x >= _width) || (y >= _height)) return;
+  
+#ifdef CGRAM_OFFSET
+  x+=colstart;
+  y+=rowstart;
+#endif
+
+  spi_begin();
+
+  CS_L;
+
+  uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+  mask = SPI1U1 & mask;
+
+  uint32_t cur, pos;
+  volatile uint32_t *spireg;
+  uint32_t numbits = 27;
+  STARTBITS(cur, pos, spireg);
+
+  // No need to send x if it has not changed (speeds things up)
+  if (addr_col != x) {
+    ADDBITS(((uint32_t)TFT_CASET << 18) | ((uint32_t)0x20100 | ((x & 0xff00) << 1) | (x & 0xff)),
+            27, cur, pos, spireg);
+    ADDBITS((uint32_t)0x20100 | ((x & 0xff00) << 1) | (x & 0xff), 18, cur, pos, spireg);
+    numbits += 45;
+    addr_col = x;
+  }
+
+  // No need to send y if it has not changed (speeds things up)
+  if (addr_row != y) {
+    ADDBITS(((uint32_t)TFT_PASET << 18) | ((uint32_t)0x20100 | ((y & 0xff00) << 1) | (y & 0xff)),
+            27, cur, pos, spireg);
+    ADDBITS((uint32_t)0x20100 | ((y & 0xff00) << 1) | (y & 0xff), 18, cur, pos, spireg);
+    numbits += 45;
+    addr_row = y;
+  }
+
+  ADDBITS(((uint32_t)TFT_RAMWR << 18) | (uint32_t)0x20100 | ((color & 0xff00) << 1) | (color & 0xff),
+          27, cur, pos, spireg);
+  FLUSHBITS(cur, spireg);
+
+  SPI1U1 = mask | (numbits << SPILMOSI) | (numbits << SPILMISO);
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  CS_H;
+
+  spi_end();
+}
+
+#else
 void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 {
   uint8_t buf[4];
@@ -2380,6 +2435,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
   spi_end();
 }
+#endif
 
 #elif defined (ESP8266) && !defined (RPI_WRITE_STROBE)
 void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
