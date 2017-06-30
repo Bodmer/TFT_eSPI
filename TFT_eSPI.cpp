@@ -2942,6 +2942,33 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 ** Function name:           pushColor
 ** Description:             push a single pixel
 ***************************************************************************************/
+#ifdef IFACE_3WIRE
+  #ifdef IFACE_3WIRE_ESP8266
+void TFT_eSPI::pushColor(uint16_t color)
+{
+  spi_begin();
+
+  CS_L;
+
+  uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+  mask = SPI1U1 & mask;
+
+  SPI1U1 = mask | ((18-1) << SPILMOSI) | ((18-1) << SPILMISO);
+  SPI1W0 = (uint32_t)0x80400000 |
+    (((uint32_t)color & 0xff00) << 15) |
+    (((uint32_t)color & 0xff) << 14);
+  SPI1CMD |= SPIBUSY;
+  while(SPI1CMD & SPIBUSY) {}
+
+  CS_H;
+
+  spi_end();
+}
+
+  #else
+  // ToDo: ESP32 3-wire version of pushColor().
+  #endif  /* IFACE_3WIRE_ESP8266 */
+#else
 void TFT_eSPI::pushColor(uint16_t color)
 {
   spi_begin();
@@ -2954,6 +2981,7 @@ void TFT_eSPI::pushColor(uint16_t color)
 
   spi_end();
 }
+#endif
 
 
 /***************************************************************************************
@@ -2998,6 +3026,35 @@ void TFT_eSPI::pushColors(uint16_t *data, uint8_t len)
 #if defined (ESP32)
 
   while (len--) SPI.write16(*(data++));
+
+#elif defined(IFACE_3WIRE_ESP8266)
+
+  uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+  mask = SPI1U1 & mask;
+
+  while (len > 0) {
+    uint32_t cur, pos;
+    volatile uint32_t *spireg;
+    STARTBITS(cur, pos, spireg);
+
+    uint32_t chunk = len;
+    if (chunk > 28)
+      chunk = 28;
+
+    uint32_t count = chunk;
+    while (count-- > 0) {
+      uint32_t val = *data++;
+      uint32_t color18 = (uint32_t)0x20100 | ((val & 0xff00) << 1) | (val & 0xff);
+      ADDBITS(color18, 18, cur, pos, spireg);
+    }
+    FLUSHBITS(cur, spireg);
+
+    SPI1U1 = mask | ((chunk*18-1) << SPILMOSI) | ((chunk*18-1) << SPILMISO);
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+
+    len -= chunk;
+  }
 
 #else
 
@@ -3059,6 +3116,37 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
   //while ( len ) {SPI.writePattern(data, 2, 1); data += 2; len -= 2; }
   while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
   if (len) SPI.writePattern(data, len, 1);
+#elif defined(IFACE_3WIRE_ESP8266)
+
+  uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+  mask = SPI1U1 & mask;
+
+  len /= 2;
+  while (len > 0) {
+    uint32_t cur, pos;
+    volatile uint32_t *spireg;
+    STARTBITS(cur, pos, spireg);
+
+    uint32_t chunk = len;
+    if (chunk > 28)
+      chunk = 28;
+
+    uint32_t count = chunk;
+    while (count-- > 0) {
+      uint32_t val1 = *data++;
+      uint32_t val2 = *data++;
+      uint32_t color18 = (uint32_t)0x20100 | (val1 << 9) | val2;
+      ADDBITS(color18, 18, cur, pos, spireg);
+    }
+    FLUSHBITS(cur, spireg);
+
+    SPI1U1 = mask | ((chunk*18-1) << SPILMOSI) | ((chunk*18-1) << SPILMISO);
+    SPI1CMD |= SPIBUSY;
+    while(SPI1CMD & SPIBUSY) {}
+
+    len -= chunk;
+  }
+
 #else
   #if (SPI_FREQUENCY == 80000000)
   while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
