@@ -31,7 +31,7 @@
 TFT_eSPI tft = TFT_eSPI();                   // Invoke custom library with default width and height
 
 // Include the header files that contain the icons
-#include "alert.h"
+#include "Alert.h"
 #include "Close.h"
 #include "Info.h"
 
