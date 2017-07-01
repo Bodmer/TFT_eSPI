@@ -31,7 +31,10 @@
 #define ST7735_PINK        0xF81F
 
 #define ILI9341_BLACK ST7735_BLACK
+#define ILI9341_WHITE ST7735_WHITE
 
+#define ILI9341_VSCRDEF ST7787_SCRLAR
+#define ILI9341_VSCRSADD ST7787_VSCSAD
 
 // Delay between some initialisation commands
 #define TFT_INIT_DELAY 0x80
@@ -81,7 +84,9 @@
 #define ST7787_RAMRD   0x2E
 
 #define ST7787_PTLAR   0x30
+#define ST7787_SCRLAR  0x33
 #define ST7787_MADCTL  0x36
+#define ST7787_VSCSAD  0x37
 #define ST7787_COLMOD  0x3A
 
 #define ST7787_FRMCTR1 0xB1
