@@ -1813,10 +1813,17 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
     column[5] = 0;
 
 #if defined (ESP8266)
+#ifdef IFACE_3WIRE_ESP8266
+    color = (uint32_t)0x80400000 | ((color & 0xff00) << 15) | ((color & 0xff) << 14);
+    bg = (uint32_t)0x80400000 | ((bg & 0xff00) << 15) | ((bg & 0xff) << 14);
+    uint32_t spimask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+    SPI1U1 = (SPI1U1 & spimask) | (17 << SPILMOSI) | (17 << SPILMISO);
+#else
     color = (color >> 8) | (color << 8);
     bg = (bg >> 8) | (bg << 8);
     uint32_t spimask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
     SPI1U1 = (SPI1U1 & spimask) | (15 << SPILMOSI) | (15 << SPILMISO);
+#endif
     for (int8_t j = 0; j < 8; j++) {
       for (int8_t k = 0; k < 5; k++ ) {
         if (column[k] & mask) {
@@ -3169,7 +3176,7 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
 // Bresenham's algorithm - thx wikipedia - speed enhanced by Bodmer to use
 // an eficient FastH/V Line draw routine for line segments of 2 pixels or more
 
-#if defined (RPI_ILI9486_DRIVER) || defined (ESP32) || defined (RPI_WRITE_STROBE)
+#if defined (RPI_ILI9486_DRIVER) || defined (ESP32) || defined (RPI_WRITE_STROBE) || defined(IFACE_3WIRE)
 
 void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color)
 {
@@ -3772,6 +3779,16 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
       spi_begin();
       setAddrWindow(x, y, (x + w * 8) - 1, y + height - 1);
 
+#ifdef IFACE_3WIRE_ESP8266
+      uint32_t textcolor18 = (uint32_t)0x80400000 |
+        ((textcolor & 0xff00) << 15) | ((textcolor & 0xff) << 14);
+      uint32_t textbgcolor18 = (uint32_t)0x80400000 |
+        ((textbgcolor & 0xff00) << 15) | ((textbgcolor & 0xff) << 14);
+      uint32_t spi_mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+      spi_mask = SPI1U1 & spi_mask;
+      SPI1U1 = spi_mask | ((18-1) << SPILMOSI) | ((18-1) << SPILMISO);
+#endif
+
       byte mask;
       for (int i = 0; i < height; i++)
       {
@@ -3782,10 +3799,22 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
           mask = 0x80;
           while (mask) {
             if (line & mask) {
+#ifdef IFACE_3WIRE_ESP8266
+              SPI1W0 = textcolor18;
+              SPI1CMD |= SPIBUSY;
+              while(SPI1CMD & SPIBUSY) {}
+#else
               SPI.write16(textcolor);
+#endif
             }
             else {
+#ifdef IFACE_3WIRE_ESP8266
+              SPI1W0 = textbgcolor18;
+              SPI1CMD |= SPIBUSY;
+              while(SPI1CMD & SPIBUSY) {}
+#else
               SPI.write16(textbgcolor);
+#endif
             }
             mask = mask >> 1;
           }
@@ -3815,6 +3844,13 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
       int pc = 0; // Pixel count
       byte np = textsize * textsize; // Number of pixels in a drawn pixel
 
+#ifdef IFACE_3WIRE_ESP8266
+      uint32_t textcolor18 = (uint32_t)0x80400000 |
+        ((textcolor & 0xff00) << 15) | ((textcolor & 0xff) << 14);
+      uint32_t spi_mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
+      spi_mask = SPI1U1 & spi_mask;
+#endif
+
       byte tnp = 0; // Temporary copy of np for while loop
       byte ts = textsize - 1; // Temporary copy of textsize
       // 16 bit pixel count so maximum font size is equivalent to 180x180 pixels in area
@@ -3838,14 +3874,29 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
             pc++; // This is faster than putting pc+=line before while()?
             setAddrWindow(px, py, px + ts, py + ts);
 
+#ifdef IFACE_3WIRE_ESP8266
+            SPI1U1 = spi_mask | (((18-1) << SPILMOSI) | ((18-1) << SPILMISO));
+#endif
             if (ts) {
               tnp = np;
               while (tnp--) {
+#ifdef IFACE_3WIRE_ESP8266
+              SPI1W0 = textcolor18;
+              SPI1CMD |= SPIBUSY;
+              while(SPI1CMD & SPIBUSY) {}
+#else
                 SPI.write16(textcolor);
+#endif
               }
             }
             else {
+#ifdef IFACE_3WIRE_ESP8266
+              SPI1W0 = textcolor18;
+              SPI1CMD |= SPIBUSY;
+              while(SPI1CMD & SPIBUSY) {}
+#else
               SPI.write16(textcolor);
+#endif
             }
             px += textsize;
 
