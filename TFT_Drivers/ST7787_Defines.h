@@ -85,6 +85,8 @@
 
 #define ST7787_PTLAR   0x30
 #define ST7787_SCRLAR  0x33
+#define ST7787_TEOFF   0x34
+#define ST7787_TEON    0x35
 #define ST7787_MADCTL  0x36
 #define ST7787_VSCSAD  0x37
 #define ST7787_COLMOD  0x3A
