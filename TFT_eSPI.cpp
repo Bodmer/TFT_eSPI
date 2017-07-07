@@ -2370,7 +2370,7 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
 // Bresenham's algorithm - thx wikipedia - speed enhanced by Bodmer to use
 // an eficient FastH/V Line draw routine for line segments of 2 pixels or more
 
-#if defined (ESP32) || defined (RPI_WRITE_STROBE)
+#if defined (RPI_ILI9486_DRIVER) || defined (ESP32) || defined (RPI_WRITE_STROBE)
 
 void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color)
 {
@@ -3264,7 +3264,7 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
     if ((font == 1) && (gfxFont))
     {
       poX +=xo; // Adjust for negative offset start character
-      poY -= 1 + glyph_ab * textsize;
+      poY -= glyph_ab * textsize;
     }
 #endif
     switch(padding) {
