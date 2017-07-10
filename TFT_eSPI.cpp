@@ -24,7 +24,9 @@
 //#include <limits.h>
 //#include "pins_arduino.h"
 //#include "wiring_private.h"
+#if !defined(ESP32_PARALLEL)
 #include <SPI.h>
+#endif
 
 // If it is a 16bit serial display we must transfer 16 bits every time
 #ifdef RPI_ILI9486_DRIVER
@@ -88,6 +90,19 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
     digitalWrite(TFT_RST, HIGH); // Set high, do not share pin with another SPI device
     pinMode(TFT_RST, OUTPUT);
   }
+#endif
+
+#if defined(ESP32_PARALLEL)
+ pinMode(TFT_D0, OUTPUT);
+ pinMode(TFT_D1, OUTPUT);
+ pinMode(TFT_D2, OUTPUT);
+ pinMode(TFT_D3, OUTPUT);
+ pinMode(TFT_D4, OUTPUT);
+ pinMode(TFT_D5, OUTPUT);
+ pinMode(TFT_D6, OUTPUT);
+ pinMode(TFT_D7, OUTPUT); 
+ pinMode(TFT_RD, OUTPUT); 
+ digitalWrite(TFT_RD, HIGH);
 #endif
 
   _width    = w; // Set by specific xxxxx_Defines.h file or by users sketch
@@ -167,30 +182,32 @@ void TFT_eSPI::init(void)
 
   SPI.begin(); // This will set MISO to input
 #else
-  #ifdef TFT_MOSI
-    SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
-  #else
-    SPI.begin();
-  #endif
-
+  #if !defined(ESP32_PARALLEL)
+    #ifdef TFT_MOSI
+      SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
+    #else
+      SPI.begin();      
+	#endif
+  #endif.
 #endif
 
   inTransaction = false;
   locked = true;
 
-#ifndef SUPPORT_TRANSACTIONS
+#if !defined(ESP32_PARALLEL)
+  #ifndef SUPPORT_TRANSACTIONS
 
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setFrequency(SPI_FREQUENCY);
-  //SPI.setHwCs(1); // Use hardware SS toggling on GPIO15 (D8) - not supported - benefit is only ~0.8% performance boost
+    SPI.setBitOrder(MSBFIRST);
+    SPI.setDataMode(SPI_MODE0);
+    SPI.setFrequency(SPI_FREQUENCY);
+    //SPI.setHwCs(1); // Use hardware SS toggling on GPIO15 (D8) - not supported - benefit is only ~0.8% performance boost
   
-  #ifdef ESP32 // Unlock the SPI hal mutex and set the lock management flags
-    SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
-    inTransaction = true; // Flag to stop intermediate spi_end calls
-    locked = false;       // Flag to stop repeat beginTransaction calls
+    #ifdef ESP32 // Unlock the SPI hal mutex and set the lock management flags
+      SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
+      inTransaction = true; // Flag to stop intermediate spi_end calls
+      locked = false;       // Flag to stop repeat beginTransaction calls
+    #endif
   #endif
-
 #endif
 
   // Set to output once again in case D6 (MISO) is used for CS
@@ -338,10 +355,27 @@ void TFT_eSPI::writecommand(uint8_t c)
 {
   DC_C;
   CS_L;
-  #ifdef SEND_16_BITS
-    SPI.transfer(0);
+  
+  #if !defined(ESP32_PARALLEL)
+    #ifdef SEND_16_BITS
+      SPI.transfer(0);
+    #endif
+    SPI.transfer(c);
+  #else
+    WR_L;
+  
+    ( c & 0x01 ) ? GPIO.out_w1ts |= (1 << TFT_D0) : GPIO.out_w1tc |= (1 << TFT_D0);
+    ( c & 0x02 ) ? GPIO.out_w1ts |= (1 << TFT_D1) : GPIO.out_w1tc |= (1 << TFT_D1);
+    ( c & 0x04 ) ? GPIO.out_w1ts |= (1 << TFT_D2) : GPIO.out_w1tc |= (1 << TFT_D2);
+    ( c & 0x08 ) ? GPIO.out_w1ts |= (1 << TFT_D3) : GPIO.out_w1tc |= (1 << TFT_D3);
+    ( c & 0x10 ) ? GPIO.out_w1ts |= (1 << TFT_D4) : GPIO.out_w1tc |= (1 << TFT_D4);
+    ( c & 0x20 ) ? GPIO.out_w1ts |= (1 << TFT_D5) : GPIO.out_w1tc |= (1 << TFT_D5);
+    ( c & 0x40 ) ? GPIO.out_w1ts |= (1 << TFT_D6) : GPIO.out_w1tc |= (1 << TFT_D6);
+    ( c & 0x80 ) ? GPIO.out_w1ts |= (1 << TFT_D7) : GPIO.out_w1tc |= (1 << TFT_D7);
+  
+    WR_H;
   #endif
-  SPI.transfer(c);
+  
   CS_H;
   DC_D;
 }
@@ -354,20 +388,140 @@ void TFT_eSPI::writecommand(uint8_t c)
 void TFT_eSPI::writedata(uint8_t c)
 {
   CS_L;
-  #ifdef SEND_16_BITS
-    SPI.transfer(0);
+  #if !defined(ESP32_PARALLEL)
+    #ifdef SEND_16_BITS
+      SPI.transfer(0);
+    #endif
+    SPI.transfer(c);
+  #else
+    WR_L;
+  
+    ( c & 0x01 ) ? GPIO.out_w1ts |= (1 << TFT_D0) : GPIO.out_w1tc |= (1 << TFT_D0);
+    ( c & 0x02 ) ? GPIO.out_w1ts |= (1 << TFT_D1) : GPIO.out_w1tc |= (1 << TFT_D1);
+    ( c & 0x04 ) ? GPIO.out_w1ts |= (1 << TFT_D2) : GPIO.out_w1tc |= (1 << TFT_D2);
+    ( c & 0x08 ) ? GPIO.out_w1ts |= (1 << TFT_D3) : GPIO.out_w1tc |= (1 << TFT_D3);
+    ( c & 0x10 ) ? GPIO.out_w1ts |= (1 << TFT_D4) : GPIO.out_w1tc |= (1 << TFT_D4);
+    ( c & 0x20 ) ? GPIO.out_w1ts |= (1 << TFT_D5) : GPIO.out_w1tc |= (1 << TFT_D5);
+    ( c & 0x40 ) ? GPIO.out_w1ts |= (1 << TFT_D6) : GPIO.out_w1tc |= (1 << TFT_D6);
+    ( c & 0x80 ) ? GPIO.out_w1ts |= (1 << TFT_D7) : GPIO.out_w1tc |= (1 << TFT_D7);
+  
+    WR_H;  
   #endif
-  SPI.transfer(c);
+  
   CS_H;
 }
 
 
+#if defined(ESP32_PARALLEL)
+void TFT_eSPI::writedata16(uint16_t c)
+{
+  uint8_t b0, b1;
+  
+  b0 = ( c & 0xff00 ) >> 8;
+  b1 = ( c & 0x00ff );
+  
+  //CS_L;
+  WR_L;
+  
+  ( b0 & 0x01 ) ? GPIO.out_w1ts |= (1 << TFT_D0) : GPIO.out_w1tc |= (1 << TFT_D0);
+  ( b0 & 0x02 ) ? GPIO.out_w1ts |= (1 << TFT_D1) : GPIO.out_w1tc |= (1 << TFT_D1);
+  ( b0 & 0x04 ) ? GPIO.out_w1ts |= (1 << TFT_D2) : GPIO.out_w1tc |= (1 << TFT_D2);
+  ( b0 & 0x08 ) ? GPIO.out_w1ts |= (1 << TFT_D3) : GPIO.out_w1tc |= (1 << TFT_D3);
+  ( b0 & 0x10 ) ? GPIO.out_w1ts |= (1 << TFT_D4) : GPIO.out_w1tc |= (1 << TFT_D4);
+  ( b0 & 0x20 ) ? GPIO.out_w1ts |= (1 << TFT_D5) : GPIO.out_w1tc |= (1 << TFT_D5);
+  ( b0 & 0x40 ) ? GPIO.out_w1ts |= (1 << TFT_D6) : GPIO.out_w1tc |= (1 << TFT_D6);
+  ( b0 & 0x80 ) ? GPIO.out_w1ts |= (1 << TFT_D7) : GPIO.out_w1tc |= (1 << TFT_D7);
+  
+  WR_H;  
+
+  WR_L;
+  
+  ( b1 & 0x01 ) ? GPIO.out_w1ts |= (1 << TFT_D0) : GPIO.out_w1tc |= (1 << TFT_D0);
+  ( b1 & 0x02 ) ? GPIO.out_w1ts |= (1 << TFT_D1) : GPIO.out_w1tc |= (1 << TFT_D1);
+  ( b1 & 0x04 ) ? GPIO.out_w1ts |= (1 << TFT_D2) : GPIO.out_w1tc |= (1 << TFT_D2);
+  ( b1 & 0x08 ) ? GPIO.out_w1ts |= (1 << TFT_D3) : GPIO.out_w1tc |= (1 << TFT_D3);
+  ( b1 & 0x10 ) ? GPIO.out_w1ts |= (1 << TFT_D4) : GPIO.out_w1tc |= (1 << TFT_D4);
+  ( b1 & 0x20 ) ? GPIO.out_w1ts |= (1 << TFT_D5) : GPIO.out_w1tc |= (1 << TFT_D5);
+  ( b1 & 0x40 ) ? GPIO.out_w1ts |= (1 << TFT_D6) : GPIO.out_w1tc |= (1 << TFT_D6);
+  ( b1 & 0x80 ) ? GPIO.out_w1ts |= (1 << TFT_D7) : GPIO.out_w1tc |= (1 << TFT_D7);
+  
+  WR_H;  
+
+  //CS_H;
+}
+
+void TFT_eSPI::writedata32(uint32_t d)
+{
+  uint8_t b0, b1, b2, b3;
+  
+  b0 = ( d & 0xff000000 ) >> 24;
+  b1 = ( d & 0x00ff0000 ) >> 16;
+  b2 = ( d & 0x0000ff00 ) >> 8;  
+  b3 = ( d & 0x000000ff );  
+  
+  //CS_L;
+  WR_L;
+  
+  ( b0 & 0x01 ) ? GPIO.out_w1ts |= (1 << TFT_D0) : GPIO.out_w1tc |= (1 << TFT_D0);
+  ( b0 & 0x02 ) ? GPIO.out_w1ts |= (1 << TFT_D1) : GPIO.out_w1tc |= (1 << TFT_D1);
+  ( b0 & 0x04 ) ? GPIO.out_w1ts |= (1 << TFT_D2) : GPIO.out_w1tc |= (1 << TFT_D2);
+  ( b0 & 0x08 ) ? GPIO.out_w1ts |= (1 << TFT_D3) : GPIO.out_w1tc |= (1 << TFT_D3);
+  ( b0 & 0x10 ) ? GPIO.out_w1ts |= (1 << TFT_D4) : GPIO.out_w1tc |= (1 << TFT_D4);
+  ( b0 & 0x20 ) ? GPIO.out_w1ts |= (1 << TFT_D5) : GPIO.out_w1tc |= (1 << TFT_D5);
+  ( b0 & 0x40 ) ? GPIO.out_w1ts |= (1 << TFT_D6) : GPIO.out_w1tc |= (1 << TFT_D6);
+  ( b0 & 0x80 ) ? GPIO.out_w1ts |= (1 << TFT_D7) : GPIO.out_w1tc |= (1 << TFT_D7);
+  
+  WR_H;  
+
+  WR_L;
+  
+  ( b1 & 0x01 ) ? GPIO.out_w1ts |= (1 << TFT_D0) : GPIO.out_w1tc |= (1 << TFT_D0);
+  ( b1 & 0x02 ) ? GPIO.out_w1ts |= (1 << TFT_D1) : GPIO.out_w1tc |= (1 << TFT_D1);
+  ( b1 & 0x04 ) ? GPIO.out_w1ts |= (1 << TFT_D2) : GPIO.out_w1tc |= (1 << TFT_D2);
+  ( b1 & 0x08 ) ? GPIO.out_w1ts |= (1 << TFT_D3) : GPIO.out_w1tc |= (1 << TFT_D3);
+  ( b1 & 0x10 ) ? GPIO.out_w1ts |= (1 << TFT_D4) : GPIO.out_w1tc |= (1 << TFT_D4);
+  ( b1 & 0x20 ) ? GPIO.out_w1ts |= (1 << TFT_D5) : GPIO.out_w1tc |= (1 << TFT_D5);
+  ( b1 & 0x40 ) ? GPIO.out_w1ts |= (1 << TFT_D6) : GPIO.out_w1tc |= (1 << TFT_D6);
+  ( b1 & 0x80 ) ? GPIO.out_w1ts |= (1 << TFT_D7) : GPIO.out_w1tc |= (1 << TFT_D7);
+  
+  WR_H;  
+
+  WR_L;
+  
+  ( b2 & 0x01 ) ? GPIO.out_w1ts |= (1 << TFT_D0) : GPIO.out_w1tc |= (1 << TFT_D0);
+  ( b2 & 0x02 ) ? GPIO.out_w1ts |= (1 << TFT_D1) : GPIO.out_w1tc |= (1 << TFT_D1);
+  ( b2 & 0x04 ) ? GPIO.out_w1ts |= (1 << TFT_D2) : GPIO.out_w1tc |= (1 << TFT_D2);
+  ( b2 & 0x08 ) ? GPIO.out_w1ts |= (1 << TFT_D3) : GPIO.out_w1tc |= (1 << TFT_D3);
+  ( b2 & 0x10 ) ? GPIO.out_w1ts |= (1 << TFT_D4) : GPIO.out_w1tc |= (1 << TFT_D4);
+  ( b2 & 0x20 ) ? GPIO.out_w1ts |= (1 << TFT_D5) : GPIO.out_w1tc |= (1 << TFT_D5);
+  ( b2 & 0x40 ) ? GPIO.out_w1ts |= (1 << TFT_D6) : GPIO.out_w1tc |= (1 << TFT_D6);
+  ( b2 & 0x80 ) ? GPIO.out_w1ts |= (1 << TFT_D7) : GPIO.out_w1tc |= (1 << TFT_D7);
+  
+  WR_H;  
+
+  WR_L;
+  
+  ( b3 & 0x01 ) ? GPIO.out_w1ts |= (1 << TFT_D0) : GPIO.out_w1tc |= (1 << TFT_D0);
+  ( b3 & 0x02 ) ? GPIO.out_w1ts |= (1 << TFT_D1) : GPIO.out_w1tc |= (1 << TFT_D1);
+  ( b3 & 0x04 ) ? GPIO.out_w1ts |= (1 << TFT_D2) : GPIO.out_w1tc |= (1 << TFT_D2);
+  ( b3 & 0x08 ) ? GPIO.out_w1ts |= (1 << TFT_D3) : GPIO.out_w1tc |= (1 << TFT_D3);
+  ( b3 & 0x10 ) ? GPIO.out_w1ts |= (1 << TFT_D4) : GPIO.out_w1tc |= (1 << TFT_D4);
+  ( b3 & 0x20 ) ? GPIO.out_w1ts |= (1 << TFT_D5) : GPIO.out_w1tc |= (1 << TFT_D5);
+  ( b3 & 0x40 ) ? GPIO.out_w1ts |= (1 << TFT_D6) : GPIO.out_w1tc |= (1 << TFT_D6);
+  ( b3 & 0x80 ) ? GPIO.out_w1ts |= (1 << TFT_D7) : GPIO.out_w1tc |= (1 << TFT_D7);
+  
+  WR_H;  
+
+  //CS_H;
+}
+#endif
 /***************************************************************************************
 ** Function name:           readcommand8 (for ILI9341 Interface II i.e. IM [3:0] = "1101")
 ** Description:             Read a 8 bit data value from an indexed command register
 ***************************************************************************************/
   uint8_t  TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
 {
+#if !defined(ESP32_PARALLEL)
   spi_begin();
   index = 0x10 + (index & 0x0F);
 
@@ -387,6 +541,7 @@ void TFT_eSPI::writedata(uint8_t c)
 
   spi_end();
   return reg;
+#endif
 }
 
 
@@ -396,11 +551,13 @@ void TFT_eSPI::writedata(uint8_t c)
 ***************************************************************************************/
   uint16_t  TFT_eSPI::readcommand16(uint8_t cmd_function, uint8_t index)
 {
+#if !defined(ESP32_PARALLEL)
   uint32_t reg = 0;
   reg |= (readcommand8(cmd_function, index + 0) <<  8);
   reg |= (readcommand8(cmd_function, index + 1) <<  0);
 
   return reg;
+#endif
 }
 
 
@@ -410,6 +567,7 @@ void TFT_eSPI::writedata(uint8_t c)
 ***************************************************************************************/
   uint32_t  TFT_eSPI::readcommand32(uint8_t cmd_function, uint8_t index)
 {
+#if !defined(ESP32_PARALLEL)	
   uint32_t reg;
 
   reg  = (readcommand8(cmd_function, index + 0) << 24);
@@ -418,6 +576,7 @@ void TFT_eSPI::writedata(uint8_t c)
   reg |= (readcommand8(cmd_function, index + 3) <<  0);
 
   return reg;
+#endif
 }
 
 
@@ -427,6 +586,7 @@ void TFT_eSPI::writedata(uint8_t c)
 ***************************************************************************************/
 uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 {
+#if !defined(ESP32_PARALLEL)	
   spi_begin();
 
   readAddrWindow(x0, y0, x0, y0); // Sets CS low
@@ -444,6 +604,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   spi_end();
     
   return color565(r, g, b);
+#endif
 }
 
 
@@ -453,6 +614,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 ***************************************************************************************/
   void  TFT_eSPI::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t *data)
 {
+#if !defined(ESP32_PARALLEL)	
   if ((x > _width) || (y > _height) || (w == 0) || (h == 0)) return;
   
   spi_begin();
@@ -482,6 +644,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   CS_H;
 
   spi_end();
+#endif
 }
 
 
@@ -491,6 +654,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 ***************************************************************************************/
   void  TFT_eSPI::pushRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t *data)
 {
+#if !defined(ESP32_PARALLEL)		
   if ((x > _width) || (y > _height) || (w == 0) || (h == 0)) return;
 
   spi_begin();
@@ -505,6 +669,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   CS_H;
 
   spi_end();
+#endif  
 }
 
 
@@ -515,6 +680,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 // If w and h are 1, then 1 pixel is read, *data array size must be 3 bytes per pixel
   void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t *data)
 {
+#if !defined(ESP32_PARALLEL)		
   spi_begin();
 
   readAddrWindow(x0, y0, x0 + w - 1, y0 + h - 1); // Sets CS low
@@ -534,6 +700,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   CS_H;
 
   spi_end();
+#endif  
 }
 
 
@@ -1348,6 +1515,22 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
       while(SPI1CMD & SPIBUSY) {}
     }
 #else // for ESP32
+  #if !defined(ESP32_PARALLEL)
+    for (int8_t j = 0; j < 8; j++) {
+      for (int8_t k = 0; k < 5; k++ ) {
+        if (column[k] & mask) {
+          writedata16(color);
+        }
+        else {
+          writedata16(bg);
+        }
+      }
+
+      mask <<= 1;
+
+      writedata16(bg);
+    }
+  #else
     for (int8_t j = 0; j < 8; j++) {
       for (int8_t k = 0; k < 5; k++ ) {
         if (column[k] & mask) {
@@ -1362,6 +1545,8 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
 
       SPI.write16(bg);
     }
+	  
+  #endif
 #endif
     CS_H;
     spi_end();
@@ -1791,7 +1976,11 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 #if defined (RPI_ILI9486_DRIVER)
   SPI.write16(TFT_CASET);
 #else
-  SPI.write(TFT_CASET);
+  #if !defined(ESP32_PARALLEL)
+    SPI.write(TFT_CASET);
+  #else
+	writecommand(TFT_CASET);
+  #endif
 #endif
 
   DC_D;
@@ -1801,7 +1990,11 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   uint8_t xBin[] = { 0, (uint8_t) (x0>>8), 0, (uint8_t) (x0>>0), 0, (uint8_t) (x1>>8), 0, (uint8_t) (x1>>0), };
   SPI.writePattern(&xBin[0], 8, 1);
 #else
-  SPI.write32(xaw);
+  #if !defined(ESP32_PARALLEL)	
+    SPI.write32(xaw);
+  #else
+	writedata32(xaw);
+  #endif
 #endif
 
   // Row addr set
@@ -1810,7 +2003,11 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 #if defined (RPI_ILI9486_DRIVER)
   SPI.write16(TFT_PASET);
 #else
-  SPI.write(TFT_PASET);
+  #if !defined(ESP32_PARALLEL)	
+    SPI.write(TFT_PASET);
+  #else
+	writecommand(TFT_PASET);
+  #endif
 #endif
 
   DC_D;
@@ -1820,7 +2017,11 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   uint8_t yBin[] = { 0, (uint8_t) (y0>>8), 0, (uint8_t) (y0>>0), 0, (uint8_t) (y1>>8), 0, (uint8_t) (y1>>0), };
   SPI.writePattern(&yBin[0], 8, 1);
 #else
-  SPI.write32(yaw);
+  #if !defined(ESP32_PARALLEL)		
+    SPI.write32(yaw);
+  #else
+	writedata32(yaw);
+  #endif  
 #endif
 
   // write to RAM
@@ -1829,7 +2030,12 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 #if defined (RPI_ILI9486_DRIVER)
   SPI.write16(TFT_RAMWR);
 #else
-  SPI.write(TFT_RAMWR);
+  #if !defined(ESP32_PARALLEL)			
+    SPI.write(TFT_RAMWR);
+  #else
+	writecommand(TFT_RAMWR);
+  #endif
+	
 #endif
 
   DC_D;
@@ -1914,6 +2120,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 
 void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
+  #if !defined(ESP32_PARALLEL)			
   //spi_begin();
 
   addr_col = 0xFFFF;
@@ -1953,8 +2160,8 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   DC_D;
 
   //spi_end();
+  #endif  
 }
-
 #endif
 
 /***************************************************************************************
@@ -2169,7 +2376,11 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 #if defined (RPI_ILI9486_DRIVER)
     SPI.write16(TFT_CASET);
 #else
+  #if !defined(ESP32_PARALLEL)			
     SPI.write(TFT_CASET);
+  #else
+  	writecommand(TFT_CASET);
+  #endif	
 #endif
 
     DC_D;
@@ -2178,7 +2389,11 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
     uint8_t xBin[] = { 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), };
     SPI.writePattern(&xBin[0], 8, 1);
 #else
-    SPI.write32(xaw);
+  #if !defined(ESP32_PARALLEL)				
+      SPI.write32(xaw);
+  #else
+	  writedata32(xaw);
+  #endif	
 #endif
     
     addr_col = x;
@@ -2192,7 +2407,11 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 #if defined (RPI_ILI9486_DRIVER)
     SPI.write16(TFT_PASET);
 #else
+  #if !defined(ESP32_PARALLEL)					
     SPI.write(TFT_PASET);
+  #else
+    writecommand(TFT_PASET);
+  #endif
 #endif
 
     DC_D;
@@ -2201,7 +2420,11 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
     uint8_t yBin[] = { 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), };
     SPI.writePattern(&yBin[0], 8, 1);
 #else
+  #if !defined(ESP32_PARALLEL)					
     SPI.write32(yaw);
+  #else
+	writedata32(yaw);
+  #endif
 #endif
 
     addr_row = y;
@@ -2212,12 +2435,20 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 #if defined (RPI_ILI9486_DRIVER)
   SPI.write16(TFT_RAMWR);
 #else
-  SPI.write(TFT_RAMWR);
+  #if !defined(ESP32_PARALLEL)					
+    SPI.write(TFT_RAMWR);
+  #else 
+	writecommand(TFT_RAMWR);
+  #endif
 #endif
 
   DC_D;
 
-  SPI.write16(color);
+  #if !defined(ESP32_PARALLEL)					
+    SPI.write16(color);
+  #else
+	writedata16(color);
+  #endif	  
 
   CS_H;
 
@@ -2237,7 +2468,11 @@ void TFT_eSPI::pushColor(uint16_t color)
 
   CS_L;
 
-  SPI.write16(color);
+  #if !defined(ESP32_PARALLEL)  
+    SPI.write16(color);
+  #else	
+	writedata16(color);  
+  #endif.  
 
   CS_H;
 
@@ -2260,7 +2495,15 @@ void TFT_eSPI::pushColor(uint16_t color, uint16_t len)
   if(len) SPI.writePattern(&colorBin[0], 2, 1); len--;
   while(len--) {WR_L; WR_H;}
 #else
-  spiWriteBlock(color, len);
+  #if !defined(ESP32_PARALLEL)  
+    spiWriteBlock(color, len);
+  #else	
+	while (len) {
+		writedata16(color);
+		len--;
+	}
+  #endif.  
+
 #endif
 
   CS_H;
@@ -2285,9 +2528,11 @@ void TFT_eSPI::pushColors(uint16_t *data, uint8_t len)
   CS_L;
 
 #if defined (ESP32)
-
-  while (len--) SPI.write16(*(data++));
-
+  #if !defined(ESP32_PARALLEL)
+    while (len--) SPI.write16(*(data++));
+  #else
+    while (len--) writedata16(*(data++));	  
+  #endif
 #else
 
 	uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
@@ -2344,6 +2589,7 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
 
   CS_L;
 
+#if !defined(ESP32_PARALLEL)  
 #if defined (RPI_WRITE_STROBE)
   //while ( len ) {SPI.writePattern(data, 2, 1); data += 2; len -= 2; }
   while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
@@ -2355,6 +2601,9 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
   #else
   SPI.writeBytes(data, len);
   #endif
+#endif
+#else
+  while ( len >=1 ) {writedata(*data); data += 1; len -= 1; }
 #endif
 
   CS_H;
@@ -2581,7 +2830,14 @@ void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
   while(h--) {WR_L; WR_H;}
 #else
   //while(h--) SPI.write16(color);
-  spiWriteBlock(color, h);
+  #if !defined(ESP32_PARALLEL)  
+    spiWriteBlock(color, h);
+  #else	
+	while (h) {
+		writedata16(color);
+		h--;
+	}
+  #endif.  
 #endif
 
   CS_H;
@@ -2635,7 +2891,14 @@ void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
   while(w--) {WR_L; WR_H;}
 #else
   //while(w--) SPI.write16(color);
-  spiWriteBlock(color, w);
+  #if !defined(ESP32_PARALLEL)
+    spiWriteBlock(color, w);
+  #else
+	while (w) {
+		writedata16(color);
+		w--;
+	}	  
+  #endif
 #endif
 
   CS_H;
@@ -2685,7 +2948,15 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
   while(n--) {WR_L; WR_H;}
 #else
   //while(n--) SPI.write16(color);
-  spiWriteBlock(color, n);
+  #if !defined(ESP32_PARALLEL)
+    spiWriteBlock(color, n);
+  #else
+	while (n) {
+		writedata16(color);
+		n--;
+	}	  
+  #endif
+  
 #endif
 
   CS_H;
@@ -2983,10 +3254,19 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
           mask = 0x80;
           while (mask) {
             if (line & mask) {
-              SPI.write16(textcolor);
+              #if !defined(ESP32_PARALLEL)				
+                SPI.write16(textcolor);
+			  #else
+				writedata16(textcolor);
+			  #endif
             }
             else {
-              SPI.write16(textbgcolor);
+              #if !defined(ESP32_PARALLEL)								
+                SPI.write16(textbgcolor);
+			  #else
+				writedata16(textbgcolor);
+			  #endif 
+			  
             }
             mask = mask >> 1;
           }
@@ -3042,11 +3322,20 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
             if (ts) {
               tnp = np;
               while (tnp--) {
-                SPI.write16(textcolor);
+                #if !defined(ESP32_PARALLEL)				
+                  SPI.write16(textcolor);
+			    #else
+  				  writedata16(textcolor);
+                #endif				  
+				
               }
             }
             else {
-              SPI.write16(textcolor);
+              #if !defined(ESP32_PARALLEL)				
+                SPI.write16(textcolor);
+			  #else
+				writedata16(textcolor);
+              #endif				  
             }
             px += textsize;
 
@@ -3086,7 +3375,14 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
           SPI.writePattern(&textcolorBin[0], 2, 1); line--;
           while(line--) {WR_L; WR_H;}
 #else
-          spiWriteBlock(textcolor,line);
+          #if !defined(ESP32_PARALLEL)  
+            spiWriteBlock(textcolor,line);
+          #else	
+	        while (line) {
+		      writedata16(textcolor);
+		    line--;
+	        }
+          #endif.  	  
 #endif
         }
         else {
@@ -3095,7 +3391,14 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
           SPI.writePattern(&textbgcolorBin[0], 2, 1); line--;
           while(line--) {WR_L; WR_H;}
 #else
-          spiWriteBlock(textbgcolor,line);
+          #if !defined(ESP32_PARALLEL)  	
+            spiWriteBlock(textbgcolor,line);
+          #else	
+	        while (line) {
+		      writedata16(textbgcolor);
+		    line--;
+	        }
+          #endif.  	  			
 #endif
         }
       }
@@ -3761,3 +4064,5 @@ void spiWriteBlock(uint16_t color, uint32_t repeat)
   POSSIBILITY OF SUCH DAMAGE.
 
  *****************************************************/
+
+ 
