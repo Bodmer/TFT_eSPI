@@ -13,10 +13,13 @@
 //
 // ##################################################################################
 
+// Use ESP32 Parallel interface instead of SPI
+#define ESP32_PARALLEL
+
 // Only define one driver, the other ones must be commented out
-#define ILI9341_DRIVER
+//#define ILI9341_DRIVER
 //#define ST7735_DRIVER
-//#define ILI9163_DRIVER
+#define ILI9163_DRIVER
 //#define S6D02A1_DRIVER
 //#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
 
@@ -80,9 +83,21 @@
 
 // For ModeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
 
-#define TFT_CS   PIN_D8  // Chip select control pin D8
-#define TFT_DC   PIN_D3  // Data Command control pin
-#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
+#define TFT_CS   2  // Chip select control pin D8
+#define TFT_DC   4  // Data Command control pin
+#define TFT_RST  0  // Reset pin (could connect to NodeMCU RST, see next line)
+
+#define TFT_WR	 5  
+#define TFT_RD   21      // /RD signal connected to Arduino digital pin 32
+#define TFT_D0   12
+#define TFT_D1   13
+#define TFT_D2   14
+#define TFT_D3   15
+#define TFT_D4   16
+#define TFT_D5   17
+#define TFT_D6   18
+#define TFT_D7   19
+
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
 //#define TFT_WR PIN_D2    // Write strobe for modified Raspberry Pi TFT only
