@@ -79,8 +79,10 @@
 #elif defined (ESP32)
   //#define DC_C digitalWrite(TFT_DC, HIGH); GPIO.out_w1tc = (1 << TFT_DC)//digitalWrite(TFT_DC, LOW)
   //#define DC_D digitalWrite(TFT_DC, LOW); GPIO.out_w1ts = (1 << TFT_DC)//digitalWrite(TFT_DC, HIGH)
-  #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
-  #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
+  // #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
+  // #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
+  #define DC_C GPIO.out_w1tc |= (1 << TFT_DC)
+  #define DC_D GPIO.out_w1ts |= (1 << TFT_DC)  
 #else
   #define DC_C GPOC=dcpinmask
   #define DC_D GPOS=dcpinmask
@@ -96,8 +98,11 @@
   #elif defined (ESP32)
     //#define CS_L digitalWrite(TFT_CS, HIGH); GPIO.out_w1tc = (1 << TFT_CS)//digitalWrite(TFT_CS, LOW)
     //#define CS_H digitalWrite(TFT_CS, LOW); GPIO.out_w1ts = (1 << TFT_CS)//digitalWrite(TFT_CS, HIGH)
-    #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
-    #define CS_H GPIO.out_w1ts = (1 << TFT_CS)
+    // #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
+    // #define CS_H GPIO.out_w1ts = (1 << TFT_CS)
+    #define CS_L GPIO.out_w1tc |= (1 << TFT_CS)
+    //#define CS_H GPIO.out_w1ts |= (1 << TFT_CS)	
+	#define CS_H
   #else
     #define CS_L GPOC=cspinmask
     #define CS_H GPOS=cspinmask
@@ -106,9 +111,9 @@
 
 #ifdef TFT_WR
   #if defined (ESP32)
-    #define WR_L GPIO.out_w1tc = (1 << TFT_WR)
+    #define WR_L GPIO.out_w1tc |= (1 << TFT_WR)
     //digitalWrite(TFT_WR, LOW)
-    #define WR_H GPIO.out_w1ts = (1 << TFT_WR)
+    #define WR_H GPIO.out_w1ts |= (1 << TFT_WR)
     //digitalWrite(TFT_WR, HIGH)
   #else
     #define WR_L GPOC=wrpinmask
@@ -359,6 +364,10 @@ class TFT_eSPI : public Print {
            spiwrite(uint8_t),
            writecommand(uint8_t c),
            writedata(uint8_t d),
+#if defined(ESP32_PARALLEL)		   
+           writedata16(uint16_t d),		   
+           writedata32(uint32_t d),		   
+#endif		   
            commandList(const uint8_t *addr);
 
   uint8_t  readcommand8(uint8_t cmd_function, uint8_t index);
