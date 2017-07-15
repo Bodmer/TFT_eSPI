@@ -1,11 +1,15 @@
 //                            USER DEFINED SETTINGS
+//
+//   The User_Setup header that will be called up is defined in User_Setup_Select.h
+//
 //   Set driver type, fonts to be loaded, pins used and SPI control method etc
-//
-//   See the User_Setup_Select.h file if you wish to be able to define multiple
-//   setups and then easily select which setup file is used by the compiler.
-//
+//   
 //   If this file is editted correctly then all the library example sketches should
 //   run without the need to make any more changes for a particular hardware setup!
+
+//                              IMPORTANT
+//   This particular setup uses the SPI overlap capabiltiy of the ESP8266, this allows
+//   the FLASH SPI pins to be re-used with the TFT, saving pins for other functions.
 
 // ##################################################################################
 //
@@ -14,15 +18,12 @@
 // ##################################################################################
 
 // Only define one driver, the other ones must be commented out
-#define ILI9341_DRIVER
-//#define ST7735_DRIVER
-//#define ILI9163_DRIVER
-//#define S6D02A1_DRIVER
-//#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
+//#define ILI9341_DRIVER
+#define ST7735_DRIVER
 
 // For ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
-//#define TFT_WIDTH  128
-//#define TFT_HEIGHT 160
+#define TFT_WIDTH  128
+#define TFT_HEIGHT 160
 //#define TFT_HEIGHT 128
 
 // For ST7735 ONLY, define the type of display, originally this was based on the
@@ -36,8 +37,7 @@
 //#define ST7735_GREENTAB
 //#define ST7735_GREENTAB2
 //#define ST7735_GREENTAB3
-//#define ST7735_GREENTAB128 // For 128 x 128 display
-//#define ST7735_REDTAB
+#define ST7735_REDTAB
 //#define ST7735_BLACKTAB
 
 // ##################################################################################
@@ -47,64 +47,46 @@
 // ##################################################################################
 
 // We must use hardware SPI, a minimum of 3 GPIO pins is needed.
-// Typical setup for NodeMCU ESP-12 is :
+// Typical setup for NodeMCU ESP-12 with SPI overlap is :
 //
-// Display SDO/MISO  to NodeMCU pin D6 (or leave disconnected if not reading TFT)
+// Display SDO/MISO  to NodeMCU SD0 (or leave disconnected if not reading TFT)
 // Display LED       to NodeMCU pin VIN (or 5V, see below)
-// Display SCK       to NodeMCU pin D5
-// Display SDI/MOSI  to NodeMCU pin D7
-// Display DC (RS/AO)to NodeMCU pin D3
+// Display SCK       to NodeMCU pin CLK
+// Display SDI/MOSI  to NodeMCU pin SD1
+// Display DC (or AO)to NodeMCU pin D8
 // Display RESET     to NodeMCU pin D4 (or RST, see below)
-// Display CS        to NodeMCU pin D8 (or GND, see below)
+// Display CS        to NodeMCU pin D3
 // Display GND       to NodeMCU pin GND (0V)
 // Display VCC       to NodeMCU 5V or 3.3V
 //
 // The TFT RESET pin can be connected to the NodeMCU RST pin or 3.3V to free up a control pin
 //
-// The DC (Data Command) pin may be labelled AO or RS (Register Select)
-//
-// With some displays such as the ILI9341 the TFT CS pin can be connected to GND if no more
-// SPI deivces (e.g. an SD Card) are connected, in this case comment out the #define TFT_CS
-// line below so it is NOT defined. Other displays such at the ST7735 require the TFT CS pin
-// to be toggled during setup, so in these cases the TFT_CS line must be defined and connected.
-//
 // The NodeMCU D0 pin can be used for RST
 //
-// See Section 2. below if DC or CS is connected to D0
+// See Section 2. below if DC is connected to D0
 //
 // Note: only some versions of the NodeMCU provide the USB 5V on the VIN pin
 // If 5V is not available at a pin you can use 3.3V but backlight brightness
 // will be lower.
 
-// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP8266 SETUP ######
+// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR SETUP ######
 
-// For ModeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
-
-#define TFT_CS   PIN_D8  // Chip select control pin D8
-#define TFT_DC   PIN_D3  // Data Command control pin
+// ModeMCU
+// Do not define TFT_CS in overlap mode, TFT chip select must connect to pin D3
+#define TFT_CS   PIN_D3
+#define TFT_DC   PIN_D5  // Data Command control pin
 #define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
-//#define TFT_WR PIN_D2    // Write strobe for modified Raspberry Pi TFT only
-
-// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP32 SETUP   ######
-
-// For ESP32 Dev board (only tested with ILI9341 display)
-// The hardware SPI can be mapped to any pins
-
-//#define TFT_MISO 19
-//#define TFT_MOSI 23
-//#define TFT_SCLK 18
-//#define TFT_CS    15  // Chip select control pin
-//#define TFT_DC    2  // Data Command control pin
-//#define TFT_RST   4  // Reset pin (could connect to RST pin)
+// ESP32 Dev board
+//#define TFT_CS   5  // Chip select control pin
+//#define TFT_DC   2  // Data Command control pin
+//#define TFT_RST  4  // Reset pin (could connect to Arduino RESET pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
-
-//#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
 // ##################################################################################
 //
-// Section 2. Define the way the DC and/or CS lines are driven (ESP8266 only)
+// Section 2. Define the way the DC and/or CS lines are driven
 //
 // ##################################################################################
 
@@ -152,13 +134,12 @@
 // Define the SPI clock frequency
 // With an ILI9341 display 40MHz works OK, 80MHz sometimes fails
 // With a ST7735 display more than 27MHz may not work (spurious pixels and lines)
-// With an ILI9163 display TBD MHz works OK,
 
 // #define SPI_FREQUENCY   1000000
 // #define SPI_FREQUENCY   5000000
 // #define SPI_FREQUENCY  10000000
 // #define SPI_FREQUENCY  20000000
- #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
+ #define SPI_FREQUENCY  27000000 // Maximum for my ST7735. It is actually 26.67MHz = 80/3
 // #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000
 
@@ -168,5 +149,15 @@
 // When commented out the code size will be smaller and sketches will
 // run slightly faster, so leave it commented out unless you need it!
 // Transaction support is needed to work with SD library but not needed with TFT_SdFat
-
+ 
 // #define SUPPORT_TRANSACTIONS
+
+// If this next #define is not commented out then the SPI pins used by the program FLASH
+// can be shared with the TFT, this frees up the HSPI SCK, MOSI and MISO pins.
+// The TFT must be connected as follows for this to work:
+//     TFT Chip Select to GPIO0 (pin D3 on a NodeMCU)
+//     TFT MOSI/SDA to GPIO8/SDD1 (pin SD1 on a NodeMCU)
+//     TFT MISO to GPIO7/SDD0 (pin SD0 on a NodeMCU) -  does not need to be connected
+//     TFT SCK  to GPIO6/SDCLK (pin CLK on a NodeMCU)
+
+#define TFT_SPI_OVERLAP

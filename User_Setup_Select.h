@@ -26,6 +26,7 @@
 //#include <User_Setups/Setup6_RPi_Wr_ILI9486.h>  // Setup file configured for my modified RPi TFT
 //#include <User_Setups/Setup7_ST7735_128x128.h>  // Setup file configured for my ST7735 128x128 display
 //#include <User_Setups/Setup8_ILI9163_128x128.h>  // Setup file configured for my ILI9163 128x128 display
+//#include <User_Setups/Setup9_ST7735_Overlap.h>   // Setup file configured for my ST7735
 
 //#include <User_Setups/SetupX_Template.h> // Setup file template for copying/editting
 
@@ -64,3 +65,11 @@
 #define PIN_D8 15
 #define PIN_D9  3
 #define PIN_D10 1
+
+#define PIN_MOSI 8
+#define PIN_MISO 7
+#define PIN_SCLK 6
+#define PIN_HWCS 0
+
+#define PIN_D11  9
+#define PIN_D12 10

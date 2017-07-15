@@ -86,6 +86,10 @@
   #define DC_D GPOS=dcpinmask
 #endif
 
+#if defined (TFT_SPI_OVERLAP)
+  #undef TFT_CS
+#endif
+
 #ifndef TFT_CS
   #define CS_L // No macro allocated so it generates no code
   #define CS_H // No macro allocated so it generates no code

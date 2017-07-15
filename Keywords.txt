@@ -48,6 +48,7 @@ readcommand16	KEYWORD2
 readcommand32	KEYWORD2
 readPixel	KEYWORD2
 readRect	KEYWORD2
+pushRect	KEYWORD2
 readRectRGB	KEYWORD2
 getRotation	KEYWORD2
 fontsLoaded	KEYWORD2

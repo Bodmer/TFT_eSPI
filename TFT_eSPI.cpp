@@ -164,10 +164,17 @@ void TFT_eSPI::init(void)
   #ifdef TFT_WR
     wrpinmask = (uint32_t) digitalPinToBitMask(TFT_WR);
   #endif
+  
+  #ifdef TFT_SPI_OVERLAP
+    // Overlap mode SD0=MISO, SD1=MOSI, CLK=SCLK must use D3 as CS
+    //    pins(int8_t sck, int8_t miso, int8_t mosi, int8_t ss);
+    //SPI.pins(        6,          7,           8,          0);
+    SPI.pins(6, 7, 8, 0);
+  #endif
 
-  SPI.begin(); // This will set MISO to input
+  SPI.begin(); // This will set HMISO to input
 #else
-  #ifdef TFT_MOSI
+  #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP)
     SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
   #else
     SPI.begin();
@@ -183,8 +190,7 @@ void TFT_eSPI::init(void)
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0);
   SPI.setFrequency(SPI_FREQUENCY);
-  //SPI.setHwCs(1); // Use hardware SS toggling on GPIO15 (D8) - not supported - benefit is only ~0.8% performance boost
-  
+
   #ifdef ESP32 // Unlock the SPI hal mutex and set the lock management flags
     SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
     inTransaction = true; // Flag to stop intermediate spi_end calls
@@ -197,6 +203,8 @@ void TFT_eSPI::init(void)
 #ifdef TFT_CS
   digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
   pinMode(TFT_CS, OUTPUT);
+#else
+  SPI.setHwCs(1); // Use hardware SS toggling
 #endif
 
   // Set to output once again in case D6 (MISO) is used for DC
