@@ -85,8 +85,6 @@
 //#define TFT_DC   PIN_D3  // Data Command control pin
 #define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
-#define TFT_SCK PIN_D5
-#define TFT_DAT PIN_D7
 
 //#define TFT_WR PIN_D2    // Write strobe for modified Raspberry Pi TFT only
 

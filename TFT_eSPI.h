@@ -129,19 +129,6 @@
   #endif
 #endif
 
-#ifdef TFT_DAT
-#define DAT_I pinMode(TFT_DAT, INPUT)
-#define DAT_O pinMode(TFT_DAT, OUTPUT)
-#define DAT_L digitalWrite(TFT_DAT, LOW)
-#define DAT_H digitalWrite(TFT_DAT, HIGH)
-#define DAT_V digitalRead(TFT_DAT)
-#endif
-
-#ifdef TFT_SCK
-#define SCK_L digitalWrite(TFT_SCK, LOW)
-#define SCK_H digitalWrite(TFT_SCK, HIGH)
-#endif
-
 #ifdef LOAD_GFXFF
   // We can include all the free fonts and they will only be built into
   // the sketch if they are used
@@ -482,16 +469,6 @@ inline void spi_end() __attribute__((always_inline));
 #endif
 
 };
-
-static inline void delay_ns(int32_t d)
-{
-  while (d > 0)
-  {
-    asm volatile ("nop ; nop ; nop ; nop" : : : "memory");
-    d -= 25;
-  }
-  /* ToDo */
-}
 
 #endif
 

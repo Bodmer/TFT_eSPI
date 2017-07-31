@@ -123,16 +123,6 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   }
 #endif
 
-#ifdef TFT_DAT
-  digitalWrite(TFT_DAT, HIGH);
-  pinMode(TFT_DAT, OUTPUT);
-#endif
-
-#ifdef TFT_SCK
-  digitalWrite(TFT_SCK, LOW);
-  pinMode(TFT_SCK, OUTPUT);
-#endif
-
   _width    = w; // Set by specific xxxxx_Defines.h file or by users sketch
   _height   = h; // Set by specific xxxxx_Defines.h file or by users sketch
   rotation  = 0;
@@ -215,17 +205,7 @@ void TFT_eSPI::init(void)
     SPI.pins(6, 7, 8, 0);
   #endif
 
-  #ifdef TFT_DAT
-    cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
-  #endif
-
-  #ifdef TFT_SCK
-    cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
-  #endif
-
-  #if !defined(IFACE_3WIRE) || defined(IFACE_3WIRE_ESP8266)
-    SPI.begin(); // This will set HMISO to input
-  #endif
+  SPI.begin(); // This will set HMISO to input
 #else
   #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP)
   // ToDo: handle 3-wire interface on ESP32.
@@ -405,6 +385,11 @@ void TFT_eSPI::spiwrite(uint8_t c)
 #endif
 
 
+/***************************************************************************************
+** Function name:           docommand
+** Description:             Send command, with optional input data in IN buffer and
+**                          optional read out result to OUT buffer
+***************************************************************************************/
 #ifdef IFACE_3WIRE
   #ifdef IFACE_3WIRE_ESP8266
 void TFT_eSPI::docommand(uint8_t c, uint8_t *in, uint32_t in_len, uint8_t *out, uint32_t out_len)
@@ -461,93 +446,7 @@ void TFT_eSPI::docommand(uint8_t c, uint8_t *in, uint32_t in_len, uint8_t *out, 
 }
 
   #else
-void TFT_eSPI::docommand(uint8_t c, uint8_t *in, uint32_t in_len, uint8_t *out, uint32_t out_len)
-{
-  uint32_t i;
-  uint32_t val;
-
-  DAT_O;
-  CS_L;
-  delay_ns(ST7787_T_CSS);
-
-  /* Write the command byte. */
-  /* First shift out the data/command bit ('0' for command). */
-  SCK_L;
-  DAT_L;
-  delay_ns(ST7787_T_SLW);
-  SCK_H;
-  delay_ns(ST7787_T_SHW);
-  /* Then shift out the bits, MSB-to-LSB. */
-  val = c;
-  for (i = 8; i; --i) {
-    SCK_L;
-    if ((val>>7) & 1)
-      DAT_H;
-    else
-      DAT_L;
-    val <<= 1;
-    delay_ns(ST7787_T_SLW);
-    SCK_H;
-    delay_ns(ST7787_T_SHW);
-  }
-
-  /* Write any command data. */
-  if (in_len) {
-    do {
-      val = *in++;
-
-      /* Data/command bit ('1' for data). */
-      SCK_L;
-      DAT_H;
-      delay_ns(ST7787_T_SLW);
-      SCK_H;
-      delay_ns(ST7787_T_SHW);
-
-      for (i = 8; i; --i) {
-        SCK_L;
-        if ((val>>7) & 1)
-          DAT_H;
-        else
-          DAT_L;
-        val <<= 1;
-        delay_ns(ST7787_T_SLW);
-        SCK_H;
-        delay_ns(ST7787_T_SHW);
-      }
-    } while (--in_len > 0);
-  }
-
-  DAT_I;
-
-  /* Read reply. */
-  if (out_len) {
-    /* Dummy bit (according to data sheet, data/command placeholder?). */
-    SCK_L;
-    delay_ns(ST7787_T_SLR);
-    SCK_H;
-    delay_ns(ST7787_T_SHR);
-
-    do {
-      val = 0;
-      for (i = 8; i; --i) {
-        SCK_L;
-        delay_ns(ST7787_T_SLR);
-        val = (val << 1);
-        if (DAT_V)
-          val = val | 1;
-        SCK_H;
-        delay_ns(ST7787_T_SHR);
-      }
-      *out++ = val;
-    } while (--out_len > 0);
-  }
-
-  SCK_L;
-  delay_ns(ST7787_T_SCC);
-  CS_H;
-  delay_ns(ST7787_T_CHW);
-}
-
+    #error 3WIRE protocol currently only implemented for ESP8266
   #endif
 #endif
 
@@ -618,41 +517,7 @@ void TFT_eSPI::writedata(uint8_t c)
 }
 
 #else
-void TFT_eSPI::writedata(uint8_t c)
-{
-  uint32_t i;
-  uint32_t val;
-
-  DAT_O;
-  CS_L;
-  delay_ns(ST7787_T_CSS);
-
-  /* Data/command bit ('1' for data). */
-  val = c;
-  SCK_L;
-  DAT_H;
-  delay_ns(ST7787_T_SLW);
-  SCK_H;
-  delay_ns(ST7787_T_SHW);
-
-  for (i = 8; i; --i) {
-    SCK_L;
-    if ((val>>7) & 1)
-      DAT_H;
-    else
-      DAT_L;
-    val <<= 1;
-    delay_ns(ST7787_T_SLW);
-    SCK_H;
-    delay_ns(ST7787_T_SHW);
-  }
-
-  DAT_I;
-
-  delay_ns(ST7787_T_SCC);
-  CS_H;
-  delay_ns(ST7787_T_CHW);
-}
+#error 3WIRE protocol currently only implemented for ESP8266
 #endif
 #else  /* !IFACE_3WIRE */
  void TFT_eSPI::writedata(uint8_t c)
@@ -4426,60 +4291,7 @@ void spiWriteBlock(uint16_t color, uint32_t repeat)
 }
 
 #else
-void spiWriteBlock(uint16_t color, uint32_t repeat)
-{
-  uint32_t i;
-  uint32_t val;
-
-  DAT_O;
-  delay_ns(ST7787_T_CSS);
-
-  while (repeat-- > 0)
-  {
-    val = color >> 8;
-    /* Data/command bit ('1' for data). */
-    SCK_L;
-    DAT_H;
-    delay_ns(ST7787_T_SLW);
-    SCK_H;
-    delay_ns(ST7787_T_SHW);
-
-    for (i = 8; i; --i) {
-      SCK_L;
-      if ((val>>7) & 1)
-        DAT_H;
-      else
-        DAT_L;
-      val <<= 1;
-      delay_ns(ST7787_T_SLW);
-      SCK_H;
-      delay_ns(ST7787_T_SHW);
-    }
-
-    val = color & 0xff;
-    /* Data/command bit ('1' for data). */
-    SCK_L;
-    DAT_H;
-    delay_ns(ST7787_T_SLW);
-    SCK_H;
-    delay_ns(ST7787_T_SHW);
-
-    for (i = 8; i; --i) {
-      SCK_L;
-      if ((val>>7) & 1)
-        DAT_H;
-      else
-        DAT_L;
-      val <<= 1;
-      delay_ns(ST7787_T_SLW);
-      SCK_H;
-      delay_ns(ST7787_T_SHW);
-    }
-  }
-
-  DAT_I;
-}
-
+#error 3WIRE protocol currently only implemented for ESP8266
 #endif  /* IFACE_3WIRE */
 #elif defined (ESP8266) && (SPI_FREQUENCY != 80000000)
 void spiWriteBlock(uint16_t color, uint32_t repeat)
