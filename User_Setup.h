@@ -73,6 +73,11 @@
 //
 // See Section 2. below if DC or CS is connected to D0
 //
+// On ST7787, using 3-wire mode, the DC pin is not needed and TFT_DC can be
+// left undefined. MOSI should be connected to D0 on the display. MISO should
+// also be connected to D0 to be able to read from the display, or can be left
+// unconnected if reading is not needed.
+//
 // Note: only some versions of the NodeMCU provide the USB 5V on the VIN pin
 // If 5V is not available at a pin you can use 3.3V but backlight brightness
 // will be lower.

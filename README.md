@@ -1,10 +1,13 @@
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with a driver for ILI9341, ILI9163, ST7735 and S6D02A1 based TFT displays that support SPI.
+An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with a driver for ILI9341, ILI9163, ST7735, ST7787 and S6D02A1 based TFT displays that support SPI.
 
 The library also supports TFT displays designed for the Raspberry Pi that are based on a ILI9486 driver chip with a 480 x 320 pixel screen. This display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. A modification to these displays is possible (see mod image in Tools folder) to make many graphics functions much faster (e.g. 23ms to clear the screen, 1.2ms to draw a 72 pixel high numeral).
 
 The library supports SPI overlap so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH.
+
+The library supports the 3-wire mode of some display controllers (currently tested with ST7787 only, and currently only on ESP8266). This mode reduces pin count by not using the DC and MISO pins.
+
 
 The library contains proportional fonts, different sizes can be enabled/disabled at compile time to optimise the use of FLASH memory.  The library has been tested with the NodeMCU (ESP8266 based) and an ESP32 demo board.
 
