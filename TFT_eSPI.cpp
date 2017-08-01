@@ -80,10 +80,10 @@ inline void TFT_eSPI::spi_end(void){
   if(!inTransaction) {
     if (!locked) {
       locked = true;
-      SPI.endTransaction();
-      #ifdef IFACE_3WIRE_ESP8266
+    #ifdef IFACE_3WIRE_ESP8266
       SPI1U &= ~(uint32_t)(SPIUWRBYO|SPIURDBYO);
-      #endif
+    #endif
+      SPI.endTransaction();
     }
   }
   #endif
@@ -208,7 +208,6 @@ void TFT_eSPI::init(void)
   SPI.begin(); // This will set HMISO to input
 #else
   #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP)
-  // ToDo: handle 3-wire interface on ESP32.
     SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
   #else
     SPI.begin();
@@ -224,10 +223,11 @@ void TFT_eSPI::init(void)
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0);
   SPI.setFrequency(SPI_FREQUENCY);
+
   #ifdef IFACE_3WIRE_ESP8266
     SPI1U |= (uint32_t)(SPIUWRBYO|SPIURDBYO);
   #endif
-  
+
   #ifdef ESP32 // Unlock the SPI hal mutex and set the lock management flags
     SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
     inTransaction = true; // Flag to stop intermediate spi_end calls

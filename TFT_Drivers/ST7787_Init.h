@@ -20,6 +20,9 @@
   */
   writecommand(ST7787_COLMOD);
   writedata((13 << 4) | 5);
+  /* Initialise to Rotation 0. */
+  writecommand(TFT_MADCTL);
+  writedata(TFT_MAD_ML | TFT_MAD_RGB);
   /* Disable external vsync. */
   writecommand(ST7787_VSYNCOUT);
   /* Turn on the display */
