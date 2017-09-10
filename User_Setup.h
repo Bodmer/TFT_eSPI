@@ -36,6 +36,7 @@
 //#define ST7735_GREENTAB
 //#define ST7735_GREENTAB2
 //#define ST7735_GREENTAB3
+//#define ST7735_GREENTAB4
 //#define ST7735_GREENTAB128 // For 128 x 128 display
 //#define ST7735_REDTAB
 //#define ST7735_BLACKTAB
