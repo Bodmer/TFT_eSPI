@@ -38,7 +38,7 @@
   #define TAB_COLOUR INITR_GREENTAB128
   #define CGRAM_OFFSET
  
-#elif defined (ST6635_REDTAB)
+#elif defined (ST7735_REDTAB)
   #define TAB_COLOUR INITR_REDTAB
   
 #elif defined (ST7735_BLACKTAB)
