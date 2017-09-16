@@ -2710,7 +2710,27 @@ uint16_t TFT_eSPI::color565(uint8_t r, uint8_t g, uint8_t b)
 {
   return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }
+uint16_t TFT_eSPI::color565FromWebHex(const char* color){
+		if (color[0] == '#') { 
+			//remove first char
+			String c = String(color);
+			c = c.substring(1);
+			char l[9];
+			for (int i = 0; i<9; i++)
+				l[i] = '\0';
+			c.toCharArray(l, 9);
+			color = l;
+		}
 
+		int colorInt = strtol(color, NULL, 16);
+		return color565From888(colorInt);
+}
+uint16_t TFT_eSPI::color565From888(uint16_t color){
+		int r = (color >> 16) & 255; 
+		int g = (color >> 8) & 255;
+		int b = (color) & 255;
+		return color565(r, g, b);
+}
 
 /***************************************************************************************
 ** Function name:           invertDisplay
