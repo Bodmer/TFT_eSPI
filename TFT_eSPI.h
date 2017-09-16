@@ -387,7 +387,8 @@ class TFT_eSPI : public Print {
 
   uint16_t fontsLoaded(void),
            color565(uint8_t r, uint8_t g, uint8_t b);
-
+uint16_t	   color565From888(uint16_t color);
+uint16_t	   color565FromWebHex(const char* color);
   int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
            drawChar(unsigned int uniCode, int x, int y),
            drawNumber(long long_num,int poX, int poY, int font),
