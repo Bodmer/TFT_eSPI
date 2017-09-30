@@ -60,7 +60,7 @@ void loop() {
   uint16_t x, y;
   static uint16_t color;
 
-  if (tft.getTouch(&x, &y) {
+  if (tft.getTouch(&x, &y)) {
 
     tft.setCursor(5, 5, 2);
     tft.printf("x: %i     ", x);
