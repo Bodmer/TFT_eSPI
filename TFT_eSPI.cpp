@@ -3659,6 +3659,12 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   CS_H;
   T_CS_L;
   
+#ifdef SPI_HAS_TRANSACTION
+  #ifdef SUPPORT_TRANSACTIONS
+    if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
+  #endif
+#endif
+
   SPI.setFrequency(SPI_TOUCH_FREQUENCY);
 
   // Start bit + YP sample request for x position
@@ -3670,6 +3676,7 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   if(tmp == 0 || tmp == 0x3ff){
     T_CS_H;
     SPI.setFrequency(SPI_FREQUENCY);
+    spi_end();
     return false;
     }
 
@@ -3685,6 +3692,7 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 
   T_CS_H;
   SPI.setFrequency(SPI_FREQUENCY);
+  spi_end();
 
   if(tmp == 0 || tmp == 0x3ff){
     return false;
