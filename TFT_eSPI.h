@@ -108,6 +108,16 @@
   #endif
 #endif
 
+// chip select signal for touchscreen
+#ifndef TOUCH_CS
+  #define T_CS_L // No macro allocated so it generates no code
+  #define T_CS_H // No macro allocated so it generates no code
+#else
+    #define T_CS_L digitalWrite(TOUCH_CS, LOW)
+    #define T_CS_H digitalWrite(TOUCH_CS, HIGH)
+#endif
+
+
 #ifdef TFT_WR
   #if defined (ESP32)
     #define WR_L GPIO.out_w1tc = (1 << TFT_WR)
@@ -417,6 +427,13 @@ class TFT_eSPI : public Print {
 
     void   setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
 
+#ifdef TOUCH_CS
+   uint8_t getTouch(uint16_t *x, uint16_t *y);
+   uint8_t getTouchRaw(uint16_t *x, uint16_t *y);
+   uint8_t calibrateTouch(uint16_t *data, uint32_t color_bg, uint32_t color_fg, uint8_t size);
+      void setTouch(uint16_t *data);
+#endif 
+
  virtual   size_t write(uint8_t);
 
  private:
@@ -434,6 +451,10 @@ inline void spi_end() __attribute__((always_inline));
   uint32_t  cspinmask, dcpinmask, wrpinmask;//, mosipinmask, clkpinmask;
 
   uint32_t lastColor = 0xFFFF;
+
+#ifdef TOUCH_CS
+  uint16_t touchCalibration_x0, touchCalibration_x1, touchCalibration_y0, touchCalibration_y1;
+#endif 
 
  protected:
 
