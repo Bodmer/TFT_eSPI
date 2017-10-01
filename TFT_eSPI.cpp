@@ -3712,8 +3712,21 @@ uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y){
   if(!retVal)
     return retVal;
 
-  *x=(x_tmp-touchCalibration_x0)*_width/(touchCalibration_x1-touchCalibration_x0);
-  *y=(y_tmp-touchCalibration_y0)*_height/(touchCalibration_y1-touchCalibration_y0);
+  if(!touchCalibration_rotate){
+    *x=(x_tmp-touchCalibration_x0)*_width/touchCalibration_x1;
+    *y=(y_tmp-touchCalibration_y0)*_height/touchCalibration_y1;
+    if(touchCalibration_invert_x)
+      *x = _width - *x;
+    if(touchCalibration_invert_y)
+      *y = _height - *y;
+  } else {
+    *y=(x_tmp-touchCalibration_x0)*_height/touchCalibration_x1;
+    *x=(y_tmp-touchCalibration_y0)*_width/touchCalibration_y1;
+    if(touchCalibration_invert_x)
+      *x = _width - *x;
+    if(touchCalibration_invert_y)
+      *y = _height - *y;
+  }
 
   return retVal;
 }
@@ -3723,8 +3736,9 @@ uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y){
 ** Description:             generates calibration data for touchscreen. 
 ***************************************************************************************/
 uint8_t TFT_eSPI::calibrateTouch(uint16_t *data, uint32_t color_bg, uint32_t color_fg, uint8_t size){
-  uint16_t values[] = {0,0,0,0,0,0,0,0};
+  int16_t values[] = {0,0,0,0,0,0,0,0};
   uint16_t x_tmp, y_tmp;
+
 
 
   for(uint8_t i = 0; i<4; i++){
@@ -3770,17 +3784,52 @@ uint8_t TFT_eSPI::calibrateTouch(uint16_t *data, uint32_t color_bg, uint32_t col
     values[i*2+1] /= 8;
   }
 
-  // TODO: build in orientation check!
-  touchCalibration_x0 = (values[0] + values[2])/2; // calc min x
-  touchCalibration_x1 = (values[4] + values[6])/2; // calc max x
-  touchCalibration_y0 = (values[1] + values[5])/2; // calc min y
-  touchCalibration_y1 = (values[3] + values[7])/2; // calc max y
 
+
+  // check orientation
+  // from case 0 to case 1, the y value changed. 
+  // If the meassured delta of the touch x axis is bigger than the delta of the y axis, the touch and TFT axes are switched.
+  touchCalibration_rotate = false;
+  if(abs(values[0]-values[2]) > abs(values[1]-values[3])){
+    touchCalibration_rotate = true;
+    touchCalibration_x1 = (values[0] + values[4])/2; // calc min x
+    touchCalibration_x0 = (values[2] + values[6])/2; // calc max x
+    touchCalibration_y1 = (values[1] + values[3])/2; // calc min y
+    touchCalibration_y0 = (values[5] + values[7])/2; // calc max y
+  } else {
+    touchCalibration_x0 = (values[0] + values[2])/2; // calc min x
+    touchCalibration_x1 = (values[4] + values[6])/2; // calc max x
+    touchCalibration_y0 = (values[1] + values[5])/2; // calc min y
+    touchCalibration_y1 = (values[3] + values[7])/2; // calc max y
+  }
+
+  // in addition, the touch screen axis could be in the opposit direction of the TFT axis
+  touchCalibration_invert_x = false;
+  if(touchCalibration_x0 > touchCalibration_x1){
+    values[0]=touchCalibration_x0;
+    touchCalibration_x0 = touchCalibration_x1;
+    touchCalibration_x1 = values[0];
+    touchCalibration_invert_x = true;
+  }
+  touchCalibration_invert_y = false;
+  if(touchCalibration_y0 > touchCalibration_y1){
+    values[0]=touchCalibration_y0;
+    touchCalibration_y0 = touchCalibration_y1;
+    touchCalibration_y1 = values[0];
+    touchCalibration_invert_y = true;
+  }
+
+  // pre calculate
+  touchCalibration_x1 -= touchCalibration_x0;
+  touchCalibration_y1 -= touchCalibration_y0;
+
+  // export data, if pointer valid
   if(data != NULL){
     data[0] = touchCalibration_x0;
     data[1] = touchCalibration_x1;
     data[2] = touchCalibration_y0;
     data[3] = touchCalibration_y1;
+    data[4] = touchCalibration_rotate | (touchCalibration_invert_x <<1) | (touchCalibration_invert_y <<2);
     }
 }
 
@@ -3794,6 +3843,10 @@ void TFT_eSPI::setTouch(uint16_t *data){
   touchCalibration_x1 = data[1];
   touchCalibration_y0 = data[2];
   touchCalibration_y1 = data[3];
+
+  touchCalibration_rotate = data[4] & 0x01;
+  touchCalibration_invert_x = data[4] & 0x02;
+  touchCalibration_invert_y = data[4] & 0x04;
 }
 
 #endif

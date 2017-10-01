@@ -6,7 +6,7 @@ TFT_eSPI tft = TFT_eSPI();
 #define CALIBRATION_FILE "/calibrationData"
 
 void setup(void) {
-  uint16_t calibrationData[4];
+  uint16_t calibrationData[5];
   uint8_t calDataOK = 0;
 
   Serial.begin(115200);
@@ -14,7 +14,7 @@ void setup(void) {
 
   tft.init();
 
-  tft.setRotation(2);
+  tft.setRotation(3);
   tft.fillScreen((0xFFFF));
 
   tft.setCursor(20, 0, 2);
@@ -33,7 +33,7 @@ void setup(void) {
   if (SPIFFS.exists(CALIBRATION_FILE)) {
     File f = SPIFFS.open(CALIBRATION_FILE, "r");
     if (f) {
-      if (f.readBytes((char *)calibrationData, 12) == 12)
+      if (f.readBytes((char *)calibrationData, 14) == 14)
         calDataOK = 1;
       f.close();
     }
@@ -47,7 +47,7 @@ void setup(void) {
     // store data
     File f = SPIFFS.open(CALIBRATION_FILE, "w");
     if (f) {
-      f.write((const unsigned char *)calibrationData, 12);
+      f.write((const unsigned char *)calibrationData, 14);
       f.close();
     }
   }

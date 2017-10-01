@@ -454,6 +454,7 @@ inline void spi_end() __attribute__((always_inline));
 
 #ifdef TOUCH_CS
   uint16_t touchCalibration_x0, touchCalibration_x1, touchCalibration_y0, touchCalibration_y1;
+  uint8_t  touchCalibration_rotate, touchCalibration_invert_x, touchCalibration_invert_y;
 #endif 
 
  protected:
