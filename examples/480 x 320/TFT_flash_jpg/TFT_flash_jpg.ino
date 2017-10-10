@@ -146,11 +146,30 @@ void renderJPEG(int xpos, int ypos) {
     int mcu_x = JpegDec.MCUx * mcu_w + xpos;  // Calculate coordinates of top left corner of current MCU
     int mcu_y = JpegDec.MCUy * mcu_h + ypos;
 
-    // check if the image block size needs to be changed for the right and bottom edges
+    // check if the image block size needs to be changed for the right edge
     if (mcu_x + mcu_w <= max_x) win_w = mcu_w;
     else win_w = min_w;
+
+    // check if the image block size needs to be changed for the bottom edge
     if (mcu_y + mcu_h <= max_y) win_h = mcu_h;
     else win_h = min_h;
+
+    // copy pixels into a contiguous block
+    if (win_w != mcu_w)
+    {
+      uint16_t *cImg;
+      int p = 0;
+      cImg = pImg + win_w;
+      for (int h = 1; h < win_h; h++)
+      {
+        p += mcu_w;
+        for (int w = 0; w < win_w; w++)
+        {
+          *cImg = *(pImg + w + p);
+          cImg++;
+        }
+      }
+    }
 
     // calculate how many pixels must be drawn
     uint32_t mcu_pixels = win_w * win_h;
