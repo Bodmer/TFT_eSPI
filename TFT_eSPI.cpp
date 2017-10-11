@@ -192,9 +192,16 @@ void TFT_eSPI::init(void)
   SPI.setFrequency(SPI_FREQUENCY);
 
   #ifdef ESP32 // Unlock the SPI hal mutex and set the lock management flags
-    SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
-    inTransaction = true; // Flag to stop intermediate spi_end calls
-    locked = false;       // Flag to stop repeat beginTransaction calls
+    #ifdef SUPPORT_TRANSACTIONS
+      SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
+      inTransaction = true; // Flag to stop intermediate spi_end calls
+      locked = false;       // Flag to stop repeat beginTransaction calls
+    #else
+      SPI.begin(TFT_SCLK,TFT_MISO,TFT_MOSI);
+      SPI.setFrequency(SPI_FREQUENCY);
+      SPI.setBitOrder(MSBFIRST);
+      SPI.setDataMode(SPI_MODE0);
+    #endif
   #endif
 
 #endif
