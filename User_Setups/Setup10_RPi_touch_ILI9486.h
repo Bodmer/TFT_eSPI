@@ -19,6 +19,7 @@
 //#define ILI9163_DRIVER
 //#define S6D02A1_DRIVER
 #define RPI_ILI9486_DRIVER // 20MHz maximum SPI
+// to enable XPT2046 touch controller, define TOUCH_CS
 
 // For ST7735 ONLY, define the type of display, originally this was based on the
 // colour of the tab on the screen protector film but this is not always true, so try
@@ -80,7 +81,7 @@
 #define TFT_DC   PIN_D3  // Data Command control pin
 //#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 #define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
-#define TOUCH_CS  D4     // Chip select pin (T_CS) of touch screen
+#define TOUCH_CS  D4     // Chip select pin (T_CS) of touch screen controller XPT2046
 
 //#define TFT_WR PIN_D2    // Write strobe for modified Raspberry Pi TFT only
 
