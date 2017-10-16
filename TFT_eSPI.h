@@ -113,8 +113,8 @@
   #define T_CS_L // No macro allocated so it generates no code
   #define T_CS_H // No macro allocated so it generates no code
 #else
-    #define T_CS_L digitalWrite(TOUCH_CS, LOW)
-    #define T_CS_H digitalWrite(TOUCH_CS, HIGH)
+  #define T_CS_L digitalWrite(TOUCH_CS, LOW)
+  #define T_CS_H digitalWrite(TOUCH_CS, HIGH)
 #endif
 
 

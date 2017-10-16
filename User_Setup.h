@@ -14,11 +14,11 @@
 // ##################################################################################
 
 // Only define one driver, the other ones must be commented out
-//#define ILI9341_DRIVER
+#define ILI9341_DRIVER
 //#define ST7735_DRIVER
 //#define ILI9163_DRIVER
 //#define S6D02A1_DRIVER
-#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
+//#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
 
 // For ST7735 ONLY, define the type of display, originally this was based on the
 // colour of the tab on the screen protector film but this is not always true, so try
@@ -31,6 +31,7 @@
 //#define ST7735_GREENTAB
 //#define ST7735_GREENTAB2
 //#define ST7735_GREENTAB3
+//#define ST7735_GREENTAB128 // For 128 x 128 display
 //#define ST7735_REDTAB
 //#define ST7735_BLACKTAB
 
@@ -52,13 +53,15 @@
 // Display LED       to NodeMCU pin VIN (or 5V, see below)
 // Display SCK       to NodeMCU pin D5
 // Display SDI/MOSI  to NodeMCU pin D7
-// Display DC (or AO)to NodeMCU pin D3
+// Display DC (RS/AO)to NodeMCU pin D3
 // Display RESET     to NodeMCU pin D4 (or RST, see below)
 // Display CS        to NodeMCU pin D8 (or GND, see below)
 // Display GND       to NodeMCU pin GND (0V)
 // Display VCC       to NodeMCU 5V or 3.3V
 //
 // The TFT RESET pin can be connected to the NodeMCU RST pin or 3.3V to free up a control pin
+//
+// The DC (Data Command) pin may be labelled AO or RS (Register Select)
 //
 // With some displays such as the ILI9341 the TFT CS pin can be connected to GND if no more
 // SPI deivces (e.g. an SD Card) are connected, in this case comment out the #define TFT_CS
@@ -73,26 +76,35 @@
 // If 5V is not available at a pin you can use 3.3V but backlight brightness
 // will be lower.
 
-// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR SETUP ######
+// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP8266 SETUP ######
 
-// ModeMCU
+// For NodeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
 #define TFT_CS   PIN_D8  // Chip select control pin D8
 #define TFT_DC   PIN_D3  // Data Command control pin
-//#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
-#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
-#define TOUCH_CS  D4     // Chip select pin (T_CS) of touch screen
+#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
+//#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
+
+//#define TOUCH_CS PIN_D1     // Chip select pin (T_CS) of touch screen
 
 //#define TFT_WR PIN_D2    // Write strobe for modified Raspberry Pi TFT only
 
-// ESP32 Dev board (planned, not supported yet)
-//#define TFT_CS   5  // Chip select control pin
-//#define TFT_DC   2  // Data Command control pin
-//#define TFT_RST  4  // Reset pin (could connect to Arduino RESET pin)
-//#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
+// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP32 SETUP   ######
+
+// For ESP32 Dev board (only tested with ILI9341 display)
+// The hardware SPI can be mapped to any pins
+
+//#define TFT_MISO 19
+//#define TFT_MOSI 23
+//#define TFT_SCLK 18
+//#define TFT_CS    15  // Chip select control pin
+//#define TFT_DC    2  // Data Command control pin
+//#define TFT_RST   4  // Reset pin (could connect to RST pin)
+
+//#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
 // ##################################################################################
 //
-// Section 2. Define the way the DC and/or CS lines are driven
+// Section 2. Define the way the DC and/or CS lines are driven (ESP8266 only)
 //
 // ##################################################################################
 
@@ -144,9 +156,9 @@
 
 // #define SPI_FREQUENCY   1000000
 // #define SPI_FREQUENCY   5000000
- #define SPI_FREQUENCY  10000000
+// #define SPI_FREQUENCY  10000000
 // #define SPI_FREQUENCY  20000000
-// #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
+ #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
 // #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000
 

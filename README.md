@@ -1,11 +1,10 @@
 # TFT_eSPI
 
-In addition to the original library, this library supports the XPT2046 touch screen controller, which is part of many RPi displays. The SPI is shared with the TFT and only an additional chip select line is needed.
-
-
 An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with a driver for ILI9341, ILI9163, ST7735 and S6D02A1 based TFT displays that support SPI.
 
 The library also supports TFT displays designed for the Raspberry Pi that are based on a ILI9486 driver chip with a 480 x 320 pixel screen. This display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. A modification to these displays is possible (see mod image in Tools folder) to make many graphics functions much faster (e.g. 23ms to clear the screen, 1.2ms to draw a 72 pixel high numeral).
+
+The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed.
 
 The library supports SPI overlap so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH.
 
