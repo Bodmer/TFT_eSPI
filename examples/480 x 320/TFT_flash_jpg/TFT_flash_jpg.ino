@@ -23,9 +23,6 @@ TFT_eSPI tft = TFT_eSPI();
 // JPEG decoder library
 #include <JPEGDecoder.h>
 
-// Chip Select Pin for SD card
-#define SD_CS 53
-
 // Return the minimum of two values a and b
 #define minimum(a,b)     (((a) < (b)) ? (a) : (b))
 
