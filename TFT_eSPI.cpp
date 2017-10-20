@@ -21,10 +21,12 @@
 
 #include <pgmspace.h>
 
-//#include <limits.h>
-//#include "pins_arduino.h"
-//#include "wiring_private.h"
 #include <SPI.h>
+
+  // SUPPORT_TRANSACTIONS is manadatory for ESP32 so the hal mutex is toggled
+#if defined (ESP32) && !defined (SUPPORT_TRANSACTIONS)
+  #define SUPPORT_TRANSACTIONS
+#endif
 
 // If it is a 16bit serial display we must transfer 16 bits every time
 #ifdef RPI_ILI9486_DRIVER
@@ -191,18 +193,12 @@ void TFT_eSPI::init(void)
   inTransaction = false;
   locked = true;
 
-#ifndef SUPPORT_TRANSACTIONS
-
+  // SUPPORT_TRANSACTIONS is manadatory for ESP32 so the hal mutex is toggled
+  // so the code here is for ESP8266 only
+#if !defined (SUPPORT_TRANSACTIONS) && defined (ESP8266)
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0);
   SPI.setFrequency(SPI_FREQUENCY);
-
-  #ifdef ESP32 // Unlock the SPI hal mutex and set the lock management flags
-    SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
-    inTransaction = true; // Flag to stop intermediate spi_end calls
-    locked = false;       // Flag to stop repeat beginTransaction calls
-  #endif
-
 #endif
 
   // Set to output once again in case D6 (MISO) is used for CS
@@ -3647,13 +3643,15 @@ void spiWriteBlock(uint16_t color, uint32_t repeat)
 }
 #endif
 
-
+// The following touch screen support code added by maxpautsch 1/10/17
+// https://github.com/maxpautsch
+// Define TOUCH_CS is the user setup file to enable this code
+// An example is provided is 480x320 folder
+#ifdef TOUCH_CS
 /***************************************************************************************
 ** Function name:           getTouchRaw
 ** Description:             read raw position of touchpad if pressed. Return false if not pressed. 
 ***************************************************************************************/
-#ifdef TOUCH_CS
-
 uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   uint16_t tmp;
   CS_H;
@@ -3733,9 +3731,9 @@ uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y){
 
 /***************************************************************************************
 ** Function name:           calibrateTouch
-** Description:             generates calibration data for touchscreen. 
+** Description:             generates calibration parameters for touchscreen. 
 ***************************************************************************************/
-uint8_t TFT_eSPI::calibrateTouch(uint16_t *data, uint32_t color_bg, uint32_t color_fg, uint8_t size){
+uint8_t TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_bg, uint32_t color_fg, uint8_t size){
   int16_t values[] = {0,0,0,0,0,0,0,0};
   uint16_t x_tmp, y_tmp;
 
@@ -3823,33 +3821,33 @@ uint8_t TFT_eSPI::calibrateTouch(uint16_t *data, uint32_t color_bg, uint32_t col
   touchCalibration_x1 -= touchCalibration_x0;
   touchCalibration_y1 -= touchCalibration_y0;
 
-  // export data, if pointer valid
-  if(data != NULL){
-    data[0] = touchCalibration_x0;
-    data[1] = touchCalibration_x1;
-    data[2] = touchCalibration_y0;
-    data[3] = touchCalibration_y1;
-    data[4] = touchCalibration_rotate | (touchCalibration_invert_x <<1) | (touchCalibration_invert_y <<2);
+  // export parameters, if pointer valid
+  if(parameters != NULL){
+    parameters[0] = touchCalibration_x0;
+    parameters[1] = touchCalibration_x1;
+    parameters[2] = touchCalibration_y0;
+    parameters[3] = touchCalibration_y1;
+    parameters[4] = touchCalibration_rotate | (touchCalibration_invert_x <<1) | (touchCalibration_invert_y <<2);
     }
 }
 
 
 /***************************************************************************************
 ** Function name:           setTouch
-** Description:             imports calibration data for touchscreen. 
+** Description:             imports calibration parameters for touchscreen. 
 ***************************************************************************************/
-void TFT_eSPI::setTouch(uint16_t *data){
-  touchCalibration_x0 = data[0];
-  touchCalibration_x1 = data[1];
-  touchCalibration_y0 = data[2];
-  touchCalibration_y1 = data[3];
+void TFT_eSPI::setTouch(uint16_t *parameters){
+  touchCalibration_x0 = parameters[0];
+  touchCalibration_x1 = parameters[1];
+  touchCalibration_y0 = parameters[2];
+  touchCalibration_y1 = parameters[3];
 
-  touchCalibration_rotate = data[4] & 0x01;
-  touchCalibration_invert_x = data[4] & 0x02;
-  touchCalibration_invert_y = data[4] & 0x04;
+  touchCalibration_rotate = parameters[4] & 0x01;
+  touchCalibration_invert_x = parameters[4] & 0x02;
+  touchCalibration_invert_y = parameters[4] & 0x04;
 }
 
-#endif
+#endif // TOUCH_CS
 
 /***************************************************
   The majority of code in this file is "FunWare", the only condition of use of
