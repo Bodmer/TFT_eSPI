@@ -6,7 +6,9 @@ The library also supports TFT displays designed for the Raspberry Pi that are ba
 
 The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed.
 
-The library supports SPI overlap so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH.
+The Button class from Adafruit_GFX has been added, with the enhancement that the button labels can be in any font.
+
+The library supports SPI overlap on the ESP8266 so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH.
 
 The library contains proportional fonts, different sizes can be enabled/disabled at compile time to optimise the use of FLASH memory.  The library has been tested with the NodeMCU (ESP8266 based) and an ESP32 demo board.
 
