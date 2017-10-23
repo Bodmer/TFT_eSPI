@@ -167,7 +167,8 @@
 // #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000
 
-// #define SPI_TOUCH_FREQUENCY  2500000
+// The XPT2046 required a lower SPI clock rate of 2.5MHz so we define that here:
+   #define SPI_TOUCH_FREQUENCY  2500000
 
 
 // Comment out the following #define if "SPI Transactions" do not need to be
