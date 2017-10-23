@@ -152,10 +152,12 @@
 //
 // ##################################################################################
 
-// Define the SPI clock frequency
+// Define the SPI clock frequency, this affects the graphics rendering speed. Too
+// fast and the TFT driver will not keep up and display corruption appears.
 // With an ILI9341 display 40MHz works OK, 80MHz sometimes fails
 // With a ST7735 display more than 27MHz may not work (spurious pixels and lines)
-// With an ILI9163 display TBD MHz works OK,
+// With an ILI9163 display 27 MHz works OK.
+// The RPi typically only works at 20MHz maximum.
 
 // #define SPI_FREQUENCY   1000000
 // #define SPI_FREQUENCY   5000000
@@ -172,6 +174,10 @@
 // supported. Tranaction support is required if other SPI devices are connected.
 // When commented out the code size will be smaller and sketches will
 // run slightly faster, so leave it commented out unless you need it!
+
 // Transaction support is needed to work with SD library but not needed with TFT_SdFat
+
+// Transactions are automatically enabled by the library for an ESP32 (to use HAL mutex)
+// so changing it here has noo effect
 
 // #define SUPPORT_TRANSACTIONS

@@ -1179,6 +1179,15 @@ uint8_t TFT_eSPI::getRotation(void)
   return rotation;
 }
 
+/***************************************************************************************
+** Function name:           getTextDatum
+** Description:             Return the text datum value (as used by setTextDatum())
+***************************************************************************************/
+uint8_t TFT_eSPI::getTextDatum(void)
+{
+  return textdatum;
+}
+
 
 /***************************************************************************************
 ** Function name:           width
@@ -3151,7 +3160,7 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
   int16_t sumX = 0;
   uint8_t padding = 1, baseline = 0;
   uint16_t cwidth = textWidth(string, font); // Find the pixel width of the string in the font
-  uint16_t cheight = 8;
+  uint16_t cheight = 8 * textsize;
 
 #ifdef LOAD_GFXFF
   if (font == 1) {
@@ -3643,14 +3652,15 @@ void spiWriteBlock(uint16_t color, uint32_t repeat)
 }
 #endif
 
-// The following touch screen support code added by maxpautsch 1/10/17
+// The following touch screen support code by maxpautsch was merged 1/10/17
 // https://github.com/maxpautsch
 // Define TOUCH_CS is the user setup file to enable this code
-// An example is provided is 480x320 folder
+// A demo is provided in examples Generic folder
+// Additions by Bodmer to double sample and use Z value to improve detection reliability
 #ifdef TOUCH_CS
 /***************************************************************************************
 ** Function name:           getTouchRaw
-** Description:             read raw position of touchpad if pressed. Return false if not pressed. 
+** Description:             read raw touch position. Return false if not pressed. 
 ***************************************************************************************/
 uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   uint16_t tmp;
@@ -3671,13 +3681,6 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   tmp = tmp <<5;
   tmp |= 0x1f & (SPI.transfer(0)>>3);
 
-  if(tmp == 0 || tmp == 0x3ff){
-    T_CS_H;
-    SPI.setFrequency(SPI_FREQUENCY);
-    spi_end();
-    return false;
-    }
-
   *x = tmp;
 
   // Start bit + XP sample request for y position
@@ -3692,23 +3695,87 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   SPI.setFrequency(SPI_FREQUENCY);
   spi_end();
 
-  if(tmp == 0 || tmp == 0x3ff){
-    return false;
-    }
   return true;
 }
 
 /***************************************************************************************
-** Function name:           getTouch
-** Description:             read callibrated position of touchpad if pressed. Return false if not pressed. 
+** Function name:           getTouchRawZ
+** Description:             read raw pressure on touchpad and return Z value. 
 ***************************************************************************************/
+uint16_t TFT_eSPI::getTouchRawZ(void){
+  CS_H;
+  T_CS_L;
+  
+#ifdef SPI_HAS_TRANSACTION
+  #ifdef SUPPORT_TRANSACTIONS
+    if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
+  #endif
+#endif
+
+  SPI.setFrequency(SPI_TOUCH_FREQUENCY);
+
+  // Z sample request
+  uint16_t tz = 0xFFF;
+  SPI.transfer(0xb1);
+  tz += SPI.transfer16(0xc1) >> 3;
+  tz -= SPI.transfer16(0x91) >> 3;
+  
+  T_CS_H;
+  SPI.setFrequency(SPI_FREQUENCY);
+  spi_end();
+
+  return tz;
+}
+
+/***************************************************************************************
+** Function name:           validTouch
+** Description:             read validated position. Return false if not pressed. 
+***************************************************************************************/
+#define _RAWERR 10 // Deadband in position samples
+uint8_t TFT_eSPI::validTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
+  uint16_t x_tmp, y_tmp, x_tmp2, y_tmp2;
+
+
+  //  uint16_t z_tmp = getTouchRawZ(); // Save value for debug message
+  //  Debug messages used for tuning
+  //  Serial.print("Z = ");Serial.println(z_tmp);
+  
+  if (getTouchRawZ() <= threshold) return false;
+  
+  delay(2); // Small debounce delay to the next sample
+  getTouchRaw(&x_tmp,&y_tmp);
+
+  //  z_tmp = getTouchRawZ();
+  //  Serial.print("Sample 1 x,y = "); Serial.print(x_tmp);Serial.print(",");Serial.print(y_tmp);
+  //  Serial.print(", Z = ");Serial.println(z_tmp);
+
+  delay(2); // Small debounce delay to the next sample
+  if (getTouchRawZ() <= threshold) return false;
+
+  delay(2); // Small debounce delay to the next sample
+  getTouchRaw(&x_tmp2,&y_tmp2);
+  
+  //  Serial.print("Sample 2 x,y = "); Serial.print(x_tmp2);Serial.print(",");Serial.println(y_tmp2);
+  //  Serial.print("Sample difference = ");Serial.print(abs(x_tmp - x_tmp2));Serial.print(",");Serial.println(abs(y_tmp - y_tmp2));
+
+  if (abs(x_tmp - x_tmp2) > _RAWERR) return false;
+  if (abs(y_tmp - y_tmp2) > _RAWERR) return false;
+  
+  *x = x_tmp;
+  *y = y_tmp;
+  
+  return true;
+}
+  
+/***************************************************************************************
+** Function name:           getTouch
+** Description:             read callibrated position. Return false if not pressed. 
+***************************************************************************************/
+#define Z_THRESHOLD 0x200 // Touch pressure threshold for validating touches
 uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y){
-  uint8_t retVal;
   uint16_t x_tmp, y_tmp;
   
-  retVal = getTouchRaw(&x_tmp,&y_tmp);
-  if(!retVal)
-    return retVal;
+  if(!validTouch(&x_tmp, &y_tmp, Z_THRESHOLD)) return false;
 
   if(!touchCalibration_rotate){
     *x=(x_tmp-touchCalibration_x0)*_width/touchCalibration_x1;
@@ -3726,14 +3793,14 @@ uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y){
       *y = _height - *y;
   }
 
-  return retVal;
+  return true;
 }
 
 /***************************************************************************************
 ** Function name:           calibrateTouch
 ** Description:             generates calibration parameters for touchscreen. 
 ***************************************************************************************/
-uint8_t TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_bg, uint32_t color_fg, uint8_t size){
+void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t color_bg, uint8_t size){
   int16_t values[] = {0,0,0,0,0,0,0,0};
   uint16_t x_tmp, y_tmp;
 
@@ -3774,7 +3841,8 @@ uint8_t TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_bg, uint32
     if(i>0) delay(1000);
 
     for(uint8_t j= 0; j<8; j++){
-      while(!getTouchRaw(&x_tmp, &y_tmp)) delay(100);
+      // Use a lower detect threshold as corners tend to be less sensitive
+      while(!validTouch(&x_tmp, &y_tmp, Z_THRESHOLD/2)) delay(10);
       values[i*2  ] += x_tmp;
       values[i*2+1] += y_tmp;
       }
@@ -3847,7 +3915,140 @@ void TFT_eSPI::setTouch(uint16_t *parameters){
   touchCalibration_invert_y = parameters[4] & 0x04;
 }
 
+#else // TOUCH CS is not defined so generate dummy functions that do nothing
+    
+/***************************************************************************************
+** Function name:           getTouchRaw
+** Description:             read raw touch position. Return false if not pressed. 
+***************************************************************************************/
+uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
+  return true;
+}
+
+/***************************************************************************************
+** Function name:           getTouchRawZ
+** Description:             read raw pressure on touchpad and return Z value. 
+***************************************************************************************/
+uint16_t TFT_eSPI::getTouchRawZ(void){
+  return true;
+}
+
+/***************************************************************************************
+** Function name:           validTouch
+** Description:             read validated position. Return false if not pressed. 
+***************************************************************************************/
+uint8_t TFT_eSPI::validTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
+  return true;
+}
+  
+/***************************************************************************************
+** Function name:           getTouch
+** Description:             read callibrated position. Return false if not pressed. 
+***************************************************************************************/
+uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y){
+  return true;
+}
+
+/***************************************************************************************
+** Function name:           calibrateTouch
+** Description:             generates calibration parameters for touchscreen. 
+***************************************************************************************/
+void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_bg, uint32_t color_fg, uint8_t size){
+}
+
+
+/***************************************************************************************
+** Function name:           setTouch
+** Description:             imports calibration parameters for touchscreen. 
+***************************************************************************************/
+void TFT_eSPI::setTouch(uint16_t *parameters){
+}
+
 #endif // TOUCH_CS
+
+
+
+/***************************************************************************************
+** Code for the GFX button UI element
+** Grabbed from Adafruit_GFX library and enhanced to handle any label font
+***************************************************************************************/
+TFT_eSPI_Button::TFT_eSPI_Button(void) {
+  _gfx = 0;
+}
+
+// Classic initButton() function: pass center & size
+void TFT_eSPI_Button::initButton(
+ TFT_eSPI *gfx, int16_t x, int16_t y, uint16_t w, uint16_t h,
+ uint16_t outline, uint16_t fill, uint16_t textcolor,
+ char *label, uint8_t textsize)
+{
+  // Tweak arguments and pass to the newer initButtonUL() function...
+  initButtonUL(gfx, x - (w / 2), y - (h / 2), w, h, outline, fill,
+    textcolor, label, textsize);
+}
+
+// Newer function instead accepts upper-left corner & size
+void TFT_eSPI_Button::initButtonUL(
+ TFT_eSPI *gfx, int16_t x1, int16_t y1, uint16_t w, uint16_t h,
+ uint16_t outline, uint16_t fill, uint16_t textcolor,
+ char *label, uint8_t textsize)
+{
+  _x1           = x1;
+  _y1           = y1;
+  _w            = w;
+  _h            = h;
+  _outlinecolor = outline;
+  _fillcolor    = fill;
+  _textcolor    = textcolor;
+  _textsize     = textsize;
+  _gfx          = gfx;
+  strncpy(_label, label, 9);
+}
+
+void TFT_eSPI_Button::drawButton(boolean inverted) {
+  uint16_t fill, outline, text;
+
+  if(!inverted) {
+    fill    = _fillcolor;
+    outline = _outlinecolor;
+    text    = _textcolor;
+  } else {
+    fill    = _textcolor;
+    outline = _outlinecolor;
+    text    = _fillcolor;
+  }
+
+  uint8_t r = min(_w, _h) / 4; // Corner radius
+  _gfx->fillRoundRect(_x1, _y1, _w, _h, r, fill);
+  _gfx->drawRoundRect(_x1, _y1, _w, _h, r, outline);
+
+  _gfx->setTextColor(text);
+  _gfx->setTextSize(_textsize);
+
+  static byte tempdatum = _gfx->getTextDatum();
+  _gfx->setTextDatum(MC_DATUM);
+  _gfx->drawString(_label, _x1 + (_w/2), _y1 + (_h/2));
+  _gfx->setTextDatum(tempdatum);
+}
+
+boolean TFT_eSPI_Button::contains(int16_t x, int16_t y) {
+  return ((x >= _x1) && (x < (_x1 + _w)) &&
+          (y >= _y1) && (y < (_y1 + _h)));
+}
+
+void TFT_eSPI_Button::press(boolean p) {
+  laststate = currstate;
+  currstate = p;
+}
+
+boolean TFT_eSPI_Button::isPressed() { return currstate; }
+boolean TFT_eSPI_Button::justPressed() { return (currstate && !laststate); }
+boolean TFT_eSPI_Button::justReleased() { return (!currstate && laststate); }
+
+
+
+
+
 
 /***************************************************
   The majority of code in this file is "FunWare", the only condition of use of

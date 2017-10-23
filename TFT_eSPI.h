@@ -393,7 +393,8 @@ class TFT_eSPI : public Print {
            // Set w and h to 1 to read 1 pixel's colour. The data buffer must be at least w * h * 3 bytes
   void     readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t *data);
 
-  uint8_t  getRotation(void);
+  uint8_t  getRotation(void),
+           getTextDatum(void);
 
   uint16_t fontsLoaded(void),
            color565(uint8_t r, uint8_t g, uint8_t b);
@@ -425,37 +426,38 @@ class TFT_eSPI : public Print {
            textWidth(const String& string),
            fontHeight(int16_t font);
 
-    void   setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
+  void     setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
 
-#ifdef TOUCH_CS
-   uint8_t getTouch(uint16_t *x, uint16_t *y);
-   uint8_t getTouchRaw(uint16_t *x, uint16_t *y);
-   uint8_t calibrateTouch(uint16_t *data, uint32_t color_bg, uint32_t color_fg, uint8_t size);
-      void setTouch(uint16_t *data);
-#endif 
+           // These are associated with the Touch Screen handlers
+  uint8_t  getTouchRaw(uint16_t *x, uint16_t *y);
+  uint16_t getTouchRawZ(void);
+  uint8_t  getTouch(uint16_t *x, uint16_t *y);
+
+  void     calibrateTouch(uint16_t *data, uint32_t color_fg, uint32_t color_bg, uint8_t size);
+  void     setTouch(uint16_t *data);
 
  virtual   size_t write(uint8_t);
 
  private:
 
-inline void spi_begin() __attribute__((always_inline));
-inline void spi_end() __attribute__((always_inline));
+  inline void spi_begin() __attribute__((always_inline));
+  inline void spi_end()   __attribute__((always_inline));
 
-    void   readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
+  void     readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
     
   uint8_t  tabcolor,
            colstart = 0, rowstart = 0; // some ST7735 displays need this changed
 
   volatile uint32_t *dcport, *csport;//, *mosiport, *clkport, *rsport;
 
-  uint32_t  cspinmask, dcpinmask, wrpinmask;//, mosipinmask, clkpinmask;
+  uint32_t cspinmask, dcpinmask, wrpinmask;//, mosipinmask, clkpinmask;
 
   uint32_t lastColor = 0xFFFF;
 
-#ifdef TOUCH_CS
+           // These are associated with the Touch Screen handlers
+  uint8_t  validTouch(uint16_t *x, uint16_t *y, uint16_t threshold);
   uint16_t touchCalibration_x0, touchCalibration_x1, touchCalibration_y0, touchCalibration_y1;
   uint8_t  touchCalibration_rotate, touchCalibration_invert_x, touchCalibration_invert_y;
-#endif 
 
  protected:
 
@@ -480,6 +482,45 @@ inline void spi_end() __attribute__((always_inline));
     *gfxFont;
 #endif
 
+};
+
+/***************************************************************************************
+// The following button class has been ported over from the Adafruit_GFX library so
+// should be compatible.
+// A slightly different implementation in this TFT_eSPI library allows the button
+// legends to be in any font
+***************************************************************************************/
+
+class TFT_eSPI_Button {
+
+ public:
+  TFT_eSPI_Button(void);
+  // "Classic" initButton() uses center & size
+  void     initButton(TFT_eSPI *gfx, int16_t x, int16_t y,
+  uint16_t w, uint16_t h, uint16_t outline, uint16_t fill,
+  uint16_t textcolor, char *label, uint8_t textsize);
+
+  // New/alt initButton() uses upper-left corner & size
+  void     initButtonUL(TFT_eSPI *gfx, int16_t x1, int16_t y1,
+  uint16_t w, uint16_t h, uint16_t outline, uint16_t fill,
+  uint16_t textcolor, char *label, uint8_t textsize);
+  void     drawButton(boolean inverted = false);
+  boolean  contains(int16_t x, int16_t y);
+
+  void     press(boolean p);
+  boolean  isPressed();
+  boolean  justPressed();
+  boolean  justReleased();
+
+ private:
+  TFT_eSPI *_gfx;
+  int16_t  _x1, _y1; // Coordinates of top-left corner
+  uint16_t _w, _h;
+  uint8_t  _textsize;
+  uint16_t _outlinecolor, _fillcolor, _textcolor;
+  char     _label[10];
+
+  boolean  currstate, laststate;
 };
 
 #endif
