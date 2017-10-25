@@ -2,7 +2,7 @@
   Sketch to generate the setup() calibration values, these are reported
   to the Serial Monitor.
 
-  The sketch has been tested on the ESP8266 and screen with XPY2046 driver.
+  The sketch has been tested on the ESP8266 and screen with XPT2046 driver.
 */
 
 #include <SPI.h>
