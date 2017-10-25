@@ -45,7 +45,7 @@ void loop(void) {
   // Pressed will be set true is there is a valid touch on the screen
   boolean pressed = tft.getTouch(&x, &y);
 
-  // Draw a shite spot at the detected coordinates
+  // Draw a white spot at the detected coordinates
   if (pressed) {
     tft.fillCircle(x, y, 2, TFT_WHITE);
     //Serial.print("x,y = ");
