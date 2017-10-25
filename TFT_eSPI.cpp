@@ -3735,24 +3735,29 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
 uint8_t TFT_eSPI::validTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
   uint16_t x_tmp, y_tmp, x_tmp2, y_tmp2;
 
+  // Wait until pressure stops increasing
+  uint16_t z1 = 1;
+  uint16_t z2 = 0;
+  while (z1 > z2)
+  {
+    z2 = z1;
+    z1 = getTouchRawZ();
+    delay(1);
+  }
 
-  //  uint16_t z_tmp = getTouchRawZ(); // Save value for debug message
-  //  Debug messages used for tuning
-  //  Serial.print("Z = ");Serial.println(z_tmp);
-  
-  if (getTouchRawZ() <= threshold) return false;
-  
-  delay(2); // Small debounce delay to the next sample
+  //  Serial.print("Z = ");Serial.println(z1);
+
+  if (z1 <= threshold) return false;
+    
   getTouchRaw(&x_tmp,&y_tmp);
 
-  //  z_tmp = getTouchRawZ();
   //  Serial.print("Sample 1 x,y = "); Serial.print(x_tmp);Serial.print(",");Serial.print(y_tmp);
-  //  Serial.print(", Z = ");Serial.println(z_tmp);
+  //  Serial.print(", Z = ");Serial.println(z1);
 
-  delay(2); // Small debounce delay to the next sample
+  delay(1); // Small delay to the next sample
   if (getTouchRawZ() <= threshold) return false;
 
-  delay(2); // Small debounce delay to the next sample
+  delay(2); // Small delay to the next sample
   getTouchRaw(&x_tmp2,&y_tmp2);
   
   //  Serial.print("Sample 2 x,y = "); Serial.print(x_tmp2);Serial.print(",");Serial.println(y_tmp2);
@@ -3771,28 +3776,32 @@ uint8_t TFT_eSPI::validTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
 ** Function name:           getTouch
 ** Description:             read callibrated position. Return false if not pressed. 
 ***************************************************************************************/
-#define Z_THRESHOLD 0x200 // Touch pressure threshold for validating touches
+#define Z_THRESHOLD 350 // Touch pressure threshold for validating touches
 uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y){
-  uint16_t x_tmp, y_tmp;
+  uint16_t x_tmp, y_tmp, xx, yy;
   
   if(!validTouch(&x_tmp, &y_tmp, Z_THRESHOLD)) return false;
 
   if(!touchCalibration_rotate){
-    *x=(x_tmp-touchCalibration_x0)*_width/touchCalibration_x1;
-    *y=(y_tmp-touchCalibration_y0)*_height/touchCalibration_y1;
+    xx=(x_tmp-touchCalibration_x0)*_width/touchCalibration_x1;
+    yy=(y_tmp-touchCalibration_y0)*_height/touchCalibration_y1;
     if(touchCalibration_invert_x)
-      *x = _width - *x;
+      xx = _width - xx;
     if(touchCalibration_invert_y)
-      *y = _height - *y;
+      yy = _height - yy;
   } else {
-    *y=(x_tmp-touchCalibration_x0)*_height/touchCalibration_x1;
-    *x=(y_tmp-touchCalibration_y0)*_width/touchCalibration_y1;
+    yy=(x_tmp-touchCalibration_x0)*_height/touchCalibration_x1;
+    xx=(y_tmp-touchCalibration_y0)*_width/touchCalibration_y1;
     if(touchCalibration_invert_x)
-      *x = _width - *x;
+      xx = _width - xx;
     if(touchCalibration_invert_y)
-      *y = _height - *y;
+      yy = _height - yy;
   }
 
+  if (xx >= _width || yy >= _height) return false;
+
+  *x = xx;
+  *y = yy;
   return true;
 }
 
