@@ -463,8 +463,9 @@ class TFT_eSPI : public Print {
 
            // These are associated with the Touch Screen handlers
   uint8_t  validTouch(uint16_t *x, uint16_t *y, uint16_t threshold);
-  uint16_t touchCalibration_x0, touchCalibration_x1, touchCalibration_y0, touchCalibration_y1;
-  uint8_t  touchCalibration_rotate, touchCalibration_invert_x, touchCalibration_invert_y;
+           // Initialise with example calibration values so processor does not crash if setTouch() not called in setup()
+  uint16_t touchCalibration_x0 = 300, touchCalibration_x1 = 3600, touchCalibration_y0 = 300, touchCalibration_y1 = 3600;
+  uint8_t  touchCalibration_rotate = 1, touchCalibration_invert_x = 2, touchCalibration_invert_y = 0;
 
  protected:
 
