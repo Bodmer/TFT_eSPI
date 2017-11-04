@@ -44,21 +44,32 @@ void spiWriteBlock(uint16_t color, uint32_t repeat);
 // libraries.  Otherwise, they simply do nothing.
 
 inline void TFT_eSPI::spi_begin(void){
-#ifdef SPI_HAS_TRANSACTION
-  #ifdef SUPPORT_TRANSACTIONS
-    if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));}
-  #endif
+#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
+  if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));}
 #endif
 }
 
 inline void TFT_eSPI::spi_end(void){
-#ifdef SPI_HAS_TRANSACTION
-  #ifdef SUPPORT_TRANSACTIONS
+#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
   if(!inTransaction) {if (!locked) {locked = true; SPI.endTransaction();}}
-  #endif
 #endif
 }
 
+inline void TFT_eSPI::spi_begin_touch(void){
+#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
+  if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
+#else
+  SPI.setFrequency(SPI_TOUCH_FREQUENCY);
+#endif
+}
+
+inline void TFT_eSPI::spi_end_touch(void){
+#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
+  if(!inTransaction) {if (!locked) {locked = true; SPI.endTransaction();}}
+#else
+  SPI.setFrequency(SPI_FREQUENCY);
+#endif
+}
 
 /***************************************************************************************
 ** Function name:           TFT_eSPI
@@ -3665,16 +3676,11 @@ void spiWriteBlock(uint16_t color, uint32_t repeat)
 uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   uint16_t tmp;
   CS_H;
+
+  spi_begin_touch();
+
   T_CS_L;
   
-#ifdef SPI_HAS_TRANSACTION
-  #ifdef SUPPORT_TRANSACTIONS
-    if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
-  #endif
-#endif
-
-  SPI.setFrequency(SPI_TOUCH_FREQUENCY);
-
   // Start bit + YP sample request for x position
   tmp = SPI.transfer(0xd0);
   tmp = SPI.transfer(0);
@@ -3692,8 +3698,8 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   *y = tmp;
 
   T_CS_H;
-  SPI.setFrequency(SPI_FREQUENCY);
-  spi_end();
+
+  spi_end_touch();
 
   return true;
 }
@@ -3704,15 +3710,10 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 ***************************************************************************************/
 uint16_t TFT_eSPI::getTouchRawZ(void){
   CS_H;
-  T_CS_L;
-  
-#ifdef SPI_HAS_TRANSACTION
-  #ifdef SUPPORT_TRANSACTIONS
-    if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
-  #endif
-#endif
 
-  SPI.setFrequency(SPI_TOUCH_FREQUENCY);
+  spi_begin_touch();
+
+  T_CS_L;
 
   // Z sample request
   uint16_t tz = 0xFFF;
@@ -3721,8 +3722,8 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
   tz -= SPI.transfer16(0x91) >> 3;
   
   T_CS_H;
-  SPI.setFrequency(SPI_FREQUENCY);
-  spi_end();
+
+  spi_end_touch();
 
   return tz;
 }

@@ -447,6 +447,8 @@ class TFT_eSPI : public Print {
 
   inline void spi_begin() __attribute__((always_inline));
   inline void spi_end()   __attribute__((always_inline));
+  inline void spi_begin_touch() __attribute__((always_inline));
+  inline void spi_end_touch()   __attribute__((always_inline));
 
   void     readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
     
