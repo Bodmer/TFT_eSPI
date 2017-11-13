@@ -156,9 +156,12 @@ void GfxUi::drawBmp(String filename, uint8_t x, uint16_t y) {
     } // End of bitmap access
   }   // End of bitmap file check
 
-  bmpFile.close();
-  if(!goodBmp) Serial.println(F("BMP format not recognised."));
-  _tft->setRotation(rotation); // Put back original rotation
+  if(!goodBmp) {
+    Serial.print(F("BMP format not recognised. File:"));
+    Serial.println(filename);
+  }
+  else
+    _tft->setRotation(rotation); // Put back original rotation
 }
 
 // These read 16- and 32-bit types from the SD card file.
