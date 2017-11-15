@@ -156,6 +156,8 @@ void GfxUi::drawBmp(String filename, uint8_t x, uint16_t y) {
     } // End of bitmap access
   }   // End of bitmap file check
 
+  bmpFile.close();
+  
   if(!goodBmp) {
     Serial.print(F("BMP format not recognised. File:"));
     Serial.println(filename);
