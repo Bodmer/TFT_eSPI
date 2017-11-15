@@ -38,7 +38,7 @@ void setup(void) {
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
 
-  imgPtr = img.createSprite(IWIDTH, IHEIGHT);
+  img.createSprite(IWIDTH, IHEIGHT);
   img.fillSprite(TFT_BLACK);
 
   targetTime = millis() + 1000;
