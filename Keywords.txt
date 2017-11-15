@@ -5,6 +5,7 @@ drawPixel	KEYWORD2
 drawChar	KEYWORD2
 setAddrWindow	KEYWORD2
 setWindow	KEYWORD2
+readAddrWindow	KEYWORD2
 pushColor	KEYWORD2
 pushColor	KEYWORD2
 pushColors	KEYWORD2
@@ -49,8 +50,10 @@ readcommand32	KEYWORD2
 readPixel	KEYWORD2
 readRect	KEYWORD2
 pushRect	KEYWORD2
+pushSprite  KEYWORD2
 readRectRGB	KEYWORD2
 getRotation	KEYWORD2
+getTextDatum	KEYWORD2
 fontsLoaded	KEYWORD2
 color565	KEYWORD2
 drawChar	KEYWORD2
@@ -64,3 +67,32 @@ width	KEYWORD2
 textWidth	KEYWORD2
 fontHeight	KEYWORD2
 
+getTouchRaw	KEYWORD2
+getTouchRawZ	KEYWORD2
+getTouch	KEYWORD2
+calibrateTouch	KEYWORD2
+setTouch	KEYWORD2
+validTouch	KEYWORD2
+
+
+TFT_eSPI_Button	KEYWORD1
+
+initButton	KEYWORD2
+textcolor	KEYWORD2
+initButtonUL	KEYWORD2
+drawButton	KEYWORD2
+contains	KEYWORD2
+press	KEYWORD2
+isPressed	KEYWORD2
+justPressed	KEYWORD2
+justReleased	KEYWORD2
+
+
+TFT_eSprite	KEYWORD1
+
+createSprite	KEYWORD2
+deleteSprite	KEYWORD2
+fillSprite	KEYWORD2
+setWindow	KEYWORD2
+pushBitmap	KEYWORD2
+pushSprite	KEYWORD2

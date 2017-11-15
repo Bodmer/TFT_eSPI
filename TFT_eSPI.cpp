@@ -512,16 +512,73 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 ***************************************************************************************/
   void  TFT_eSPI::pushRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t *data)
 {
-  if ((x > _width) || (y > _height) || (w == 0) || (h == 0)) return;
+  if ((x >= _width) || (y >= _height) || (w == 0) || (h == 0)) return;
 
   spi_begin();
 
   setAddrWindow(x, y, x + w - 1, y + h - 1); // Sets CS low and sent RAMWR
 
   uint32_t len = w * h * 2;
+
   // Push pixels into window rectangle, data is a 16 bit pointer thus increment is halved
   while ( len >=32 ) {SPI.writeBytes((uint8_t*)data, 32); data += 16; len -= 32; }
   if (len) SPI.writeBytes((uint8_t*)data, len);
+
+  CS_H;
+
+  spi_end();
+}
+
+
+/***************************************************************************************
+** Function name:           push rectangle (for SPI Interface II i.e. IM [3:0] = "1101")
+** Description:             push 565 pixel colours into a defined area
+***************************************************************************************/
+  void  TFT_eSPI::pushSprite(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t *data)
+{
+
+  if ((x >= (int32_t)_width) || (y >= (int32_t)_height)) return;
+
+  int32_t dx = 0;
+  int32_t dy = 0;
+  int32_t dw = w;
+  int32_t dh = h;
+
+  if (x < 0) { dw += x; dx = -x; x = 0; }
+  if (y < 0) { dh += y; dy = -y; y = 0; }
+  
+  if ((x + w) >= _width ) dw = _width  - x;
+  if ((y + h) >= _height) dh = _height - y;
+
+  if (dw < 0 || dh < 0) return;
+
+  //Serial.print("dx="); Serial.println(dx);
+  //Serial.print("dy="); Serial.println(dy);
+  //Serial.print("dw="); Serial.println(dw);
+  //Serial.print("dh="); Serial.println(dh);
+
+  spi_begin();
+
+  setAddrWindow(x, y, x + dw - 1, y + dh - 1); // Sets CS low and sent RAMWR
+
+  data += dx + dy * w;
+
+  while (dh--)
+  {
+    /*
+    uint32_t len = dw;
+    uint16_t* ptr = data;
+    // Push pixels into window rectangle, data is a 16 bit pointer thus increment is halved
+    while ( len--) SPI.write16(*ptr++, 0);
+    data += w;
+    */
+    uint32_t len = dw * 2;
+    uint8_t* ptr = (uint8_t*)data;
+    // Push pixels into window rectangle, data is a 16 bit pointer thus increment is halved
+    while ( len>32) { SPI.writePattern(ptr, 32, 1); len -= 32; ptr += 32; }
+    if (len) SPI.writePattern((uint8_t*)ptr, len, 1);
+    data += w;
+    }
 
   CS_H;
 
@@ -3906,7 +3963,7 @@ void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t 
     parameters[2] = touchCalibration_y0;
     parameters[3] = touchCalibration_y1;
     parameters[4] = touchCalibration_rotate | (touchCalibration_invert_x <<1) | (touchCalibration_invert_y <<2);
-    }
+  }
 }
 
 
@@ -4057,134 +4114,787 @@ boolean TFT_eSPI_Button::justReleased() { return (!currstate && laststate); }
 
 
 
+ /***************************************************************************************
+// The following class creates Sprites in RAM, graphics can then be drawn in the Sprite
+// and rendered quickly onto the TFT screen. The class inherits the graphics functions
+// from the TFT_eSPI class. Some functions are overridden by this class so that the
+// graphics are written to the Sprite rather than the TFT.
+// Coded by Bodmer
+***************************************************************************************/
+ 
+/***************************************************************************************
+** Function name:           TFT_eSprite
+** Description:             Class constructor
+*************************************************************************************x*/
+TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
+{
+  _tft = tft;     // Pointer to tft class so we can call member functions
+
+  _iwidth    = 0; // Initialise width and height to 0 (it does not exist yet)
+  _iheight   = 0;
+
+  _xs = 0; // window bounds for pushColor
+  _ys = 0;
+  _xe = 0;
+  _ye = 0;
+
+  _xptr = 0; // pushColor coordinate
+  _yptr = 0;
+
+  _icursor_y  = _icursor_x    = 0; // Text cursor position
+}
 
 
+/***************************************************************************************
+** Function name:           createSprite
+** Description:             Create a sprite (bitmap) of defined width and height
+*************************************************************************************x*/
+uint16_t* TFT_eSprite::createSprite(int16_t w, int16_t h)
+{
+  if ( w < 1 || h < 1) return 0;
+  _iwidth    = w;
+  _iheight   = h;
+  _img = (uint16_t*) malloc(w * h * sizeof(uint16_t));
+  return _img;
+}
 
-/***************************************************
-  The majority of code in this file is "FunWare", the only condition of use of
-  those portions is that users have fun!  Most of the effort has been spent on
-  the creation and incorporation of the proportional Run Length Encoded fonts
-  that can be rendered over an SPI bus at high speeds.
+
+/***************************************************************************************
+** Function name:           deleteSprite
+** Description:             Delete the sprite to free up memory (RAM)
+*************************************************************************************x*/
+void TFT_eSprite::deleteSprite(void)
+{
+  free(_img);
+}
+
+
+/***************************************************************************************
+** Function name:           pushSprite
+** Description:             Delete the sprite to free up memory (RAM)
+*************************************************************************************x*/
+void TFT_eSprite::pushSprite(int32_t x, int32_t y)
+{
+  _tft->pushSprite(x, y, _iwidth, _iheight, _img);
+}
+
+
+/***************************************************************************************
+** Function name:           readPixel
+** Description:             Read 565 colour of a pixel at deined coordinates
+*************************************************************************************x*/
+uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
+{
+  uint16_t color = _img[x + y * _iwidth];
+  return (color >> 8) | (color << 8);
+}
+
+
+/***************************************************************************************
+** Function name:           pushRect (same as pushBitmap)
+** Description:             push 565 colour bitmap into a defined area
+*************************************************************************************x*/
+void  TFT_eSprite::pushRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t *data)
+{
+  if ((x > _iwidth) || (y > _iheight) || (w == 0) || (h == 0)) return;
+
+  for (uint32_t yp = y; yp < y + h; yp++)
+  {
+    for (uint32_t xp = x; xp < x + w; xp++)
+    {
+      _img[xp + yp * _iwidth] = *data++;
+    }
+  }
+}
+
+
+/***************************************************************************************
+** Function name:           pushBitmap (same as pushRect)
+** Description:             push 565 colour bitmap into a defined area
+***************************************************************************************/
+void  TFT_eSprite::pushBitmap(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t *data)
+{
+  if ((x > _iwidth) || (y > _iheight) || (w == 0) || (h == 0)) return;
+
+  for (uint32_t yp = y; yp < y + h; yp++)
+  {
+    for (uint32_t xp = x; xp < x + w; xp++)
+    {
+      _img[xp + yp * _iwidth] = *data++;
+    }
+  }
+}
+
+
+/***************************************************************************************
+** Function name:           spriteWindow
+** Description:             Set the bounds of a window for pushColor
+*************************************************************************************x*/
+void TFT_eSprite::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+{
+  // Bounds will be checked by drawPixel
+  if (x0 > x1) swap_coord(x0, x1);
+  if (y0 > y1) swap_coord(y0, y1);
+
+  _xs = x0;
+  _ys = y0;
+  _xe = x1;
+  _ye = y1;
   
-  A significant number of new features have been added to the original source
-  libraries. Functions names have been retained where practical to allow old
-  Adafruit_GFX TFT screen compatible sketches to be easily adapted.
-  
-  A significant level of effort has been made to optimise the library for speed
-  so that graphics intensive sketches can run at an acceptable speed over the
-  SPI bus. SPI bus speeds up to 80MHz can be used with some driver chips. At
-  this clock rate screen and block clears can achieve an average bit rate of
-  75Mbps.
-  
-  The functions incldued are comaptible with the JPEGDecoder library here:
-  https://github.com/Bodmer/JPEGDecoder
-
-  This allows allows the ESP8266 (or ESP32) sketches to retrieve images from the
-  internet, store them in SPIFFS and render the images to the screen at an
-  acceptable speed. So some really cool IoT sketches are possible without tedious
-  manual loading of images.
-  
-  Other portions of code are protected by the licenses as noted below.
-
-  The library would not have been created without the initial inspiration from
-  Adafruit_ILI9341 and Adafruit_GFX libraries.
+  _xptr = _xs;
+  _yptr = _ys;
+}
 
 
-  If any other conditions of use have been missed then please raise this as an
-  issue on GitHub:
+/***************************************************************************************
+** Function name:           pushColor
+** Description:             Send a new pixel to the sprite window
+*************************************************************************************x*/
+void TFT_eSprite::pushColor(uint32_t color)
+{
+  drawPixel(_xptr++, _yptr, color);
+  if (_xptr > _xe) { _xptr = _xs; _yptr++; }
+  if (_yptr > _ye) { _yptr = _ys; }
+}
+
+void TFT_eSprite::pushColor(uint32_t color, uint16_t len)
+{
+  drawPixel(_xptr++, _yptr, color);
+  if (_xptr > _xe) { _xptr = _xs; _yptr++; }
+  if (_yptr > _ye) { _yptr = _ys; }
+}
 
 
-/***************************************************
-  The Adafruit_ILI9341 library has been used as a starting point
-  for this library.
-
-  ORIGINAL LIBRARY HEADER
-
-  This is our library for the Adafruit  ILI9341 Breakout and Shield
-  ----> http://www.adafruit.com/products/1651
-
-  Check out the links above for our tutorials and wiring diagrams
-  These displays use SPI to communicate, 4 or 5 pins are required to
-  interface (RST is optional)
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
-
-  Written by Limor Fried/Ladyada for Adafruit Industries.
-  MIT license, all text above must be included in any redistribution
-
- ****************************************************/
+/***************************************************************************************
+** Function name:           fillSprite
+** Description:             Fill the whole sprite with defined colour
+*************************************************************************************x*/
+void TFT_eSprite::fillSprite(uint32_t color)
+{
+  // Use memset if possible as it is super fast
+  if((uint8_t)color == (color>>8)) memset(_img, (uint8_t)color, _iwidth * _iheight * 2);
+  else fillRect(0, 0, _iwidth, _iheight, color);
+}
 
 
-/****************************************************
-
-  Some member funtions have been imported from the Adafruit_GFX
-  library. The license associated with these is reproduced below.
-
-  ORIGINAL LIBRARY HEADER from Adafruit_GFX.cpp
-
-  This is the core graphics library for all our displays, providing a common
-  set of graphics primitives (points, lines, circles, etc.).  It needs to be
-  paired with a hardware-specific library for each display device we carry
-  (to handle the lower-level functions).
-
-  Adafruit invests time and resources providing this open source code, please
-  support Adafruit & open-source hardware by purchasing products from Adafruit!
-
-  Copyright (c) 2013 Adafruit Industries.  All rights reserved.
-
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
-
-- Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-- Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-  POSSIBILITY OF SUCH DAMAGE.
-
- ****************************************************/
+/***************************************************************************************
+** Function name:           setCursor
+** Description:             Set the sprite text cursor x,y position
+*************************************************************************************x*/
+void TFT_eSprite::setCursor(int16_t x, int16_t y)
+{
+  _icursor_x = x;
+  _icursor_y = y;
+}
 
 
-/****************************************************
+/***************************************************************************************
+** Function name:           width or spriteWidth
+** Description:             Return the width of sprite
+*************************************************************************************x*/
+// Return the size of the display
+int16_t TFT_eSprite::width(void)
+{
+  return _iwidth;
+}
 
-  In compliance with the licence.txt file for the Adafruit_GFX library the
-  following is included.
+/*
+// Return the size of the display
+int16_t TFT_eSprite::spriteWidth(void)
+{
+  return _iwidth;
+}
+*/
 
-  Software License Agreement (BSD License)
+/***************************************************************************************
+** Function name:           height or spriteHeight
+** Description:             Return the height of sprite
+*************************************************************************************x*/
+int16_t TFT_eSprite::height(void)
+{
+  return _iheight;
+}
 
-  Copyright (c) 2012 Adafruit Industries.  All rights reserved.
+/*
+int16_t TFT_eSprite::spriteHeight(void)
+{
+  return _iheight;
+}
+*/
 
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
+/***************************************************************************************
+** Function name:           drawChar
+** Description:             draw a single character in the Adafruit GLCD or freefont
+*************************************************************************************x*/
+void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size)
+{
+  if ((x >= (int16_t)_iwidth)            || // Clip right
+      (y >= (int16_t)_iheight)           || // Clip bottom
+      ((x + 6 * size - 1) < 0) || // Clip left
+      ((y + 8 * size - 1) < 0))   // Clip top
+    return;
 
-- Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-- Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
+#ifdef LOAD_GLCD
+//>>>>>>>>>>>>>>>>>>
+#ifdef LOAD_GFXFF
+  if(!gfxFont) { // 'Classic' built-in font
+#endif
+//>>>>>>>>>>>>>>>>>>
 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-  POSSIBILITY OF SUCH DAMAGE.
+  boolean fillbg = (bg != color);
 
- *****************************************************/
+  if ((size==1) && fillbg)
+  {
+    byte column[6];
+    byte mask = 0x1;
+
+    for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(font + (c * 5) + i);
+    column[5] = 0;
+
+    int8_t j, k;
+    for (j = 0; j < 8; j++) {
+      for (k = 0; k < 5; k++ ) {
+        if (column[k] & mask) {
+          drawPixel(x + k, y + j, color);
+        }
+        else {
+          drawPixel(x + k, y + j, bg);
+        }
+      }
+
+      mask <<= 1;
+
+      drawPixel(x + k, y + j, bg);
+    }
+  }
+  else
+  {
+    for (int8_t i = 0; i < 6; i++ ) {
+      uint8_t line;
+      if (i == 5)
+        line = 0x0;
+      else
+        line = pgm_read_byte(font + (c * 5) + i);
+
+      if (size == 1) // default size
+      {
+        for (int8_t j = 0; j < 8; j++) {
+          if (line & 0x1) drawPixel(x + i, y + j, color);
+          line >>= 1;
+        }
+      }
+      else {  // big size
+        for (int8_t j = 0; j < 8; j++) {
+          if (line & 0x1) fillRect(x + (i * size), y + (j * size), size, size, color);
+          else if (fillbg) fillRect(x + i * size, y + j * size, size, size, bg);
+          line >>= 1;
+        }
+      }
+    }
+  }
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#ifdef LOAD_GFXFF
+  } else { // Custom font
+#endif
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#endif // LOAD_GLCD
+
+#ifdef LOAD_GFXFF
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // Character is assumed previously filtered by write() to eliminate
+    // newlines, returns, non-printable characters, etc.  Calling drawChar()
+    // directly with 'bad' characters of font may cause mayhem!
+    if (c > pgm_read_byte(&gfxFont->last)) c = pgm_read_byte(&gfxFont->first);;
+    c -= pgm_read_byte(&gfxFont->first);
+    GFXglyph *glyph  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c]);
+    uint8_t  *bitmap = (uint8_t *)pgm_read_dword(&gfxFont->bitmap);
+
+    uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
+    uint8_t  w  = pgm_read_byte(&glyph->width),
+             h  = pgm_read_byte(&glyph->height),
+             xa = pgm_read_byte(&glyph->xAdvance);
+    int8_t   xo = pgm_read_byte(&glyph->xOffset),
+             yo = pgm_read_byte(&glyph->yOffset);
+    uint8_t  xx, yy, bits, bit=0;
+    int16_t  xo16, yo16;
+
+    if(size > 1) {
+      xo16 = xo;
+      yo16 = yo;
+    }
+
+    uint16_t hpc = 0; // Horizontal foreground pixel count
+    for(yy=0; yy<h; yy++) {
+      for(xx=0; xx<w; xx++) {
+        if(bit == 0) {
+          bits = pgm_read_byte(&bitmap[bo++]);
+          bit  = 0x80;
+        }
+        if(bits & bit) hpc++;
+        else {
+          if (hpc) {
+            if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+            else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
+            hpc=0;
+          }
+        }
+        bit >>= 1;
+      }
+      // Draw pixels for this line as we are about to increment yy
+      if (hpc) {
+        if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+        else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
+        hpc=0;
+      }
+    }
+
+#endif
+
+
+#ifdef LOAD_GLCD
+  #ifdef LOAD_GFXFF
+  } // End classic vs custom font
+  #endif
+#endif
+
+}
+
+
+/***************************************************************************************
+** Function name:           drawPixel
+** Description:             push a single pixel at an arbitrary position
+*************************************************************************************x*/
+void TFT_eSprite::drawPixel(uint32_t x, uint32_t y, uint32_t color)
+{
+  // x and y are unsigned so that -ve coordinates turn into large positive ones
+  // this make bounds checking a bit faster
+  if ((x >= _iwidth) || (y >= _iheight)) return;
+  color = (color >> 8) | (color << 8);
+  _img[x+y*_iwidth] = (uint16_t) color;
+}
+
+
+/***************************************************************************************
+** Function name:           drawLine
+** Description:             draw a line between 2 arbitrary points
+*************************************************************************************x*/
+void TFT_eSprite::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color)
+{
+  boolean steep = abs(y1 - y0) > abs(x1 - x0);
+  if (steep) {
+    swap_coord(x0, y0);
+    swap_coord(x1, y1);
+  }
+
+  if (x0 > x1) {
+    swap_coord(x0, x1);
+    swap_coord(y0, y1);
+  }
+
+  int32_t dx = x1 - x0, dy = abs(y1 - y0);;
+
+  int32_t err = dx >> 1, ystep = -1, xs = x0, dlen = 0;
+
+  if (y0 < y1) ystep = 1;
+
+  // Split into steep and not steep for FastH/V separation
+  if (steep) {
+    for (; x0 <= x1; x0++) {
+      dlen++;
+      err -= dy;
+      if (err < 0) {
+        err += dx;
+        if (dlen == 1) drawPixel(y0, xs, color);
+        else drawFastVLine(y0, xs, dlen, color);
+        dlen = 0; y0 += ystep; xs = x0 + 1;
+      }
+    }
+    if (dlen) drawFastVLine(y0, xs, dlen, color);
+  }
+  else
+  {
+    for (; x0 <= x1; x0++) {
+      dlen++;
+      err -= dy;
+      if (err < 0) {
+        err += dx;
+        if (dlen == 1) drawPixel(xs, y0, color);
+        else drawFastHLine(xs, y0, dlen, color);
+        dlen = 0; y0 += ystep; xs = x0 + 1;
+      }
+    }
+    if (dlen) drawFastHLine(xs, y0, dlen, color);
+  }
+}
+
+
+/***************************************************************************************
+** Function name:           drawFastVLine
+** Description:             draw a vertical line
+*************************************************************************************x*/
+void TFT_eSprite::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
+{
+  if ((x < 0) || (x >= _iwidth) || (y >= _iheight)) return;
+  if (y < 0) { h += y; y = 0; }
+  if ((y + h) > _iheight) h = _iheight - y;
+
+  if (h < 1) return;
+  color = (color >> 8) | (color << 8);
+  while (h--) _img[x + _iwidth * y++] = (uint16_t) color;
+}
+
+
+/***************************************************************************************
+** Function name:           drawFastHLine
+** Description:             draw a horizontal line
+*************************************************************************************x*/
+void TFT_eSprite::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
+{
+  if ((y < 0) || (x >= _iwidth) || (y >= _iheight)) return;
+  if (x < 0) { w += x; x = 0; }
+  if ((x + w) > _iwidth)  w = _iwidth  - x;
+
+  if (w < 1) return;
+  color = (color >> 8) | (color << 8);
+  while (w--) _img[_iwidth * y + x++] = (uint16_t) color;
+}
+
+
+/***************************************************************************************
+** Function name:           fillRect
+** Description:             draw a filled rectangle
+*************************************************************************************x*/
+void TFT_eSprite::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
+{
+  if (x < 0) { w += x; x = 0; }
+
+  if ((x < 0) || (y < 0) || (x >= _iwidth) || (y >= _iheight)) return;
+  if ((x + w) > _iwidth)  w = _iwidth  - x;
+  if ((y + h) > _iheight) h = _iheight - y;
+  if ((w < 1) || (h < 1)) return;
+  color = (color >> 8) | (color << 8);
+
+  while (h--) {
+      int32_t ix = x, iw = w;
+      while (iw--) _img[_iwidth * y + ix++] = (uint16_t) color;
+      y++;
+  }
+}
+
+
+/***************************************************************************************
+** Function name:           write
+** Description:             draw characters piped through serial stream
+*************************************************************************************x*/
+size_t TFT_eSprite::write(uint8_t utf8)
+{
+  if (utf8 == '\r') return 1;
+
+  uint8_t uniCode = utf8;        // Work with a copy
+  if (utf8 == '\n') uniCode+=22; // Make it a valid space character to stop errors
+
+  uint16_t width = 0;
+  uint16_t height = 0;
+
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv DEBUG vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+  //Serial.print((uint8_t) uniCode); // Debug line sends all printed TFT text to serial port
+  //Serial.println(uniCode, HEX); // Debug line sends all printed TFT text to serial port
+  //delay(5);                     // Debug optional wait for serial port to flush through
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ DEBUG ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#ifdef LOAD_GFXFF
+  if(!gfxFont) {
+#endif
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+#ifdef LOAD_FONT2
+  if (textfont == 2)
+  {
+    // This is 20us faster than using the fontdata structure (0.443ms per character instead of 0.465ms)
+    width = pgm_read_byte(widtbl_f16 + uniCode-32);
+    height = chr_hgt_f16;
+    // Font 2 is rendered in whole byte widths so we must allow for this
+    width = (width + 6) / 8;  // Width in whole bytes for font 2, should be + 7 but must allow for font width change
+    width = width * 8;        // Width converted back to pixles
+  }
+  #ifdef LOAD_RLE
+  else
+  #endif
+#endif
+
+#ifdef LOAD_RLE
+  {
+    if ((textfont>2) && (textfont<9))
+    {
+      // Uses the fontinfo struct array to avoid lots of 'if' or 'switch' statements
+      // A tad slower than above but this is not significant and is more convenient for the RLE fonts
+      width = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[textfont].widthtbl ) ) + uniCode-32 );
+      height= pgm_read_byte( &fontdata[textfont].height );
+    }
+  }
+#endif
+
+#ifdef LOAD_GLCD
+  if (textfont==1)
+  {
+      width =  6;
+      height = 8;
+  }
+#else
+  if (textfont==1) return 0;
+#endif
+
+  height = height * textsize;
+
+  if (utf8 == '\n') 
+  {
+    _icursor_y += height;
+    _icursor_x  = 0;
+  }
+  else
+  {
+    if (textwrap && (_icursor_x + width * textsize > _iwidth))
+    {
+      _icursor_y += height;
+      _icursor_x = 0;
+    }
+    _icursor_x += drawChar(uniCode, _icursor_x, _icursor_y, textfont);
+  }
+
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#ifdef LOAD_GFXFF
+  } // Custom GFX font
+  else
+  {
+
+    if(utf8 == '\n') {
+      _icursor_x  = 0;
+      _icursor_y += (int16_t)textsize * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+    } else if(uniCode != '\r') {
+      if (uniCode > (uint8_t)pgm_read_byte(&gfxFont->last)) uniCode = pgm_read_byte(&gfxFont->first);
+
+      if(uniCode >= pgm_read_byte(&gfxFont->first)) {
+        uint8_t   c2    = uniCode - pgm_read_byte(&gfxFont->first);
+        GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
+        uint8_t   w     = pgm_read_byte(&glyph->width),
+                  h     = pgm_read_byte(&glyph->height);
+        if((w > 0) && (h > 0)) { // Is there an associated bitmap?
+          int16_t xo = (int8_t)pgm_read_byte(&glyph->xOffset);
+          if(textwrap && ((_icursor_x + textsize * (xo + w)) > _iwidth)) {
+            // Drawing character would go off right edge; wrap to new line
+            _icursor_x  = 0;
+            _icursor_y += (int16_t)textsize * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+          }
+          drawChar(_icursor_x, _icursor_y, uniCode, textcolor, textbgcolor, textsize);
+        }
+        _icursor_x += pgm_read_byte(&glyph->xAdvance) * (int16_t)textsize;
+      }
+    }
+
+  }
+#endif // LOAD_GFXFF
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+  return 1;
+}
+
+
+/***************************************************************************************
+** Function name:           drawChar
+** Description:             draw a unicode onto the screen
+*************************************************************************************x*/
+int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y)
+{
+    return drawChar(uniCode, x, y, textfont);
+}
+
+int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y, int font)
+{
+
+  if (font==1)
+  {
+#ifdef LOAD_GLCD
+  #ifndef LOAD_GFXFF
+    drawChar(x, y, uniCode, textcolor, textbgcolor, textsize);
+    return 6 * textsize;
+  #endif
+#else
+  #ifndef LOAD_GFXFF
+    return 0;
+  #endif
+#endif
+
+#ifdef LOAD_GFXFF
+    drawChar(x, y, uniCode, textcolor, textbgcolor, textsize);
+    if(!gfxFont) { // 'Classic' built-in font
+    #ifdef LOAD_GLCD
+      return 6 * textsize;
+    #else
+      return 0;
+    #endif
+    }
+    else
+    {
+      if (uniCode > pgm_read_byte(&gfxFont->last)) uniCode = pgm_read_byte(&gfxFont->first);
+
+      if(uniCode >= pgm_read_byte(&gfxFont->first))
+      {
+        uint8_t   c2    = uniCode - pgm_read_byte(&gfxFont->first);
+        GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
+        return pgm_read_byte(&glyph->xAdvance) * textsize;
+      }
+      else
+      {
+        return 0;
+      }
+    }
+#endif
+  }
+
+  int width  = 0;
+  int height = 0;
+  uint32_t flash_address = 0;
+  uniCode -= 32;
+
+#ifdef LOAD_FONT2
+  if (font == 2)
+  {
+    // This is faster than using the fontdata structure
+    flash_address = pgm_read_dword(&chrtbl_f16[uniCode]);
+    width = pgm_read_byte(widtbl_f16 + uniCode);
+    height = chr_hgt_f16;
+  }
+  #ifdef LOAD_RLE
+  else
+  #endif
+#endif
+
+#ifdef LOAD_RLE
+  {
+    if ((font>2) && (font<9))
+    {
+      // This is slower than above but is more convenient for the RLE fonts
+      flash_address = pgm_read_dword( pgm_read_dword( &(fontdata[font].chartbl ) ) + uniCode*sizeof(void *) );
+      width = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[font].widthtbl ) ) + uniCode );
+      height= pgm_read_byte( &fontdata[font].height );
+    }
+  }
+#endif
+
+  int w = width;
+  int pX      = 0;
+  int pY      = y;
+  byte line = 0;
+
+#ifdef LOAD_FONT2 // chop out code if we do not need it
+  if (font == 2) {
+    w = w + 6; // Should be + 7 but we need to compensate for width increment
+    w = w / 8;
+    if (x + width * textsize >= (int16_t)_iwidth) return width * textsize ;
+
+    for (int i = 0; i < height; i++)
+    {
+      if (textcolor != textbgcolor) fillRect(x, pY, width * textsize, textsize, textbgcolor);
+
+      for (int k = 0; k < w; k++)
+      {
+        line = pgm_read_byte((uint8_t *)flash_address + w * i + k);
+        if (line) {
+          if (textsize == 1) {
+            pX = x + k * 8;
+            if (line & 0x80) drawPixel(pX, pY, textcolor);
+            if (line & 0x40) drawPixel(pX + 1, pY, textcolor);
+            if (line & 0x20) drawPixel(pX + 2, pY, textcolor);
+            if (line & 0x10) drawPixel(pX + 3, pY, textcolor);
+            if (line & 0x08) drawPixel(pX + 4, pY, textcolor);
+            if (line & 0x04) drawPixel(pX + 5, pY, textcolor);
+            if (line & 0x02) drawPixel(pX + 6, pY, textcolor);
+            if (line & 0x01) drawPixel(pX + 7, pY, textcolor);
+          }
+          else {
+            pX = x + k * 8 * textsize;
+            if (line & 0x80) fillRect(pX, pY, textsize, textsize, textcolor);
+            if (line & 0x40) fillRect(pX + textsize, pY, textsize, textsize, textcolor);
+            if (line & 0x20) fillRect(pX + 2 * textsize, pY, textsize, textsize, textcolor);
+            if (line & 0x10) fillRect(pX + 3 * textsize, pY, textsize, textsize, textcolor);
+            if (line & 0x08) fillRect(pX + 4 * textsize, pY, textsize, textsize, textcolor);
+            if (line & 0x04) fillRect(pX + 5 * textsize, pY, textsize, textsize, textcolor);
+            if (line & 0x02) fillRect(pX + 6 * textsize, pY, textsize, textsize, textcolor);
+            if (line & 0x01) fillRect(pX + 7 * textsize, pY, textsize, textsize, textcolor);
+          }
+        }
+      }
+      pY += textsize;
+    }
+  }
+
+  #ifdef LOAD_RLE
+  else
+  #endif
+#endif  //FONT2
+
+#ifdef LOAD_RLE  //674 bytes of code
+  // Font is not 2 and hence is RLE encoded
+  {
+    w *= height; // Now w is total number of pixels in the character
+
+    if (textcolor != textbgcolor) fillRect(x, pY, width * textsize, textsize * height, textbgcolor);
+    int px = 0, py = pY; // To hold character block start and end column and row values
+    int pc = 0; // Pixel count
+    byte np = textsize * textsize; // Number of pixels in a drawn pixel
+
+    byte tnp = 0; // Temporary copy of np for while loop
+    byte ts = textsize - 1; // Temporary copy of textsize
+    // 16 bit pixel count so maximum font size is equivalent to 180x180 pixels in area
+    // w is total number of pixels to plot to fill character block
+    while (pc < w)
+    {
+      line = pgm_read_byte((uint8_t *)flash_address);
+      flash_address++; // 20 bytes smaller by incrementing here
+      if (line & 0x80) {
+        line &= 0x7F;
+        line++;
+        if (ts) {
+          px = x + textsize * (pc % width); // Keep these px and py calculations outside the loop as they are slow
+          py = y + textsize * (pc / width);
+        }
+        else {
+          px = x + pc % width; // Keep these px and py calculations outside the loop as they are slow
+          py = y + pc / width;
+        }
+        while (line--) {
+          pc++;
+          setWindow(px, py, px + ts, py + ts);
+
+          if (ts) {
+            tnp = np;
+            while (tnp--) {
+              pushColor(textcolor);
+            }
+          }
+          else {
+            pushColor(textcolor);
+          }
+          px += textsize;
+
+          if (px >= (x + width * textsize))
+          {
+            px = x;
+            py += textsize;
+          }
+        }
+      }
+      else {
+        line++;
+        pc += line;
+      }
+    }
+  }
+  // End of RLE font rendering
+#endif
+  return width * textsize;    // x +
+}
+

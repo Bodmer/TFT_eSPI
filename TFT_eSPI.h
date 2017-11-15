@@ -30,6 +30,11 @@
   #define SPI_FREQUENCY  20000000
 #endif
 
+// If the frequency is not defined, set a default
+#ifndef SPI_TOUCH_FREQUENCY
+  #define SPI_TOUCH_FREQUENCY  2500000
+#endif
+
 // Only load the fonts defined in User_Setup.h (to save space)
 // Set flag so RLE rendering code is optionally compiled
 #ifdef LOAD_GLCD
@@ -267,8 +272,11 @@ typedef struct {
 
 // Now fill the structure
 const PROGMEM fontinfo fontdata [] = {
+  #ifdef LOAD_GLCD
+   { (const uint8_t *)font, widtbl_null, 0, 0 },
+  #else
    { (const uint8_t *)chrtbl_null, widtbl_null, 0, 0 },
-
+  #endif
    // GLCD font (Font 1) does not have all parameters
    { (const uint8_t *)chrtbl_null, widtbl_null, 8, 7 },
 
@@ -320,25 +328,32 @@ class TFT_eSPI : public Print {
 
   void     init(void), begin(void); // Same - begin included for backwards compatibility
 
-  void     drawPixel(uint32_t x, uint32_t y, uint32_t color);
+  // These are virtual so the TFT_eSprite class can override them with sprite specific functions
+  virtual void     drawPixel(uint32_t x, uint32_t y, uint32_t color),
+                   drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t font),
+                   setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
+                   pushColor(uint16_t color),
+                   pushColor(uint16_t color, uint16_t len),
+                   drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
+                   drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
+                   drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
+                   fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
 
-  void     drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t font),
-           setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
+  virtual int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
+                   drawChar(unsigned int uniCode, int x, int y),
+                   height(void),
+                   width(void);
 
-           pushColor(uint16_t color),
-           pushColor(uint16_t color, uint16_t len),
+  virtual size_t   write(uint8_t);
 
-           pushColors(uint16_t *data, uint8_t len),
+
+  // The TFT_eSprite class inherits the following functions
+  void     pushColors(uint16_t *data, uint8_t len),
            pushColors(uint8_t  *data, uint32_t len),
 
-           fillScreen(uint32_t color),
+           fillScreen(uint32_t color);
 
-           drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
-           drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
-           drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
-
-           drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color),
-           fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color),
+  void     drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color),
            drawRoundRect(int32_t x0, int32_t y0, int32_t w, int32_t h, int32_t radius, uint32_t color),
            fillRoundRect(int32_t x0, int32_t y0, int32_t w, int32_t h, int32_t radius, uint32_t color),
 
@@ -392,6 +407,7 @@ class TFT_eSPI : public Print {
   void     readRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
            // Write a block of pixels to the screen
   void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+  void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data);
 
            // This next function has been used successfully to dump the TFT screen to a PC for documentation purposes
            // It reads a screen area and returns the RGB 8 bit colour values of each pixel
@@ -403,10 +419,8 @@ class TFT_eSPI : public Print {
 
   uint16_t fontsLoaded(void),
            color565(uint8_t r, uint8_t g, uint8_t b);
-
-  int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
-           drawChar(unsigned int uniCode, int x, int y),
-           drawNumber(long long_num,int poX, int poY, int font),
+        
+  int16_t  drawNumber(long long_num,int poX, int poY, int font),
            drawNumber(long long_num,int poX, int poY),
            drawFloat(float floatNumber,int decimal,int poX, int poY, int font),
            drawFloat(float floatNumber,int decimal,int poX, int poY),
@@ -423,9 +437,7 @@ class TFT_eSPI : public Print {
            drawCentreString(const String& string, int dX, int poY, int font), // Deprecated, use setTextDatum() and drawString()
            drawRightString(const String& string, int dX, int poY, int font);  // Deprecated, use setTextDatum() and drawString()
            
-  int16_t  height(void),
-           width(void),
-           textWidth(const char *string, int font),
+  int16_t  textWidth(const char *string, int font),
            textWidth(const char *string),
            textWidth(const String& string, int font),
            textWidth(const String& string),
@@ -441,7 +453,6 @@ class TFT_eSPI : public Print {
   void     calibrateTouch(uint16_t *data, uint32_t color_fg, uint32_t color_bg, uint8_t size);
   void     setTouch(uint16_t *data);
 
- virtual   size_t write(uint8_t);
 
  private:
 
@@ -530,6 +541,74 @@ class TFT_eSPI_Button {
 
   boolean  currstate, laststate;
 };
+
+
+/***************************************************************************************
+// The following class creates Sprites in RAM, graphics can then be drawn in the Sprite
+// and rendered quickly onto the TFT screen. The class inherits the graphics functions
+// from the TFT_eSPI class. Some functions are overridden by this class so that the
+// graphics are written to the Sprite rather than the TFT.
+***************************************************************************************/
+
+class TFT_eSprite : public TFT_eSPI {
+
+ public:
+
+  TFT_eSprite(TFT_eSPI *tft);
+
+  uint16_t* createSprite(int16_t w, int16_t y); // 16 bpp
+  void     deleteSprite(void);
+
+  void     drawPixel(uint32_t x, uint32_t y, uint32_t color);
+
+  void     drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size),
+
+           fillSprite(uint32_t color),
+
+           setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1),
+           pushColor(uint32_t color),
+           pushColor(uint32_t color, uint16_t len),
+
+           drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
+           drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
+           drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
+
+           fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color),
+
+           setCursor(int16_t x, int16_t y);
+
+           // Read the colour of a pixel at x,y and return value in 565 format 
+  uint16_t readPixel(int32_t x0, int32_t y0);
+
+           // Write a block of pixels to the sprite
+  void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+  void     pushBitmap(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+
+  void     pushSprite(int32_t x, int32_t y);
+
+  int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
+           drawChar(unsigned int uniCode, int x, int y);
+          
+  int16_t  height(void),
+           width(void);
+
+  size_t   write(uint8_t);
+
+ private:
+
+  TFT_eSPI *_tft;
+
+ protected:
+ 
+  uint16_t *_img;
+
+  int32_t  _icursor_x, _icursor_y, _xs, _ys, _xe, _ye, _xptr, _yptr;
+
+  int32_t _iwidth, _iheight; // Display w/h as modified by current rotation
+
+};
+
+
 
 #endif
 
