@@ -129,7 +129,7 @@ void loop() {
     xpos += img.drawFloat(pi, precision, xpos, ypos, font); // Draw rounded number and return new xpos delta for next print position
     img.drawString(" is pi", xpos, ypos, font); // Continue printing from new x position
 
-    tft.pushSprite(0, 0, IWIDTH, IHEIGHT, imgPtr);
+    img.pushSprite(0, 0);
   }
 }
 
