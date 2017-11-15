@@ -1,7 +1,7 @@
 /*
 
   Sketch to show how a Sprite is created, how to draw pixels
-  and text within the Sprite and then split the Sprite onto
+  and text within the Sprite and then push the Sprite onto
   the display screen.
 
   Example for library:
