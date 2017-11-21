@@ -344,9 +344,6 @@ class TFT_eSPI : public Print {
                    height(void),
                    width(void);
 
-  virtual size_t   write(uint8_t);
-
-
   // The TFT_eSprite class inherits the following functions
   void     pushColors(uint16_t *data, uint8_t len),
            pushColors(uint8_t  *data, uint32_t len),
@@ -408,7 +405,7 @@ class TFT_eSPI : public Print {
            // Write a block of pixels to the screen
   void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
   void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data);
-
+  void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data);
            // This next function has been used successfully to dump the TFT screen to a PC for documentation purposes
            // It reads a screen area and returns the RGB 8 bit colour values of each pixel
            // Set w and h to 1 to read 1 pixel's colour. The data buffer must be at least w * h * 3 bytes
@@ -453,6 +450,7 @@ class TFT_eSPI : public Print {
   void     calibrateTouch(uint16_t *data, uint32_t color_fg, uint32_t color_bg, uint8_t size);
   void     setTouch(uint16_t *data);
 
+  size_t   write(uint8_t);
 
  private:
 
@@ -556,8 +554,11 @@ class TFT_eSprite : public TFT_eSPI {
 
   TFT_eSprite(TFT_eSPI *tft);
 
-  uint16_t* createSprite(int16_t w, int16_t y); // 16 bpp
+  void     createSprite(int16_t w, int16_t y);  // 2 bytes per pixel
+
   void     deleteSprite(void);
+
+  void     setColorDepth(int8_t b);
 
   void     drawPixel(uint32_t x, uint32_t y, uint32_t color);
 
@@ -568,6 +569,7 @@ class TFT_eSprite : public TFT_eSPI {
            setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1),
            pushColor(uint32_t color),
            pushColor(uint32_t color, uint16_t len),
+           writeColor(uint16_t color),
 
            drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
            drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
@@ -601,10 +603,12 @@ class TFT_eSprite : public TFT_eSPI {
  protected:
  
   uint16_t *_img;
+  uint8_t  *_img8;
+  bool     _created;
 
   int32_t  _icursor_x, _icursor_y, _xs, _ys, _xe, _ye, _xptr, _yptr;
 
-  int32_t _iwidth, _iheight; // Display w/h as modified by current rotation
+  uint32_t _iwidth, _iheight, _bpp16;
 
 };
 

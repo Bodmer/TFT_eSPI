@@ -91,6 +91,7 @@ justReleased	KEYWORD2
 TFT_eSprite	KEYWORD1
 
 createSprite	KEYWORD2
+setColorDepth	KEYWORD2
 deleteSprite	KEYWORD2
 fillSprite	KEYWORD2
 setWindow	KEYWORD2
