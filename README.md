@@ -4,11 +4,13 @@ An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 proce
 
 The library also supports TFT displays designed for the Raspberry Pi that are based on a ILI9486 driver chip with a 480 x 320 pixel screen. This display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. A modification to these displays is possible (see mod image in Tools folder) to make many graphics functions much faster (e.g. 23ms to clear the screen, 1.2ms to draw a 72 pixel high numeral).
 
-A new "Sprite" class has been added, this enables flicker free updates of complex graphics. Exmaples are in the "examples/Sprite" folder. A Sprite is notionally an invisible graphics screen that is kept in the processors RAM. Graphics can be drawn into the Sprite just as it can be drawn directly to the screen. Once the Sprite is completed it can be plotted onto the screen in any position. If there is sufficient RAM then the Sprite can be the same size as the screen and used as a frame buffer. On an ESP8266 the largest Sprite that can be created is about 160x128 pixels, this consumes 40Kbytes of RAM. On an ESP32 the workspace RAM is more limited than the datsheet implies so the Sprite is limited to about 200x200 pixels (~80Kbytes). The RAM needed is 2 x width x height of sprite. Drawing graphics into a sprite is very fast, for those familiar with the Adafruit "graphicstest" example, this whole test completes in less than 27ms in a 160x128 sprite.
+A new "Sprite" class has been added, this enables flicker free updates of complex graphics. Exmaples are in the "examples/Sprite" folder. A Sprite is notionally an invisible graphics screen that is kept in the processors RAM. Graphics can be drawn into the Sprite just as it can be drawn directly to the screen. Once the Sprite is completed it can be plotted onto the screen in any position. If there is sufficient RAM then the Sprite can be the same size as the screen and used as a frame buffer. On an ESP8266 the largest 16 bit colour Sprite that can be created is about 160x128 pixels, this consumes 40Kbytes of RAM. On an ESP32 the workspace RAM is more limited than the datsheet implies so the Sprite is limited to about 200x200 pixels (~80Kbytes).
+
+The RAM needed for a 16 bit colour depth Sprite is (2 x width x height) bytes, for a Sprite with 8 bit colour depth the RAM needed is (width x height) bytes . Drawing graphics into a sprite is very fast, for those familiar with the Adafruit "graphicstest" example, this whole test completes in less than 27ms in a 160x128 sprite.
 
 The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed.
 
-The Button class from Adafruit_GFX has been added, with the enhancement that the button labels can be in any font.
+The Button class from Adafruit_GFX is incorporated, with the enhancement that the button labels can be in any font.
 
 The library supports SPI overlap on the ESP8266 so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH.
 
