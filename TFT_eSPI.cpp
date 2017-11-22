@@ -4228,9 +4228,19 @@ void TFT_eSprite::createSprite(int16_t w, int16_t h)
 
 void TFT_eSprite::setColorDepth(int8_t b)
 {
-  if (_created) deleteSprite();
+  // Can't change an existing sprite's colour depth so delete it
+  if (_created)
+  {
+    if (_bpp16) free(_img);
+    else        free(_img8);
+  }
+
+  // Now define the new colour depth
   if ( b > 8 ) _bpp16 = true;  // Bytes per pixel
   else         _bpp16 = false;
+
+  // If it existed, re-create the sprite with the new colour depth
+  if (_created) createSprite(_iwidth, _iheight);
 }
 
 
@@ -4724,7 +4734,7 @@ void TFT_eSprite::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
     color = (color >> 8) | (color << 8);
     while (w--) _img[_iwidth * y + x++] = (uint16_t) color;
   }
-    else
+  else
   {
     color = (color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3;
     //while (w--) _img8[_iwidth * y + x++] = (uint8_t) color;

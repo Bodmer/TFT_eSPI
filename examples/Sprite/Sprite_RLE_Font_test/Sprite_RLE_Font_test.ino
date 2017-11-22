@@ -1,5 +1,5 @@
 /*
- Display all the fast rendering fonts.
+ Display all the fast rendering fonts in a sprite
 
  Make sure all the display driver and pin comnections are correct by
  editting the User_Setup.h file in the TFT_eSPI library folder.
@@ -9,12 +9,9 @@
  #########################################################################
 */
 
-// Create a sprite 160 x 128 pixels (needs 40Kbytes of RAM!)
+// Specify sprite 160 x 128 pixels (needs 40Kbytes of RAM for 16 bit colour)
 #define IWIDTH  160
 #define IHEIGHT 128
-
-// New background colour
-#define TFT_BROWN 0x38E0
 
 // Pause in milliseconds between screens, change to 0 to time font rendering
 #define WAIT 500
@@ -34,6 +31,7 @@ void setup(void) {
 
   tft.fillScreen(TFT_BLUE);
 
+  //img.setColorDepth(8); // Optionally set depth to 8 to reduce RAM use
   img.createSprite(IWIDTH, IHEIGHT);
   img.fillSprite(TFT_BLACK);
 }
@@ -125,7 +123,7 @@ void loop() {
   targetTime = millis();
 
   img.setTextSize(1);
-  img.fillSprite(TFT_BROWN);
+  img.fillSprite(TFT_BLACK);
   img.setTextColor(TFT_GREEN);
 
   img.drawString(" !\"#$%&'()*+,-./0123456", 0, 0, 2);
@@ -137,7 +135,7 @@ void loop() {
   img.drawChar(127, xpos, 64, 2);
   img.pushSprite(0, 0); delay(WAIT);
 
-  img.fillSprite(TFT_BROWN);
+  img.fillSprite(TFT_BLACK);
   img.setTextColor(TFT_GREEN);
 
   img.drawString(" !\"#$%&'()*+,-.", 0, 0, 4);
@@ -147,7 +145,7 @@ void loop() {
   img.drawString("PQRSTUVWX", 0, 104, 4);
 
   img.pushSprite(0, 0); delay(WAIT);
-  img.fillSprite(TFT_BROWN);
+  img.fillSprite(TFT_BLACK);
   img.drawString("YZ[\\]^_`abc", 0, 0, 4);
   img.drawString("defghijklmno", 0, 26, 4);
   img.drawString("pqrstuvwxyz", 0, 52, 4);
@@ -156,7 +154,7 @@ void loop() {
   img.drawChar(127, xpos, 78, 4);
   img.pushSprite(0, 0); delay(WAIT);
 
-  img.fillSprite(TFT_BROWN);
+  img.fillSprite(TFT_BLACK);
   img.setTextColor(TFT_BLUE);
 
   img.drawString("012345", 0, 0, 6);
@@ -164,29 +162,29 @@ void loop() {
   img.drawString("apm-:.", 0, 80, 6);
   img.pushSprite(0, 0); delay(WAIT);
 
-  img.fillSprite(TFT_BROWN);
+  img.fillSprite(TFT_BLACK);
   img.setTextColor(TFT_RED);
 
   img.drawString("0123", 0, 0, 7);
   img.drawString("4567", 0, 60, 7);
   img.pushSprite(0, 0); delay(WAIT);
 
-  img.fillSprite(TFT_BROWN);
+  img.fillSprite(TFT_BLACK);
   img.drawString("890:.", 0, 0, 7);
   img.drawString("", 0, 60, 7);
   img.pushSprite(0, 0); delay(WAIT);
 
-  img.fillSprite(TFT_BROWN);
+  img.fillSprite(TFT_BLACK);
   img.setTextColor(TFT_YELLOW);
 
   img.drawString("0123", 0, 0, 8);
   img.pushSprite(0, 0); delay(WAIT);
 
-  img.fillSprite(TFT_BROWN);
+  img.fillSprite(TFT_BLACK);
   img.drawString("4567", 0, 0, 8);
   img.pushSprite(0, 0); delay(WAIT);
 
-  img.fillSprite(TFT_BROWN);
+  img.fillSprite(TFT_BLACK);
   img.drawString("890:.", 0, 0, 8);
   img.pushSprite(0, 0); delay(WAIT);
 

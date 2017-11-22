@@ -7,7 +7,7 @@
   The sketch has been tested on a 320x240 ILI9341 based TFT, it
   coule be adapted for other screen sizes.
 
-  A Sprite is notionally an invisibly graphics screen that is
+  A Sprite is notionally an invisible graphics screen that is
   kept in the processors RAM. Graphics can be drawn into the
   Sprite just as it can be drawn directly to the screen. Once
   the Sprite is completed it can be plotted onto the screen in

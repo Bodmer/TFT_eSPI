@@ -7,17 +7,21 @@
   Example for library:
   https://github.com/Bodmer/TFT_eSPI
 
-  A Sprite is notionally an invisibly graphics screen that is
+  A Sprite is notionally an invisible graphics screen that is
   kept in the processors RAM. Graphics can be drawn into the
   Sprite just as it can be drawn directly to the screen. Once
   the Sprite is completed it can be plotted onto the screen in
   any position. If there is sufficient RAM then the Sprite can
   be the same size as the screen and used as a frame buffer.
 
-  The Sprite occupies (2 * width * height) bytes in RAM.
+  A 16 bit Sprite occupies (2 * width * height) bytes in RAM.
 
   On a ESP8266 Sprite sizes up to 126 x 160 can be accomodated,
-  this size requires 40kBytes of RAM.
+  this size requires 40kBytes of RAM for a 16 bit colour depth.
+  
+  When 8 bit colour depth sprites are created they occupy
+  (width * height) bytes in RAM, so larger sprites can be
+  created, or the RAM required is halved.
 
 */
 
@@ -41,6 +45,9 @@ void setup()
 
   // Initialise the TFT registers
   tft.init();
+
+  // Optionally set colour depth to 8 or 16 bits, default is 16 if not spedified
+  // spr.setColorDepth(8);
 
   // Create a sprite of defined size
   spr.createSprite(WIDTH, HEIGHT);
