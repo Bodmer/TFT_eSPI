@@ -4297,11 +4297,12 @@ uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
   }
 
   uint16_t color = _img8[x + y * _iwidth];
-  if (color != 0)
+  if (color != 0) {
       uint8_t  blue[] = {0, 11, 21, 31};
       color =     (color & 0xE0)<<8 | (color & 0xC0)<<5
                 | (color & 0x1C)<<6 | (color & 0x1C)<<3
                 | blue[color & 0x03];
+  }
 
   return color;
 }
