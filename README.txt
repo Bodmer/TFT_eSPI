@@ -10,5 +10,9 @@ older. Use the latest version.
 New functions have been added in particular it contains proportional fonts
 in addition to the original Adafruit font.
 
-Note: This version of the library might not be fully compatible with the original.
+A sprite class has been added to aid the generation of flicker free complex
+raphics.
+
+Note: This version of the library might not be fully compatible with the
+original.
 

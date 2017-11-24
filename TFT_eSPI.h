@@ -494,6 +494,8 @@ class TFT_eSPI : public Print {
 
   boolean  locked, inTransaction; // Transaction and mutex lock flags for ESP32
 
+  int32_t  _lastColor;
+
 #ifdef LOAD_GFXFF
   GFXfont
     *gfxFont;
@@ -608,7 +610,7 @@ class TFT_eSprite : public TFT_eSPI {
 
   int32_t  _icursor_x, _icursor_y, _xs, _ys, _xe, _ye, _xptr, _yptr;
 
-  uint32_t _iwidth, _iheight, _bpp16;
+  int32_t  _iwidth, _iheight, _bpp16;
 
 };
 

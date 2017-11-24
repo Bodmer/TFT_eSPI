@@ -31,7 +31,7 @@ void setup(void) {
 
   tft.fillScreen(TFT_BLUE);
 
-  //img.setColorDepth(8); // Optionally set depth to 8 to reduce RAM use
+  //img.setColorDepth(8); // Optionally set depth to 8 to halve RAM use
   img.createSprite(IWIDTH, IHEIGHT);
   img.fillSprite(TFT_BLACK);
 }
