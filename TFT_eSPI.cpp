@@ -1580,7 +1580,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
     int8_t   xo = pgm_read_byte(&glyph->xOffset),
              yo = pgm_read_byte(&glyph->yOffset);
     uint8_t  xx, yy, bits, bit=0;
-    int16_t  xo16, yo16;
+    int16_t  xo16 = 0, yo16 = 0;
 
     if(size > 1) {
       xo16 = xo;
@@ -4590,7 +4590,7 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color
     int8_t   xo = pgm_read_byte(&glyph->xOffset),
              yo = pgm_read_byte(&glyph->yOffset);
     uint8_t  xx, yy, bits, bit=0;
-    int16_t  xo16, yo16;
+    int16_t  xo16 = 0, yo16 = 0;
 
     if(size > 1) {
       xo16 = xo;
