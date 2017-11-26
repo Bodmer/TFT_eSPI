@@ -480,6 +480,7 @@ class TFT_eSPI : public Print {
 
   int32_t  cursor_x, cursor_y, win_xe, win_ye, padX;
 
+  uint32_t _width_orig, _height_orig; // Display w/h as input, used by setRotation()
   uint32_t _width, _height; // Display w/h as modified by current rotation
   uint32_t textcolor, textbgcolor, fontsloaded, addr_row, addr_col;
 

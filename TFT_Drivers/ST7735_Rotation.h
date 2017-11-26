@@ -23,8 +23,8 @@
 	 } else {
        writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
      }
-      _width  = TFT_WIDTH;
-      _height = TFT_HEIGHT;
+      _width  = _width_orig;
+      _height = _height_orig;
       break;
     case 1:
      if (tabcolor == INITR_BLACKTAB) {
@@ -44,8 +44,8 @@
 	   } else {
        writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
      }
-      _width  = TFT_HEIGHT;
-      _height = TFT_WIDTH;
+      _width  = _height_orig;
+      _height = _width_orig;
       break;
     case 2:
      if (tabcolor == INITR_BLACKTAB) {
@@ -65,8 +65,8 @@
 	   } else {
        writedata(TFT_MAD_BGR);
      }
-      _width  = TFT_WIDTH;
-      _height = TFT_HEIGHT;
+      _width  = _width_orig;
+      _height = _height_orig;
       break;
     case 3:
      if (tabcolor == INITR_BLACKTAB) {
@@ -86,30 +86,30 @@
 	   } else {
        writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_BGR);
      }
-      _width  = TFT_HEIGHT;
-      _height = TFT_WIDTH;
+      _width  = _height_orig;
+      _height = _width_orig;
       break;
 
   // These next rotations are for bottum up BMP drawing
   /*  case 4:
       writedata(ST7735_TFT_MAD_MX | ST7735_TFT_MAD_MY | ST7735_TFT_MAD_BGR);
-      _width  = TFT_WIDTH;
-      _height = TFT_HEIGHT;
+      _width  = _width_orig;
+      _height = _height_orig;
       break;
     case 5:
       writedata(ST7735_TFT_MAD_MV | ST7735_TFT_MAD_MX | ST7735_TFT_MAD_BGR);
-      _width  = TFT_HEIGHT;
-      _height = TFT_WIDTH;
+      _width  = _height_orig;
+      _height = _width_orig;
       break;
     case 6:
       writedata(ST7735_TFT_MAD_BGR);
-      _width  = TFT_WIDTH;
-      _height = TFT_HEIGHT;
+      _width  = _width_orig;
+      _height = _height_orig;
       break;
     case 7:
       writedata(ST7735_TFT_MAD_MY | ST7735_TFT_MAD_MV | ST7735_TFT_MAD_BGR);
-      _width  = TFT_HEIGHT;
-      _height = TFT_WIDTH;
+      _width  = _height_orig;
+      _height = _width_orig;
       break;
   */
   }

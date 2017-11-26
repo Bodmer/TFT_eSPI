@@ -109,8 +109,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   }
 #endif
 
-  _width    = w; // Set by specific xxxxx_Defines.h file or by users sketch
-  _height   = h; // Set by specific xxxxx_Defines.h file or by users sketch
+  _width_orig  = _width  = w; // Set by specific xxxxx_Defines.h file or by users sketch
+  _height_orig = _height = h; // Set by specific xxxxx_Defines.h file or by users sketch
   rotation  = 0;
   cursor_y  = cursor_x    = 0;
   textfont  = 1;
