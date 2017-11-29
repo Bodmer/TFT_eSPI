@@ -572,7 +572,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
     int32_t len = dw;
     uint8_t* ptr = (uint8_t*)data;
 
-    // Make pointer 32 bit align using imune call then use the faster writeBytes()
+    // Make pointer 32 bit align using immune call then use the faster writeBytes()
     if (offset) { SPI.writePattern(ptr, offset, 1); len -= offset; ptr += offset; }
 
     if (len) SPI.writeBytes(ptr, len);
@@ -1401,14 +1401,15 @@ int16_t TFT_eSPI::textWidth(const char *string, int font)
       while (*string)
       {
         uniCode = *(string++);
-        if (uniCode < (uint8_t)pgm_read_byte(&gfxFont->first)) uniCode = pgm_read_byte(&gfxFont->first);
-        if (uniCode > (uint8_t)pgm_read_byte(&gfxFont->last )) uniCode = pgm_read_byte(&gfxFont->first);
-        uniCode -= pgm_read_byte(&gfxFont->first);
-        GFXglyph *glyph  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[uniCode]);
-        // If this is not the  last character then use xAdvance
-        if (*string) str_width += pgm_read_byte(&glyph->xAdvance);
-        // Else use the offset plus width since this can be bigger than xAdvance
-        else str_width += ((int8_t)pgm_read_byte(&glyph->xOffset) + pgm_read_byte(&glyph->width));
+        if ((uniCode >= (uint8_t)pgm_read_byte(&gfxFont->first)) && (uniCode <= (uint8_t)pgm_read_byte(&gfxFont->last )))
+        {
+          uniCode -= pgm_read_byte(&gfxFont->first);
+          GFXglyph *glyph  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[uniCode]);
+          // If this is not the  last character then use xAdvance
+          if (*string) str_width += pgm_read_byte(&glyph->xAdvance);
+          // Else use the offset plus width since this can be bigger than xAdvance
+          else str_width += ((int8_t)pgm_read_byte(&glyph->xOffset) + pgm_read_byte(&glyph->width));
+        }
       }
     }
     else
@@ -1567,31 +1568,30 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
 #endif // LOAD_GLCD
 
 #ifdef LOAD_GFXFF
-    spi_begin();
-    inTransaction = true;
+    // Filter out bad characters not present in font
+    if ((c >= (uint8_t)pgm_read_byte(&gfxFont->first)) && (c <= (uint8_t)pgm_read_byte(&gfxFont->last )))
+    {
+      spi_begin();
+      inTransaction = true;
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // Character is assumed previously filtered by write() to eliminate
-    // newlines, returns, non-printable characters, etc.  Calling drawChar()
-    // directly with 'bad' characters of font may cause mayhem!
-    if (c < (uint8_t)pgm_read_byte(&gfxFont->first)) c = pgm_read_byte(&gfxFont->first);
-    if (c > (uint8_t)pgm_read_byte(&gfxFont->last )) c = pgm_read_byte(&gfxFont->first);
-    c -= pgm_read_byte(&gfxFont->first);
-    GFXglyph *glyph  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c]);
-    uint8_t  *bitmap = (uint8_t *)pgm_read_dword(&gfxFont->bitmap);
 
-    uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
-    uint8_t  w  = pgm_read_byte(&glyph->width),
-             h  = pgm_read_byte(&glyph->height),
-             xa = pgm_read_byte(&glyph->xAdvance);
-    int8_t   xo = pgm_read_byte(&glyph->xOffset),
-             yo = pgm_read_byte(&glyph->yOffset);
-    uint8_t  xx, yy, bits, bit=0;
-    int16_t  xo16 = 0, yo16 = 0;
+      c -= pgm_read_byte(&gfxFont->first);
+      GFXglyph *glyph  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c]);
+      uint8_t  *bitmap = (uint8_t *)pgm_read_dword(&gfxFont->bitmap);
 
-    if(size > 1) {
-      xo16 = xo;
-      yo16 = yo;
-    }
+      uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
+      uint8_t  w  = pgm_read_byte(&glyph->width),
+               h  = pgm_read_byte(&glyph->height),
+               xa = pgm_read_byte(&glyph->xAdvance);
+      int8_t   xo = pgm_read_byte(&glyph->xOffset),
+               yo = pgm_read_byte(&glyph->yOffset);
+      uint8_t  xx, yy, bits, bit=0;
+      int16_t  xo16 = 0, yo16 = 0;
+  
+      if(size > 1) {
+        xo16 = xo;
+        yo16 = yo;
+      }
 
 // Here we have 3 versions of the same function just for evaluation purposes
 // Comment out the next two #defines to revert to the slower Adafruit implementation
@@ -1612,90 +1612,91 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
 //FIXED_SIZE is an option in User_Setup.h that only works with FAST_LINE enabled
 
 #ifdef FIXED_SIZE
-    x+=xo; // Save 88 bytes of FLASH
-    y+=yo;
+      x+=xo; // Save 88 bytes of FLASH
+      y+=yo;
 #endif
 
 #ifdef FAST_HLINE
 
   #ifdef FAST_SHIFT
-    uint16_t hpc = 0; // Horizontal foreground pixel count
-    for(yy=0; yy<h; yy++) {
-      for(xx=0; xx<w; xx++) {
-        if(bit == 0) {
-          bits = pgm_read_byte(&bitmap[bo++]);
-          bit  = 0x80;
-        }
-        if(bits & bit) hpc++;
-        else {
-          if (hpc) {
-#ifndef FIXED_SIZE
-            if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
-            else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
-#else
-            drawFastHLine(x+xx-hpc, y+yy, hpc, color);
-#endif
-            hpc=0;
+      uint16_t hpc = 0; // Horizontal foreground pixel count
+      for(yy=0; yy<h; yy++) {
+        for(xx=0; xx<w; xx++) {
+          if(bit == 0) {
+            bits = pgm_read_byte(&bitmap[bo++]);
+            bit  = 0x80;
           }
-        }
-        bit >>= 1;
-      }
-      // Draw pixels for this line as we are about to increment yy
-      if (hpc) {
+          if(bits & bit) hpc++;
+          else {
+           if (hpc) {
 #ifndef FIXED_SIZE
-        if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
-        else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
+              if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+              else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
 #else
-        drawFastHLine(x+xx-hpc, y+yy, hpc, color);
+              drawFastHLine(x+xx-hpc, y+yy, hpc, color);
 #endif
-        hpc=0;
+              hpc=0;
+            }
+          }
+          bit >>= 1;
+        }
+      // Draw pixels for this line as we are about to increment yy
+        if (hpc) {
+#ifndef FIXED_SIZE
+          if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+          else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
+#else
+          drawFastHLine(x+xx-hpc, y+yy, hpc, color);
+#endif
+          hpc=0;
+        }
       }
-    }
   #else
-    uint16_t hpc = 0; // Horizontal foreground pixel count
-    for(yy=0; yy<h; yy++) {
-      for(xx=0; xx<w; xx++) {
-        if(!(bit++ & 7)) {
-          bits = pgm_read_byte(&bitmap[bo++]);
-        }
-        if(bits & 0x80) hpc++;
-        else {
-          if (hpc) {
-            if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
-            else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
-            hpc=0;
+      uint16_t hpc = 0; // Horizontal foreground pixel count
+      for(yy=0; yy<h; yy++) {
+        for(xx=0; xx<w; xx++) {
+          if(!(bit++ & 7)) {
+            bits = pgm_read_byte(&bitmap[bo++]);
           }
+          if(bits & 0x80) hpc++;
+          else {
+            if (hpc) {
+              if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+              else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
+              hpc=0;
+            }
+          }
+          bits <<= 1;
         }
-        bits <<= 1;
+        // Draw pixels for this line as we are about to increment yy
+        if (hpc) {
+          if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+          else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
+          hpc=0;
+        }
       }
-      // Draw pixels for this line as we are about to increment yy
-      if (hpc) {
-        if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
-        else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
-        hpc=0;
-      }
-    }
   #endif
 
 #else
-    for(yy=0; yy<h; yy++) {
-      for(xx=0; xx<w; xx++) {
-        if(!(bit++ & 7)) {
-          bits = pgm_read_byte(&bitmap[bo++]);
-        }
-        if(bits & 0x80) {
-          if(size == 1) {
-            drawPixel(x+xo+xx, y+yo+yy, color);
-          } else {
-            fillRect(x+(xo16+xx)*size, y+(yo16+yy)*size, size, size, color);
+      for(yy=0; yy<h; yy++) {
+        for(xx=0; xx<w; xx++) {
+          if(!(bit++ & 7)) {
+            bits = pgm_read_byte(&bitmap[bo++]);
           }
+          if(bits & 0x80) {
+            if(size == 1) {
+              drawPixel(x+xo+xx, y+yo+yy, color);
+            } else {
+              fillRect(x+(xo16+xx)*size, y+(yo16+yy)*size, size, size, color);
+            }
+          }
+          bits <<= 1;
         }
-        bits <<= 1;
       }
-    }
 #endif
-    inTransaction = false;
-    spi_end();
+      inTransaction = false;
+      spi_end();
+    }
 #endif
 
 
@@ -3040,9 +3041,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
     }
     else
     {
-      if (uniCode > pgm_read_byte(&gfxFont->last)) uniCode = pgm_read_byte(&gfxFont->first);
-
-      if(uniCode >= pgm_read_byte(&gfxFont->first))
+      if((uniCode >= pgm_read_byte(&gfxFont->first)) && (uniCode <= pgm_read_byte(&gfxFont->last) ))
       {
         uint8_t   c2    = uniCode - pgm_read_byte(&gfxFont->first);
         GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
@@ -3056,7 +3055,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
 #endif
   }
 
-  if ((font>1) && (font<9) && ((uniCode < 32) || (uniCode > 122))) return 0;
+  if ((font>1) && (font<9) && ((uniCode < 32) || (uniCode > 127))) return 0;
 
   int width  = 0;
   int height = 0;
@@ -3404,18 +3403,19 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
       cheight = (glyph_ab + glyph_bb) * textsize;
       // Get the offset for the first character only to allow for negative offsets
       uint8_t   c2    = *string;
-      if (c2 < (uint8_t)pgm_read_byte(&gfxFont->first)) c2 = pgm_read_byte(&gfxFont->first);
-      if (c2 > (uint8_t)pgm_read_byte(&gfxFont->last )) c2 = pgm_read_byte(&gfxFont->first);
-      c2 -= pgm_read_byte(&gfxFont->first);
-      GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
-      xo = pgm_read_byte(&glyph->xOffset) * textsize;
-      // Adjust for negative xOffset
-      //if (xo < 0) 
-          cwidth -= xo;
-      // Add 1 pixel of padding all round
-      //cheight +=2;
-      //fillRect(poX+xo-1, poY - 1 - glyph_ab * textsize, cwidth+2, cheight, textbgcolor);
-      fillRect(poX+xo, poY - glyph_ab * textsize, cwidth, cheight, textbgcolor);
+      if((c2 >= pgm_read_byte(&gfxFont->first)) && (c2 <= pgm_read_byte(&gfxFont->last) ))
+      {
+        c2 -= pgm_read_byte(&gfxFont->first);
+        GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
+        xo = pgm_read_byte(&glyph->xOffset) * textsize;
+        // Adjust for negative xOffset
+        //if (xo < 0) 
+           cwidth -= xo;
+        // Add 1 pixel of padding all round
+        //cheight +=2;
+        //fillRect(poX+xo-1, poY - 1 - glyph_ab * textsize, cwidth+2, cheight, textbgcolor);
+        fillRect(poX+xo, poY - glyph_ab * textsize, cwidth, cheight, textbgcolor);
+      }
       padding -=100;
     }
 #endif
@@ -4587,56 +4587,54 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color
 #endif // LOAD_GLCD
 
 #ifdef LOAD_GFXFF
-
+    // Filter out bad characters not present in font
+    if ((c >= (uint8_t)pgm_read_byte(&gfxFont->first)) && (c <= (uint8_t)pgm_read_byte(&gfxFont->last )))
+    {
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // Character is assumed previously filtered by write() to eliminate
-    // newlines, returns, non-printable characters, etc.  Calling drawChar()
-    // directly with 'bad' characters of font may cause mayhem!
-    if (c < (uint8_t)pgm_read_byte(&gfxFont->first)) c = pgm_read_byte(&gfxFont->first);
-    if (c > (uint8_t)pgm_read_byte(&gfxFont->last )) c = pgm_read_byte(&gfxFont->first);
-    c -= pgm_read_byte(&gfxFont->first);
-    GFXglyph *glyph  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c]);
-    uint8_t  *bitmap = (uint8_t *)pgm_read_dword(&gfxFont->bitmap);
 
-    uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
-    uint8_t  w  = pgm_read_byte(&glyph->width),
-             h  = pgm_read_byte(&glyph->height),
-             xa = pgm_read_byte(&glyph->xAdvance);
-    int8_t   xo = pgm_read_byte(&glyph->xOffset),
-             yo = pgm_read_byte(&glyph->yOffset);
-    uint8_t  xx, yy, bits, bit=0;
-    int16_t  xo16 = 0, yo16 = 0;
+      c -= pgm_read_byte(&gfxFont->first);
+      GFXglyph *glyph  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c]);
+      uint8_t  *bitmap = (uint8_t *)pgm_read_dword(&gfxFont->bitmap);
 
-    if(size > 1) {
-      xo16 = xo;
-      yo16 = yo;
-    }
+      uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
+      uint8_t  w  = pgm_read_byte(&glyph->width),
+               h  = pgm_read_byte(&glyph->height),
+               xa = pgm_read_byte(&glyph->xAdvance);
+      int8_t   xo = pgm_read_byte(&glyph->xOffset),
+               yo = pgm_read_byte(&glyph->yOffset);
+      uint8_t  xx, yy, bits, bit=0;
+      int16_t  xo16 = 0, yo16 = 0;
 
-    uint16_t hpc = 0; // Horizontal foreground pixel count
-    for(yy=0; yy<h; yy++) {
-      for(xx=0; xx<w; xx++) {
-        if(bit == 0) {
-          bits = pgm_read_byte(&bitmap[bo++]);
-          bit  = 0x80;
-        }
-        if(bits & bit) hpc++;
-        else {
-          if (hpc) {
-            if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
-            else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
-            hpc=0;
+      if(size > 1) {
+        xo16 = xo;
+        yo16 = yo;
+      }
+
+      uint16_t hpc = 0; // Horizontal foreground pixel count
+      for(yy=0; yy<h; yy++) {
+        for(xx=0; xx<w; xx++) {
+          if(bit == 0) {
+            bits = pgm_read_byte(&bitmap[bo++]);
+            bit  = 0x80;
           }
+          if(bits & bit) hpc++;
+          else {
+            if (hpc) {
+              if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+              else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
+              hpc=0;
+            }
+          }
+          bit >>= 1;
         }
-        bit >>= 1;
-      }
-      // Draw pixels for this line as we are about to increment yy
-      if (hpc) {
-        if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
-        else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
-        hpc=0;
+        // Draw pixels for this line as we are about to increment yy
+        if (hpc) {
+          if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+          else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
+          hpc=0;
+        }
       }
     }
-
 #endif
 
 
@@ -4975,9 +4973,7 @@ int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y, int font)
     }
     else
     {
-      if (uniCode > pgm_read_byte(&gfxFont->last)) uniCode = pgm_read_byte(&gfxFont->first);
-
-      if(uniCode >= pgm_read_byte(&gfxFont->first))
+      if((uniCode >= pgm_read_byte(&gfxFont->first)) && (uniCode <= pgm_read_byte(&gfxFont->last) ))
       {
         uint8_t   c2    = uniCode - pgm_read_byte(&gfxFont->first);
         GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
@@ -4991,7 +4987,7 @@ int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y, int font)
 #endif
   }
 
-  if ((font>1) && (font<9) && ((uniCode < 32) || (uniCode > 122))) return 0;
+  if ((font>1) && (font<9) && ((uniCode < 32) || (uniCode > 127))) return 0;
 
   int width  = 0;
   int height = 0;
