@@ -4239,15 +4239,21 @@ TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
 *************************************************************************************x*/
 void TFT_eSprite::createSprite(int16_t w, int16_t h)
 {
-  if ( w < 1 || h < 1) return;
+  if ( w < 1 || h < 1 || _created) return;
 
   _iwidth    = w;
   _iheight   = h;
 
-  if(_bpp16) _img = (uint16_t*) malloc(w * h * 2);
-  else      _img8 = ( uint8_t*) malloc(w * h);
-
-  _created = true;
+  if(_bpp16)
+  {
+    _img = (uint16_t*) malloc(w * h * 2);
+    if (_img) _created = true;
+  }
+  else
+  {
+    _img8 = ( uint8_t*) malloc(w * h);
+    if (_img8) _created = true;
+  }
 }
 
 
@@ -4270,7 +4276,11 @@ void TFT_eSprite::setColorDepth(int8_t b)
   else         _bpp16 = false;
 
   // If it existed, re-create the sprite with the new colour depth
-  if (_created) createSprite(_iwidth, _iheight);
+  if (_created)
+  {
+    _created = false;
+    createSprite(_iwidth, _iheight);
+  }
 }
 
 
@@ -4281,6 +4291,7 @@ void TFT_eSprite::setColorDepth(int8_t b)
 void TFT_eSprite::deleteSprite(void)
 {
   if (!_created ) return;
+
   if (_bpp16) free(_img);
   else        free(_img8);
   _created = false;
@@ -4293,6 +4304,8 @@ void TFT_eSprite::deleteSprite(void)
 *************************************************************************************x*/
 void TFT_eSprite::pushSprite(int32_t x, int32_t y)
 {
+  if (!_created ) return;
+
   if (_bpp16) _tft->pushSprite(x, y, _iwidth, _iheight, _img );
   else        _tft->pushSprite(x, y, _iwidth, _iheight, _img8);
 }
@@ -4304,6 +4317,8 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y)
 *************************************************************************************x*/
 uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
 {
+  if (!_created ) return 0;
+
   if (_bpp16)
   {
     uint16_t color = _img[x + y * _iwidth];
@@ -4328,7 +4343,7 @@ uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
 *************************************************************************************x*/
 void  TFT_eSprite::pushRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t *data)
 {
-  if ((x > _iwidth) || (y > _iheight) || (w == 0) || (h == 0)) return;
+  if ((x > _iwidth) || (y > _iheight) || (w == 0) || (h == 0) || !_created) return;
 
   if (_bpp16)
   {
@@ -4399,6 +4414,7 @@ void TFT_eSprite::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 *************************************************************************************x*/
 void TFT_eSprite::pushColor(uint32_t color)
 {
+  if (!_created ) return;
 
   // Write the colour to RAM in set window
   if (_bpp16)
@@ -4426,6 +4442,8 @@ void TFT_eSprite::pushColor(uint32_t color)
 *************************************************************************************x*/
 void TFT_eSprite::pushColor(uint32_t color, uint16_t len)
 {
+  if (!_created ) return;
+
   uint16_t pixelColor;
   if (_bpp16)
     pixelColor = (uint16_t) (color >> 8) | (color << 8);
@@ -4442,6 +4460,8 @@ void TFT_eSprite::pushColor(uint32_t color, uint16_t len)
 *************************************************************************************x*/
 void TFT_eSprite::writeColor(uint16_t color)
 {
+  if (!_created ) return;
+
   // Write 16 bit RGB 565 encoded colour to RAM
   if (_bpp16) _img [_xptr + _yptr * _iwidth] = color;
 
@@ -4467,6 +4487,8 @@ void TFT_eSprite::writeColor(uint16_t color)
 *************************************************************************************x*/
 void TFT_eSprite::fillSprite(uint32_t color)
 {
+  if (!_created ) return;
+
   // Use memset if possible as it is super fast
   if(( (uint8_t)color == (uint8_t)(color>>8) ) && _bpp16)
                     memset(_img,  (uint8_t)color, _iwidth * _iheight * 2);
@@ -4494,6 +4516,7 @@ void TFT_eSprite::setCursor(int16_t x, int16_t y)
 // Return the size of the display
 int16_t TFT_eSprite::width(void)
 {
+  if (!_created ) return 0;
   return _iwidth;
 }
 
@@ -4504,6 +4527,7 @@ int16_t TFT_eSprite::width(void)
 *************************************************************************************x*/
 int16_t TFT_eSprite::height(void)
 {
+  if (!_created ) return 0;
   return _iheight;
 }
 
@@ -4514,6 +4538,8 @@ int16_t TFT_eSprite::height(void)
 *************************************************************************************x*/
 void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size)
 {
+  if (!_created ) return;
+
   if ((x >= _iwidth)            || // Clip right
       (y >= _iheight)           || // Clip bottom
       ((x + 6 * size - 1) < 0) || // Clip left
@@ -4655,7 +4681,7 @@ void TFT_eSprite::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 {
   // x and y are unsigned so that -ve coordinates turn into large positive ones
   // this make bounds checking a bit faster
-  if ((x >= _iwidth) || (y >= _iheight)) return;
+  if ((x >= _iwidth) || (y >= _iheight) || !_created) return;
 
   if (_bpp16)
   {
@@ -4675,6 +4701,8 @@ void TFT_eSprite::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 *************************************************************************************x*/
 void TFT_eSprite::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color)
 {
+  if (!_created ) return;
+
   boolean steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
     swap_coord(x0, y0);
@@ -4730,7 +4758,7 @@ void TFT_eSprite::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint3
 void TFT_eSprite::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 {
 
-  if ((x < 0) || (x >= _iwidth) || (y >= _iheight)) return;
+  if ((x < 0) || (x >= _iwidth) || (y >= _iheight) || !_created) return;
 
   if (y < 0) { h += y; y = 0; }
 
@@ -4758,7 +4786,7 @@ void TFT_eSprite::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 void TFT_eSprite::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 {
 
-  if ((y < 0) || (x >= _iwidth) || (y >= _iheight)) return;
+  if ((y < 0) || (x >= _iwidth) || (y >= _iheight) || !_created) return;
 
   if (x < 0) { w += x; x = 0; }
 
@@ -4785,6 +4813,8 @@ void TFT_eSprite::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 *************************************************************************************x*/
 void TFT_eSprite::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
+  if (!_created ) return;
+
   if (x < 0) { w += x; x = 0; }
 
   if ((x < 0) || (y < 0) || (x >= _iwidth) || (y >= _iheight)) return;
@@ -4822,6 +4852,8 @@ void TFT_eSprite::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t 
 *************************************************************************************x*/
 size_t TFT_eSprite::write(uint8_t utf8)
 {
+  if (!_created ) return 0;
+
   if (utf8 == '\r') return 1;
 
   uint8_t uniCode = utf8;        // Work with a copy
@@ -4948,6 +4980,7 @@ int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y)
 
 int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y, int font)
 {
+  if (!_created ) return 0;
 
   if (font==1)
   {
