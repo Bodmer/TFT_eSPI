@@ -3409,8 +3409,8 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
         GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
         xo = pgm_read_byte(&glyph->xOffset) * textsize;
         // Adjust for negative xOffset
-        //if (xo < 0) 
-           cwidth -= xo;
+        if (xo > 0) xo = 0;
+        else cwidth -= xo;
         // Add 1 pixel of padding all round
         //cheight +=2;
         //fillRect(poX+xo-1, poY - 1 - glyph_ab * textsize, cwidth+2, cheight, textbgcolor);
