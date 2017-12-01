@@ -562,13 +562,14 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   data += dx + dy * w;
 
-  // Check alignment of pointer to 32 bits
-  uint8_t offset = (uint32_t)data & 0x3;
   dw <<= 1;
-  if (offset > dw) offset = dw;
 
   while (dh--)
   {
+    // Check alignment of pointer to 32 bits
+    uint8_t offset = (uint32_t)data & 0x3;
+    if (offset > dw) offset = dw;
+
     int32_t len = dw;
     uint8_t* ptr = (uint8_t*)data;
 
