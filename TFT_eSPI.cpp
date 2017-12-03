@@ -613,7 +613,8 @@ void TFT_eSPI::pushSprite(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t
   data += dx + dy * w;
 
   int32_t xe = x + dw - 1, ye = y + dh - 1;
-  
+
+  transp = transp >> 8 | transp << 8;
   while (dh--)
   {
     int32_t len = dw;
@@ -626,7 +627,7 @@ void TFT_eSPI::pushSprite(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t
       if (transp != *ptr)
       {
         if (move) { move = false; setAddrWindow(px, y, xe, ye); }
-        SPI.write16(*ptr>>8 | *ptr <<8);
+        SPI.write16(*ptr>>8 | *ptr<<8);
       }
       else move = true;
       px++;
