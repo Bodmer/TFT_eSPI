@@ -12,7 +12,7 @@ One or more sprites can be created, a sprite can be any width and height, limite
 
 Drawing graphics into a sprite is very fast, for those familiar with the Adafruit "graphicstest" example, this whole test completes in less than 27ms in a 160x128 sprite. Examples of sprite use can be found in the "examples/Sprite" folder.
 
-Sprites can be plotted to the TFT with pne colour being specified as "transparent", see Transparent_Sprite_Demo example.
+Sprites can be plotted to the TFT with one colour being specified as "transparent", see Transparent_Sprite_Demo example.
 
 The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed.
 
