@@ -246,10 +246,14 @@
 #define TFT_MAGENTA     0xF81F      /* 255,   0, 255 */
 #define TFT_YELLOW      0xFFE0      /* 255, 255,   0 */
 #define TFT_WHITE       0xFFFF      /* 255, 255, 255 */
-#define TFT_ORANGE      0xFD20      /* 255, 165,   0 */
-#define TFT_GREENYELLOW 0xAFE5      /* 173, 255,  47 */
-#define TFT_PINK        0xF81F
+#define TFT_ORANGE      0xFDA0      /* 255, 180,   0 */
+#define TFT_GREENYELLOW 0xB7E0      /* 180, 255,   0 */
+#define TFT_PINK        0xFC9F
 
+// Next is a special 16 bit colour value that encodes to 8 bits
+// and will then decode back to the same 16 bit value.
+// Convenient for 8 bit and 16 bit transparent sprites.
+#define TFT_TRANSPARENT 0x0120
 
 // Swap any type
 template <typename T> static inline void
@@ -406,6 +410,9 @@ class TFT_eSPI : public Print {
   void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
   void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data);
   void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data);
+  void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data, uint16_t transparent);
+  void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data, uint8_t  transparent);
+ 
            // This next function has been used successfully to dump the TFT screen to a PC for documentation purposes
            // It reads a screen area and returns the RGB 8 bit colour values of each pixel
            // Set w and h to 1 to read 1 pixel's colour. The data buffer must be at least w * h * 3 bytes
@@ -590,6 +597,7 @@ class TFT_eSprite : public TFT_eSPI {
   void     pushBitmap(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
 
   void     pushSprite(int32_t x, int32_t y);
+  void     pushSprite(int32_t x, int32_t y, uint16_t transparent);
 
   int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
            drawChar(unsigned int uniCode, int x, int y);
@@ -607,11 +615,11 @@ class TFT_eSprite : public TFT_eSPI {
  
   uint16_t *_img;
   uint8_t  *_img8;
-  bool     _created;
+  bool     _created, _bpp16;
 
   int32_t  _icursor_x, _icursor_y, _xs, _ys, _xe, _ye, _xptr, _yptr;
 
-  int32_t  _iwidth, _iheight, _bpp16;
+  int32_t  _iwidth, _iheight;
 
 };
 
