@@ -592,6 +592,12 @@ class TFT_eSprite : public TFT_eSPI {
            // Read the colour of a pixel at x,y and return value in 565 format 
   uint16_t readPixel(int32_t x0, int32_t y0);
 
+           // Read a block of pixels to a data buffer, buffer is 16 bit and the array size must be at least w * h
+  void     readRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+           // Shift the sprite shift pixels to the left and fill right side with color
+  void     shiftRectLeft(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t shift, uint32_t color);
+           // Shift the sprite shift pixels to the right and fill left side with color
+  void     shiftRectRight(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t shift, uint32_t color);
            // Write a block of pixels to the sprite
   void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
   void     pushBitmap(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
