@@ -4516,6 +4516,92 @@ void  TFT_eSprite::pushRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint
   }
 }
 
+/***************************************************************************************
+** Function name:           readRect
+** Description:             reads 565 colour bitmap from a defined area into a buffer
+***************************************************************************************/
+void  TFT_eSprite::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t *data)
+{
+  if ((x > _iwidth) || (y > _iheight) || (w == 0) || (h == 0) || !_created) return;
+
+  if (_bpp16)
+  {
+    for (uint32_t yp = y; yp < y + h; yp++)
+    {
+      for (uint32_t xp = x; xp < x + w; xp++)
+      {
+		*data++ = _img[xp + yp * _iwidth];
+      }
+    }
+  }
+  else
+  {
+    for (uint32_t yp = y; yp < y + h; yp++)
+    {
+      for (uint32_t xp = x; xp < x + w; xp++)
+      {
+        uint16_t color = _img8[xp + yp * _iwidth];
+        *data++ = (uint8_t)((color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3);
+      }
+    }
+  }
+}
+
+/***************************************************************************************
+** Function name:           shiftRectLeft
+** Description:             shifts sprite left and fill right side with given color
+***************************************************************************************/
+void  TFT_eSprite::shiftRectLeft(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t shift, uint32_t color)
+{
+  if ((x > _iwidth) || (y > _iheight) || (w == 0) || (h == 0) || !_created) return;
+
+  for (uint32_t yp = y; yp < y + h; yp++)
+  {
+    for (uint32_t xp = x + shift; xp < x + w; xp++)
+    {
+      _img[xp-shift + yp * _iwidth] = _img[xp + yp * _iwidth];
+    }
+    for (uint32_t xp = x + w; xp < x + w + shift; xp++)
+    {
+      if (_bpp16)
+      {
+          _img[xp-shift + yp * _iwidth] = (uint16_t) (color >> 8) | (color << 8);
+      }
+      else
+      {
+        _img[xp-shift + yp * _iwidth] = (uint8_t)((color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3);
+      }
+    }
+  }
+}
+
+/***************************************************************************************
+** Function name:           shiftRectRight
+** Description:             shifts sprite right and fill left side with given color
+***************************************************************************************/
+void  TFT_eSprite::shiftRectRight(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t shift, uint32_t color)
+{
+  if ((x > _iwidth) || (y > _iheight) || (w == 0) || (h == 0) || !_created) return;
+
+  for (uint32_t yp = y; yp < y + h; yp++)
+  {
+    for (uint32_t xp = x + w - 1; xp != x; xp--)
+    {
+      _img[xp + yp * _iwidth] = _img[xp-shift + yp * _iwidth];
+    }
+    for (uint32_t xp = x; xp < x + shift; xp++)
+    {
+      if (_bpp16)
+      {
+          _img[xp + yp * _iwidth] = (uint16_t) (color >> 8) | (color << 8);
+      }
+      else
+      {
+        _img[xp + yp * _iwidth] = (uint8_t)((color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3);
+      }
+    }
+  }
+}
 
 /***************************************************************************************
 ** Function name:           pushBitmap (same as pushRect)
