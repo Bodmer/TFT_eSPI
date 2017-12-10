@@ -334,22 +334,20 @@ class TFT_eSPI : public Print {
 
   // These are virtual so the TFT_eSprite class can override them with sprite specific functions
   virtual void     drawPixel(uint32_t x, uint32_t y, uint32_t color),
-                   drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t font),
-                   setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
-                   pushColor(uint16_t color),
-                   pushColor(uint16_t color, uint16_t len),
+                   drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size),
                    drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
                    drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
                    drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
-                   fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
+                   fillRect(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t color);
 
   virtual int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
-                   drawChar(unsigned int uniCode, int x, int y),
-                   height(void),
-                   width(void);
+                   drawChar(unsigned int uniCode, int x, int y);
 
   // The TFT_eSprite class inherits the following functions
-  void     pushColors(uint16_t *data, uint8_t len),
+  void     setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
+           pushColor(uint16_t color),
+           pushColor(uint16_t color, uint16_t len),
+           pushColors(uint16_t *data, uint8_t len),
            pushColors(uint8_t  *data, uint32_t len),
 
            fillScreen(uint32_t color);
@@ -408,10 +406,16 @@ class TFT_eSPI : public Print {
   void     readRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
            // Write a block of pixels to the screen
   void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
-  void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data);
-  void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data);
-  void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data, uint16_t transparent);
-  void     pushSprite(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data, uint8_t  transparent);
+
+           // These are used by pushSprite and can also be used to push bitmap images to the screen
+           // "565" 16 bit and "332" 8 bit colour encodings are supported
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data);
+           // The next two support a "transparent" colour so those image areas are not rendered
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data, uint16_t transparent);
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data, uint8_t  transparent);
+           // This one has an optional flag to swap byte order in colours
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data, uint16_t transparent, bool swap = false);
  
            // This next function has been used successfully to dump the TFT screen to a PC for documentation purposes
            // It reads a screen area and returns the RGB 8 bit colour values of each pixel
@@ -441,7 +445,9 @@ class TFT_eSPI : public Print {
            drawCentreString(const String& string, int dX, int poY, int font), // Deprecated, use setTextDatum() and drawString()
            drawRightString(const String& string, int dX, int poY, int font);  // Deprecated, use setTextDatum() and drawString()
            
-  int16_t  textWidth(const char *string, int font),
+  int16_t  height(void),
+           width(void),
+           textWidth(const char *string, int font),
            textWidth(const char *string),
            textWidth(const String& string, int font),
            textWidth(const String& string),
@@ -564,10 +570,16 @@ class TFT_eSprite : public TFT_eSPI {
 
   TFT_eSprite(TFT_eSPI *tft);
 
-  void     createSprite(int16_t w, int16_t y);  // 2 bytes per pixel
+           // Create a sprite of width x height pixels, return a pointer to the RAM area
+           // Sketch can cast returned value to (uint16_t*) for 16 bit depth if needed
+           // RAM required is 1 byte per pixel for 8 bit colour depth, 2 bytes for 16 bit
+  uint8_t* createSprite(int16_t width, int16_t height);  
 
+           // Delete the sprite to free up the RAM
   void     deleteSprite(void);
 
+           // Set the colour depth to 8 or 16 bits
+           // Can be used to change depth an existing sprite, but clears it to black
   void     setColorDepth(int8_t b);
 
   void     drawPixel(uint32_t x, uint32_t y, uint32_t color);
@@ -576,35 +588,51 @@ class TFT_eSprite : public TFT_eSPI {
 
            fillSprite(uint32_t color),
 
+           // Define a window to push 16 bit colour pixels into is a raster order
+           // Colours are converted to 8 bit if depth is set to 8
            setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1),
            pushColor(uint32_t color),
            pushColor(uint32_t color, uint16_t len),
+           // Push a pixel preformatted as a 8 or 16 bit colour (avoids conversion overhead)
            writeColor(uint16_t color),
+
+           // Set the scroll zone, top left corner at x,y with defined width and height
+           // The colour (optional, black is default) is used to fill the gap after the scroll
+           setScrollRect(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t color = TFT_BLACK),
+           // Scroll the defined zone dx,dy pixels. Negative values left,up, positive right,down
+           // dy is optional (default is then no up/down scroll).
+           // The sprite coordinate frame does not move because pixels are moved
+           scroll(int16_t dx, int16_t dy = 0),
 
            drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
            drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
            drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
 
-           fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color),
+           fillRect(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t color),
 
+           // Set the sprite text cursor position for print class (does not change the TFT screen cursor)
            setCursor(int16_t x, int16_t y);
 
            // Read the colour of a pixel at x,y and return value in 565 format 
   uint16_t readPixel(int32_t x0, int32_t y0);
 
-           // Write a block of pixels to the sprite
-  void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
-  void     pushBitmap(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+           // Write an image (bitmap) to the sprite
+  void     pushImage(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+  void     pushImage(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, const uint16_t *data, bool swap = false);
 
+           // Push the sprite to the TFT screen, this fn calls pushImage() in the TFT class.
+           // Optionally a "transparent" colour can be defined, pixels of that colour will not be rendered
   void     pushSprite(int32_t x, int32_t y);
   void     pushSprite(int32_t x, int32_t y, uint16_t transparent);
 
   int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
            drawChar(unsigned int uniCode, int x, int y);
-          
-  int16_t  height(void),
-           width(void);
 
+           // Return the width and height of the sprite
+  int16_t  width(void),
+           height(void);
+
+           // Used by print class to print text to cursor position
   size_t   write(uint8_t);
 
  private:
@@ -613,13 +641,17 @@ class TFT_eSprite : public TFT_eSPI {
 
  protected:
  
-  uint16_t *_img;
-  uint8_t  *_img8;
-  bool     _created, _bpp16;
+  uint16_t *_img;  // pointer to 16 bit sprite
+  uint8_t  *_img8; // pointer to  8 bit sprite
+  bool     _created, _bpp16; // created and bits per pixel depth flags
 
-  int32_t  _icursor_x, _icursor_y, _xs, _ys, _xe, _ye, _xptr, _yptr;
+  int32_t  _icursor_x, _icursor_y;
+  int32_t  _xs, _ys, _xe, _ye, _xptr, _yptr; // for setWindow
+  int32_t  _sx, _sy; // x,y for scroll zone
+  uint32_t _sw, _sh; // w,h for scroll zone
+  uint32_t _scolor;  // gap fill colour for scroll zone
 
-  int32_t  _iwidth, _iheight;
+  int32_t  _iwidth, _iheight; // Sprite image width and height
 
 };
 

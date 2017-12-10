@@ -50,7 +50,7 @@ readcommand32	KEYWORD2
 readPixel	KEYWORD2
 readRect	KEYWORD2
 pushRect	KEYWORD2
-pushSprite  KEYWORD2
+pushImage   KEYWORD2
 readRectRGB	KEYWORD2
 getRotation	KEYWORD2
 getTextDatum	KEYWORD2
@@ -97,3 +97,5 @@ fillSprite	KEYWORD2
 setWindow	KEYWORD2
 pushBitmap	KEYWORD2
 pushSprite	KEYWORD2
+setScrollRect	KEYWORD2
+scroll	KEYWORD2
