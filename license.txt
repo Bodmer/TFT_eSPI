@@ -69,7 +69,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Due to the evolution of the TFT_eSPI library the orignal code may no longer
-be recognisable, however in ost cases the function names can be used as a
+be recognisable, however in most cases the function names can be used as a
 reference point since the aim is to retain a level of compatibility with
 the popular Adafruit_GFX graphics functions.
 
