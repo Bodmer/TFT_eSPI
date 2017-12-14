@@ -1,7 +1,7 @@
 The original starting point for this library was the Adafruit_ILI9341
 library in January 2015.
 
-The licence for those libraries is MIT.
+The licence for that libraries is MIT.
 
 The first evolution of the library that led to TFT_eSPI is recorded here:
 
