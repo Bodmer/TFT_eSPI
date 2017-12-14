@@ -1,5 +1,5 @@
 The original starting point for this library was the Adafruit_ILI9341
-library, as they were in January 2015.
+library in January 2015.
 
 The licence for those libraries is MIT.
 
