@@ -76,7 +76,7 @@ void loop()
 // Draw array "icon" of defined width and height at coordinate x,y
 // Maximum icon size is 255x255 pixels to avoid integer overflow
 
-void drawIcon(const unsigned short* icon, int16_t x, int16_t y, int8_t width, int8_t height) {
+void drawIcon(const unsigned short* icon, int16_t x, int16_t y, uint16_t width, uint16_t height) {
 
   uint16_t  pix_buffer[BUFF_SIZE];   // Pixel buffer (16 bits per pixel)
 
