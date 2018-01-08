@@ -28,7 +28,7 @@ Configuration of the library font selections, pins used to interface with the TF
 
 ## The future... ##
 
-**1. Performance improvements**
+**1. Performance improvements - done 8/1/18**
 
 I have made some changes that will be uploaded soon that improves sprite and image rendering performance by up to 3x faster on the ESP8266. These updates are currently being tested/debugged.
 
