@@ -1,10 +1,6 @@
 /***************************************************
   Arduino TFT graphics library targetted at ESP8266
-  based boards. (ESP32 support is planned!)
-
-  This library has been derived from the Adafruit_GFX
-  library and the associated driver library. See text
-  at the end of this file.
+  and ESP32 based boards.
 
   This is a standalone library that contains the
   hardware driver, the graphics funtions and the
@@ -347,8 +343,9 @@ class TFT_eSPI : public Print {
   void     setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
            pushColor(uint16_t color),
            pushColor(uint16_t color, uint16_t len),
-           pushColors(uint16_t *data, uint8_t len),
-           pushColors(uint8_t  *data, uint32_t len),
+           //pushColors(uint16_t  *data, uint8_t len),
+           //pushColors(uint8_t  *data, uint32_t len),
+           pushColors(uint16_t  *data, uint32_t len, bool swap = true), // With byte swap option
 
            fillScreen(uint32_t color);
 
@@ -407,23 +404,30 @@ class TFT_eSPI : public Print {
            // Write a block of pixels to the screen
   void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
 
-           // These are used by pushSprite and can also be used to push bitmap images to the screen
-           // "565" 16 bit and "332" 8 bit colour encodings are supported
+           // These are used to render images or sprites stored in RAM arrays
   void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data);
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data);
-           // The next two support a "transparent" colour so those image areas are not rendered
   void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data, uint16_t transparent);
+
+           // These are used to render images stored in FLASH (PROGMEM)
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data, uint16_t transparent);
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data);
+
+           // These are used by pushSprite for 8 bit colours
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data);
   void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data, uint8_t  transparent);
-           // This one has an optional flag to swap byte order in colours
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data, uint16_t transparent, bool swap = false);
- 
+
+           // Swap the byte order for pushImage() - corrects endianness
+  void     setSwapBytes(bool swap);
+  bool     getSwapBytes(void);
+
            // This next function has been used successfully to dump the TFT screen to a PC for documentation purposes
            // It reads a screen area and returns the RGB 8 bit colour values of each pixel
            // Set w and h to 1 to read 1 pixel's colour. The data buffer must be at least w * h * 3 bytes
   void     readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t *data);
 
   uint8_t  getRotation(void),
-           getTextDatum(void);
+           getTextDatum(void),
+           color332(uint16_t color565); // Convert 16 bit colour to 8 bits
 
   uint16_t fontsLoaded(void),
            color565(uint8_t r, uint8_t g, uint8_t b);
@@ -506,9 +510,9 @@ class TFT_eSPI : public Print {
            textdatum, // Text reference datum
            rotation;  // Display rotation (0-3)
 
-  boolean  textwrap; // If set, 'wrap' text at right edge of display
-
-  boolean  locked, inTransaction; // Transaction and mutex lock flags for ESP32
+  bool     textwrap;   // If set, 'wrap' text at right edge of display
+  bool     _swapBytes; // Swap the byte order for TFT pushImage()
+  bool     locked, inTransaction; // Transaction and mutex lock flags for ESP32
 
   int32_t  _lastColor;
 
@@ -580,9 +584,9 @@ class TFT_eSprite : public TFT_eSPI {
            // Delete the sprite to free up the RAM
   void     deleteSprite(void);
 
-           // Set the colour depth to 8 or 16 bits
-           // Can be used to change depth an existing sprite, but clears it to black
-  void     setColorDepth(int8_t b);
+           // Set the colour depth to 8 or 16 bits. Can be used to change depth an existing
+           // sprite, but clears it to black, returns a new pointer if sprite is re-created.
+  uint8_t* setColorDepth(int8_t b);
 
   void     drawPixel(uint32_t x, uint32_t y, uint32_t color);
 
@@ -618,9 +622,13 @@ class TFT_eSprite : public TFT_eSPI {
            // Read the colour of a pixel at x,y and return value in 565 format 
   uint16_t readPixel(int32_t x0, int32_t y0);
 
-           // Write an image (bitmap) to the sprite
-  void     pushImage(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
-  void     pushImage(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, const uint16_t *data, bool swap = false);
+           // Write an image (colour bitmap) to the sprite
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data);
+
+           // Swap the byte order for pushImage() - corrects different image endianness
+  void     setSwapBytes(bool swap);
+  bool     getSwapBytes(void);
 
            // Push the sprite to the TFT screen, this fn calls pushImage() in the TFT class.
            // Optionally a "transparent" colour can be defined, pixels of that colour will not be rendered
@@ -653,6 +661,8 @@ class TFT_eSprite : public TFT_eSPI {
   uint32_t _sw, _sh; // w,h for scroll zone
   uint32_t _scolor;  // gap fill colour for scroll zone
 
+  boolean  _iswapBytes; // Swap the byte order for Sprite pushImage()
+
   int32_t  _iwidth, _iheight; // Sprite image width and height
 
 };
@@ -660,23 +670,3 @@ class TFT_eSprite : public TFT_eSPI {
 
 
 #endif
-
-/***************************************************
-
-  ORIGINAL LIBRARY HEADER
-
-  This is our library for the Adafruit  ILI9341 Breakout and Shield
-  ----> http://www.adafruit.com/products/1651
-
-  Check out the links above for our tutorials and wiring diagrams
-  These displays use SPI to communicate, 4 or 5 pins are required to
-  interface (RST is optional)
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
-
-  Written by Limor Fried/Ladyada for Adafruit Industries.
-  MIT license, all text above must be included in any redistribution
-
-  Updated with new functions by Bodmer 14/4/15
- ****************************************************/

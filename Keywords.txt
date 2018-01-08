@@ -50,12 +50,15 @@ readcommand32	KEYWORD2
 readPixel	KEYWORD2
 readRect	KEYWORD2
 pushRect	KEYWORD2
-pushImage   KEYWORD2
+pushImage	KEYWORD2
+setSwapBytes	KEYWORD2
+getSwapBytes	KEYWORD2
 readRectRGB	KEYWORD2
 getRotation	KEYWORD2
 getTextDatum	KEYWORD2
 fontsLoaded	KEYWORD2
 color565	KEYWORD2
+color332	KEYWORD2
 drawChar	KEYWORD2
 drawNumber	KEYWORD2
 drawFloat	KEYWORD2

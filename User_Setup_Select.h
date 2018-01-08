@@ -14,8 +14,11 @@
 
 // Customised User_Setup files are stored in the "User_Setups" folder.
 
-// Only ONE line should be uncommented.  Add extra lines and files as needed.
-#ifndef USER_SETUP_LOADED
+#ifndef USER_SETUP_LOADED //  Lets PlatformIO users define user settings in
+                          //  platformio.ini, see notes in "Tools" folder.
+
+// Only ONE line below should be uncommented.  Add extra lines and files as needed.
+
 #include <User_Setup.h>           // Default setup is root library folder
 
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file configured for my ILI9341
@@ -31,7 +34,11 @@
 //#include <User_Setups/Setup11_RPi_touch_ILI9486.h>  // Setup file configured for my stock RPi TFT with touch
 
 //#include <User_Setups/SetupX_Template.h> // Setup file template for copying/editting
-#endif
+
+
+#endif // USER_SETUP_LOADED
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
