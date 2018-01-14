@@ -20,9 +20,15 @@
 
 // For ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
 #define TFT_WIDTH  128
-//#define TFT_HEIGHT 160
 #define TFT_HEIGHT 128
 
+// There are two variants of 128x128 IL9163. One has CGRAM offset due to unused 32 lines on the beginning of the memory, and one on the end
+// If You see that your screen is shifted by 32 pixel change to other setting
+#ifndef CGRAM_OFFSET
+  //#define CGRAM_OFFSET OFFSET_FROM_START
+  #define CGRAM_OFFSET OFFSET_FROM_END
+#endif
+//
 // ##################################################################################
 //
 // Section 1. Define the pins that are used to interface with the display here

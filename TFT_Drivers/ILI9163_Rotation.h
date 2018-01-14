@@ -9,36 +9,48 @@
       writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
       _width  = _width_orig;
       _height = _height_orig;
-	  #ifdef CGRAM_OFFSET
+#if CGRAM_OFFSET == OFFSET_FROM_START
+        colstart = 0;
+        rowstart = 32;
+#else
         colstart = 0;
         rowstart = 0;
-	  #endif
+#endif
       break;
     case 1:
       writedata(TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_BGR);
       _width  = _height_orig;
       _height = _width_orig;
-	  #ifdef CGRAM_OFFSET
-        colstart = 0;
-        rowstart = 0;
-	  #endif
+#if CGRAM_OFFSET == OFFSET_FROM_START
+      colstart = 32;
+      rowstart = 0;
+#else
+      colstart = 0;
+      rowstart = 0;
+#endif
       break;
     case 2:
       writedata(TFT_MAD_BGR);
       _width  = _width_orig;
       _height = _height_orig;
-	  #ifdef CGRAM_OFFSET
-        colstart = 0;
-        rowstart = 32;
-	  #endif
+#if CGRAM_OFFSET == OFFSET_FROM_START
+      colstart = 0;
+      rowstart = 0;
+#else
+      colstart = 0;
+      rowstart = 32;
+#endif
       break;
     case 3:
       writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_BGR);
       _width  = _height_orig;
       _height = _width_orig;
-	  #ifdef CGRAM_OFFSET
-        colstart = 32;
-        rowstart = 0;
-	  #endif
+#if CGRAM_OFFSET == OFFSET_FROM_START
+      colstart = 0;
+      rowstart = 0;
+#else
+      colstart = 32;
+      rowstart = 0;
+#endif
       break;
   }

@@ -7,10 +7,6 @@
   #define TFT_HEIGHT 160
 #endif
 
-#if (TFT_HEIGHT == 128) && (TFT_WIDTH == 128)
-  #define CGRAM_OFFSET
-#endif
-
 // Color definitions for backwards compatibility with old sketches
 // use colour definitions like TFT_BLACK to make sketches more portable
 #define ILI9163_BLACK       0x0000      /*   0,   0,   0 */
