@@ -7,8 +7,6 @@ setAddrWindow	KEYWORD2
 setWindow	KEYWORD2
 readAddrWindow	KEYWORD2
 pushColor	KEYWORD2
-pushColor	KEYWORD2
-pushColors	KEYWORD2
 pushColors	KEYWORD2
 fillScreen	KEYWORD2
 writeBegin	KEYWORD2
@@ -32,8 +30,8 @@ drawTriangle	KEYWORD2
 fillTriangle	KEYWORD2
 drawBitmap	KEYWORD2
 setCursor	KEYWORD2
-setCursor	KEYWORD2
-setTextColor	KEYWORD2
+getCursorX	KEYWORD2
+getCursorY	KEYWORD2
 setTextColor	KEYWORD2
 setTextSize	KEYWORD2
 setTextFont	KEYWORD2
@@ -59,7 +57,6 @@ getTextDatum	KEYWORD2
 fontsLoaded	KEYWORD2
 color565	KEYWORD2
 color332	KEYWORD2
-drawChar	KEYWORD2
 drawNumber	KEYWORD2
 drawFloat	KEYWORD2
 drawString	KEYWORD2
@@ -97,7 +94,6 @@ createSprite	KEYWORD2
 setColorDepth	KEYWORD2
 deleteSprite	KEYWORD2
 fillSprite	KEYWORD2
-setWindow	KEYWORD2
 pushBitmap	KEYWORD2
 pushSprite	KEYWORD2
 setScrollRect	KEYWORD2

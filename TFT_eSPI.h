@@ -429,6 +429,9 @@ class TFT_eSPI : public Print {
            getTextDatum(void),
            color332(uint16_t color565); // Convert 16 bit colour to 8 bits
 
+  int16_t  getCursorX(void),
+           getCursorY(void);
+
   uint16_t fontsLoaded(void),
            color565(uint8_t r, uint8_t g, uint8_t b);
         

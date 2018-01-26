@@ -1526,6 +1526,25 @@ void TFT_eSPI::setCursor(int16_t x, int16_t y, uint8_t font)
 
 
 /***************************************************************************************
+** Function name:           getCursorX
+** Description:             Get the text cursor x position
+***************************************************************************************/
+int16_t TFT_eSPI::getCursorX(void)
+{
+  return cursor_x;
+}
+
+/***************************************************************************************
+** Function name:           getCursorY
+** Description:             Get the text cursor y position
+***************************************************************************************/
+int16_t TFT_eSPI::getCursorY(void)
+{
+  return cursor_y;
+}
+
+
+/***************************************************************************************
 ** Function name:           setTextSize
 ** Description:             Set the text size multiplier
 ***************************************************************************************/
