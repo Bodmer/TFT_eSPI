@@ -516,6 +516,7 @@ class TFT_eSPI : public Print {
   bool     textwrap;   // If set, 'wrap' text at right edge of display
   bool     _swapBytes; // Swap the byte order for TFT pushImage()
   bool     locked, inTransaction; // Transaction and mutex lock flags for ESP32
+  bool     _booted;
 
   int32_t  _lastColor;
 

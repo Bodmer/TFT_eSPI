@@ -123,6 +123,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   locked = true;        // ESP32 transaction mutex lock flags
   inTransaction = false;
 
+  _booted = true;
+
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
 
@@ -169,6 +171,8 @@ void TFT_eSPI::begin(void)
 ***************************************************************************************/
 void TFT_eSPI::init(void)
 {
+  if (_booted)
+  {
 #if !defined (ESP32)
   #ifdef TFT_CS
     cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
@@ -189,7 +193,7 @@ void TFT_eSPI::init(void)
     SPI.pins(6, 7, 8, 0);
   #endif
 
-  SPI.begin(); // This will set HMISO to input
+    SPI.begin(); // This will set HMISO to input
 #else
   #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP)
     SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
@@ -199,30 +203,34 @@ void TFT_eSPI::init(void)
 
 #endif
 
-  inTransaction = false;
-  locked = true;
+    inTransaction = false;
+    locked = true;
 
   // SUPPORT_TRANSACTIONS is manadatory for ESP32 so the hal mutex is toggled
   // so the code here is for ESP8266 only
 #if !defined (SUPPORT_TRANSACTIONS) && defined (ESP8266)
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setFrequency(SPI_FREQUENCY);
+    SPI.setBitOrder(MSBFIRST);
+    SPI.setDataMode(SPI_MODE0);
+    SPI.setFrequency(SPI_FREQUENCY);
 #endif
 
   // Set to output once again in case D6 (MISO) is used for CS
 #ifdef TFT_CS
-  digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
-  pinMode(TFT_CS, OUTPUT);
+    digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
+    pinMode(TFT_CS, OUTPUT);
 #else
-  SPI.setHwCs(1); // Use hardware SS toggling
+    SPI.setHwCs(1); // Use hardware SS toggling
 #endif
 
   // Set to output once again in case D6 (MISO) is used for DC
 #ifdef TFT_DC
-  digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
-  pinMode(TFT_DC, OUTPUT);
+    digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
+    pinMode(TFT_DC, OUTPUT);
 #endif
+
+    _booted = false;
+  } // end of: if just _booted
+
 
   // Toggle RST low to reset
 #ifdef TFT_RST
@@ -234,13 +242,13 @@ void TFT_eSPI::init(void)
     digitalWrite(TFT_RST, HIGH);
     delay(150);
   }
-#endif
-
+#else
+  // Or use the software reset
   spi_begin();
   writecommand(TFT_SWRST); // Software reset
   spi_end();
-  
-  delay(5); // Wait for software reset to complete
+  delay(120); // Wait for software reset to complete
+#endif
 
   spi_begin();
   
@@ -264,6 +272,7 @@ void TFT_eSPI::init(void)
 
   spi_end();
 
+  setRotation(rotation);
 }
 
 
