@@ -3308,7 +3308,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
       cursor_y += height;
       cursor_x = 0;
     }
-    if (cursor_y >= _height) cursor_y = 0;
+    //if (cursor_y >= _height) cursor_y = 0;
     cursor_x += drawChar(uniCode, cursor_x, cursor_y, textfont);
   }
 
@@ -3338,7 +3338,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
           cursor_y += (int16_t)textsize *
                       (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
         }
-        if (cursor_y >= _height) cursor_y = 0;
+        //if (cursor_y >= _height) cursor_y = 0;
         drawChar(cursor_x, cursor_y, uniCode, textcolor, textbgcolor, textsize);
       }
       cursor_x += pgm_read_byte(&glyph->xAdvance) * (int16_t)textsize;
