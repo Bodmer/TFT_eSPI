@@ -152,6 +152,44 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 
 }
 
+/***************************************************************************************
+** Function name:           lcdReset
+** Description:             Resets the LCD but not the SPI interface
+***************************************************************************************/
+void TFT_eSPI::lcdReset(void)
+{
+   spi_begin();
+  writecommand(TFT_SWRST); // Software reset
+  spi_end();
+  
+  delay(5); // Wait for software reset to complete
+
+  spi_begin();
+  
+  // This loads the driver specific initialisation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
+#if   defined (ILI9341_DRIVER)
+    #include "TFT_Drivers/ILI9341_Init.h"
+
+#elif defined (ST7735_DRIVER)
+    #include "TFT_Drivers/ST7735_Init.h"
+
+#elif defined (ILI9163_DRIVER)
+    #include "TFT_Drivers/ILI9163_Init.h"
+
+#elif defined (S6D02A1_DRIVER)
+    #include "TFT_Drivers/S6D02A1_Init.h"
+     
+#elif defined (RPI_ILI9486_DRIVER)
+    #include "TFT_Drivers/RPI_ILI9486_Init.h"
+
+#endif
+
+  spi_end();
+  
+  // Preserves the rotation, in cases where lcdReset() is called after the LCD has been already initialised
+  setRotation(rotation);
+  
+}
 
 /***************************************************************************************
 ** Function name:           begin
@@ -236,33 +274,7 @@ void TFT_eSPI::init(void)
   }
 #endif
 
-  spi_begin();
-  writecommand(TFT_SWRST); // Software reset
-  spi_end();
-  
-  delay(5); // Wait for software reset to complete
-
-  spi_begin();
-  
-  // This loads the driver specific initialisation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
-#if   defined (ILI9341_DRIVER)
-    #include "TFT_Drivers/ILI9341_Init.h"
-
-#elif defined (ST7735_DRIVER)
-    #include "TFT_Drivers/ST7735_Init.h"
-
-#elif defined (ILI9163_DRIVER)
-    #include "TFT_Drivers/ILI9163_Init.h"
-
-#elif defined (S6D02A1_DRIVER)
-    #include "TFT_Drivers/S6D02A1_Init.h"
-     
-#elif defined (RPI_ILI9486_DRIVER)
-    #include "TFT_Drivers/RPI_ILI9486_Init.h"
-
-#endif
-
-  spi_end();
+  lcdReset();
 
 }
 

@@ -328,6 +328,8 @@ class TFT_eSPI : public Print {
 
   void     init(void), begin(void); // Same - begin included for backwards compatibility
 
+  void lcdReset(void); // Resets the display only, not the SPI interface
+
   // These are virtual so the TFT_eSprite class can override them with sprite specific functions
   virtual void     drawPixel(uint32_t x, uint32_t y, uint32_t color),
                    drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size),
