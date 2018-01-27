@@ -3306,7 +3306,7 @@ void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 ** Description:             draw a filled rectangle
 ***************************************************************************************/
 #if defined (ESP8266) && !defined (RPI_WRITE_STROBE)
-void TFT_eSPI::fillRect(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t color)
+void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
   // rudimentary clipping (drawChar w/big text requires this)
   if ((x > _width) || (y > _height) || (w < 1) || (h < 1)) return;
@@ -3325,7 +3325,7 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t c
 
 #else
 
-void TFT_eSPI::fillRect(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t color)
+void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
   // rudimentary clipping (drawChar w/big text requires this)
   if ((x > _width) || (y > _height) || (w < 1) || (h < 1)) return;
@@ -5566,7 +5566,7 @@ void TFT_eSprite::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 ** Function name:           fillRect
 ** Description:             draw a filled rectangle
 *************************************************************************************x*/
-void TFT_eSprite::fillRect(int32_t x, int32_t y, uint32_t w, uint32_t h, uint32_t color)
+void TFT_eSprite::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
   if (!_created ) return;
 
