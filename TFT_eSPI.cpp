@@ -2738,6 +2738,36 @@ void TFT_eSPI::pushColor(uint16_t color, uint16_t len)
 
 /***************************************************************************************
 ** Function name:           pushColors
+** Description:             push an aray of pixels for 16 bit raw image drawing
+***************************************************************************************/
+// Assumed that setWindow() has previously been called
+
+void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
+{
+  spi_begin();
+
+  CS_L;
+
+#if defined (RPI_WRITE_STROBE)
+  while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
+  if (len) SPI.writePattern(data, len, 1);
+#else
+  #if (SPI_FREQUENCY == 80000000)
+  while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
+  if (len) SPI.writePattern(data, len, 1);
+  #else
+  SPI.writeBytes(data, len);
+  #endif
+#endif
+
+  CS_H;
+
+  spi_end();
+}
+
+
+/***************************************************************************************
+** Function name:           pushColors
 ** Description:             push an array of pixels, for image drawing
 ***************************************************************************************/
 void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
@@ -2822,41 +2852,6 @@ else SPI.writeBytes((uint8_t*)data,len<<1);
     SPI1CMD |= SPIBUSY;
   }
 
-/* // Smaller version but slower
-  uint32_t count = 0;
-  while(len)
-  {
-    if(len>15) {count = 16; len -= 16;}
-    else {count = len; len = 0;}
-    uint32_t bits = (count*16-1); // bits left to shift - 1
-    if (swap)
-    {
-      uint16_t* ptr = (uint16_t*)color;
-      while(count--)
-      {
-        *ptr++ = (*(data) >> 8) | (uint16_t)(*(data) << 8);
-        data++;
-      }
-    }
-    else
-    {
-      memcpy(color,data,count<<1);
-      data += 16;
-    }
-    while(SPI1CMD & SPIBUSY) {}
-    SPI1U1 = (SPI1U1 & mask) | (bits << SPILMOSI) | (bits << SPILMISO);
-    SPI1W0 = color[0];
-    SPI1W1 = color[1];
-    SPI1W2 = color[2];
-    SPI1W3 = color[3];
-    SPI1W4 = color[4];
-    SPI1W5 = color[5];
-    SPI1W6 = color[6];
-    SPI1W7 = color[7];
-    SPI1CMD |= SPIBUSY;
-  }
-*/
-
   while(SPI1CMD & SPIBUSY) {}
 
 #endif
@@ -2866,157 +2861,6 @@ else SPI.writeBytes((uint8_t*)data,len<<1);
   spi_end();
 }
 
-/***************************************************************************************
-** Function name:           pushColors
-** Description:             push an aray of pixels for BMP image drawing
-***************************************************************************************/
-// Sends an array of 16-bit color values to the TFT; used
-// externally by BMP examples.  Assumes that setWindow() has
-// previously been called to define the bounds.  Max 255 pixels at
-// a time (BMP examples read in small chunks due to limited RAM).
-/*
-#define SWAP_COLOR_BYTES // We want to swap color bytes in this fn
-void TFT_eSPI::pushColors(uint16_t *data, uint8_t len)
-{
-  spi_begin();
-
-  CS_L;
-
-#if defined (ESP32)
-
-  SPI.writePixels(data,len<<1);
-
-#else
-
-	uint32_t mask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
-  SPI1U1 = (SPI1U1 & mask) | (255 << SPILMOSI) | (255 << SPILMISO);
-
-  uint32_t color[8];
-
-  while(len>15)
-  {
-
-#ifdef SWAP_COLOR_BYTES
-    uint32_t i = 0;
-    while(i<8)
-    {
-      color[i]  = (*(data) >> 8) | (uint16_t)(*(data) << 8);
-      data++;
-      color[i] |= ((*(data) >> 8) | (*(data) << 8)) << 16;
-      data++;
-      i++;
-    }
-#else
-    uint32_t i = 0;
-    while(i<8)
-    {
-      color[i]  = *data++;
-      color[i] |= (*data++) << 16;
-      i++;
-    }
-#endif
-
-    len -= 16;
-    while(SPI1CMD & SPIBUSY) {}
-    SPI1W0 = color[0];
-    SPI1W1 = color[1];
-    SPI1W2 = color[2];
-    SPI1W3 = color[3];
-    SPI1W4 = color[4];
-    SPI1W5 = color[5];
-    SPI1W6 = color[6];
-    SPI1W7 = color[7];
-    SPI1CMD |= SPIBUSY;
-  }
-  if (len) 
-  {
-    while(SPI1CMD & SPIBUSY) {}
-    SPI1U1 = (SPI1U1 & mask) | (15 << SPILMOSI) | (15 << SPILMISO);
-    while(len--)
-    {
-      uint16_t color = (*(data) >> 8) | (*(data) << 8);
-      data++;
-      while(SPI1CMD & SPIBUSY) {}
-      SPI1W0 = color;
-      SPI1CMD |= SPIBUSY;
-    }
-  }
-  while(SPI1CMD & SPIBUSY) {}
-
-#endif
-
-  CS_H;
-
-  spi_end();
-}
-*/
-
-/***************************************************************************************
-** Function name:           pushColors
-** Description:             push an array of pixels for 16 bit raw image drawing
-***************************************************************************************/
-// Assumed that setWindow() has previously been called
-// There is no control of endianness
-/*void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
-{
-  spi_begin();
-
-  CS_L;
-
-  // We cannot align to 32 bits since array may be created as 8 bit originally
-  while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
-  if (len) SPI.writePattern(data, len, 1);
-
-  CS_H;
-
-  spi_end();
-}
-*/
-
-/***************************************************************************************
-** Function name:           pushColors
-** Description:             push an aray of pixels with byte swap option
-***************************************************************************************/
-/*
-void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
-{
-  spi_begin();
-
-  CS_L;
-
-#if defined (ESP32)
-  if (swap)
-  {
-    //while (len--) SPI.write16(*(data++));
-    SPI.writePixels(data,len<<1);
-  }
-  else
-  {
-    SPI.writeBytes((uint8_t*)data,len<<1);
-  }
-#else
-  if (swap)
-  {
-    while (len>239) { pushColors(data, 240); len -= 240; data += 240; }
-    if (len) pushColors(data, len);
-  }
-  else
-  {
-    // Check alignment of 16 bit pointer to 32 bits
-    uint8_t offset = ((uint32_t)data & 0x2)>>1;
-    if (offset > len) offset = len;
-
-    // Make pointer 32 bit align using immune call then use the faster writeBytes()
-    if (offset) { SPI.writePattern((uint8_t*)data, offset<<1, 1); len -= offset; data += offset; }
-
-    if (len) SPI.writeBytes((uint8_t*)data, len<<1);
-  }
-#endif
-  CS_H;
-
-  spi_end();
-}
-*/
 
 /***************************************************************************************
 ** Function name:           drawLine
