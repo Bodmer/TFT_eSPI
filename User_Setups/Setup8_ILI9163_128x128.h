@@ -14,20 +14,23 @@
 // ##################################################################################
 
 // Only define one driver, the other ones must be commented out
-//#define ILI9341_DRIVER
-//#define ST7735_DRIVER
 #define ILI9163_DRIVER
 
 // For ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
 #define TFT_WIDTH  128
 #define TFT_HEIGHT 128
 
-// There are two variants of 128x128 IL9163. One has CGRAM offset due to unused 32 lines on the beginning of the memory, and one on the end
-// If You see that your screen is shifted by 32 pixel change to other setting
-#ifndef CGRAM_OFFSET
-  //#define CGRAM_OFFSET OFFSET_FROM_START
-  #define CGRAM_OFFSET OFFSET_FROM_END
-#endif
+// Multiple variants of CGRAM to display mapping exist. Here define offset for x and y axis for each rotation. Offsets are used in Basic_Rotation.h
+#define CGRAM_OFFSET
+#define R0_OFFSET_X 0
+#define R0_OFFSET_Y 0
+#define R1_OFFSET_X 0
+#define R1_OFFSET_Y 0
+#define R2_OFFSET_X 0
+#define R2_OFFSET_Y 32
+#define R3_OFFSET_X 32
+#define R3_OFFSET_Y 0
+
 //
 // ##################################################################################
 //

@@ -29,14 +29,38 @@
 #elif defined (ST7735_GREENTAB2)
   #define TAB_COLOUR INITR_GREENTAB2
   #define CGRAM_OFFSET
+  #define R0_OFFSET_X 2
+  #define R0_OFFSET_Y 1
+  #define R1_OFFSET_X 1
+  #define R1_OFFSET_Y 2
+  #define R2_OFFSET_X 2
+  #define R2_OFFSET_Y 1
+  #define R3_OFFSET_X 1
+  #define R3_OFFSET_Y 2
 
 #elif defined (ST7735_GREENTAB3)
   #define TAB_COLOUR INITR_GREENTAB3
   #define CGRAM_OFFSET
+  #define R0_OFFSET_X 2
+  #define R0_OFFSET_Y 3
+  #define R1_OFFSET_X 3
+  #define R1_OFFSET_Y 2
+  #define R2_OFFSET_X 2
+  #define R2_OFFSET_Y 1
+  #define R3_OFFSET_X 1
+  #define R3_OFFSET_Y 2
 
 #elif defined (ST7735_GREENTAB128)
   #define TAB_COLOUR INITR_GREENTAB128
   #define CGRAM_OFFSET
+  #define R0_OFFSET_X 0
+  #define R0_OFFSET_Y 32
+  #define R1_OFFSET_X 32
+  #define R1_OFFSET_Y 0
+  #define R2_OFFSET_X 0
+  #define R2_OFFSET_Y 0
+  #define R3_OFFSET_X 0
+  #define R3_OFFSET_Y 0
  
 #elif defined (ST7735_REDTAB)
   #define TAB_COLOUR INITR_REDTAB
@@ -46,6 +70,12 @@
 
 #else // Make sure it is not undefined
   #define TAB_COLOUR INITR_BLACKTAB
+#endif
+
+#if defined(ST7735_BLACKTAB) || defined(INITR_GREENTAB2)
+  #define TFT_COLOR_ORDER TFT_MAD_RGB
+#else
+  #define TFT_COLOR_ORDER TFT_MAD_BGR
 #endif
 
 
