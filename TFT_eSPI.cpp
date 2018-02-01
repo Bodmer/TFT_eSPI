@@ -3223,7 +3223,6 @@ uint8_t TFT_eSPI::color332(uint16_t c)
   return ((c & 0xE000)>>8) | ((c & 0x0700)>>6) | ((c & 0x0018)>>3);
 }
 
-
 /***************************************************************************************
 ** Function name:           invertDisplay
 ** Description:             invert the display colours i = 1 invert, i = 0 normal
@@ -3237,6 +3236,42 @@ void TFT_eSPI::invertDisplay(boolean i)
   spi_end();
 }
 
+/***************************************************************************************
+** Function name:           setPartialMode
+** Description:             enables/disables "partial" mode, where only part of display is active
+***************************************************************************************/
+void TFT_eSPI::setPartialMode(bool mode)
+{
+#ifdef ILI9163_DRIVER
+  spi_begin();
+  writecommand(mode ? TFT_PTLON : TFT_NORON);
+  spi_end();	
+#endif
+}
+
+/***************************************************************************************
+** Function name:           setPartialWindow
+** Description:             sets active area for partial mode. Requires partial mode to be enabled.
+**                          If endLine < startLine partial area will wrap at display edge
+***************************************************************************************/
+void TFT_eSPI::setPartialArea(int16_t startLine, int16_t endLine)
+{
+#ifdef ILI9163_DRIVER
+  if (rotation == 0 || rotation == 1)
+  {
+	  startLine = _height_orig - startLine;
+	  endLine = _height_orig - endLine;
+  }
+  
+  spi_begin();
+  writecommand(TFT_PTLAR);
+  CS_L;
+  SPI.transfer16(startLine);
+  SPI.transfer16(endLine);
+  CS_H;
+  spi_end();
+#endif
+}
 
 /***************************************************************************************
 ** Function name:           write
