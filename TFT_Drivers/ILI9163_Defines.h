@@ -66,3 +66,6 @@
 #define TFT_PTLAR  0x30 //partial area
 #define TFT_IDMOFF 0x38 //idle mode off
 #define TFT_IDMON  0x39 //idle mode on
+
+#define TFT_PWCTR1 0xC0
+#define TFT_PWCTR2 0xC1
