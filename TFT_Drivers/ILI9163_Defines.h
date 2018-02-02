@@ -61,6 +61,8 @@
 #define TFT_INVOFF  0x20
 #define TFT_INVON   0x21
 
-#define TFT_NORON 0x13 //normal mode
-#define TFT_PTLON 0x12 //partial mode
-#define TFT_PTLAR 0x30 //partial area
+#define TFT_NORON  0x13 //normal mode
+#define TFT_PTLON  0x12 //partial mode
+#define TFT_PTLAR  0x30 //partial area
+#define TFT_IDMOFF 0x38 //idle mode off
+#define TFT_IDMON  0x39 //idle mode on

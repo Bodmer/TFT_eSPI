@@ -3274,6 +3274,20 @@ void TFT_eSPI::setPartialArea(int16_t startLine, int16_t endLine)
 }
 
 /***************************************************************************************
+** Function name:           setIdleMode
+** Description:             enables/disables "idle" mode, where color expression is reduced to 8 colors
+**                          can be used with partial mode, further reducing power consumption
+***************************************************************************************/
+void TFT_eSPI::setIdleMode(bool mode)
+{
+#ifdef ILI9163_DRIVER
+  spi_begin();
+  writecommand(mode ? TFT_IDMON : TFT_IDMOFF);
+  spi_end();	
+#endif
+}
+
+/***************************************************************************************
 ** Function name:           write
 ** Description:             draw characters piped through serial stream
 ***************************************************************************************/
