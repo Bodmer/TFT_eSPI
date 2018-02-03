@@ -32,6 +32,7 @@
 //#include <User_Setups/Setup9_ST7735_Overlap.h>   // Setup file configured for my ST7735
 //#include <User_Setups/Setup10_RPi_touch_ILI9486.h>  // Setup file configured for my stock RPi TFT with touch
 //#include <User_Setups/Setup11_RPi_touch_ILI9486.h>  // Setup file configured for my stock RPi TFT with touch
+//#include <User_Setups/M5Stack_Setup.h>  // Setup file configured for M5Stack
 
 //#include <User_Setups/SetupX_Template.h> // Setup file template for copying/editting
 
@@ -51,6 +52,8 @@
 // Load the right driver definition - do not tinker here !
 #if   defined (ILI9341_DRIVER)
      #include <TFT_Drivers/ILI9341_Defines.h>
+#elif   defined (M5STACK_DRIVER)
+     #include <TFT_Drivers/M5Stack_Defines.h>
 #elif defined (ST7735_DRIVER)
      #include <TFT_Drivers/ST7735_Defines.h>
 #elif defined (ILI9163_DRIVER)
