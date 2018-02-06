@@ -1,7 +1,7 @@
 {
   "name": "TFT_eSPI",
-  "version": "0.18.13",
-  "keywords": "TFT, ESP8266, NodeMCU, ESP32, ILI9341, ST7735, ILI9163, S6D02A1, ILI9486",
+  "version": "0.18.14",
+  "keywords": "tft, display, ESP8266, NodeMCU, ESP32, ILI9341, ST7735, ILI9163, S6D02A1, ILI9486",
   "description": "A TFT SPI graphics library for ESP8266",
   "repository":
   {
