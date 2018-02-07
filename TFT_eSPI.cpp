@@ -105,6 +105,11 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   }
 #endif
 
+#ifdef TFT_LED
+    digitalWrite(TFT_LED, HIGH); 
+    pinMode(TFT_LED, OUTPUT);
+#endif
+
   _width_orig  = _width  = w; // Set by specific xxxxx_Defines.h file or by users sketch
   _height_orig = _height = h; // Set by specific xxxxx_Defines.h file or by users sketch
   rotation  = 0;
@@ -256,6 +261,9 @@ void TFT_eSPI::init(void)
 #if   defined (ILI9341_DRIVER)
     #include "TFT_Drivers/ILI9341_Init.h"
 
+#elif   defined (M5STACK_DRIVER)
+    #include "TFT_Drivers/M5Stack_Init.h"
+
 #elif defined (ST7735_DRIVER)
     #include "TFT_Drivers/ST7735_Init.h"
 
@@ -288,6 +296,9 @@ void TFT_eSPI::setRotation(uint8_t m)
     // This loads the driver specific rotation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
 #if   defined (ILI9341_DRIVER)
     #include "TFT_Drivers/ILI9341_Rotation.h"
+
+#elif   defined (M5STACK_DRIVER)
+    #include "TFT_Drivers/M5Stack_Rotation.h"
 
 #elif defined (ST7735_DRIVER)
     #include "TFT_Drivers/ST7735_Rotation.h"
