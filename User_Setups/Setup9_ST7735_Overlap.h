@@ -53,11 +53,11 @@
 // Display LED       to NodeMCU pin VIN (or 5V, see below)
 // Display SCK       to NodeMCU pin CLK
 // Display SDI/MOSI  to NodeMCU pin SD1
-// Display DC (or AO)to NodeMCU pin D5
-// Display RESET     to NodeMCU pin D4 (or RST, see below)
-// Display CS        to NodeMCU pin D3
+// Display DC (or AO)to NodeMCU pin D5 / GPIO 14
+// Display RESET     to NodeMCU pin D4 / GPIO 2 (or RST, see below)
+// Display CS        to NodeMCU pin D3 / GPIO 0
 // Display GND       to NodeMCU pin GND (0V)
-// Display VCC       to NodeMCU 5V or 3.3V
+// Display VCC       to NodeMCU 5V (Vin) or 3.3V
 //
 // The TFT RESET pin can be connected to the NodeMCU RST pin or 3.3V to free up a control pin
 //
@@ -72,10 +72,11 @@
 // ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR SETUP ######
 
 // ModeMCU
-// Do not define TFT_CS in overlap mode, TFT chip select must connect to pin D3
-#define TFT_CS   PIN_D3
-#define TFT_DC   PIN_D5  // Data Command control pin
-#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
+#define TFT_SPI_OVERLAP
+// TFT_CS (chip select) must connect to pin D3 in overlap mode.
+#define TFT_CS   PIN_D3  // GPIO 0
+#define TFT_DC   PIN_D5  // GPIO 14 Data Command control pin
+#define TFT_RST  PIN_D4  // GPIO 2 Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
 // ESP32 Dev board
@@ -160,4 +161,3 @@
 //     TFT MISO to GPIO7/SDD0 (pin SD0 on a NodeMCU) -  does not need to be connected
 //     TFT SCK  to GPIO6/SDCLK (pin CLK on a NodeMCU)
 
-#define TFT_SPI_OVERLAP
