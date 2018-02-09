@@ -44,7 +44,7 @@
   // These next rotations are for bottom up BMP drawing
     case 4:
 #ifdef M5STACK
-      writedata(TFT_MAD_MV | TFT_MAD_MX | TFT_MAD_BGR);
+      writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
 #else
       writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
 #endif
@@ -53,7 +53,7 @@
       break;
     case 5:
 #ifdef M5STACK
-      writedata(TFT_MAD_MV | TFT_MAD_BGR);
+      writedata(TFT_MAD_MY | TFT_MAD_BGR);
 #else
       writedata(TFT_MAD_MV | TFT_MAD_MX | TFT_MAD_BGR);
 #endif
@@ -62,7 +62,7 @@
       break;
     case 6:
 #ifdef M5STACK
-      writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
+      writedata(TFT_MAD_MV | TFT_MAD_BGR);
 #else
       writedata(TFT_MAD_BGR);
 #endif
@@ -71,7 +71,7 @@
       break;
     case 7:
 #ifdef M5STACK
-      writedata(TFT_MAD_MY | TFT_MAD_BGR);
+      writedata(TFT_MAD_MX | TFT_MAD_BGR);
 #else
       writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
 #endif
