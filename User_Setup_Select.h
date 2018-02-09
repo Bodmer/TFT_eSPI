@@ -1,7 +1,7 @@
 // This header file contains a list of user setup files and defines which one the
-// compliler uses when the IDE performs a Verify/Compile or Upload.
+// compiler uses when the IDE performs a Verify/Compile or Upload.
 //
-// Users can create configurations for different Espressiff boards and TFT displays.
+// Users can create configurations for different Espressif boards and TFT displays.
 // This makes selecting between hardware setups easy by "uncommenting" one line.
 
 // The advantage of this hardware configuration method is that the examples provided
