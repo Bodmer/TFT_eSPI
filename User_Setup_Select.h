@@ -33,6 +33,7 @@
 //#include <User_Setups/Setup10_RPi_touch_ILI9486.h>  // Setup file configured for my stock RPi TFT with touch
 //#include <User_Setups/Setup11_RPi_touch_ILI9486.h>  // Setup file configured for my stock RPi TFT with touch
 //#include <User_Setups/Setup12_M5Stack.h>           // Setup file for the ESP32 based M5Stack
+//#include <User_Setups/Setup13_ILI9341_Overlap.h>  // Setup file configured for my ILI9341
 
 //#include <User_Setups/SetupX_Template.h> // Setup file template for copying/editting
 
