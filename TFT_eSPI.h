@@ -102,7 +102,7 @@
     //#define CS_L digitalWrite(TFT_CS, HIGH); GPIO.out_w1tc = (1 << TFT_CS)//digitalWrite(TFT_CS, LOW)
     //#define CS_H digitalWrite(TFT_CS, LOW); GPIO.out_w1ts = (1 << TFT_CS)//digitalWrite(TFT_CS, HIGH)
     #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
-    #define CS_H GPIO.out_w1ts = (1 << TFT_CS)
+    #define CS_H GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1ts = (1 << TFT_CS)
   #else
     #define CS_L GPOC=cspinmask
     #define CS_H GPOS=cspinmask

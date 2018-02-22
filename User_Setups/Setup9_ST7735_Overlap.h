@@ -95,6 +95,10 @@
 
 // ######  FOR ESP8266 OVERLAP MODE EDIT THE PIN NUMBERS IN THE FOLLOWING LINES  ######
 
+// Overlap mode shares the ESP8266 FLASH SPI bus with the TFT so has a performance impact
+// but saves pins for other functions.
+// Use NodeMCU SD0=MISO, SD1=MOSI, CLK=SCLK to connect to TFT in overlap mode
+
 // In ESP8266 overlap mode the TFT chip select MUST connect to pin D3
 #define TFT_CS   PIN_D3
 #define TFT_DC   PIN_D5  // Data Command control pin
