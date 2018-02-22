@@ -1,9 +1,9 @@
 /***************************************************
-  Arduino TFT graphics library targetted at ESP8266
+  Arduino TFT graphics library targeted at ESP8266
   and ESP32 based boards.
 
   This is a standalone library that contains the
-  hardware driver, the graphics funtions and the
+  hardware driver, the graphics functions and the
   proportional fonts.
 
   The larger fonts are Run Length Encoded to reduce their
@@ -19,7 +19,7 @@
 
 #include <SPI.h>
 
-  // SUPPORT_TRANSACTIONS is manadatory for ESP32 so the hal mutex is toggled
+  // SUPPORT_TRANSACTIONS is mandatory for ESP32 so the hal mutex is toggled
 #if defined (ESP32) && !defined (SUPPORT_TRANSACTIONS)
   #define SUPPORT_TRANSACTIONS
 #endif
@@ -206,7 +206,7 @@ void TFT_eSPI::init(void)
     inTransaction = false;
     locked = true;
 
-  // SUPPORT_TRANSACTIONS is manadatory for ESP32 so the hal mutex is toggled
+  // SUPPORT_TRANSACTIONS is mandatory for ESP32 so the hal mutex is toggled
   // so the code here is for ESP8266 only
 #if !defined (SUPPORT_TRANSACTIONS) && defined (ESP8266)
     SPI.setBitOrder(MSBFIRST);
@@ -2876,7 +2876,7 @@ else SPI.writeBytes((uint8_t*)data,len<<1);
 ** Description:             draw a line between 2 arbitrary points
 ***************************************************************************************/
 // Bresenham's algorithm - thx wikipedia - speed enhanced by Bodmer to use
-// an eficient FastH/V Line draw routine for line segments of 2 pixels or more
+// an efficient FastH/V Line draw routine for line segments of 2 pixels or more
 
 #if defined (RPI_ILI9486_DRIVER) || defined (ESP32) || defined (RPI_WRITE_STROBE)
 
