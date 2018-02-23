@@ -16,4 +16,3 @@ raphics.
 Note: This version of the library might not be fully compatible with the
 original.
 
-Add smooth font...
