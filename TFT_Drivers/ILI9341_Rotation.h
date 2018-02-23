@@ -11,8 +11,8 @@
 #else
       writedata(TFT_MAD_MX | TFT_MAD_BGR);
 #endif
-      _width  = _width_orig;
-      _height = _height_orig;
+      _width  = _init_width;
+      _height = _init_height;
       break;
     case 1:
 #ifdef M5STACK
@@ -20,8 +20,8 @@
 #else
       writedata(TFT_MAD_MV | TFT_MAD_BGR);
 #endif
-      _width  = _height_orig;
-      _height = _width_orig;
+      _width  = _init_height;
+      _height = _init_width;
       break;
     case 2:
 #ifdef M5STACK
@@ -29,8 +29,8 @@
 #else
       writedata(TFT_MAD_MY | TFT_MAD_BGR);
 #endif
-      _width  = _width_orig;
-      _height = _height_orig;
+      _width  = _init_width;
+      _height = _init_height;
       break;
     case 3:
 #ifdef M5STACK
@@ -38,8 +38,8 @@
 #else
       writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
 #endif
-      _width  = _height_orig;
-      _height = _width_orig;
+      _width  = _init_height;
+      _height = _init_width;
       break;
   // These next rotations are for bottom up BMP drawing
     case 4:
@@ -48,8 +48,8 @@
 #else
       writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
 #endif
-      _width  = _width_orig;
-      _height = _height_orig;
+      _width  = _init_width;
+      _height = _init_height;
       break;
     case 5:
 #ifdef M5STACK
@@ -57,8 +57,8 @@
 #else
       writedata(TFT_MAD_MV | TFT_MAD_MX | TFT_MAD_BGR);
 #endif
-      _width  = _height_orig;
-      _height = _width_orig;
+      _width  = _init_height;
+      _height = _init_width;
       break;
     case 6:
 #ifdef M5STACK
@@ -66,8 +66,8 @@
 #else
       writedata(TFT_MAD_BGR);
 #endif
-      _width  = _width_orig;
-      _height = _height_orig;
+      _width  = _init_width;
+      _height = _init_height;
       break;
     case 7:
 #ifdef M5STACK
@@ -75,8 +75,8 @@
 #else
       writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
 #endif
-      _width  = _height_orig;
-      _height = _width_orig;
+      _width  = _init_height;
+      _height = _init_width;
       break;
 
   }

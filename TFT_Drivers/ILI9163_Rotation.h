@@ -7,8 +7,8 @@
   switch (rotation) {
     case 0:
       writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
-      _width  = _width_orig;
-      _height = _height_orig;
+      _width  = _init_width;
+      _height = _init_height;
 	  #ifdef CGRAM_OFFSET
         colstart = 0;
         rowstart = 0;
@@ -16,8 +16,8 @@
       break;
     case 1:
       writedata(TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_BGR);
-      _width  = _height_orig;
-      _height = _width_orig;
+      _width  = _init_height;
+      _height = _init_width;
 	  #ifdef CGRAM_OFFSET
         colstart = 0;
         rowstart = 0;
@@ -25,8 +25,8 @@
       break;
     case 2:
       writedata(TFT_MAD_BGR);
-      _width  = _width_orig;
-      _height = _height_orig;
+      _width  = _init_width;
+      _height = _init_height;
 	  #ifdef CGRAM_OFFSET
         colstart = 0;
         rowstart = 32;
@@ -34,8 +34,8 @@
       break;
     case 3:
       writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_BGR);
-      _width  = _height_orig;
-      _height = _width_orig;
+      _width  = _init_height;
+      _height = _init_width;
 	  #ifdef CGRAM_OFFSET
         colstart = 32;
         rowstart = 0;
