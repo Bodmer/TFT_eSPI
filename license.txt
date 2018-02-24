@@ -91,6 +91,9 @@ the ESP32. In 2017 new Touch Screen functions were added and a new Sprite
 class called TFT_eSprite to permit "flicker free" screen updates of complex
 graphics.
 
+In 2018 anti-aliased fonts were added along with a Processing font conversion
+sketch.
+
 Many of the example sketches are original work, that contain code created
 for my own projects. For all the original code the FreeBSD licence applies
 and is compatible with the GNU GPL.

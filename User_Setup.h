@@ -88,7 +88,7 @@
 #define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
-#define TOUCH_CS PIN_D2     // Chip select pin (T_CS) of touch screen
+//#define TOUCH_CS PIN_D2     // Chip select pin (T_CS) of touch screen
 
 //#define TFT_WR PIN_D2       // Write strobe for modified Raspberry Pi TFT only
 
@@ -196,8 +196,8 @@
 // #define SPI_FREQUENCY   5000000
 // #define SPI_FREQUENCY  10000000
 // #define SPI_FREQUENCY  20000000
-//#define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
- #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
+#define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
+// #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000
 
 // The XPT2046 requires a lower SPI clock rate of 2.5MHz so we define that here:
@@ -214,4 +214,4 @@
 // Transactions are automatically enabled by the library for an ESP32 (to use HAL mutex)
 // so changing it here has no effect
 
- #define SUPPORT_TRANSACTIONS
+//#define SUPPORT_TRANSACTIONS

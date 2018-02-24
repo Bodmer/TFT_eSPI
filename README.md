@@ -1,6 +1,6 @@
 # TFT_eSPI
 
->>> This branch includes new antialiased font capability, this is a work-in-progress <<<
+Update 24th February 2018: Added new smooth (antialiased) fonts. See Smooth Font examples and Tools folder for the font generator.
 
 An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with a driver for ILI9341, ILI9163, ST7735 and S6D02A1 based TFT displays that support SPI.
 
