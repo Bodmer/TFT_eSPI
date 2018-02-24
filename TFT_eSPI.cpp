@@ -4306,12 +4306,6 @@ void spiWriteBlock(uint16_t color, uint32_t repeat)
 }
 #endif
 
-
-////////////////////////////////////////////////////////////////////////////////////////
-#ifdef TOUCH_CS
-  #include "Extensions/Touch.cpp"
-#endif
-
 #include "Extensions/Button.cpp"
 
 #include "Extensions/Sprite.cpp"
