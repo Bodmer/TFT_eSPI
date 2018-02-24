@@ -4377,7 +4377,7 @@ void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t 
 
     for(uint8_t j= 0; j<8; j++){
       // Use a lower detect threshold as corners tend to be less sensitive
-      while(!validTouch(&x_tmp, &y_tmp, Z_THRESHOLD/2)) delay(10);
+      while(!validTouch(&x_tmp, &y_tmp, Z_THRESHOLD/4));
       values[i*2  ] += x_tmp;
       values[i*2+1] += y_tmp;
       }
@@ -4389,14 +4389,14 @@ void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t 
 
   // check orientation
   // from case 0 to case 1, the y value changed. 
-  // If the meassured delta of the touch x axis is bigger than the delta of the y axis, the touch and TFT axes are switched.
+  // If the measured delta of the touch x axis is bigger than the delta of the y axis, the touch and TFT axes are switched.
   touchCalibration_rotate = false;
   if(abs(values[0]-values[2]) > abs(values[1]-values[3])){
     touchCalibration_rotate = true;
-    touchCalibration_x1 = (values[0] + values[4])/2; // calc min x
-    touchCalibration_x0 = (values[2] + values[6])/2; // calc max x
-    touchCalibration_y1 = (values[1] + values[3])/2; // calc min y
-    touchCalibration_y0 = (values[5] + values[7])/2; // calc max y
+    touchCalibration_x0 = (values[0] + values[4])/2; // calc min x
+    touchCalibration_x1 = (values[2] + values[6])/2; // calc max x
+    touchCalibration_y0 = (values[1] + values[3])/2; // calc min y
+    touchCalibration_y1 = (values[5] + values[7])/2; // calc max y
   } else {
     touchCalibration_x0 = (values[0] + values[2])/2; // calc min x
     touchCalibration_x1 = (values[4] + values[6])/2; // calc max x
