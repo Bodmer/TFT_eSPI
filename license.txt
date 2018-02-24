@@ -28,7 +28,7 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvStartvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 Selected functions from the Adafruit_GFX library (as it was in 2015) have
 been imported into the TFT_eSPI.cpp file and modified to improve
-perfromance, add features and make them compatible with the ESP8266 and
+performance, add features and make them compatible with the ESP8266 and
 ESP32.
 
 The fonts from the Adafruit_GFX and Button functions were added later.
@@ -68,7 +68,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Due to the evolution of the TFT_eSPI library the orignal code may no longer
+Due to the evolution of the TFT_eSPI library the original code may no longer
 be recognisable, however in most cases the function names can be used as a
 reference point since the aim is to retain a level of compatibility with
 the popular Adafruit_GFX graphics functions.

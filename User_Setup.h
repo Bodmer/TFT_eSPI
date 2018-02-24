@@ -88,7 +88,7 @@
 #define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
-//#define TOUCH_CS PIN_D1     // Chip select pin (T_CS) of touch screen
+#define TOUCH_CS PIN_D2     // Chip select pin (T_CS) of touch screen
 
 //#define TFT_WR PIN_D2       // Write strobe for modified Raspberry Pi TFT only
 
@@ -164,9 +164,13 @@
 #define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
 #define LOAD_FONT4  // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
 #define LOAD_FONT6  // Font 6. Large 48 pixel font, needs ~2666 bytes in FLASH, only characters 1234567890:-.apm
-#define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:.
+#define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:-.
 #define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
 #define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
+
+// Comment out the #define below to stop the SPIFFS filing system and smooth font code being loaded
+// this will save ~20kbytes of FLASH
+#define SMOOTH_FONT
 
 // ##################################################################################
 //
@@ -192,8 +196,8 @@
 // #define SPI_FREQUENCY   5000000
 // #define SPI_FREQUENCY  10000000
 // #define SPI_FREQUENCY  20000000
-#define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
-// #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
+//#define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
+ #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000
 
 // The XPT2046 requires a lower SPI clock rate of 2.5MHz so we define that here:
@@ -210,4 +214,4 @@
 // Transactions are automatically enabled by the library for an ESP32 (to use HAL mutex)
 // so changing it here has no effect
 
-// #define SUPPORT_TRANSACTIONS
+ #define SUPPORT_TRANSACTIONS

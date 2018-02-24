@@ -56,7 +56,8 @@ getRotation	KEYWORD2
 getTextDatum	KEYWORD2
 fontsLoaded	KEYWORD2
 color565	KEYWORD2
-color332	KEYWORD2
+color16to8	KEYWORD2
+color8to16	KEYWORD2
 drawNumber	KEYWORD2
 drawFloat	KEYWORD2
 drawString	KEYWORD2
@@ -98,3 +99,8 @@ pushBitmap	KEYWORD2
 pushSprite	KEYWORD2
 setScrollRect	KEYWORD2
 scroll	KEYWORD2
+
+alphaBlend	KEYWORD2
+showFont	KEYWORD2
+loadFont	KEYWORD2
+unloadFont	KEYWORD2
