@@ -53,7 +53,7 @@ Here is another screenshot, showing the anti-aliased Hiragana character Unicode 
 
 Currently these are generated from a sketch, but when I have the Alpha blending sorted for colour backgrounds the plan is to build the rendering code into the TFT_eSPI library.  Watch this space " " for updates!
 
-**3. Add support 4 8 bit "UNO" style TFTs with ESP32 - done 10/3/18** 
+**3. Add support for 8 bit "UNO" style TFTs with ESP32 - done 10/3/18** 
 
 The ESP32 board I have been using for testing has the following pinout:
 
@@ -64,7 +64,9 @@ UNO style boards with a Wemos R32(ESP32) label are also available at low cost wi
 Unfortunately the typical UNO/mcufriend TFT display board maps LCD_RD, LCD_CS and LCD_RST signals to the ESP32 pins 35, 34 and 36 which are input only.  To solve this I linked in the 3 spare pins IO15, IO33 and IO32 by adding wires to the bottom of the board as follows:
 
 IO15 wired to IO35
+
 IO33 wired to IO34
+
 IO32 wired to IO36
 
 ![Example](https://i.imgur.com/pUZn6lF.jpg)
