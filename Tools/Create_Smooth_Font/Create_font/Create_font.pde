@@ -1,3 +1,5 @@
+// This is a Processing sketch, see https://processing.org/ to download the IDE
+
 // Select the character range in the user configure section starting at line 100
 
 /*
@@ -107,7 +109,7 @@ String fontType = ".ttf";            //SPIFFS does not accept underscore in file
 //String fontType = ".otf";
 
 // Use font number instead of name, -1 means use name above, or a value >=0 means use system font number from list.
-int fontNumber = -1; // << Use [Number] in brackets from the fonts listed in console window
+int fontNumber = 22; // << Use [Number] in brackets from the fonts listed in console window
 
 // Define the font size in points for the created font file
 int  fontSize = 28;
@@ -310,7 +312,7 @@ static final int[] specificUnicodes = {
   //*/
 
   // More characters, change next line to //* to use
-  /*
+  //*
     0x0102, 0x0103, 0x0104, 0x0105, 0x0106, 0x0107, 0x010C, 0x010D,
     0x010E, 0x010F, 0x0110, 0x0111, 0x0118, 0x0119, 0x011A, 0x011B,
  
@@ -413,8 +415,12 @@ void setup() {
     charset[index] = Character.toChars(specificUnicodes[i])[0];
     index++;
   }
+  
+  // Make font smooth
+  boolean smooth = true;
+
   // Create the font in memory
-  myFont = createFont(fontName+fontType, 32, true, charset);
+  myFont = createFont(fontName+fontType, displayFontSize, smooth, charset);
 
   // Print a few characters to the sketch window
   fill(0, 0, 0);
@@ -455,9 +461,9 @@ void setup() {
   // creating font
   PFont    font;
 
-  font = createFont(fontName+fontType, fontSize, true, charset);
+  font = createFont(fontName+fontType, fontSize, smooth, charset);
 
-    println("Created font " + fontName + ".vlw");
+    println("Created font " + fontName + str(fontSize) + ".vlw");
 
   // creating file
   try {

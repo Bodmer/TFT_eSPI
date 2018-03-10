@@ -338,6 +338,8 @@ uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc)
   uint16_t b = (((fgB * alpha) + (bgB * (255 - alpha))) >> 9);
 
   // Combine RGB565 colours into 16 bits
+  //return ((r&0x18) << 11) | ((g&0x30) << 5) | ((b&0x18) << 0); // 2 bit greyscale
+  //return ((r&0x1E) << 11) | ((g&0x3C) << 5) | ((b&0x1E) << 0); // 4 bit greyscale
   return (r << 11) | (g << 5) | (b << 0);
 }
 
@@ -419,7 +421,10 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     uint8_t pbuffer[gWidth[gNum]];
 
     uint16_t xs = 0;
-    uint16_t dl = 0;
+    uint32_t dl = 0;
+
+    int16_t cy = cursor_y + gFont.maxAscent - gdY[gNum];
+    int16_t cx = cursor_x + gdX[gNum];
 
     for (int y = 0; y < gHeight[gNum]; y++)
     {
@@ -431,23 +436,26 @@ void TFT_eSPI::drawGlyph(uint16_t code)
         {
           if (pixel != 0xFF)
           {
-            if (dl) { drawFastHLine( xs, y + cursor_y + gFont.maxAscent - gdY[gNum], dl, fg); dl = 0; }
-            drawPixel(x + cursor_x + gdX[gNum], y + cursor_y + gFont.maxAscent - gdY[gNum], alphaBlend(pixel, fg, bg));
+            if (dl) {
+              if (dl==1) drawPixel(xs, y + cy, fg);
+              else drawFastHLine( xs, y + cy, dl, fg);
+              dl = 0;
+            }
+            drawPixel(x + cx, y + cy, alphaBlend(pixel, fg, bg));
           }
           else
           {
-            if (dl==0) xs = x + cursor_x + gdX[gNum];
+            if (dl==0) xs = x + cx;
             dl++;
           }
         }
         else
         {
-          if (dl) { drawFastHLine( xs, y + cursor_y + gFont.maxAscent - gdY[gNum], dl, fg); dl = 0; }
+          if (dl) { drawFastHLine( xs, y + cy, dl, fg); dl = 0; }
         }
       }
-      if (dl) { drawFastHLine( xs, y + cursor_y + gFont.maxAscent - gdY[gNum], dl, fg); dl = 0; }
+      if (dl) { drawFastHLine( xs, y + cy, dl, fg); dl = 0; }
     }
-
 
     cursor_x += gxAdvance[gNum];
   }

@@ -65,6 +65,12 @@
   #ifndef LOAD_RLE
     #define LOAD_RLE
   #endif
+#elif defined LOAD_FONT8N
+  #define LOAD_FONT8
+  #include <Fonts/Font72x53rle.h>
+  #ifndef LOAD_RLE
+    #define LOAD_RLE
+  #endif
 #endif
 
 #include <Arduino.h>
@@ -89,10 +95,13 @@
   #define DC_C digitalWrite(TFT_DC, LOW)
   #define DC_D digitalWrite(TFT_DC, HIGH)
 #elif defined (ESP32)
-  //#define DC_C digitalWrite(TFT_DC, HIGH); GPIO.out_w1tc = (1 << TFT_DC)//digitalWrite(TFT_DC, LOW)
-  //#define DC_D digitalWrite(TFT_DC, LOW); GPIO.out_w1ts = (1 << TFT_DC)//digitalWrite(TFT_DC, HIGH)
-  #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
-  #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
+  #if defined (ESP32_PARALLEL)
+    #define DC_C GPIO.out_w1tc = (1 << TFT_DC) // Too fast for ST7735
+    #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
+  #else
+    #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
+    #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
+  #endif
 #else
   #define DC_C GPOC=dcpinmask
   #define DC_D GPOS=dcpinmask
@@ -110,10 +119,13 @@
     #define CS_L digitalWrite(TFT_CS, LOW)
     #define CS_H digitalWrite(TFT_CS, HIGH)
   #elif defined (ESP32)
-    //#define CS_L digitalWrite(TFT_CS, HIGH); GPIO.out_w1tc = (1 << TFT_CS)//digitalWrite(TFT_CS, LOW)
-    //#define CS_H digitalWrite(TFT_CS, LOW); GPIO.out_w1ts = (1 << TFT_CS)//digitalWrite(TFT_CS, HIGH)
-    #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
-    #define CS_H GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1ts = (1 << TFT_CS)
+    #if defined (ESP32_PARALLEL)
+      #define CS_L // The TFT CS is set permanently low during init()
+      #define CS_H
+    #else
+      #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
+      #define CS_H GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1ts = (1 << TFT_CS)
+    #endif
   #else
     #define CS_L GPOC=cspinmask
     #define CS_H GPOS=cspinmask
@@ -133,13 +145,64 @@
 #ifdef TFT_WR
   #if defined (ESP32)
     #define WR_L GPIO.out_w1tc = (1 << TFT_WR)
-    //digitalWrite(TFT_WR, LOW)
+    //#define WR_L digitalWrite(TFT_WR, LOW)
     #define WR_H GPIO.out_w1ts = (1 << TFT_WR)
-    //digitalWrite(TFT_WR, HIGH)
+    //#define WR_H digitalWrite(TFT_WR, HIGH)
   #else
     #define WR_L GPOC=wrpinmask
     #define WR_H GPOS=wrpinmask
   #endif
+#endif
+
+
+#ifdef ESP32_PARALLEL
+
+  #define dir_mask ((1 << TFT_D0) | (1 << TFT_D1) | (1 << TFT_D2) | (1 << TFT_D3) | (1 << TFT_D4) | (1 << TFT_D5) | (1 << TFT_D6) | (1 << TFT_D7))
+
+  #define clr_mask (dir_mask | (1 << TFT_WR))
+
+  #define set_mask(C) xset_mask[C] // 63fps Sprite rendering test 33% faster, graphicstest only 1.8% faster than shifting in real time
+
+  // Real-time shifting alternative to above to save 1KByte RAM, 47 fps Sprite rendering test
+  //#define set_mask(C) ((C&0x80)>>7)<<TFT_D7 | ((C&0x40)>>6)<<TFT_D6 | ((C&0x20)>>5)<<TFT_D5 | ((C&0x10)>>4)<<TFT_D4 | \
+                        ((C&0x08)>>3)<<TFT_D3 | ((C&0x04)>>2)<<TFT_D2 | ((C&0x02)>>1)<<TFT_D1 | ((C&0x01)>>0)<<TFT_D0
+
+  #define transfer8(C)  GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)C); WR_H
+
+  #define transfer16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 8)); WR_H; \
+                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
+
+  // 16 bit transfer with swapped bytes
+  #define transwap16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H; \
+                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H
+
+  #define transfer32(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 24)); WR_H; \
+                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 16)); WR_H; \
+                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H; \
+                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H
+
+  #ifdef TFT_RD
+    #if defined (ESP32)
+      #define RD_L GPIO.out_w1tc = (1 << TFT_RD)
+      //#define RD_L digitalWrite(TFT_WR, LOW)
+      #define RD_H GPIO.out_w1ts = (1 << TFT_RD)
+      //#define RD_H digitalWrite(TFT_WR, HIGH)
+    #else
+      //#define RD_L GPOC=rdpinmask
+      //#define RD_H GPOS=rdpinmask
+    #endif
+  #endif
+
+#elif  defined (SEND_16_BITS)
+    #define transfer8(C)  SPI.transfer(0); SPI.transfer(C)
+    #define transfer16(C) SPI.write16(C)
+    #define transfer32(C) SPI.write32(C)
+
+#else
+    #define transfer8(C)  SPI.transfer(C)
+    #define transfer16(C) SPI.write16(C)
+    #define transfer32(C) SPI.write32(C)
+
 #endif
 
 #ifdef LOAD_GFXFF
@@ -402,6 +465,7 @@ class TFT_eSPI : public Print {
            spiwrite(uint8_t),
            writecommand(uint8_t c),
            writedata(uint8_t d),
+
            commandList(const uint8_t *addr);
 
   uint8_t  readcommand8(uint8_t cmd_function, uint8_t index);
@@ -496,6 +560,10 @@ class TFT_eSPI : public Print {
   volatile uint32_t *dcport, *csport;
 
   uint32_t cspinmask, dcpinmask, wrpinmask;
+
+#if defined(ESP32_PARALLEL)
+  uint32_t  xclr_mask, xdir_mask, xset_mask[256];
+#endif
 
   uint32_t lastColor = 0xFFFF;
 

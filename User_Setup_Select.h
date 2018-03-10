@@ -33,6 +33,10 @@
 //#include <User_Setups/Setup10_RPi_touch_ILI9486.h>  // Setup file configured for my stock RPi TFT with touch
 //#include <User_Setups/Setup11_RPi_touch_ILI9486.h>  // Setup file configured for my stock RPi TFT with touch
 //#include <User_Setups/Setup12_M5Stack.h>           // Setup file for the ESP32 based M5Stack
+//#include <User_Setups/Setup13_ILI9481_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
+//#include <User_Setups/Setup14_ILI9341_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
+//#include <User_Setups/Setup15_HX8357D.h>           // Setup file configured for HX8357D (untested)
+//#include <User_Setups/Setup16_ILI9488_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
 
 //#include <User_Setups/Setup99.h>
 
@@ -62,6 +66,12 @@
      #include <TFT_Drivers/S6D02A1_Defines.h>
 #elif defined (RPI_ILI9486_DRIVER)
      #include <TFT_Drivers/RPI_ILI9486_Defines.h>
+#elif defined (ILI9481_DRIVER)
+     #include <TFT_Drivers/ILI9481_Defines.h>
+#elif defined (ILI9488_DRIVER)
+     #include <TFT_Drivers/ILI9488_Defines.h>
+#elif defined (HX8357D_DRIVER)
+     #include "TFT_Drivers/HX8357D_Defines.h"
 #endif
 
 // These are the pins for all ESP8266 boards
