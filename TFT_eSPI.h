@@ -431,6 +431,11 @@ class TFT_eSPI : public Print {
 
            setRotation(uint8_t r),
            invertDisplay(boolean i),
+           
+           setPartialMode(bool mode),
+           setPartialArea(int16_t startLine, int16_t endLine),
+           
+           setIdleMode(bool mode),
 
            drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color),
            drawCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t cornername, uint32_t color),
