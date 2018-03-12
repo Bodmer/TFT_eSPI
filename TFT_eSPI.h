@@ -167,16 +167,16 @@
   //#define set_mask(C) ((C&0x80)>>7)<<TFT_D7 | ((C&0x40)>>6)<<TFT_D6 | ((C&0x20)>>5)<<TFT_D5 | ((C&0x10)>>4)<<TFT_D4 | \
                         ((C&0x08)>>3)<<TFT_D3 | ((C&0x04)>>2)<<TFT_D2 | ((C&0x02)>>1)<<TFT_D1 | ((C&0x01)>>0)<<TFT_D0
 
-  #define transfer8(C)  GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)C); WR_H
+  #define tft_Write_8(C)  GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)C); WR_H
 
-  #define transfer16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 8)); WR_H; \
+  #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 8)); WR_H; \
                         GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
 
   // 16 bit transfer with swapped bytes
   #define transwap16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H; \
                         GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H
 
-  #define transfer32(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 24)); WR_H; \
+  #define tft_Write_32(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 24)); WR_H; \
                         GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 16)); WR_H; \
                         GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H; \
                         GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H
@@ -194,14 +194,14 @@
   #endif
 
 #elif  defined (SEND_16_BITS)
-    #define transfer8(C)  SPI.transfer(0); SPI.transfer(C)
-    #define transfer16(C) SPI.write16(C)
-    #define transfer32(C) SPI.write32(C)
+    #define tft_Write_8(C)  SPI.transfer(0); SPI.transfer(C)
+    #define tft_Write_16(C) SPI.write16(C)
+    #define tft_Write_32(C) SPI.write32(C)
 
 #else
-    #define transfer8(C)  SPI.transfer(C)
-    #define transfer16(C) SPI.write16(C)
-    #define transfer32(C) SPI.write32(C)
+    #define tft_Write_8(C)  SPI.transfer(C)
+    #define tft_Write_16(C) SPI.write16(C)
+    #define tft_Write_32(C) SPI.write32(C)
 
 #endif
 
@@ -512,12 +512,12 @@ class TFT_eSPI : public Print {
   uint16_t fontsLoaded(void),
            color565(uint8_t r, uint8_t g, uint8_t b),
            color8to16(uint8_t color332);  // Convert 8 bit colour to 16 bits
-        
+
   int16_t  drawNumber(long long_num,int poX, int poY, int font),
            drawNumber(long long_num,int poX, int poY),
            drawFloat(float floatNumber,int decimal,int poX, int poY, int font),
            drawFloat(float floatNumber,int decimal,int poX, int poY),
-           
+
            // Handle char arrays
            drawString(const char *string, int poX, int poY, int font),
            drawString(const char *string, int poX, int poY),
@@ -529,7 +529,7 @@ class TFT_eSPI : public Print {
            drawString(const String& string, int poX, int poY),
            drawCentreString(const String& string, int dX, int poY, int font), // Deprecated, use setTextDatum() and drawString()
            drawRightString(const String& string, int dX, int poY, int font);  // Deprecated, use setTextDatum() and drawString()
-           
+
   int16_t  height(void),
            width(void),
            textWidth(const char *string, int font),

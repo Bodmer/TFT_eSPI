@@ -415,7 +415,7 @@ void TFT_eSPI::commandList (const uint8_t *addr)
 ***************************************************************************************/
 void TFT_eSPI::spiwrite(uint8_t c)
 {
-  transfer8(c);
+  tft_Write_8(c);
 }
 
 
@@ -428,7 +428,7 @@ void TFT_eSPI::writecommand(uint8_t c)
   DC_C;
   CS_L;
 
-  transfer8(c);
+  tft_Write_8(c);
 
   CS_H;
   DC_D;
@@ -443,7 +443,7 @@ void TFT_eSPI::writedata(uint8_t d)
 {
   CS_L;
 
-  transfer8(d);
+  tft_Write_8(d);
 
   CS_H;
 }
@@ -478,16 +478,16 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
 
   DC_C;
   CS_L;
-  transfer8(0xD9);
+  tft_Write_8(0xD9);
   DC_D;
-  transfer8(index);
+  tft_Write_8(index);
   CS_H;
 
   DC_C;
   CS_L;
-  transfer8(cmd_function);
+  tft_Write_8(cmd_function);
   DC_D;
-  reg = transfer8(0);
+  reg = tft_Write_8(0);
   CS_H;
 
   spi_end();
@@ -580,12 +580,12 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   readAddrWindow(x0, y0, x0, y0); // Sets CS low
 
   // Dummy read to throw away don't care value
-  transfer8(0);
+  tft_Write_8(0);
     
   // Read window pixel 24 bit RGB values
-  uint8_t r = transfer8(0);
-  uint8_t g = transfer8(0);
-  uint8_t b = transfer8(0);
+  uint8_t r = tft_Write_8(0);
+  uint8_t g = tft_Write_8(0);
+  uint8_t b = tft_Write_8(0);
 
   CS_H;
 
@@ -707,16 +707,16 @@ void TFT_eSPI::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t
   readAddrWindow(x, y, x + w - 1, y + h - 1); // Sets CS low
 
   // Dummy read to throw away don't care value
-  transfer8(0);
+  tft_Write_8(0);
 
   // Read window pixel 24 bit RGB values
   uint32_t len = w * h;
   while (len--) {
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
-    uint8_t r = transfer8(0);
-    uint8_t g = transfer8(0);
-    uint8_t b = transfer8(0);
+    uint8_t r = tft_Write_8(0);
+    uint8_t g = tft_Write_8(0);
+    uint8_t b = tft_Write_8(0);
 
     // Swapped colour byte order for compatibility with pushRect()
     *data++ = (r & 0xF8) | (g & 0xE0) >> 5 | (b & 0xF8) << 5 | (g & 0x1C) << 11;
@@ -1197,16 +1197,16 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
   readAddrWindow(x0, y0, x0 + w - 1, y0 + h - 1); // Sets CS low
 
   // Dummy read to throw away don't care value
-  transfer8(0);
+  tft_Write_8(0);
   
   // Read window pixel 24 bit RGB values, buffer must be set in sketch to 3 * w * h
   uint32_t len = w * h;
   while (len--) {
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
-    *data++ = transfer8(0);
-    *data++ = transfer8(0);
-    *data++ = transfer8(0);
+    *data++ = tft_Write_8(0);
+    *data++ = tft_Write_8(0);
+    *data++ = tft_Write_8(0);
   }
   CS_H;
 
@@ -2037,11 +2037,11 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
 
     for (int8_t j = 0; j < 8; j++) {
       for (int8_t k = 0; k < 5; k++ ) {
-        if (column[k] & mask) {transfer16(color);}
-        else {transfer16(bg);}
+        if (column[k] & mask) {tft_Write_16(color);}
+        else {tft_Write_16(bg);}
       }
       mask <<= 1;
-      transfer16(bg);
+      tft_Write_16(bg);
     }
 
 #endif
@@ -2472,7 +2472,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   DC_C;
   CS_L;
 
-  transfer8(TFT_CASET);
+  tft_Write_8(TFT_CASET);
 
   DC_D;
 
@@ -2480,12 +2480,12 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   uint8_t xBin[] = { 0, (uint8_t) (x0>>8), 0, (uint8_t) (x0>>0), 0, (uint8_t) (x1>>8), 0, (uint8_t) (x1>>0), };
   SPI.writePattern(&xBin[0], 8, 1);
 #else
-  transfer32(xaw);
+  tft_Write_32(xaw);
 #endif
 
   // Row addr set
   DC_C;
-  transfer8(TFT_PASET);
+  tft_Write_8(TFT_PASET);
 
   DC_D;
 
@@ -2493,13 +2493,13 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   uint8_t yBin[] = { 0, (uint8_t) (y0>>8), 0, (uint8_t) (y0>>0), 0, (uint8_t) (y1>>8), 0, (uint8_t) (y1>>0), };
   SPI.writePattern(&yBin[0], 8, 1);
 #else
-  transfer32(yaw);
+  tft_Write_32(yaw);
 #endif
 
   // write to RAM
   DC_C;
 
-  transfer8(TFT_RAMWR);
+  tft_Write_8(TFT_RAMWR);
 
   DC_D;
 
@@ -2602,24 +2602,24 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   DC_C;
   CS_L;
 
-  transfer8(TFT_CASET);
+  tft_Write_8(TFT_CASET);
 
 
   DC_D;
 
-  transfer32(xaw);
+  tft_Write_32(xaw);
 
   // Row addr set
   DC_C;
 
-  transfer8(TFT_PASET);
+  tft_Write_8(TFT_PASET);
 
   DC_D;
 
-  transfer32(yaw);
+  tft_Write_32(yaw);
   
   DC_C;
-  transfer8(TFT_RAMRD); // Read CGRAM command
+  tft_Write_8(TFT_RAMRD); // Read CGRAM command
 
   DC_D;
 
@@ -2837,7 +2837,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
     DC_C;
 
-    transfer8(TFT_CASET);
+    tft_Write_8(TFT_CASET);
 
     DC_D;
 
@@ -2845,7 +2845,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
     uint8_t xBin[] = { 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), };
     SPI.writePattern(&xBin[0], 8, 1);
 #else
-    transfer32(xaw);
+    tft_Write_32(xaw);
 #endif
     
     addr_col = x;
@@ -2856,7 +2856,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
     DC_C;
 
-    transfer8(TFT_PASET);
+    tft_Write_8(TFT_PASET);
 
     DC_D;
 
@@ -2864,7 +2864,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
     uint8_t yBin[] = { 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), };
     SPI.writePattern(&yBin[0], 8, 1);
 #else
-    transfer32(yaw);
+    tft_Write_32(yaw);
 #endif
 
     addr_row = y;
@@ -2872,11 +2872,11 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
   DC_C;
 
-  transfer8(TFT_RAMWR);
+  tft_Write_8(TFT_RAMWR);
 
   DC_D;
 
-  transfer16(color);
+  tft_Write_16(color);
 
   CS_H;
 
@@ -2896,7 +2896,7 @@ void TFT_eSPI::pushColor(uint16_t color)
 
   CS_L;
 
-  transfer16(color);
+  tft_Write_16(color);
 
   CS_H;
 
@@ -2920,7 +2920,7 @@ void TFT_eSPI::pushColor(uint16_t color, uint16_t len)
   while(len--) {WR_L; WR_H;}
 #else
   #ifdef ESP32_PARALLEL
-    while (len--) {transfer16(color);}
+    while (len--) {tft_Write_16(color);}
   #else
     writeBlock(color, len);
   #endif
@@ -2948,7 +2948,7 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
   if (len) SPI.writePattern(data, len, 1);
 #else
   #ifdef ESP32_PARALLEL
-    while (len--) {transfer8(*data); data++;}
+    while (len--) {tft_Write_8(*data); data++;}
   #else
     #if (SPI_FREQUENCY == 80000000)
       while ( len >=64 ) {SPI.writePattern(data, 64, 1); data += 64; len -= 64; }
@@ -2977,7 +2977,7 @@ void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
 
 #if defined (ESP32)
   #ifdef ESP32_PARALLEL
-    if (swap) while ( len-- ) {transfer16(*data); data++;}
+    if (swap) while ( len-- ) {tft_Write_16(*data); data++;}
     else while ( len-- ) {transwap16(*data); data++;}
   #else
     if (swap) SPI.writePixels(data,len<<1);
@@ -3279,13 +3279,13 @@ void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
   #else
-    transfer16(color);
+    tft_Write_16(color);
   #endif
     h--;
     while(h--) {WR_L; WR_H;}
 #else
   #ifdef ESP32_PARALLEL
-    while (h--) {transfer16(color);}
+    while (h--) {tft_Write_16(color);}
   #else
     writeBlock(color, h);
   #endif
@@ -3337,13 +3337,13 @@ void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
     SPI1CMD |= SPIBUSY;
     while(SPI1CMD & SPIBUSY) {}
   #else
-    transfer16(color);
+    tft_Write_16(color);
   #endif
     w--;
     while(w--) {WR_L; WR_H;}
 #else
   #ifdef ESP32_PARALLEL
-    while (w--) {transfer16(color);}
+    while (w--) {tft_Write_16(color);}
   #else
     writeBlock(color, w);
   #endif
@@ -3392,19 +3392,19 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
   uint32_t n = (uint32_t)w * (uint32_t)h;
 
 #ifdef RPI_WRITE_STROBE
-  transfer16(color);
+  tft_Write_16(color);
   while(n--) {WR_L; WR_H;}
 #else
   #ifdef ESP32_PARALLEL
     if (color>>8 == (uint8_t)color)
     {
-      transfer8(color);
+      tft_Write_8(color);
       n--; WR_L; WR_H;
       while (n) {WR_L; WR_H; n--; WR_L; WR_H;}
     }
     else
     {
-      while (n--) {transfer16(color);}
+      while (n--) {tft_Write_16(color);}
     }
   #else
     writeBlock(color, n);
@@ -3762,8 +3762,8 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
           pX = x + k * 8;
           mask = 0x80;
           while (mask) {
-            if (line & mask) {transfer16(textcolor);}
-            else {transfer16(textbgcolor);}
+            if (line & mask) {tft_Write_16(textcolor);}
+            else {tft_Write_16(textbgcolor);}
             mask = mask >> 1;
           }
         }
@@ -3817,9 +3817,9 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
 
             if (ts) {
               tnp = np;
-              while (tnp--) {transfer16(textcolor);}
+              while (tnp--) {tft_Write_16(textcolor);}
             }
-            else {transfer16(textcolor);}
+            else {tft_Write_16(textcolor);}
             px += textsize;
 
             if (px >= (x + width * textsize))
@@ -3859,7 +3859,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
           while(line--) {WR_L; WR_H;}
 #else
           #ifdef ESP32_PARALLEL
-            while (line--) {transfer16(textcolor);}
+            while (line--) {tft_Write_16(textcolor);}
           #else
             writeBlock(textcolor,line);
           #endif
@@ -3872,7 +3872,7 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
           while(line--) {WR_L; WR_H;}
 #else
           #ifdef ESP32_PARALLEL
-            while (line--) {transfer16(textbgcolor);}
+            while (line--) {tft_Write_16(textbgcolor);}
           #else
             writeBlock(textbgcolor,line);
           #endif
