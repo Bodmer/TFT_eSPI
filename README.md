@@ -74,9 +74,12 @@ IO32 wired to IO36
 ![Example](https://i.imgur.com/pUZn6lF.jpg)
 
 **4. Add support for Touch support 8 bit "UNO" style TFTs with ESP32**
+
 Adding touch support for UNO style displays with resistive screens may be possible - to be investigated.
 
 **4. Add support for ePaper displays**
+
 The library was intended to support only TFT displays but using a Sprite as a 1 bit per pixel screen buffer permits support for the Waveshare 2 and 3 colour SPI ePaper displays. So far this is just an experiment and no code has been released for this:
+
 ![Example](https://i.imgur.com/L2tV129.jpg)
 
