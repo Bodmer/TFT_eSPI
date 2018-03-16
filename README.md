@@ -1,9 +1,11 @@
-# TFT_eSPI
-Update 10th March 2018: Added support for 8 bit parallel interface TFTs when used with ESP32.
 
-Update 24th February 2018: Added new smooth (antialiased) fonts. See Smooth Font examples and Tools folder for the font generator.
+Update 10th March 2018: Added support for 8 bit parallel interface TFTs when used with ESP32 (Touch not supported yet on parallel displays)
+
+Update 24th February 2018: Added new smooth (antialiased) fonts. See Smooth Font examples and Tools folder for the font generator. Fonts can include characters with 16 bit Unicodes (Basic Multilingual Plane).
 
 ![Example](https://i.imgur.com/xJF0Oz7.png)
+
+# TFT_eSPI
 
 An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with a driver for ILI9341, ILI9163, ST7735 and S6D02A1 based TFT displays that support SPI.
 
@@ -71,3 +73,4 @@ IO32 wired to IO36
 
 ![Example](https://i.imgur.com/pUZn6lF.jpg)
 
+**4. Add support for Touch support 8 bit "UNO" style TFTs with ESP32** 
