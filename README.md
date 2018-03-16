@@ -81,5 +81,5 @@ Adding touch support for UNO style displays with resistive screens may be possib
 
 The library was intended to support only TFT displays but using a Sprite as a 1 bit per pixel screen buffer permits support for the Waveshare 2 and 3 colour SPI ePaper displays. So far this is just an experiment and no code has been released for this:
 
-![Example](https://i.imgur.com/L2tV129.jpg)
+![Example](https://i.imgur.com/L2tV129.jpg?1)
 
