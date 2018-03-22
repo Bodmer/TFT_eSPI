@@ -24,7 +24,7 @@
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 // Include the header files that contain the icons
-#include "alert.h"
+#include "Alert.h"
 #include "Close.h"
 #include "Info.h"
 
@@ -41,7 +41,7 @@ void setup()
   // Draw the icons
   drawIcon(info, 100, 100, infoWidth, infoHeight);
   drawIcon(alert, 140, 100, alertWidth, alertHeight);
-  drawIcon(close, 180, 100, closeWidth, closeHeight);
+  drawIcon(closeX, 180, 100, closeWidth, closeHeight);
 
   // Pause here to admire the icons!
   delay(2000);
@@ -53,7 +53,7 @@ void loop()
   // Loop filling and clearing screen
   drawIcon(info,  random(tft.width() -  infoWidth), random(tft.height() -  infoHeight),  infoWidth,  infoHeight);
   drawIcon(alert, random(tft.width() - alertWidth), random(tft.height() - alertHeight), alertWidth, alertHeight);
-  drawIcon(close, random(tft.width() - closeWidth), random(tft.height() - closeHeight), alertWidth, closeHeight);
+  drawIcon(closeX, random(tft.width() - closeWidth), random(tft.height() - closeHeight), alertWidth, closeHeight);
 
   // Clear screen after 100 x 3 = 300 icons drawn
   if (100 == count++) {
