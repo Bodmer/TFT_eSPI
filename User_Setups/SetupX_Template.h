@@ -121,6 +121,10 @@
 //#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
+//#define TOUCH_CS 22     // Chip select pin (T_CS) of touch screen
+
+//#define TFT_WR 21    // Write strobe for modified Raspberry Pi TFT only
+
 // For the M5Stack module use these #define lines
 //#define TFT_MISO 19
 //#define TFT_MOSI 23
@@ -130,9 +134,6 @@
 //#define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
 //#define TFT_BL   32  // LED back-light
 
-//#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
-
-//#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
 // ##################################################################################
 //
@@ -199,6 +200,7 @@
 // #define SPI_FREQUENCY  20000000
 #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
 // #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
+// #define SPI_FREQUENCY  53400000
 // #define SPI_FREQUENCY  80000000
 
 // The XPT2046 requires a lower SPI clock rate of 2.5MHz so we define that here:

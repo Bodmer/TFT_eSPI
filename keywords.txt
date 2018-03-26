@@ -75,7 +75,6 @@ calibrateTouch	KEYWORD2
 setTouch	KEYWORD2
 validTouch	KEYWORD2
 
-
 TFT_eSPI_Button	KEYWORD1
 
 initButton	KEYWORD2
@@ -99,8 +98,14 @@ pushBitmap	KEYWORD2
 pushSprite	KEYWORD2
 setScrollRect	KEYWORD2
 scroll	KEYWORD2
+printToSprite	KEYWORD2
+frameBuffer	KEYWORD2
+setBitmapColor	KEYWORD2
 
 alphaBlend	KEYWORD2
 showFont	KEYWORD2
 loadFont	KEYWORD2
 unloadFont	KEYWORD2
+getUnicodeIndex	KEYWORD2
+decodeUTF8	KEYWORD2
+drawGlyph	KEYWORD2

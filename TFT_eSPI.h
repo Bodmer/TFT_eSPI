@@ -155,42 +155,42 @@
 #endif
 
 
-#ifdef ESP32_PARALLEL
-
+#if defined (ESP32) && defined (ESP32_PARALLEL)
+  // Mask for the 8 data bits to set pin directions
   #define dir_mask ((1 << TFT_D0) | (1 << TFT_D1) | (1 << TFT_D2) | (1 << TFT_D3) | (1 << TFT_D4) | (1 << TFT_D5) | (1 << TFT_D6) | (1 << TFT_D7))
 
+  // Data bits and the write line are cleared to 0 in one step
   #define clr_mask (dir_mask | (1 << TFT_WR))
 
+  // A lookup table is used to set the different bit patterns, this uses 1kByte of RAM
   #define set_mask(C) xset_mask[C] // 63fps Sprite rendering test 33% faster, graphicstest only 1.8% faster than shifting in real time
 
   // Real-time shifting alternative to above to save 1KByte RAM, 47 fps Sprite rendering test
   //#define set_mask(C) ((C&0x80)>>7)<<TFT_D7 | ((C&0x40)>>6)<<TFT_D6 | ((C&0x20)>>5)<<TFT_D5 | ((C&0x10)>>4)<<TFT_D4 | \
                         ((C&0x08)>>3)<<TFT_D3 | ((C&0x04)>>2)<<TFT_D2 | ((C&0x02)>>1)<<TFT_D1 | ((C&0x01)>>0)<<TFT_D0
 
+  // Write 8 bits to TFT
   #define tft_Write_8(C)  GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)C); WR_H
 
+  // Write 16 bits to TFT
   #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 8)); WR_H; \
-                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
+                          GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
 
-  // 16 bit transfer with swapped bytes
-  #define transwap16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H; \
-                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H
+  // 16 bit write with swapped bytes
+  #define tft_Write_16S(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H; \
+                           GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H
 
+  // Write 32 bits to TFT
   #define tft_Write_32(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 24)); WR_H; \
-                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 16)); WR_H; \
-                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H; \
-                        GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H
+                          GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 16)); WR_H; \
+                          GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H; \
+                          GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H
 
   #ifdef TFT_RD
-    #if defined (ESP32)
-      #define RD_L GPIO.out_w1tc = (1 << TFT_RD)
-      //#define RD_L digitalWrite(TFT_WR, LOW)
-      #define RD_H GPIO.out_w1ts = (1 << TFT_RD)
-      //#define RD_H digitalWrite(TFT_WR, HIGH)
-    #else
-      //#define RD_L GPOC=rdpinmask
-      //#define RD_H GPOS=rdpinmask
-    #endif
+    #define RD_L GPIO.out_w1tc = (1 << TFT_RD)
+    //#define RD_L digitalWrite(TFT_WR, LOW)
+    #define RD_H GPIO.out_w1ts = (1 << TFT_RD)
+    //#define RD_H digitalWrite(TFT_WR, HIGH)
   #endif
 
 #elif  defined (SEND_16_BITS)
@@ -330,8 +330,54 @@ template <typename T> static inline void
 swap_coord(T& a, T& b) { T t = a; a = b; b = t; }
 
 #ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
+  #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
+
+// This structure allows sketches to retrieve the user setup parameters at runtime
+// by calling getSetup(), zero impact on code size unless used, mainly for diagnostics
+typedef struct
+{
+int16_t esp;
+uint8_t trans;
+uint8_t serial;
+
+uint16_t tft_driver; // Hexadecimal code
+uint16_t tft_width;  // Rotation 0 width and height
+uint16_t tft_height;
+
+uint8_t r0_x_offset; // Offsets, not all used yet
+uint8_t r0_y_offset;
+uint8_t r1_x_offset;
+uint8_t r1_y_offset;
+uint8_t r2_x_offset;
+uint8_t r2_y_offset;
+uint8_t r3_x_offset;
+uint8_t r3_y_offset;
+
+int8_t pin_tft_mosi;
+int8_t pin_tft_miso;
+int8_t pin_tft_clk;
+int8_t pin_tft_cs;
+
+int8_t pin_tft_dc;
+int8_t pin_tft_rd;
+int8_t pin_tft_wr;
+int8_t pin_tft_rst;
+
+int8_t pin_tft_d0;
+int8_t pin_tft_d1;
+int8_t pin_tft_d2;
+int8_t pin_tft_d3;
+int8_t pin_tft_d4;
+int8_t pin_tft_d5;
+int8_t pin_tft_d6;
+int8_t pin_tft_d7;
+
+int8_t pin_tch_cs;
+
+int16_t tft_spi_freq;
+int16_t tch_spi_freq;
+} setup_t;
 
 // This is a structure to conveniently hold information on the default fonts
 // Stores pointer to font character image address table, width table and height
@@ -444,6 +490,7 @@ class TFT_eSPI : public Print {
            fillTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint32_t color),
 
            drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color),
+           setBitmapColor(uint16_t c, uint16_t b), // For 1bpp sprites
 
            setCursor(int16_t x, int16_t y),
            setCursor(int16_t x, int16_t y, uint8_t font),
@@ -489,9 +536,9 @@ class TFT_eSPI : public Print {
   void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data, uint16_t transparent);
   void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data);
 
-           // These are used by pushSprite for 8 bit colours
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data);
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data, uint8_t  transparent);
+           // These are used by pushSprite for 1 and 8 bit colours
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data, bool bpp8 = true);
+  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data, uint8_t  transparent, bool bpp8 = true);
 
            // Swap the byte order for pushImage() - corrects endianness
   void     setSwapBytes(bool swap);
@@ -543,8 +590,11 @@ class TFT_eSPI : public Print {
 
   size_t   write(uint8_t);
 
+  void     getSetup(setup_t& tft_settings); // Sketch provides the instance to populate
+
   int32_t  cursor_x, cursor_y;
   uint32_t textcolor, textbgcolor;
+  uint32_t bitmap_fg, bitmap_bg;
 
 
  private:

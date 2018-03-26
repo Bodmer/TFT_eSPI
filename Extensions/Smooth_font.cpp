@@ -74,13 +74,13 @@ void TFT_eSPI::loadFont(String fontName)
 
   */
 
+   unloadFont();
+    
   _gFontFilename = "/" + fontName + ".vlw";
 
   fontFile = SPIFFS.open( _gFontFilename, "r");
 
   if(!fontFile) return;
-
-  //unloadFont();
 
   fontFile.seek(0, fs::SeekSet);
 
@@ -230,7 +230,8 @@ void TFT_eSPI::unloadFont( void )
     free(gBitmap);
     gBitmap = NULL;
   }
-  fontFile.close();
+
+  if(fontFile) fontFile.close();
   fontLoaded = false;
 }
 

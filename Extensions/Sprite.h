@@ -14,14 +14,19 @@ class TFT_eSprite : public TFT_eSPI {
            // Create a sprite of width x height pixels, return a pointer to the RAM area
            // Sketch can cast returned value to (uint16_t*) for 16 bit depth if needed
            // RAM required is 1 byte per pixel for 8 bit colour depth, 2 bytes for 16 bit
-  void*    createSprite(int16_t width, int16_t height);  
+  void*    createSprite(int16_t width, int16_t height, uint8_t frames = 1);  
 
            // Delete the sprite to free up the RAM
   void     deleteSprite(void);
 
+           // Select the frame buffer for graphics
+  void*    frameBuffer(int8_t f);
+  
            // Set the colour depth to 8 or 16 bits. Can be used to change depth an existing
            // sprite, but clears it to black, returns a new pointer if sprite is re-created.
   void*    setColorDepth(int8_t b);
+
+  void     setBitmapColor(uint16_t c, uint16_t b);
 
   void     drawPixel(uint32_t x, uint32_t y, uint32_t color);
 
@@ -49,10 +54,13 @@ class TFT_eSprite : public TFT_eSPI {
            drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
            drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
 
-           fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color),
+           fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
 
            // Set the sprite text cursor position for print class (does not change the TFT screen cursor)
-           setCursor(int16_t x, int16_t y);
+           //setCursor(int16_t x, int16_t y);
+
+  void     setRotation(uint8_t rotation);
+  uint8_t  getRotation(void);
 
            // Read the colour of a pixel at x,y and return value in 565 format 
   uint16_t readPixel(int32_t x0, int32_t y0);
@@ -92,13 +100,17 @@ class TFT_eSprite : public TFT_eSPI {
 
  protected:
 
-  uint16_t *_img;  // pointer to 16 bit sprite
-  uint8_t  *_img8; // pointer to  8 bit sprite
-  bool     _created, _bpp16; // created and bits per pixel depth flags
+  uint8_t  _bpp;
+  uint16_t *_img;    // pointer to 16 bit sprite
+  uint8_t  *_img8;   // pointer to  8 bit sprite
+  uint8_t  *_img8_1; // pointer to  frame 1
+  uint8_t  *_img8_2; // pointer to  frame 2
 
+  bool     _created; // created and bits per pixel depth flags
   bool     _gFont = false; 
 
-  int32_t  _icursor_x, _icursor_y;
+//  int32_t  _icursor_x, _icursor_y;
+  uint8_t  _rotation = 0;
   int32_t  _xs, _ys, _xe, _ye, _xptr, _yptr; // for setWindow
   int32_t  _sx, _sy; // x,y for scroll zone
   uint32_t _sw, _sh; // w,h for scroll zone
@@ -106,6 +118,8 @@ class TFT_eSprite : public TFT_eSPI {
 
   boolean  _iswapBytes; // Swap the byte order for Sprite pushImage()
 
-  int32_t  _iwidth, _iheight; // Sprite image width and height
+  int32_t  _iwidth, _iheight; // Sprite memory image bit width and height (swapped during rotations)
+  int32_t  _dwidth, _dheight; // Real display width and height (for <8bpp Sprites)
+  int32_t  _bitwidth;         // Sprite image bit width for drawPixel (for <8bpp Sprites, not swapped)
 
 };

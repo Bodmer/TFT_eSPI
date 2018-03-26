@@ -14,10 +14,6 @@
         "name": "Bodmer",
         "email": "bodmer@anola.net",
         "maintainer": true
-    },
-    {
-        "name": "Adafruit",
-        "url": "https://www.adafruit.com/"
     }
   ],
   "frameworks": "arduino",

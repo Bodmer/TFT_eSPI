@@ -153,11 +153,11 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   _init_width  = _width  = w; // Set by specific xxxxx_Defines.h file or by users sketch
   _init_height = _height = h; // Set by specific xxxxx_Defines.h file or by users sketch
   rotation  = 0;
-  cursor_y  = cursor_x    = 0;
+  cursor_y  = cursor_x  = 0;
   textfont  = 1;
   textsize  = 1;
-  textcolor   = 0xFFFF; // White
-  textbgcolor = 0x0000; // Black
+  textcolor   = bitmap_fg = 0xFFFF; // White
+  textbgcolor = bitmap_bg = 0x0000; // Black
   padX = 0;             // No padding
   textwrapX  = true;    // Wrap text at end of line when using print stream
   textwrapY  = false;   // Wrap text at bottom of screen when using print stream
@@ -998,7 +998,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const uin
 ** Function name:           pushImage
 ** Description:             plot 8 bit image or sprite using a line buffer
 ***************************************************************************************/
-void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint8_t *data)
+void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint8_t *data, bool bpp8)
 {
   if ((x >= (int32_t)_width) || (y >= (int32_t)_height)) return;
 
@@ -1020,45 +1020,79 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint8_t *
 
   setAddrWindow(x, y, x + dw - 1, y + dh - 1); // Sets CS low and sent RAMWR
 
-  data += dx + dy * w;
-
   // Line buffer makes plotting faster
   uint16_t  lineBuf[dw];
 
-  uint8_t  blue[] = {0, 11, 21, 31}; // blue 2 to 5 bit colour lookup table
-
-  _lastColor = -1; // Set to illegal value
-  
-  // Used to store last shifted colour
-  uint8_t msbColor = 0;
-  uint8_t lsbColor = 0;
-
-  while (dh--)
+  if (bpp8)
   {
-    uint32_t len = dw;
-    uint8_t* ptr = data;
-    uint8_t* linePtr = (uint8_t*)lineBuf;
+    uint8_t  blue[] = {0, 11, 21, 31}; // blue 2 to 5 bit colour lookup table
 
-    while(len--)
+    _lastColor = -1; // Set to illegal value
+
+    // Used to store last shifted colour
+    uint8_t msbColor = 0;
+    uint8_t lsbColor = 0;
+
+    data += dx + dy * w;
+    while (dh--)
     {
-      uint32_t color = *ptr++;
+      uint32_t len = dw;
+      uint8_t* ptr = data;
+      uint8_t* linePtr = (uint8_t*)lineBuf;
 
-      // Shifts are slow so check if colour has changed first
-      if (color != _lastColor) {
-        //          =====Green=====     ===============Red==============
-        msbColor = (color & 0x1C)>>2 | (color & 0xC0)>>3 | (color & 0xE0);
-        //          =====Green=====    =======Blue======
-        lsbColor = (color & 0x1C)<<3 | blue[color & 0x03];
-        _lastColor = color;
+      while(len--)
+      {
+        uint32_t color = *ptr++;
+
+        // Shifts are slow so check if colour has changed first
+        if (color != _lastColor) {
+          //          =====Green=====     ===============Red==============
+          msbColor = (color & 0x1C)>>2 | (color & 0xC0)>>3 | (color & 0xE0);
+          //          =====Green=====    =======Blue======
+          lsbColor = (color & 0x1C)<<3 | blue[color & 0x03];
+          _lastColor = color;
+        }
+
+       *linePtr++ = msbColor;
+       *linePtr++ = lsbColor;
       }
 
-      *linePtr++ = msbColor;
-      *linePtr++ = lsbColor;
+      pushColors(lineBuf, dw, false);
+
+      data += w;
     }
+  }
+  else
+  {
+    while (dh--)
+    {
+      w =  (w+7) & 0xFFF8;
 
-    pushColors(lineBuf, dw, false);
+      int32_t len = dw;
+      uint8_t* ptr = data;
+      uint8_t* linePtr = (uint8_t*)lineBuf;
+      uint8_t  bits = 8;
+      while(len>0)
+      {
+        if (len < 8) bits = len;
+        uint32_t xp = dx;
+        for (uint16_t i = 0; i < bits; i++)
+        {
+          uint8_t col = (ptr[(xp + dy * w)>>3] << (xp & 0x7)) & 0x80;
+          if (col) {*linePtr++ = bitmap_fg>>8; *linePtr++ = (uint8_t) bitmap_fg;}
+          else     {*linePtr++ = bitmap_bg>>8; *linePtr++ = (uint8_t) bitmap_bg;}
+          //if (col) drawPixel((dw-len)+xp,h-dh,bitmap_fg);
+          //else     drawPixel((dw-len)+xp,h-dh,bitmap_bg);
+          xp++;
+        }
+        *ptr++;
+        len -= 8;
+      }
 
-    data += w;
+      pushColors(lineBuf, dw, false);
+
+      dy++;
+    }
   }
 
   CS_H;
@@ -1070,9 +1104,9 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint8_t *
 
 /***************************************************************************************
 ** Function name:           pushImage
-** Description:             plot 8 bit image or sprite with 1 colour being transparent
+** Description:             plot 8 or 1 bit image or sprite with a transparent colour
 ***************************************************************************************/
-void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint8_t *data, uint8_t transp)
+void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint8_t *data, uint8_t transp, bool bpp8)
 {
   if ((x >= (int32_t)_width) || (y >= (int32_t)_height)) return;
 
@@ -1092,70 +1126,121 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint8_t *
   spi_begin();
   inTransaction = true;
 
-  data += dx + dy * w;
-
   int32_t xe = x + dw - 1, ye = y + dh - 1;
 
   // Line buffer makes plotting faster
   uint16_t  lineBuf[dw];
 
-  uint8_t  blue[] = {0, 11, 21, 31}; // blue 2 to 5 bit colour lookup table
-
-  _lastColor = -1; // Set to illegal value
-
-  // Used to store last shifted colour
-  uint8_t msbColor = 0;
-  uint8_t lsbColor = 0;
-
-  int32_t spx = x, spy = y;
-
-  while (dh--)
+  if (bpp8)
   {
-    int32_t len = dw;
-    uint8_t* ptr = data;
-    uint8_t* linePtr = (uint8_t*)lineBuf;
+    data += dx + dy * w;
 
-    int32_t px = x;
-    boolean move = true;
-    uint16_t np = 0;
+    uint8_t  blue[] = {0, 11, 21, 31}; // blue 2 to 5 bit colour lookup table
 
-    while (len--)
+    _lastColor = -1; // Set to illegal value
+
+    // Used to store last shifted colour
+    uint8_t msbColor = 0;
+    uint8_t lsbColor = 0;
+
+    int32_t spx = x, spy = y;
+
+    while (dh--)
     {
-      if (transp != *ptr)
-      {
-        if (move) { move = false; setAddrWindow(px, y, xe, ye);}
-        uint8_t color = *ptr;
+      int32_t len = dw;
+      uint8_t* ptr = data;
+      uint8_t* linePtr = (uint8_t*)lineBuf;
 
-        // Shifts are slow so check if colour has changed first
-        if (color != _lastColor) {
-          //          =====Green=====     ===============Red==============
-          msbColor = (color & 0x1C)>>2 | (color & 0xC0)>>3 | (color & 0xE0);
-          //          =====Green=====    =======Blue======
-          lsbColor = (color & 0x1C)<<3 | blue[color & 0x03];
-          _lastColor = color;
-        }
-        *linePtr++ = msbColor;
-        *linePtr++ = lsbColor;
-        np++;
-      }
-      else
+      int32_t px = x;
+      boolean move = true;
+      uint16_t np = 0;
+
+      while (len--)
       {
-        move = true;
-        if (np)
+        if (transp != *ptr)
         {
-          pushColors(lineBuf, np, false);
-          linePtr = (uint8_t*)lineBuf;
-          np = 0;
+          if (move) { move = false; setAddrWindow(px, y, xe, ye);}
+          uint8_t color = *ptr;
+
+          // Shifts are slow so check if colour has changed first
+          if (color != _lastColor) {
+            //          =====Green=====     ===============Red==============
+            msbColor = (color & 0x1C)>>2 | (color & 0xC0)>>3 | (color & 0xE0);
+            //          =====Green=====    =======Blue======
+            lsbColor = (color & 0x1C)<<3 | blue[color & 0x03];
+            _lastColor = color;
+          }
+          *linePtr++ = msbColor;
+          *linePtr++ = lsbColor;
+          np++;
         }
+        else
+        {
+          move = true;
+          if (np)
+          {
+            pushColors(lineBuf, np, false);
+            linePtr = (uint8_t*)lineBuf;
+            np = 0;
+          }
+        }
+        px++;
+        ptr++;
       }
-      px++;
-      ptr++;
+
+      if (np) pushColors(lineBuf, np, false);
+
+      y++;
+      data += w;
     }
-
-    if (np) pushColors(lineBuf, np, false);
-
-    y++;
-    data += w;
+  }
+  else
+  {
+    w =  (w+7) & 0xFFF8;
+    while (dh--)
+    {
+      int32_t px = x;
+      boolean move = true;
+      uint16_t np = 0;
+      int32_t len = dw;
+      uint8_t* ptr = data;
+      uint8_t  bits = 8;
+      while(len>0)
+      {
+        if (len < 8) bits = len;
+        uint32_t xp = dx;
+        uint32_t yp = (dy * w)>>3;
+        for (uint16_t i = 0; i < bits; i++)
+        {
+          //uint8_t col = (ptr[(xp + dy * w)>>3] << (xp & 0x7)) & 0x80;
+          if ((ptr[(xp>>3) + yp] << (xp & 0x7)) & 0x80)
+          {
+            if (move)
+            {
+              move = false;
+              setAddrWindow(px, y, xe, ye);
+            }
+            np++;
+          }
+          else
+          {
+            if (np)
+            {
+              pushColor(bitmap_fg, np);
+              np = 0;
+              move = true;
+            }
+          }
+          px++;
+          xp++;
+        }
+        *ptr++;
+        len -= 8;
+      }
+      if (np) pushColor(bitmap_fg, np);
+      y++;
+      dy++;
+    }
   }
 
   CS_H;
@@ -1766,6 +1851,18 @@ void TFT_eSPI::setTextColor(uint16_t c, uint16_t b)
 {
   textcolor   = c;
   textbgcolor = b;
+}
+
+
+/***************************************************************************************
+** Function name:           setBitmapColor
+** Description:             Set the foreground foreground and background colour
+***************************************************************************************/
+void TFT_eSPI::setBitmapColor(uint16_t c, uint16_t b)
+{
+  if (c == b) b = ~c;
+  bitmap_fg = c;
+  bitmap_bg = b;
 }
 
 
@@ -2978,7 +3075,7 @@ void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
 #if defined (ESP32)
   #ifdef ESP32_PARALLEL
     if (swap) while ( len-- ) {tft_Write_16(*data); data++;}
-    else while ( len-- ) {transwap16(*data); data++;}
+    else while ( len-- ) {tft_Write_16S(*data); data++;}
   #else
     if (swap) SPI.writePixels(data,len<<1);
     else SPI.writeBytes((uint8_t*)data,len<<1);
@@ -3013,6 +3110,8 @@ void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
     }
 
     len -= 16;
+
+    // ESP8266 wait time here at 40MHz SPI is ~5.45us
     while(SPI1CMD & SPIBUSY) {}
     SPI1W0 = color[0];
     SPI1W1 = color[1];
@@ -4445,6 +4544,136 @@ void writeBlock(uint16_t color, uint32_t repeat)
 }
 #endif
 
+
+/***************************************************************************************
+** Function name:           getSetup
+** Description:             Get the setup details for diagnostic and sketch access
+***************************************************************************************/
+void TFT_eSPI::getSetup(setup_t &tft_settings)
+{
+
+#if defined (ESP8266)
+  tft_settings.esp = 8266;
+#elif defined (ESP32)
+  tft_settings.esp = 32;
+#else
+  tft_settings.esp = -1;
+#endif
+
+#if defined (SUPPORT_TRANSACTIONS)
+  tft_settings.trans = true;
+#else
+  tft_settings.trans = false;
+#endif
+
+#if defined (ESP32_PARALLEL)
+  tft_settings.serial = false;
+  tft_settings.tft_spi_freq = 0;
+#else
+  tft_settings.serial = true;
+  tft_settings.tft_spi_freq = SPI_FREQUENCY/100000;
+#endif
+
+  tft_settings.tft_driver = TFT_DRIVER;
+  tft_settings.tft_width  = _init_width;
+  tft_settings.tft_height = _init_height;
+
+#ifdef CGRAM_OFFSET
+  tft_settings.r0_x_offset = colstart;
+  tft_settings.r0_y_offset = rowstart;
+  tft_settings.r1_x_offset = 0;
+  tft_settings.r1_y_offset = 0;
+  tft_settings.r2_x_offset = 0;
+  tft_settings.r2_y_offset = 0;
+  tft_settings.r3_x_offset = 0;
+  tft_settings.r3_y_offset = 0;
+#else
+  tft_settings.r0_x_offset = 0;
+  tft_settings.r0_y_offset = 0;
+  tft_settings.r1_x_offset = 0;
+  tft_settings.r1_y_offset = 0;
+  tft_settings.r2_x_offset = 0;
+  tft_settings.r2_y_offset = 0;
+  tft_settings.r3_x_offset = 0;
+  tft_settings.r3_y_offset = 0;
+#endif
+
+#if defined (TFT_MOSI)
+  tft_settings.pin_tft_mosi = TFT_MOSI;
+#else
+  tft_settings.pin_tft_mosi = -1;
+#endif
+
+#if defined (TFT_MISO)
+  tft_settings.pin_tft_miso = TFT_MISO;
+#else
+  tft_settings.pin_tft_miso = -1;
+#endif
+
+#if defined (TFT_SCLK)
+  tft_settings.pin_tft_clk  = TFT_SCLK;
+#else
+  tft_settings.pin_tft_clk  = -1;
+#endif
+
+#if defined (TFT_CS)
+  tft_settings.pin_tft_cs   = TFT_CS;
+#else
+  tft_settings.pin_tft_cs   = -1;
+#endif
+
+#if defined (TFT_DC)
+  tft_settings.pin_tft_dc  = TFT_DC;
+#else
+  tft_settings.pin_tft_dc  = -1;
+#endif
+
+#if defined (TFT_RD)
+  tft_settings.pin_tft_rd  = TFT_RD;
+#else
+  tft_settings.pin_tft_rd  = -1;
+#endif
+
+#if defined (TFT_WR)
+  tft_settings.pin_tft_wr  = TFT_WR;
+#else
+  tft_settings.pin_tft_wr  = -1;
+#endif
+
+#if defined (TFT_RST)
+  tft_settings.pin_tft_rst = TFT_RST;
+#else
+  tft_settings.pin_tft_rst = -1;
+#endif
+
+#if defined (ESP32_PARALLEL)
+  tft_settings.pin_tft_d0 = TFT_D0;
+  tft_settings.pin_tft_d1 = TFT_D1;
+  tft_settings.pin_tft_d2 = TFT_D2;
+  tft_settings.pin_tft_d3 = TFT_D3;
+  tft_settings.pin_tft_d4 = TFT_D4;
+  tft_settings.pin_tft_d5 = TFT_D5;
+  tft_settings.pin_tft_d6 = TFT_D6;
+  tft_settings.pin_tft_d7 = TFT_D7;
+#else
+  tft_settings.pin_tft_d0 = -1;
+  tft_settings.pin_tft_d1 = -1;
+  tft_settings.pin_tft_d2 = -1;
+  tft_settings.pin_tft_d3 = -1;
+  tft_settings.pin_tft_d4 = -1;
+  tft_settings.pin_tft_d5 = -1;
+  tft_settings.pin_tft_d6 = -1;
+  tft_settings.pin_tft_d7 = -1;
+#endif
+
+#if defined (TOUCH_CS)
+  tft_settings.pin_tch_cs   = TOUCH_CS;
+  tft_settings.tch_spi_freq = SPI_TOUCH_FREQUENCY/100000;
+#else
+  tft_settings.pin_tch_cs   = -1;
+  tft_settings.tch_spi_freq = 0;
+#endif
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifdef TOUCH_CS
