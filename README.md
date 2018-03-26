@@ -1,3 +1,4 @@
+Update 26th March 2018: Added support for 1 bit per pixel Sprites. Example to follow with ePaper (Waveshare) support.
 
 Update 10th March 2018: Added support for 8 bit parallel interface TFTs when used with ESP32 (Touch not supported yet on parallel displays)
 
@@ -7,13 +8,13 @@ Update 24th February 2018: Added new smooth (antialiased) fonts. See Smooth Font
 
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with a driver for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9488, ILI9486 and HX8357 based TFT displays that support SPI. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shilds)  can used with ESP32
+An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with a driver for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9488, ILI9486 and HX8357 based TFT displays that support SPI. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shilds) can used with an ESP32
 
 The library also supports TFT displays designed for the Raspberry Pi that are based on a ILI9486 driver chip with a 480 x 320 pixel screen. This display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. A modification to these displays is possible (see mod image in Tools folder) to make many graphics functions much faster (e.g. 23ms to clear the screen, 1.2ms to draw a 72 pixel high numeral).
 
 A new "Sprite" class has been added, this enables flicker free updates of complex graphics. Direct writes to the TFT with graphics functions are still available, so existing sketches do not need to be changed.
 
-A Sprite is notionally an invisible graphics screen that is kept in the processors RAM. Graphics can be drawn into the Sprite just as they can be drawn directly to the screen. Once the Sprite is completed it can be plotted onto the screen in any position. If there is sufficient RAM then the Sprite can be the same size as the screen and used as a frame buffer. Sprites by default use 16 bit colours, the bit depth can be set to 8 bits to reduce the RAM needed. On an ESP8266 the largest 16 bit colour Sprite that can be created is about 160x128 pixels, this consumes 40Kbytes of RAM. On an ESP32 the workspace RAM is more limited than the datsheet implies so a 16 bit colour Sprite is limited to about 200x200 pixels (~80Kbytes) and an 8 bit sprite to 320x240 pixels (~76kbytes).
+A Sprite is notionally an invisible graphics screen that is kept in the processors RAM. Graphics can be drawn into the Sprite just as they can be drawn directly to the screen. Once the Sprite is completed it can be plotted onto the screen in any position. If there is sufficient RAM then the Sprite can be the same size as the screen and used as a frame buffer. Sprites by default use 16 bit colours, the bit depth can be set to 8 bits (256 colours) , or 1 bit (any 2 colours) to reduce the RAM needed. On an ESP8266 the largest 16 bit colour Sprite that can be created is about 160x128 pixels, this consumes 40Kbytes of RAM. On an ESP32 the workspace RAM is more limited than the datsheet implies so a 16 bit colour Sprite is limited to about 200x200 pixels (~80Kbytes), an 8 bit sprite to 320x240 pixels (~76kbytes). A 1 bit per pixel Spriee required only 9600 bytes for a full 320 x 240 screen buffer, this is ideal for supporting usie with 2 colour bitmap fonts.
 
 One or more sprites can be created, a sprite can be any width and height, limited only by available RAM. The RAM needed for a 16 bit colour depth Sprite is (2 x width x height) bytes, for a Sprite with 8 bit colour depth the RAM needed is (width x height) bytes. Sprites can be created and deleted dynamically as needed in the sketch, this means RAM can be freed up after the sprite has been plotted on the screen, more RAM intensive WiFi based code can then be run and normal graphics operations still work.
 
