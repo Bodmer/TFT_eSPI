@@ -53,7 +53,7 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
   T_CS_L;
 
   // Z sample request
-  uint16_t tz = 0xFFF;
+  int16_t tz = 0xFFF;
   SPI.transfer(0xb1);
   tz += SPI.transfer16(0xc1) >> 3;
   tz -= SPI.transfer16(0x91) >> 3;
@@ -62,7 +62,7 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
 
   spi_end_touch();
 
-  return tz;
+  return (uint16_t)tz;
 }
 
 /***************************************************************************************
@@ -203,7 +203,7 @@ void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t 
 
     for(uint8_t j= 0; j<8; j++){
       // Use a lower detect threshold as corners tend to be less sensitive
-      while(!validTouch(&x_tmp, &y_tmp, Z_THRESHOLD/4));
+      while(!validTouch(&x_tmp, &y_tmp, Z_THRESHOLD/2));
       values[i*2  ] += x_tmp;
       values[i*2+1] += y_tmp;
       }
@@ -230,20 +230,20 @@ void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t 
     touchCalibration_y1 = (values[3] + values[7])/2; // calc max y
   }
 
-  // in addition, the touch screen axis could be in the opposit direction of the TFT axis
-  touchCalibration_invert_x = false;
+  // in addition, the touch screen axis could be in the opposite direction of the TFT axis
+  touchCalibration_invert_x = true;
   if(touchCalibration_x0 > touchCalibration_x1){
     values[0]=touchCalibration_x0;
     touchCalibration_x0 = touchCalibration_x1;
     touchCalibration_x1 = values[0];
-    touchCalibration_invert_x = true;
+    touchCalibration_invert_x = false;
   }
-  touchCalibration_invert_y = false;
+  touchCalibration_invert_y = true;
   if(touchCalibration_y0 > touchCalibration_y1){
     values[0]=touchCalibration_y0;
     touchCalibration_y0 = touchCalibration_y1;
     touchCalibration_y1 = values[0];
-    touchCalibration_invert_y = true;
+    touchCalibration_invert_y = false;
   }
 
   // pre calculate
