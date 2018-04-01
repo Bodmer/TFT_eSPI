@@ -193,7 +193,7 @@
     //#define RD_H digitalWrite(TFT_WR, HIGH)
   #endif
 
-#elif  defined (SEND_16_BITS)
+#elif  defined (RPI_ILI9486_DRIVER)
     #define tft_Write_8(C)  SPI.transfer(0); SPI.transfer(C)
     #define tft_Write_16(C) SPI.write16(C)
     #define tft_Write_32(C) SPI.write32(C)
