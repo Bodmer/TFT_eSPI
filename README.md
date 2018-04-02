@@ -1,3 +1,5 @@
+Update 2nd April 2018: Added final stage support ePaper (Waveshare) displays plus an example (others to follow).
+
 Update 26th March 2018: Added support for 1 bit per pixel Sprites. Example to follow with ePaper (Waveshare) support.
 
 Update 10th March 2018: Added support for 8 bit parallel interface TFTs when used with ESP32 (Touch not supported yet on parallel displays)
@@ -78,7 +80,7 @@ IO32 wired to IO36
 
 Adding touch support for UNO style displays with resistive screens may be possible - to be investigated.
 
-**4. Add support for ePaper displays**
+**4. Add support for ePaper displays - done 2/4/18**
 
 The library was intended to support only TFT displays but using a Sprite as a 1 bit per pixel screen buffer permits support for the Waveshare 2 and 3 colour SPI ePaper displays. So far this is just an experiment and no code has been released for this:
 
