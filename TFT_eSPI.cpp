@@ -28,7 +28,6 @@
 
 // If it is a 16bit serial display we must transfer 16 bits every time
 #ifdef RPI_ILI9486_DRIVER
-  #define SEND_16_BITS
   #define CMD_BITS 16-1
 #else
   #define CMD_BITS 8-1

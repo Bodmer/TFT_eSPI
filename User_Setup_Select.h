@@ -14,7 +14,7 @@
 
 // Customised User_Setup files are stored in the "User_Setups" folder.
 
-#ifndef USER_SETUP_LOADED //  Lets PlatformIO users define user settings in
+#ifndef USER_SETUP_LOADED //  Lets PlatformIO users define settings in
                           //  platformio.ini, see notes in "Tools" folder.
 
 // Only ONE line below should be uncommented.  Add extra lines and files as needed.
@@ -30,17 +30,16 @@
 //#include <User_Setups/Setup7_ST7735_128x128.h>  // Setup file configured for my ST7735 128x128 display
 //#include <User_Setups/Setup8_ILI9163_128x128.h>  // Setup file configured for my ILI9163 128x128 display
 //#include <User_Setups/Setup9_ST7735_Overlap.h>   // Setup file configured for my ST7735
-//#include <User_Setups/Setup10_RPi_touch_ILI9486.h>  // Setup file configured for my stock RPi TFT with touch
-//#include <User_Setups/Setup11_RPi_touch_ILI9486.h>  // Setup file configured for my stock RPi TFT with touch
+//#include <User_Setups/Setup10_RPi_touch_ILI9486.h>  // Setup file configured for ESP8266 and RPi TFT with touch
+//#include <User_Setups/Setup11_RPi_touch_ILI9486.h>  // Setup file configured for ESP32 and RPi TFT with touch
 //#include <User_Setups/Setup12_M5Stack.h>           // Setup file for the ESP32 based M5Stack
 //#include <User_Setups/Setup13_ILI9481_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
 //#include <User_Setups/Setup14_ILI9341_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
 //#include <User_Setups/Setup15_HX8357D.h>           // Setup file configured for HX8357D (untested)
 //#include <User_Setups/Setup16_ILI9488_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
+//#include <User_Setups/Setup17_ePaper.h>  // Setup file for any Waveshare ePaper display
 
-//#include <User_Setups/Setup99.h>
-
-// ePaper #include <User_Setups/SetupX_Template.h> // Setup file template for copying/editting
+//#include <User_Setups/SetupX_Template.h>
 
 
 #endif // USER_SETUP_LOADED
@@ -70,7 +69,7 @@
      #define  TFT_DRIVER 0x6D02
 #elif defined (RPI_ILI9486_DRIVER)
      #include <TFT_Drivers/RPI_ILI9486_Defines.h>
-     #define  TFT_DRIVER 0x9481
+     #define  TFT_DRIVER 0x9486
 #elif defined (ILI9481_DRIVER)
      #include <TFT_Drivers/ILI9481_Defines.h>
      #define  TFT_DRIVER 0x9481
@@ -83,6 +82,11 @@
 #elif defined (EPD_DRIVER)
      #include "TFT_Drivers/EPD_Defines.h"
      #define  TFT_DRIVER 0xE9D
+#elif defined (XYZZY_DRIVER)  // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
+     #include "TFT_Drivers/XYZZY_Defines.h"
+     #define  TFT_DRIVER 0x0000
+#else
+     #define  TFT_DRIVER 0x0000
 #endif
 
 // These are the pins for all ESP8266 boards

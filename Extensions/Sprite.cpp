@@ -304,7 +304,42 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint1
       }
     }
   }
-  // TODO Currently does nothing for 1 bpp
+
+  else // 1bpp
+  {
+    // Move coordinate rotation to support fn
+    if (_rotation == 1)
+    {
+      int32_t tx = x;
+      x = _dwidth - y - 1;
+      y = tx;
+    }
+    else if (_rotation == 2)
+    {
+      x = _dwidth - x - 1;
+      y = _dheight - y - 1;
+    }
+    else if (_rotation == 3)
+    {
+      int32_t tx = x;
+      x = y;
+      y = _dheight - tx - 1;
+    }
+
+    uint8_t* pdata = (uint8_t*) data;
+    uint32_t ww =  (w+7) & 0xFFF8;
+    for (int32_t yp = 0; yp<h; yp++)
+    {
+      for (int32_t xp = 0; xp<ww; xp+=8)
+      {
+        uint8_t pbyte = *pdata++;
+        for (uint8_t xc = 0; xc < 8; xc++)
+        {
+          if (xp+xc<w) drawPixel(x+xp+xc, y+yp, (pbyte<<xc) & 0x80);
+        }
+      }
+    }
+  }
 }
 
 
@@ -329,6 +364,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const
       }
     }
   }
+
   else if (_bpp == 8)
   {
     for (uint32_t yp = y; yp < y + h; yp++)
@@ -341,7 +377,42 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const
       }
     }
   }
-  // TODO Currently does nothing for 1 bpp
+
+  else // 1bpp
+  {
+    // Move coordinate rotation to support fn
+    if (_rotation == 1)
+    {
+      int32_t tx = x;
+      x = _dwidth - y - 1;
+      y = tx;
+    }
+    else if (_rotation == 2)
+    {
+      x = _dwidth - x - 1;
+      y = _dheight - y - 1;
+    }
+    else if (_rotation == 3)
+    {
+      int32_t tx = x;
+      x = y;
+      y = _dheight - tx - 1;
+    }
+
+    const uint8_t* pdata = (const uint8_t* ) data;
+    uint32_t ww =  (w+7) & 0xFFF8;
+    for (int32_t yp = 0; yp<h; yp++)
+    {
+      for (int32_t xp = 0; xp<ww; xp+=8)
+      {
+        uint8_t pbyte = pgm_read_byte(pdata++);
+        for (uint8_t xc = 0; xc < 8; xc++)
+        {
+          if (xp+xc<w) drawPixel(x+xp+xc, y+yp, (pbyte<<xc) & 0x80);
+        }
+      }
+    }
+  }
 }
 
 
