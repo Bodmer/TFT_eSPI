@@ -165,6 +165,8 @@ void drawFSBmp(const char *filename, int16_t x, int16_t y) {
         // Read any line padding (saves a slow seek)
         if (padding) bmpFS.read(lineBuffer, padding);
       }
+    free(lineBuffer);
+    free(qerrBuffer);
     }
     else Serial.println("BMP format not recognized.");
   }
