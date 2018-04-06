@@ -140,8 +140,8 @@ uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
     if(touchCalibration_invert_y)
       yy = _height - yy;
   } else {
-    yy=(x_tmp-touchCalibration_x0)*_height/touchCalibration_x1;
-    xx=(y_tmp-touchCalibration_y0)*_width/touchCalibration_y1;
+    xx=(y_tmp-touchCalibration_x0)*_width/touchCalibration_x1;
+    yy=(x_tmp-touchCalibration_y0)*_height/touchCalibration_y1;
     if(touchCalibration_invert_x)
       xx = _width - xx;
     if(touchCalibration_invert_y)
@@ -212,17 +212,15 @@ void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t 
   }
 
 
-
-  // check orientation
   // from case 0 to case 1, the y value changed. 
   // If the measured delta of the touch x axis is bigger than the delta of the y axis, the touch and TFT axes are switched.
   touchCalibration_rotate = false;
   if(abs(values[0]-values[2]) > abs(values[1]-values[3])){
     touchCalibration_rotate = true;
-    touchCalibration_x0 = (values[0] + values[4])/2; // calc min x
-    touchCalibration_x1 = (values[2] + values[6])/2; // calc max x
-    touchCalibration_y0 = (values[1] + values[3])/2; // calc min y
-    touchCalibration_y1 = (values[5] + values[7])/2; // calc max y
+    touchCalibration_x0 = (values[1] + values[3])/2; // calc min x
+    touchCalibration_x1 = (values[5] + values[7])/2; // calc max x
+    touchCalibration_y0 = (values[0] + values[4])/2; // calc min y
+    touchCalibration_y1 = (values[2] + values[6])/2; // calc max y
   } else {
     touchCalibration_x0 = (values[0] + values[2])/2; // calc min x
     touchCalibration_x1 = (values[4] + values[6])/2; // calc max x
@@ -231,19 +229,19 @@ void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t 
   }
 
   // in addition, the touch screen axis could be in the opposite direction of the TFT axis
-  touchCalibration_invert_x = true;
+  touchCalibration_invert_x = false;
   if(touchCalibration_x0 > touchCalibration_x1){
     values[0]=touchCalibration_x0;
     touchCalibration_x0 = touchCalibration_x1;
     touchCalibration_x1 = values[0];
-    touchCalibration_invert_x = false;
+    touchCalibration_invert_x = true;
   }
-  touchCalibration_invert_y = true;
+  touchCalibration_invert_y = false;
   if(touchCalibration_y0 > touchCalibration_y1){
     values[0]=touchCalibration_y0;
     touchCalibration_y0 = touchCalibration_y1;
     touchCalibration_y1 = values[0];
-    touchCalibration_invert_y = false;
+    touchCalibration_invert_y = true;
   }
 
   // pre calculate
