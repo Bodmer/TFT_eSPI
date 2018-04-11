@@ -195,6 +195,13 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   fontsloaded |= 0x0100; // Bit 8 set
 #endif
 
+#ifdef LOAD_FONT8N
+  fontsloaded |= 0x0200; // Bit 9 set
+#endif
+
+#ifdef SMOOTH_FONT
+  fontsloaded |= 0x8000; // Bit 15 set
+#endif
 }
 
 
@@ -4573,6 +4580,12 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
   tft_settings.tft_spi_freq = SPI_FREQUENCY/100000;
 #endif
 
+#if defined(TFT_SPI_OVERLAP)
+  tft_settings.overlap = true;
+#else
+  tft_settings.overlap = false;
+#endif
+
   tft_settings.tft_driver = TFT_DRIVER;
   tft_settings.tft_width  = _init_width;
   tft_settings.tft_height = _init_height;
@@ -4677,9 +4690,8 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifdef TOUCH_CS
   #include "Extensions/Touch.cpp"
+  #include "Extensions/Button.cpp"
 #endif
-
-#include "Extensions/Button.cpp"
 
 #include "Extensions/Sprite.cpp"
 

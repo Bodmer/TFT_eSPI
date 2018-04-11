@@ -90,21 +90,27 @@
   #endif
 #endif
 
-
-#if defined (ESP8266) && defined (D0_USED_FOR_DC)
-  #define DC_C digitalWrite(TFT_DC, LOW)
-  #define DC_D digitalWrite(TFT_DC, HIGH)
-#elif defined (ESP32)
-  #if defined (ESP32_PARALLEL)
-    #define DC_C GPIO.out_w1tc = (1 << TFT_DC) // Too fast for ST7735
-    #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
-  #else
-    #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
-    #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
-  #endif
+#ifndef TFT_DC
+  #define DC_C // No macro allocated so it generates no code
+  #define DC_D // No macro allocated so it generates no code
 #else
-  #define DC_C GPOC=dcpinmask
-  #define DC_D GPOS=dcpinmask
+  #if defined (ESP8266) && defined (D0_USED_FOR_DC)
+    #define DC_C digitalWrite(TFT_DC, LOW)
+    #define DC_D digitalWrite(TFT_DC, HIGH)
+  #elif defined (ESP32)
+    #if defined (ESP32_PARALLEL)
+      #define DC_C GPIO.out_w1tc = (1 << TFT_DC) // Too fast for ST7735
+      #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
+      //#define DC_C digitalWrite(TFT_DC, LOW)
+      //#define DC_D digitalWrite(TFT_DC, HIGH)
+    #else
+      #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
+      #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
+    #endif
+  #else
+    #define DC_C GPOC=dcpinmask
+    #define DC_D GPOS=dcpinmask
+  #endif
 #endif
 
 #if defined (TFT_SPI_OVERLAP)
@@ -173,8 +179,12 @@
   #define tft_Write_8(C)  GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)C); WR_H
 
   // Write 16 bits to TFT
+#ifdef PSEUDO_8_BIT
+  #define tft_Write_16(C) WR_L;GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
+#else
   #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 8)); WR_H; \
                           GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
+#endif
 
   // 16 bit write with swapped bytes
   #define tft_Write_16S(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H; \
@@ -340,6 +350,7 @@ typedef struct
 int16_t esp;
 uint8_t trans;
 uint8_t serial;
+uint8_t overlap;
 
 uint16_t tft_driver; // Hexadecimal code
 uint16_t tft_width;  // Rotation 0 width and height

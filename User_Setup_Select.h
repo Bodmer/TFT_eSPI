@@ -106,7 +106,7 @@
 #define PIN_MOSI 8  // SD1
 #define PIN_MISO 7  // SD0
 #define PIN_SCLK 6  // CLK
-#define PIN_HWCS 0  // CMD
+#define PIN_HWCS 0  // D3
 
 #define PIN_D11  9  // SD2
 #define PIN_D12 10  // SD4

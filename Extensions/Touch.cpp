@@ -1,11 +1,15 @@
 // The following touch screen support code by maxpautsch was merged 1/10/17
 // https://github.com/maxpautsch
+
 // Define TOUCH_CS is the user setup file to enable this code
+
 // A demo is provided in examples Generic folder
-// Additions by Bodmer to double sample and use Z value to improve detection reliability
+
+// Additions by Bodmer to double sample, use Z value to improve detection reliability
+// and to correct rotation handling
+
 // See license in root directory.
 
-#ifdef TOUCH_CS // If a pin has been allocated to the Touch screen load functions
 /***************************************************************************************
 ** Function name:           getTouchRaw
 ** Description:             read raw touch position. Return false if not pressed. 
@@ -283,35 +287,3 @@ void TFT_eSPI::setTouch(uint16_t *parameters){
   touchCalibration_invert_x = parameters[4] & 0x02;
   touchCalibration_invert_y = parameters[4] & 0x04;
 }
-
-
-#else // TOUCH CS is not defined so generate dummy functions that do nothing
-
-/***************************************************************************************
-** Function name:           Dummy functions for case where chip select pin is undefined
-** Description:             
-***************************************************************************************/
-
-uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
-  return true;
-}
-
-uint16_t TFT_eSPI::getTouchRawZ(void){
-  return true;
-}
-
-uint8_t TFT_eSPI::validTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
-  return true;
-}
-  
-uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
-  return true;
-}
-
-void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_bg, uint32_t color_fg, uint8_t size){
-}
-
-void TFT_eSPI::setTouch(uint16_t *parameters){
-}
-
-#endif // TOUCH_CS
