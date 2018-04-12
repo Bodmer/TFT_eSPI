@@ -49,8 +49,8 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
 
   if ( w < 1 || h < 1 ) return NULL;
 
-  this->_width = _iwidth  = _dwidth  = w;
-  this->_height = _iheight = _dheight = h;
+  _iwidth  = _dwidth  = w;
+  _iheight = _dheight = h;
 
   this->cursor_x = 0;
   this->cursor_y = 0;
