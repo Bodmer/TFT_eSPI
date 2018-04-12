@@ -471,7 +471,9 @@ class TFT_eSPI : public Print {
                    fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
 
   virtual int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
-                   drawChar(unsigned int uniCode, int x, int y);
+                   drawChar(unsigned int uniCode, int x, int y),
+                   height(void),
+                   width(void);
 
   // The TFT_eSprite class inherits the following functions
   void     setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
@@ -588,9 +590,7 @@ class TFT_eSPI : public Print {
            drawCentreString(const String& string, int dX, int poY, int font), // Deprecated, use setTextDatum() and drawString()
            drawRightString(const String& string, int dX, int poY, int font);  // Deprecated, use setTextDatum() and drawString()
 
-  int16_t  height(void),
-           width(void),
-           textWidth(const char *string, int font),
+  int16_t  textWidth(const char *string, int font),
            textWidth(const char *string),
            textWidth(const String& string, int font),
            textWidth(const String& string),

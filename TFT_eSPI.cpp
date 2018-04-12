@@ -4115,9 +4115,9 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
     }
     // Check coordinates are OK, adjust if not
     if (poX < 0) poX = 0;
-    if (poX+cwidth>_width)   poX = _width - cwidth;
+    if (poX+cwidth > width())   poX = width() - cwidth;
     if (poY < 0) poY = 0;
-    if (poY+cheight-baseline>_height) poY = _height - cheight;
+    if (poY+cheight-baseline> height()) poY = height() - cheight;
   }
 
 
