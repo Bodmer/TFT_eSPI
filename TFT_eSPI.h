@@ -99,13 +99,18 @@
     #define DC_D digitalWrite(TFT_DC, HIGH)
   #elif defined (ESP32)
     #if defined (ESP32_PARALLEL)
-      #define DC_C GPIO.out_w1tc = (1 << TFT_DC) // Too fast for ST7735
+      #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
       #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
       //#define DC_C digitalWrite(TFT_DC, LOW)
       //#define DC_D digitalWrite(TFT_DC, HIGH)
     #else
-      #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
-      #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
+      #if TFT_DC >= 32 || TFT_DC <= -1
+        #define DC_C digitalWrite(TFT_DC, LOW)
+        #define DC_D digitalWrite(TFT_DC, HIGH)
+      #else
+        #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
+        #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
+      #endif
     #endif
   #else
     #define DC_C GPOC=dcpinmask
@@ -129,8 +134,13 @@
       #define CS_L // The TFT CS is set permanently low during init()
       #define CS_H
     #else
-      #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
-      #define CS_H GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1ts = (1 << TFT_CS)
+      #if TFT_CS >= 32 || TFT_CS <= -1
+        #define CS_L digitalWrite(TFT_DC, LOW)
+        #define CS_H digitalWrite(TFT_DC, HIGH)
+      #else
+        #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
+        #define CS_H GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1ts = (1 << TFT_CS)
+      #endif
     #endif
   #else
     #define CS_L GPOC=cspinmask
