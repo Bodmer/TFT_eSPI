@@ -603,10 +603,15 @@ class TFT_eSPI : public Print {
 
   void     getSetup(setup_t& tft_settings); // Sketch provides the instance to populate
 
-  int32_t  cursor_x, cursor_y;
+  int32_t  cursor_x, cursor_y, padX;
   uint32_t textcolor, textbgcolor;
+
   uint32_t bitmap_fg, bitmap_bg;
 
+  uint8_t  textfont,  // Current selected font
+           textsize,  // Current font size multiplier
+           textdatum, // Text reference datum
+           rotation;  // Display rotation (0-3)
 
  private:
 
@@ -631,20 +636,16 @@ class TFT_eSPI : public Print {
 
  protected:
 
-  int32_t  win_xe, win_ye, padX;
+  int32_t  win_xe, win_ye;
 
   uint32_t _init_width, _init_height; // Display w/h as input, used by setRotation()
-  uint32_t _width, _height; // Display w/h as modified by current rotation
+  uint32_t _width, _height;           // Display w/h as modified by current rotation
   uint32_t addr_row, addr_col;
 
   uint32_t fontsloaded;
 
   uint8_t  glyph_ab,  // glyph height above baseline
-           glyph_bb,  // glyph height below baseline
-           textfont,  // Current selected font
-           textsize,  // Current font size multiplier
-           textdatum, // Text reference datum
-           rotation;  // Display rotation (0-3)
+           glyph_bb;  // glyph height below baseline
 
   bool     textwrapX, textwrapY;   // If set, 'wrap' text at right and optionally bottom edge of display
   bool     _swapBytes; // Swap the byte order for TFT pushImage()
