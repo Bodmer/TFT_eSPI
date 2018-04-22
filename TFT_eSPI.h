@@ -101,15 +101,23 @@
     #if defined (ESP32_PARALLEL)
       #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
       #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
-      //#define DC_C digitalWrite(TFT_DC, LOW)
-      //#define DC_D digitalWrite(TFT_DC, HIGH)
+
     #else
-      #if TFT_DC >= 32 || TFT_DC <= -1
-        #define DC_C digitalWrite(TFT_DC, LOW)
-        #define DC_D digitalWrite(TFT_DC, HIGH)
+      #if TFT_DC >= 32
+        #define DC_C GPIO.out1_w1ts.val = (1 << (TFT_DC - 32)); \
+                     GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
+        #define DC_D GPIO.out1_w1tc.val = (1 << (TFT_DC - 32)); \
+                     GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
       #else
-        #define DC_C GPIO.out_w1ts = (1 << TFT_DC); GPIO.out_w1tc = (1 << TFT_DC)
-        #define DC_D GPIO.out_w1tc = (1 << TFT_DC); GPIO.out_w1ts = (1 << TFT_DC)
+        #if TFT_DC >= 0
+          #define DC_C GPIO.out_w1ts = (1 << TFT_DC); \
+                       GPIO.out_w1tc = (1 << TFT_DC)
+          #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
+                       GPIO.out_w1ts = (1 << TFT_DC)
+        #else
+          #define DC_C
+          #define DC_D
+        #endif
       #endif
     #endif
   #else
@@ -134,12 +142,19 @@
       #define CS_L // The TFT CS is set permanently low during init()
       #define CS_H
     #else
-      #if TFT_CS >= 32 || TFT_CS <= -1
-        #define CS_L digitalWrite(TFT_DC, LOW)
-        #define CS_H digitalWrite(TFT_DC, HIGH)
+      #if TFT_CS >= 32
+        #define CS_L GPIO.out1_w1ts.val = (1 << (TFT_CS - 32)); \
+                     GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
+        #define CS_H GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); \
+                     GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
       #else
-        #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
-        #define CS_H GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1ts = (1 << TFT_CS)
+        #if TFT_CS >= 0
+          #define CS_L GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
+          #define CS_H GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1ts = (1 << TFT_CS)
+        #else
+          #define CS_L
+          #define CS_H
+        #endif
       #endif
     #endif
   #else
@@ -161,9 +176,7 @@
 #ifdef TFT_WR
   #if defined (ESP32)
     #define WR_L GPIO.out_w1tc = (1 << TFT_WR)
-    //#define WR_L digitalWrite(TFT_WR, LOW)
     #define WR_H GPIO.out_w1ts = (1 << TFT_WR)
-    //#define WR_H digitalWrite(TFT_WR, HIGH)
   #else
     #define WR_L GPOC=wrpinmask
     #define WR_H GPOS=wrpinmask
