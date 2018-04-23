@@ -31,6 +31,14 @@
   #define SPI_TOUCH_FREQUENCY  2500000
 #endif
 
+// Use GLCD font in error case where user requests a smooth font file
+// that does not exist (this is a temporary fix to stop ESP32 reboot)
+#ifdef SMOOTH_FONT
+  #ifndef LOAD_GLCD
+    #define LOAD_GLCD
+  #endif
+#endif
+
 // Only load the fonts defined in User_Setup.h (to save space)
 // Set flag so RLE rendering code is optionally compiled
 #ifdef LOAD_GLCD
