@@ -18,22 +18,30 @@ SOFTWARE.
 See more at http://blog.squix.ch
 
 Adapted by Bodmer to use the faster TFT_ILI9341_ESP library:
-https://github.com/Bodmer/TFT_ILI9341_ESP
+https://github.com/Bodmer/TFT_eSPI
 
+Version 9
 */
 
+// ***************************************************************************************
+//                                WARNING - READ THIS
+//
+// 3M Flash Size MUST be allocated to SPIFFS using the IDE Tools menu option or else the
+// ESP8266 may crash or do strange things (due to lack of error checks in SPIFFS library?)
+// ***************************************************************************************
+//
 // Setup
 const int UPDATE_INTERVAL_SECS = 10 * 60; // Update every 10 minutes
 
-// Pins for the TFT interface are defined in the User_Config.h file inside the TFT_ILI9341_ESP library
+// Pins for the TFT interface are defined in the User_Config.h file inside the TFT_eSPI library
 
 // TimeClient settings
 const float UTC_OFFSET = 1;
 
-// Wunderground Settings, EDIT TO SUIT YOUR LOCATION
+// Wunderground Settings, EDIT to suit your Wunderground key and location
 const boolean IS_METRIC = true; // Temperature only? Wind speed units appear to stay in mph. To do: investigate <<<<<<<<<<<<<<<<<<<<<<<<<
-const String WUNDERGRROUND_API_KEY = "<WUNDERGROUND KEY HERE>";
-//const String WUNDERGRROUND_API_KEY = "1c265fajf48s0a82"; // Random key example showing how the above line should look
+//const String WUNDERGRROUND_API_KEY = "WUNDERGROUND KEY HERE";
+  const String WUNDERGRROUND_API_KEY = "1c265fajf48s0a82"; // Random key example showing how the above line should look
 
 // For language codes see https://www.wunderground.com/weather/api/d/docs?d=language-support&_ga=1.55148395.1951311424.1484425551
 const String WUNDERGRROUND_LANGUAGE = "EN"; // Language EN = English
@@ -53,8 +61,8 @@ const String WUNDERGROUND_CITY = "Base_Naval"; // City, "London", "FL/Boca_Raton
 #define WIND_SPEED_UNITS " kph"
 
 //Thingspeak Settings - not used, no need to populate this at the moment
-const String THINGSPEAK_CHANNEL_ID = "<CHANNEL_ID_HERE>";
-const String THINGSPEAK_API_READ_KEY = "<API_READ_KEY_HERE>";
+const String THINGSPEAK_CHANNEL_ID = "CHANNEL_ID_HERE";
+const String THINGSPEAK_API_READ_KEY = "API_READ_KEY_HERE";
 
 // List, so that the downloader knows what to fetch
 String wundergroundIcons [] = {"chanceflurries","chancerain","chancesleet","chancesnow","clear","cloudy","flurries","fog","hazy","mostlycloudy","mostlysunny","partlycloudy","partlysunny","rain","sleet","snow","sunny","tstorms","unknown"};

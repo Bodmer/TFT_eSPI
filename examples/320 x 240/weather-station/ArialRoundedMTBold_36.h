@@ -22,7 +22,7 @@ See more at http://blog.squix.ch
 // In case of problems make sure that you are using the font file with the correct version!
 
 // Bodmer fix: End character is 0x7D not 0x7E, so bug in last line of the file corrected
-// this avoids screen corruption if ~ is printer
+// this avoids screen corruption if ~ is printed
 
 // Bodmer change: '`' changed to tiny degree symbol (typically this character is on top left key of a QWERTY keyboard)
 

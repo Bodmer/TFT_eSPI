@@ -275,30 +275,35 @@ void GfxUi::jpegRender(int xpos, int ypos) {
     int mcu_x = JpegDec.MCUx * mcu_w + xpos;
     int mcu_y = JpegDec.MCUy * mcu_h + ypos;
 
-    // check if the image block size needs to be changed for the right and bottom edges
+    // check if the image block size needs to be changed for the right edge
     if (mcu_x + mcu_w <= max_x) win_w = mcu_w;
     else win_w = min_w;
+
+    // check if the image block size needs to be changed for the bottom edge
     if (mcu_y + mcu_h <= max_y) win_h = mcu_h;
     else win_h = min_h;
 
-    // calculate how many pixels must be drawn
-    uint32_t mcu_pixels = win_w * win_h;
+    // copy pixels into a contiguous block
+    if (win_w != mcu_w)
+    {
+      uint16_t *cImg;
+      int p = 0;
+      cImg = pImg + win_w;
+      for (int h = 1; h < win_h; h++)
+      {
+        p += mcu_w;
+        for (int w = 0; w < win_w; w++)
+        {
+          *cImg = *(pImg + w + p);
+          cImg++;
+        }
+      }
+    }
 
     // draw image MCU block only if it will fit on the screen
     if ( ( mcu_x + win_w) <= _tft->width() && ( mcu_y + win_h) <= _tft->height())
-  {
-#ifdef USE_SPI_BUFFER
-      // Now set a MCU bounding window on the TFT to push pixels into (x, y, x + width - 1, y + height - 1)
-      _tft->setWindow(mcu_x, mcu_y, mcu_x + win_w - 1, mcu_y + win_h - 1);
-      // Write all MCU pixels to the TFT window
-      uint8_t *pImg8 = (uint8_t*)pImg;     // Convert 16 bit pointer to an 8 bit pointer
-      _tft->pushColors(pImg8, mcu_pixels*2); // Send bytes via 64 byte SPI port buffer
-#else
-      // Now set a MCU bounding window on the TFT to push pixels into (x, y, x + width - 1, y + height - 1)
-      _tft->setAddrWindow(mcu_x, mcu_y, mcu_x + win_w - 1, mcu_y + win_h - 1);
-      // Write all MCU pixels to the TFT window
-      while (mcu_pixels--) _tft->pushColor(*pImg++);
-#endif
+    {
+      _tft->pushImage(mcu_x, mcu_y, win_w, win_h, pImg);
     }
 
     else if ( ( mcu_y + win_h) >= _tft->height()) JpegDec.abort();
