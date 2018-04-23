@@ -29,6 +29,7 @@ fillEllipse	KEYWORD2
 drawTriangle	KEYWORD2
 fillTriangle	KEYWORD2
 drawBitmap	KEYWORD2
+drawXBitmap	KEYWORD2
 setCursor	KEYWORD2
 getCursorX	KEYWORD2
 getCursorY	KEYWORD2
