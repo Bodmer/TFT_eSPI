@@ -33,7 +33,7 @@ TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
   _xptr = 0; // pushColor coordinate
   _yptr = 0;
 
-  this->cursor_y  = this->cursor_x    = 0; // Text cursor position
+  this->cursor_y = this->cursor_x = 0; // Text cursor position
 }
 
 
@@ -49,7 +49,7 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
 
   if ( w < 1 || h < 1 ) return NULL;
 
-  _iwidth  = _dwidth  = w;
+  _iwidth  = _dwidth  = _bitwidth = w;
   _iheight = _dheight = h;
 
   this->cursor_x = 0;
@@ -703,7 +703,7 @@ int16_t TFT_eSprite::width(void)
 
   if (_rotation == 1 || _rotation == 3) return _dheight;
 
-  return _dwidth;
+  return _bitwidth;
 }
 
 
@@ -1568,6 +1568,7 @@ void TFT_eSprite::printToSprite(String string)
   char cbuffer[len + 1];              // Add 1 for the null
   string.toCharArray(cbuffer, len + 1); // Add 1 for the null, otherwise characters get dropped
   printToSprite(cbuffer, len);
+  //printToSprite((char*)string.c_str(), string.length());
 }
 
 
