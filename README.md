@@ -39,7 +39,7 @@ Here is the Adafruit_GFX "FreeSans12pt" bitmap font compared to the same font dr
 
 ![Smooth_font](https://i.imgur.com/gAeDPFY.png)
 
-The smooth font example dispays the following screen:
+The smooth font example displays the following screen:
 
 ![Example](https://i.imgur.com/xJF0Oz7.png)
 
