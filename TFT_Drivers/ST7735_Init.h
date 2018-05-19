@@ -24,7 +24,7 @@
       0x03,                   //     3 lines back porch
       10,                     //     10 ms delay
     ST7735_MADCTL , 1      ,  //  5: Memory access ctrl (directions), 1 arg:
-      0x08,                   //     Row addr/col addr, bottom to top refresh
+      0x48,                   //     Row addr/col addr, bottom to top refresh
     ST7735_DISSET5, 2      ,  //  6: Display settings #5, 2 args, no delay:
       0x15,                   //     1 clk cycle nonoverlap, 2 cycle gate
                               //     rise, 3 cycle osc equalize
