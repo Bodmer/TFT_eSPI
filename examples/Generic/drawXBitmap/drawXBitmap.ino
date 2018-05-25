@@ -7,7 +7,7 @@
 // This example is part of the TFT_eSPI library:
 // https://github.com/Bodmer/TFT_eSPI
 
-// Created by Bodmer 23/14/18
+// Created by Bodmer 23/04/18
 
 #include "xbm.h"             // Sketch tab header for xbm images
 

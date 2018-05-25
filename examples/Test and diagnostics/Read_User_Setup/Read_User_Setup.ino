@@ -8,7 +8,7 @@
   verify the correct settings are being picked up by the compiler.
 
   If support is needed the output can be cut and pasted into an Arduino Forum post and
-  already inlcudes the formatting [code]...[/code] markups.
+  already includes the formatting [code]...[/code] markups.
 
   Written by Bodmer 9/4/18
 */

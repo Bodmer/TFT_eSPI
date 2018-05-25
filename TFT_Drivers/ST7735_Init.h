@@ -140,8 +140,6 @@
     ST7735_DISPON ,    TFT_INIT_DELAY, //  4: Main screen turn on, no args w/delay
       100 };                  //     100 ms delay
 
-     tabcolor = TAB_COLOUR;
-
      if (tabcolor == INITB)
      {
        commandList(Bcmd);

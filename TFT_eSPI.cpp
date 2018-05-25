@@ -209,9 +209,9 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 ** Function name:           begin
 ** Description:             Included for backwards compatibility
 ***************************************************************************************/
-void TFT_eSPI::begin(void)
+void TFT_eSPI::begin(uint8_t tc)
 {
- init();
+ init(tc);
 }
 
 
@@ -219,7 +219,7 @@ void TFT_eSPI::begin(void)
 ** Function name:           init
 ** Description:             Reset, then initialise the TFT display registers
 ***************************************************************************************/
-void TFT_eSPI::init(void)
+void TFT_eSPI::init(uint8_t tc)
 {
 #if !defined (ESP32)
   #ifdef TFT_CS
@@ -307,6 +307,7 @@ void TFT_eSPI::init(void)
     #include "TFT_Drivers/ILI9341_Init.h"
 
 #elif defined (ST7735_DRIVER)
+    tabcolor = tc;
     #include "TFT_Drivers/ST7735_Init.h"
 
 #elif defined (ILI9163_DRIVER)
@@ -317,6 +318,9 @@ void TFT_eSPI::init(void)
      
 #elif defined (RPI_ILI9486_DRIVER)
     #include "TFT_Drivers/RPI_ILI9486_Init.h"
+
+#elif defined (ILI9486_DRIVER)
+    #include "TFT_Drivers/ILI9486_Init.h"
 
 #elif defined (ILI9481_DRIVER)
     #include "TFT_Drivers/ILI9481_Init.h"
@@ -358,6 +362,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (RPI_ILI9486_DRIVER)
     #include "TFT_Drivers/RPI_ILI9486_Rotation.h"
+
+#elif defined (ILI9486_DRIVER)
+    #include "TFT_Drivers/ILI9486_Rotation.h"
 
 #elif defined (ILI9481_DRIVER)
     #include "TFT_Drivers/ILI9481_Rotation.h"

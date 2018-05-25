@@ -21,6 +21,10 @@
 // available and the pins to be used
 #include <User_Setup_Select.h>
 
+#ifndef TAB_COLOUR
+  TAB_COLOUR 0
+#endif
+
 // If the frequency is not defined, set a default
 #ifndef SPI_FREQUENCY
   #define SPI_FREQUENCY  20000000
@@ -491,7 +495,7 @@ class TFT_eSPI : public Print {
 
   TFT_eSPI(int16_t _W = TFT_WIDTH, int16_t _H = TFT_HEIGHT);
 
-  void     init(void), begin(void); // Same - begin included for backwards compatibility
+  void     init(uint8_t tc = TAB_COLOUR), begin(uint8_t tc = TAB_COLOUR); // Same - begin included for backwards compatibility
 
   // These are virtual so the TFT_eSprite class can override them with sprite specific functions
   virtual void     drawPixel(uint32_t x, uint32_t y, uint32_t color),

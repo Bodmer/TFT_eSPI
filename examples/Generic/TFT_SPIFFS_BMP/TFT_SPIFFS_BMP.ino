@@ -8,7 +8,7 @@
 // Data folder, press Ctrl+K to see this folder. Use the IDE "Tools" menu
 // option to upload the sketches data folder to the SPIFFS
 
-// This sketch ahs been tested on the ESP32 and ESP8266
+// This sketch has been tested on the ESP32 and ESP8266
 
 //----------------------------------------------------------------------------------------------------
 
