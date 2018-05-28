@@ -22,7 +22,7 @@
 #include <User_Setup_Select.h>
 
 #ifndef TAB_COLOUR
-  TAB_COLOUR 0
+  #define TAB_COLOUR 0
 #endif
 
 // If the frequency is not defined, set a default
