@@ -3231,7 +3231,7 @@ void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
 // Bresenham's algorithm - thx wikipedia - speed enhanced by Bodmer to use
 // an efficient FastH/V Line draw routine for line segments of 2 pixels or more
 
-#if defined (RPI_ILI9486_DRIVER) || defined (ESP32) || defined (RPI_WRITE_STROBE)
+#if defined (RPI_ILI9486_DRIVER) || defined (ESP32) || defined (RPI_WRITE_STROBE) || defined (HX8357D_DRIVER)
 
 void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color)
 {
