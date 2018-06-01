@@ -15,7 +15,7 @@
 // ##################################################################################
 
 // Only define one driver, the other ones must be commented out
-#define ILI9341_DRIVER
+//#define ILI9341_DRIVER
 //#define ST7735_DRIVER
 //#define ILI9163_DRIVER
 //#define S6D02A1_DRIVER
@@ -23,7 +23,7 @@
 //#define HX8357D_DRIVER
 //#define ILI9481_DRIVER
 //#define ILI9488_DRIVER
-//#define ST7789_DRIVER
+#define ST7789_DRIVER
 
 // For M5Stack ESP32 module with integrated display ONLY, remove // in line below
 //#define M5STACK
