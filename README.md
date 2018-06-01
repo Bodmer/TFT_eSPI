@@ -1,6 +1,6 @@
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with a driver for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9486 and HX8357 based TFT displays that support SPI.
+An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with a driver for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9486, HX8357D and ST7789 based TFT displays that support SPI.
 
 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with an ESP32. The ILI9488 is supported in 8 bit parallel mode.
 
