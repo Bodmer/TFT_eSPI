@@ -2141,6 +2141,10 @@ int16_t TFT_eSPI::fontHeight(int16_t font)
   return pgm_read_byte( &fontdata[font].height ) * textsize;
 }
 
+int16_t TFT_eSPI::fontHeight()
+{
+  return fontHeight(textfont);
+}
 
 /***************************************************************************************
 ** Function name:           drawChar
