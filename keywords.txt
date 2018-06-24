@@ -5,9 +5,8 @@ drawPixel	KEYWORD2
 drawChar	KEYWORD2
 setAddrWindow	KEYWORD2
 setWindow	KEYWORD2
+readAddrWindow	KEYWORD2
 pushColor	KEYWORD2
-pushColor	KEYWORD2
-pushColors	KEYWORD2
 pushColors	KEYWORD2
 fillScreen	KEYWORD2
 writeBegin	KEYWORD2
@@ -30,9 +29,10 @@ fillEllipse	KEYWORD2
 drawTriangle	KEYWORD2
 fillTriangle	KEYWORD2
 drawBitmap	KEYWORD2
+drawXBitmap	KEYWORD2
 setCursor	KEYWORD2
-setCursor	KEYWORD2
-setTextColor	KEYWORD2
+getCursorX	KEYWORD2
+getCursorY	KEYWORD2
 setTextColor	KEYWORD2
 setTextSize	KEYWORD2
 setTextFont	KEYWORD2
@@ -49,11 +49,16 @@ readcommand32	KEYWORD2
 readPixel	KEYWORD2
 readRect	KEYWORD2
 pushRect	KEYWORD2
+pushImage	KEYWORD2
+setSwapBytes	KEYWORD2
+getSwapBytes	KEYWORD2
 readRectRGB	KEYWORD2
 getRotation	KEYWORD2
+getTextDatum	KEYWORD2
 fontsLoaded	KEYWORD2
 color565	KEYWORD2
-drawChar	KEYWORD2
+color16to8	KEYWORD2
+color8to16	KEYWORD2
 drawNumber	KEYWORD2
 drawFloat	KEYWORD2
 drawString	KEYWORD2
@@ -64,3 +69,44 @@ width	KEYWORD2
 textWidth	KEYWORD2
 fontHeight	KEYWORD2
 
+getTouchRaw	KEYWORD2
+getTouchRawZ	KEYWORD2
+getTouch	KEYWORD2
+calibrateTouch	KEYWORD2
+setTouch	KEYWORD2
+validTouch	KEYWORD2
+
+TFT_eSPI_Button	KEYWORD1
+
+initButton	KEYWORD2
+textcolor	KEYWORD2
+initButtonUL	KEYWORD2
+drawButton	KEYWORD2
+contains	KEYWORD2
+press	KEYWORD2
+isPressed	KEYWORD2
+justPressed	KEYWORD2
+justReleased	KEYWORD2
+
+
+TFT_eSprite	KEYWORD1
+
+createSprite	KEYWORD2
+setColorDepth	KEYWORD2
+deleteSprite	KEYWORD2
+fillSprite	KEYWORD2
+pushBitmap	KEYWORD2
+pushSprite	KEYWORD2
+setScrollRect	KEYWORD2
+scroll	KEYWORD2
+printToSprite	KEYWORD2
+frameBuffer	KEYWORD2
+setBitmapColor	KEYWORD2
+
+alphaBlend	KEYWORD2
+showFont	KEYWORD2
+loadFont	KEYWORD2
+unloadFont	KEYWORD2
+getUnicodeIndex	KEYWORD2
+decodeUTF8	KEYWORD2
+drawGlyph	KEYWORD2

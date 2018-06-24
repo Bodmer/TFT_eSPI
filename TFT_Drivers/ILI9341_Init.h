@@ -55,7 +55,11 @@
   writedata(0x86);  //--
 
   writecommand(ILI9341_MADCTL);    // Memory Access Control
-  writedata(0x48);
+#ifdef M5STACK
+  writedata(0xA8); // Rotation 0 (portrait mode)
+#else
+  writedata(0x48); // Rotation 0 (portrait mode)
+#endif
 
   writecommand(ILI9341_PIXFMT);
   writedata(0x55);
@@ -116,4 +120,11 @@
   spi_begin();
   
   writecommand(ILI9341_DISPON);    //Display on
+
+#ifdef M5STACK
+  // Turn on the back-light LED
+  digitalWrite(TFT_BL, HIGH);
+  pinMode(TFT_BL, OUTPUT);
+#endif
+
 }

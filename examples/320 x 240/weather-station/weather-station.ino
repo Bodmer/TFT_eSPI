@@ -30,6 +30,7 @@
   New smart WU splash startup screen and updated progress messages
   Display does not need to be blanked between updates
   Icons nudged about slightly to add wind direction + speed
+  Barometric pressure added
 */
 
 #define SERIAL_MESSAGES

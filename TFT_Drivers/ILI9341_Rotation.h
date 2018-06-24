@@ -6,45 +6,77 @@
   writecommand(TFT_MADCTL);
   switch (rotation) {
     case 0:
+#ifdef M5STACK
+      writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
+#else
       writedata(TFT_MAD_MX | TFT_MAD_BGR);
-      _width  = TFT_WIDTH;
-      _height = TFT_HEIGHT;
+#endif
+      _width  = _init_width;
+      _height = _init_height;
       break;
     case 1:
+#ifdef M5STACK
+      writedata(TFT_MAD_BGR);
+#else
       writedata(TFT_MAD_MV | TFT_MAD_BGR);
-      _width  = TFT_HEIGHT;
-      _height = TFT_WIDTH;
+#endif
+      _width  = _init_height;
+      _height = _init_width;
       break;
     case 2:
+#ifdef M5STACK
+      writedata(TFT_MAD_MV | TFT_MAD_MX | TFT_MAD_BGR);
+#else
       writedata(TFT_MAD_MY | TFT_MAD_BGR);
-      _width  = TFT_WIDTH;
-      _height = TFT_HEIGHT;
+#endif
+      _width  = _init_width;
+      _height = _init_height;
       break;
     case 3:
-      writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
-      _width  = TFT_HEIGHT;
-      _height = TFT_WIDTH;
-      break;
-  // These next rotations are for bottum up BMP drawing
-    case 4:
+#ifdef M5STACK
       writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
-      _width  = TFT_WIDTH;
-      _height = TFT_HEIGHT;
+#else
+      writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
+#endif
+      _width  = _init_height;
+      _height = _init_width;
+      break;
+  // These next rotations are for bottom up BMP drawing
+    case 4:
+#ifdef M5STACK
+      writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
+#else
+      writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
+#endif
+      _width  = _init_width;
+      _height = _init_height;
       break;
     case 5:
+#ifdef M5STACK
+      writedata(TFT_MAD_MY | TFT_MAD_BGR);
+#else
       writedata(TFT_MAD_MV | TFT_MAD_MX | TFT_MAD_BGR);
-      _width  = TFT_HEIGHT;
-      _height = TFT_WIDTH;
+#endif
+      _width  = _init_height;
+      _height = _init_width;
       break;
     case 6:
+#ifdef M5STACK
+      writedata(TFT_MAD_MV | TFT_MAD_BGR);
+#else
       writedata(TFT_MAD_BGR);
-      _width  = TFT_WIDTH;
-      _height = TFT_HEIGHT;
+#endif
+      _width  = _init_width;
+      _height = _init_height;
       break;
     case 7:
+#ifdef M5STACK
+      writedata(TFT_MAD_MX | TFT_MAD_BGR);
+#else
       writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
-      _width  = TFT_HEIGHT;
-      _height = TFT_WIDTH;
+#endif
+      _width  = _init_height;
+      _height = _init_width;
       break;
 
   }
