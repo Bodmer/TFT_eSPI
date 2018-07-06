@@ -69,7 +69,10 @@
      #include <TFT_Drivers/S6D02A1_Defines.h>
      #define  TFT_DRIVER 0x6D02
 #elif defined (RPI_ILI9486_DRIVER)
-     #include <TFT_Drivers/RPI_ILI9486_Defines.h>
+     #include <TFT_Drivers/ILI9486_Defines.h>
+     #define  TFT_DRIVER 0x9486
+#elif defined (ILI9486_DRIVER)
+     #include <TFT_Drivers/ILI9486_Defines.h>
      #define  TFT_DRIVER 0x9486
 #elif defined (ILI9481_DRIVER)
      #include <TFT_Drivers/ILI9481_Defines.h>

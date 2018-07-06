@@ -4,7 +4,7 @@
 #define TFT_HEIGHT 480
 
 // For Raspberry Pi ILI9486 only with a modified board to add a write strobe:
-#ifdef TFT_WR
+#if defined (TFT_WR) && defined (RPI_ILI9486_DRIVER)
   #define RPI_WRITE_STROBE
 #endif
 

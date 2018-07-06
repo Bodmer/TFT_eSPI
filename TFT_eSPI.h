@@ -30,6 +30,12 @@
   #define SPI_FREQUENCY  20000000
 #endif
 
+#ifdef ST7789_DRIVER
+  #define TFT_SPI_MODE SPI_MODE3
+#else
+  #define TFT_SPI_MODE SPI_MODE0
+#endif
+
 // If the frequency is not defined, set a default
 #ifndef SPI_TOUCH_FREQUENCY
   #define SPI_TOUCH_FREQUENCY  2500000
@@ -214,12 +220,12 @@
   #define tft_Write_8(C)  GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)C); WR_H
 
   // Write 16 bits to TFT
-#ifdef PSEUDO_8_BIT
-  #define tft_Write_16(C) WR_L;GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
-#else
-  #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 8)); WR_H; \
+  #ifdef PSEUDO_8_BIT
+    #define tft_Write_16(C) WR_L;GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
+  #else
+    #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 8)); WR_H; \
                           GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
-#endif
+  #endif
 
   // 16 bit write with swapped bytes
   #define tft_Write_16S(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H; \
@@ -237,6 +243,13 @@
     #define RD_H GPIO.out_w1ts = (1 << TFT_RD)
     //#define RD_H digitalWrite(TFT_WR, HIGH)
   #endif
+
+#elif  defined (ILI9488_DRIVER) // 16 bit colour converted to 3 bytes for 24 bit RGB
+    #define tft_Write_8(C)  SPI.transfer(C)
+    #define tft_Write_16(C) SPI.transfer(((C & 0xF800)>>8) | ((C & 0xF800)>>13)); \
+                            SPI.transfer(((C & 0x07E0)>>3) | ((C & 0x07E0)>> 9)); \
+                            SPI.transfer(((C & 0x001F)<<3) | ((C & 0x001F)>> 2))
+    #define tft_Write_32(C) SPI.write32(C)
 
 #elif  defined (RPI_ILI9486_DRIVER)
     #define tft_Write_8(C)  SPI.transfer(0); SPI.transfer(C)
@@ -687,6 +700,8 @@ class TFT_eSPI : public Print {
   bool     textwrapX, textwrapY;   // If set, 'wrap' text at right and optionally bottom edge of display
   bool     _swapBytes; // Swap the byte order for TFT pushImage()
   bool     locked, inTransaction; // Transaction and mutex lock flags for ESP32
+
+  bool     _booted;
 
   int32_t  _lastColor;
 

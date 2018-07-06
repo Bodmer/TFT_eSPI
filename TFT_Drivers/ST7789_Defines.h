@@ -3,6 +3,7 @@
 #define TFT_WIDTH  240
 #define TFT_HEIGHT 240
 
+#define CGRAM_OFFSET
 
 // Delay between some initialisation commands
 #define TFT_INIT_DELAY 0x80 // Not used unless commandlist invoked

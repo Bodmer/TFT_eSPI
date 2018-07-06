@@ -22,6 +22,7 @@
 //#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
 //#define HX8357D_DRIVER
 //#define ILI9481_DRIVER
+//#define ILI9486_DRIVER
 //#define ILI9488_DRIVER
 //#define ST7789_DRIVER
 

@@ -42,7 +42,7 @@
     writedata(0x80);
     writedata(0x40);
 
-        writecommand(0xE0); // Positive Gamma Control
+    writecommand(0xE0); // Positive Gamma Control
     writedata(0x00);
     writedata(0x03);
     writedata(0x09);

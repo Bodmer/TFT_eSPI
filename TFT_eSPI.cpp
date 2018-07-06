@@ -48,7 +48,7 @@ void busDir(uint32_t mask, uint8_t mode);
 
 inline void TFT_eSPI::spi_begin(void){
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(ESP32_PARALLEL)
-  if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));}
+  if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, TFT_SPI_MODE));}
 #endif
 }
 
@@ -117,12 +117,6 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 #endif
 
 #ifdef ESP32_PARALLEL
-  // Create a data bus and Write line GPIO bit clear mask
-  //clr_mask = (1 << TFT_D0) | (1 << TFT_D1) | (1 << TFT_D2) | (1 << TFT_D3) | (1 << TFT_D4) | (1 << TFT_D5) | (1 << TFT_D6) | (1 << TFT_D7) | (1 << TFT_WR);
-
-  // Create a data bus GPIO bit direction mask
-  //dir_mask = (1 << TFT_D0) | (1 << TFT_D1) | (1 << TFT_D2) | (1 << TFT_D3) | (1 << TFT_D4) | (1 << TFT_D5) | (1 << TFT_D6) | (1 << TFT_D7);
-
 
   // Create a bit set lookup table for data bus - wastes 1kbyte of RAM but speeds things up dramatically
   for (int c = 0; c<256; c++)
@@ -167,6 +161,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 
   locked = true;        // ESP32 transaction mutex lock flags
   inTransaction = false;
+
+  _booted = true;
 
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
@@ -216,11 +212,13 @@ void TFT_eSPI::begin(uint8_t tc)
 
 
 /***************************************************************************************
-** Function name:           init
+** Function name:           init (tc is tab colour for ST7735 displays only)
 ** Description:             Reset, then initialise the TFT display registers
 ***************************************************************************************/
 void TFT_eSPI::init(uint8_t tc)
 {
+  if (_booted)
+  {
 #if !defined (ESP32)
   #ifdef TFT_CS
     cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
@@ -241,7 +239,7 @@ void TFT_eSPI::init(uint8_t tc)
     SPI.pins(6, 7, 8, 0);
   #endif
 
-  SPI.begin(); // This will set HMISO to input
+    SPI.begin(); // This will set HMISO to input
 #else
   #if !defined(ESP32_PARALLEL)
     #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP)
@@ -252,15 +250,15 @@ void TFT_eSPI::init(uint8_t tc)
   #endif
 #endif
 
-  inTransaction = false;
-  locked = true;
+    inTransaction = false;
+    locked = true;
 
   // SUPPORT_TRANSACTIONS is mandatory for ESP32 so the hal mutex is toggled
   // so the code here is for ESP8266 only
 #if !defined (SUPPORT_TRANSACTIONS) && defined (ESP8266)
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setFrequency(SPI_FREQUENCY);
+    SPI.setBitOrder(MSBFIRST);
+    SPI.setDataMode(TFT_SPI_MODE);
+    SPI.setFrequency(SPI_FREQUENCY);
 #endif
 
 #if defined(ESP32_PARALLEL)
@@ -278,11 +276,16 @@ void TFT_eSPI::init(uint8_t tc)
   
   // Set to output once again in case D6 (MISO) is used for DC
 #ifdef TFT_DC
-  digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
-  pinMode(TFT_DC, OUTPUT);
+    digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
+    pinMode(TFT_DC, OUTPUT);
 #endif
 
+    _booted = false;
+  } // end of: if just _booted
+
   // Toggle RST low to reset
+  spi_begin();
+
 #ifdef TFT_RST
   if (TFT_RST >= 0) {
     digitalWrite(TFT_RST, HIGH);
@@ -290,15 +293,14 @@ void TFT_eSPI::init(uint8_t tc)
     digitalWrite(TFT_RST, LOW);
     delay(20);
     digitalWrite(TFT_RST, HIGH);
-    delay(150);
   }
+  else writecommand(TFT_SWRST); // Software reset
+#else
+  writecommand(TFT_SWRST); // Software reset
 #endif
 
-  spi_begin();
-  writecommand(TFT_SWRST); // Software reset
   spi_end();
-  
-  delay(5); // Wait for software reset to complete
+  delay(150); // Wait for reset to complete
 
   spi_begin();
   
@@ -317,7 +319,7 @@ void TFT_eSPI::init(uint8_t tc)
     #include "TFT_Drivers/S6D02A1_Init.h"
      
 #elif defined (RPI_ILI9486_DRIVER)
-    #include "TFT_Drivers/RPI_ILI9486_Init.h"
+    #include "TFT_Drivers/ILI9486_Init.h"
 
 #elif defined (ILI9486_DRIVER)
     #include "TFT_Drivers/ILI9486_Init.h"
@@ -338,6 +340,7 @@ void TFT_eSPI::init(uint8_t tc)
 
   spi_end();
 
+  setRotation(rotation);
 }
 
 
@@ -364,7 +367,7 @@ void TFT_eSPI::setRotation(uint8_t m)
     #include "TFT_Drivers/S6D02A1_Rotation.h"
 
 #elif defined (RPI_ILI9486_DRIVER)
-    #include "TFT_Drivers/RPI_ILI9486_Rotation.h"
+    #include "TFT_Drivers/ILI9486_Rotation.h"
 
 #elif defined (ILI9486_DRIVER)
     #include "TFT_Drivers/ILI9486_Rotation.h"
@@ -566,7 +569,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   // Fetch the 16 bit BRG pixel
   //uint16_t rgb = (readByte() << 8) | readByte();
 
-#if defined (ILI9341_DRIVER) | defined (ILI9488_DRIVER) // Read 3 bytes
+  #if defined (ILI9341_DRIVER) | defined (ILI9488_DRIVER) // Read 3 bytes
 
   // Read window pixel 24 bit RGB values and fill in LS bits
   uint16_t rgb = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
@@ -578,7 +581,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   return rgb;
 
-#else // ILI9481 16 bit read
+  #else // ILI9481 16 bit read
 
   // Fetch the 16 bit BRG pixel
   uint16_t bgr = (readByte() << 8) | readByte();
@@ -590,7 +593,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   // Swap Red and Blue (could check MADCTL setting to see if this is needed)
   return  (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
-#endif
+  #endif
 
 #else // Not ESP32_PARALLEL
 
@@ -2174,7 +2177,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
     for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(font + (c * 5) + i);
     column[5] = 0;
 
-#if defined (ESP8266)
+#if defined (ESP8266) && !defined (ILI9488_DRIVER)
     color = (color >> 8) | (color << 8);
     bg = (bg >> 8) | (bg << 8);
     uint32_t spimask = ~((SPIMMOSI << SPILMOSI) | (SPIMMISO << SPILMISO));
@@ -2197,7 +2200,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
       SPI1CMD |= SPIBUSY;
       while(SPI1CMD & SPIBUSY) {}
     }
-#else // for ESP32
+#else // for ESP32 or ILI9488
 
     for (int8_t j = 0; j < 8; j++) {
       for (int8_t k = 0; k < 5; k++ ) {
