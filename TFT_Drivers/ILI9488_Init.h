@@ -8,40 +8,6 @@
 
 // Configure ILI9488 display
 
-    writecommand(0x3A); // Pixel Interface Format (16 bit colour)
-    writedata(0x55);
-
-    writecommand(0xB0); // Interface Mode Control
-    writedata(0x00);
-
-    writecommand(0xB1); // Frame Rate Control
-    writedata(0xB0);
-    writedata(0x11);
-
-    writecommand(0xB4); // Display Inversion Control
-    writedata(0x02);
-
-    writecommand(0xB6); // Display Function Control
-    writedata(0x02);
-    writedata(0x02);
-    writedata(0x3B);
-
-    writecommand(0xB7); // Entry Mode Set
-    writedata(0xC6);
-
-    writecommand(0XC0); // Power Control 1
-    writedata(0x10);
-    writedata(0x10);
-
-    writecommand(0xC1); // Power Control 2
-    writedata(0x41);
-
-    writecommand(0xC5); // VCOM Control
-    writedata(0x00);
-    writedata(0x22);
-    writedata(0x80);
-    writedata(0x40);
-
     writecommand(0xE0); // Positive Gamma Control
     writedata(0x00);
     writedata(0x03);
@@ -76,14 +42,50 @@
     writedata(0x37);
     writedata(0x0F);
 
+    writecommand(0XC0); // Power Control 1
+    writedata(0x17);
+    writedata(0x15);
+
+    writecommand(0xC1); // Power Control 2
+    writedata(0x41);
+
+    writecommand(0xC5); // VCOM Control
+    writedata(0x00);
+    writedata(0x12);
+    writedata(0x80);
+
+    writecommand(TFT_MADCTL); // Memory Access Control
+    writedata(0x48);          // MX, BGR
+
+    writecommand(0x3A); // Pixel Interface Format
+#if defined (ESP32_PARALLEL)
+    writedata(0x55);  // 16 bit colour for parallel
+#else
+    writedata(0x66);  // 18 bit colour for SPI
+#endif
+
+    writecommand(0xB0); // Interface Mode Control
+    writedata(0x00);
+
+    writecommand(0xB1); // Frame Rate Control
+    writedata(0xA0);
+
+    writecommand(0xB4); // Display Inversion Control
+    writedata(0x02);
+
+    writecommand(0xB6); // Display Function Control
+    writedata(0x02);
+    writedata(0x02);
+    writedata(0x3B);
+
+    writecommand(0xB7); // Entry Mode Set
+    writedata(0xC6);
+
     writecommand(0xF7); // Adjust Control 3
     writedata(0xA9);
     writedata(0x51);
     writedata(0x2C);
-    writedata(0x02);
-
-    writecommand(TFT_MADCTL); // Memory Access Control
-    writedata(0x48);          // MX, BGR
+    writedata(0x82);
 
     writecommand(TFT_SLPOUT);  //Exit Sleep
 delay(120);
