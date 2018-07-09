@@ -104,12 +104,12 @@
 #define PIN_D0  16  // WAKE
 #define PIN_D1   5  // User purpose
 #define PIN_D2   4  // User purpose
-#define PIN_D3   0  // FLASH mode at boot time
-#define PIN_D4   2  // TXD1 (Note: low on boot means go to FLASH mode)
+#define PIN_D3   0  // Low on boot means enter FLASH mode
+#define PIN_D4   2  // TXD1 (must be high on boot to go to UART0 FLASH mode)
 #define PIN_D5  14  // HSCLK
 #define PIN_D6  12  // HMISO
 #define PIN_D7  13  // HMOSI  RXD2
-#define PIN_D8  15  // HCS    TXD0
+#define PIN_D8  15  // HCS    TXD0 (must be low on boot to enter UART0 FLASH mode)
 #define PIN_D9   3  //        RXD0
 #define PIN_D10  1  //        TXD0
 
