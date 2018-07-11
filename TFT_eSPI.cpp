@@ -603,11 +603,20 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   // Dummy read to throw away don't care value
   tft_Write_8(0);
-    
-  // Read window pixel 24 bit RGB values
-  uint8_t r = tft_Write_8(0);
-  uint8_t g = tft_Write_8(0);
-  uint8_t b = tft_Write_8(0);
+
+    // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
+    // as the TFT stores colours as 18 bits
+  #if !defined (ILI9488_DRIVER)
+    uint8_t r = tft_Write_8(0);
+    uint8_t g = tft_Write_8(0);
+    uint8_t b = tft_Write_8(0);
+  #else
+    // The 6 colour bits are in MS 6 bits of each byte, but the ILI9488 needs an extra clock pulse
+    // so bits appear shifted right 1 bit, so mask the middle 6 bits then shift 1 place left
+    uint8_t r = (tft_Write_8(0)&0x7E)<<1;
+    uint8_t g = (tft_Write_8(0)&0x7E)<<1;
+    uint8_t b = (tft_Write_8(0)&0x7E)<<1;
+  #endif
 
   CS_H;
 
@@ -734,11 +743,20 @@ void TFT_eSPI::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t
   // Read window pixel 24 bit RGB values
   uint32_t len = w * h;
   while (len--) {
+
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
+  #if !defined (ILI9488_DRIVER)
     uint8_t r = tft_Write_8(0);
     uint8_t g = tft_Write_8(0);
     uint8_t b = tft_Write_8(0);
+  #else
+    // The 6 colour bits are in LS 6 bits of each byte but we do not include the extra clock pulse
+    // so we use a trick and mask the middle 6 bits of the byte, then only shift 1 place left
+    uint8_t r = (tft_Write_8(0)&0x7E)<<1;
+    uint8_t g = (tft_Write_8(0)&0x7E)<<1;
+    uint8_t b = (tft_Write_8(0)&0x7E)<<1;
+  #endif
 
     // Swapped colour byte order for compatibility with pushRect()
     *data++ = (r & 0xF8) | (g & 0xE0) >> 5 | (b & 0xF8) << 5 | (g & 0x1C) << 11;
@@ -1311,9 +1329,21 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
   while (len--) {
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
+
+    // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
+    // as the TFT stores colours as 18 bits
+  #if !defined (ILI9488_DRIVER)
     *data++ = tft_Write_8(0);
     *data++ = tft_Write_8(0);
     *data++ = tft_Write_8(0);
+  #else
+    // The 6 colour bits are in MS 6 bits of each byte, but the ILI9488 needs an extra clock pulse
+    // so bits appear shifted right 1 bit, so mask the middle 6 bits then shift 1 place left
+    *data++ = (tft_Write_8(0)&0x7E)<<1;
+    *data++ = (tft_Write_8(0)&0x7E)<<1;
+    *data++ = (tft_Write_8(0)&0x7E)<<1;
+  #endif
+
   }
   CS_H;
 
@@ -2144,6 +2174,10 @@ int16_t TFT_eSPI::fontHeight(int16_t font)
   return pgm_read_byte( &fontdata[font].height ) * textsize;
 }
 
+int16_t TFT_eSPI::fontHeight(void)
+{
+  return fontHeight(textfont);
+}
 
 /***************************************************************************************
 ** Function name:           drawChar
@@ -3079,7 +3113,7 @@ void TFT_eSPI::pushColor(uint16_t color)
 ** Function name:           pushColor
 ** Description:             push a single colour to "len" pixels
 ***************************************************************************************/
-void TFT_eSPI::pushColor(uint16_t color, uint16_t len)
+void TFT_eSPI::pushColor(uint16_t color, uint32_t len)
 {
   spi_begin();
 
@@ -4661,47 +4695,64 @@ void writeBlock(uint16_t color, uint32_t repeat)
 void writeBlock(uint16_t color, uint32_t repeat)
 {
   // Split out the colours
-  uint8_t r = (color & 0xF800)>>8;
-  uint8_t g = (color & 0x07E0)>>3;
-  uint8_t b = (color & 0x001F)<<3;
+  uint32_t r = (color & 0xF800)>>8;
+  uint32_t g = (color & 0x07E0)<<5;
+  uint32_t b = (color & 0x001F)<<19;
   // Concatenate 4 pixels into three 32 bit blocks
-  uint32_t r0 = r<<24 | b<<16 | g<<8 | r;
-  uint32_t r1 = g<<24 | r<<16 | b<<8 | g;
-  uint32_t r2 = b<<24 | g<<16 | r<<8 | b;
+  uint32_t r0 = r<<24 | b | g | r;
+  uint32_t r1 = r0>>8 | g<<16;
+  uint32_t r2 = r1>>8 | b<<8;
 
-  if (repeat > 9)
+  if (repeat > 19)
   {
-    SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 239, SPI_USR_MOSI_DBITLEN_S);
+    SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 479, SPI_USR_MOSI_DBITLEN_S);
 
-    while(repeat>9)
+    while(repeat>19)
     {
       while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
-      WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) +  0), r0);
-      WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) +  4), r1);
-      WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) +  8), r2);
-      WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 12), r0);
-      WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 16), r1);
-      WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 20), r2);
-      WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 24), r0);
-      WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 28), r1);
+      WRITE_PERI_REG(SPI_W0_REG(SPI_NUM), r0);
+      WRITE_PERI_REG(SPI_W1_REG(SPI_NUM), r1);
+      WRITE_PERI_REG(SPI_W2_REG(SPI_NUM), r2);
+      WRITE_PERI_REG(SPI_W3_REG(SPI_NUM), r0);
+      WRITE_PERI_REG(SPI_W4_REG(SPI_NUM), r1);
+      WRITE_PERI_REG(SPI_W5_REG(SPI_NUM), r2);
+      WRITE_PERI_REG(SPI_W6_REG(SPI_NUM), r0);
+      WRITE_PERI_REG(SPI_W7_REG(SPI_NUM), r1);
+      WRITE_PERI_REG(SPI_W8_REG(SPI_NUM), r2);
+      WRITE_PERI_REG(SPI_W9_REG(SPI_NUM), r0);
+      WRITE_PERI_REG(SPI_W10_REG(SPI_NUM), r1);
+      WRITE_PERI_REG(SPI_W11_REG(SPI_NUM), r2);
+      WRITE_PERI_REG(SPI_W12_REG(SPI_NUM), r0);
+      WRITE_PERI_REG(SPI_W13_REG(SPI_NUM), r1);
+      WRITE_PERI_REG(SPI_W14_REG(SPI_NUM), r2);
       SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
-      repeat -= 10;
+      repeat -= 20;
     }
     while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
   }
 
   if (repeat)
   {
-    repeat = (repeat * 24) - 1;
-    SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, repeat, SPI_USR_MOSI_DBITLEN_S);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) +  0), r0);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) +  4), r1);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) +  8), r2);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 12), r0);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 16), r1);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 20), r2);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 24), r0);
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + 28), r1);
+    SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, (repeat * 24) - 1, SPI_USR_MOSI_DBITLEN_S);
+    WRITE_PERI_REG(SPI_W0_REG(SPI_NUM), r0);
+    WRITE_PERI_REG(SPI_W1_REG(SPI_NUM), r1);
+    WRITE_PERI_REG(SPI_W2_REG(SPI_NUM), r2);
+    WRITE_PERI_REG(SPI_W3_REG(SPI_NUM), r0);
+    WRITE_PERI_REG(SPI_W4_REG(SPI_NUM), r1);
+    WRITE_PERI_REG(SPI_W5_REG(SPI_NUM), r2);
+    if (repeat > 8 )
+    {
+      WRITE_PERI_REG(SPI_W6_REG(SPI_NUM), r0);
+      WRITE_PERI_REG(SPI_W7_REG(SPI_NUM), r1);
+      WRITE_PERI_REG(SPI_W8_REG(SPI_NUM), r2);
+      WRITE_PERI_REG(SPI_W9_REG(SPI_NUM), r0);
+      WRITE_PERI_REG(SPI_W10_REG(SPI_NUM), r1);
+      WRITE_PERI_REG(SPI_W11_REG(SPI_NUM), r2);
+      WRITE_PERI_REG(SPI_W12_REG(SPI_NUM), r0);
+      WRITE_PERI_REG(SPI_W13_REG(SPI_NUM), r1);
+      WRITE_PERI_REG(SPI_W14_REG(SPI_NUM), r2);
+    }
+
     SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
     while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
   }
@@ -4713,6 +4764,7 @@ void writeBlock(uint16_t color, uint32_t repeat)
 
 #include "soc/spi_reg.h"
 #define SPI_NUM 0x3
+
 
 void writeBlock(uint16_t color, uint32_t repeat)
 {

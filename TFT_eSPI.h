@@ -538,7 +538,7 @@ class TFT_eSPI : public Print {
   // The TFT_eSprite class inherits the following functions
   void     setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
            pushColor(uint16_t color),
-           pushColor(uint16_t color, uint16_t len),
+           pushColor(uint16_t color, uint32_t len),
            pushColors(uint16_t  *data, uint32_t len, bool swap = true), // With byte swap option
            pushColors(uint8_t  *data, uint32_t len),
 
@@ -565,7 +565,7 @@ class TFT_eSPI : public Print {
            drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color),
            drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color),
            drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t fgcolor, uint16_t bgcolor),
-           setBitmapColor(uint16_t c, uint16_t b), // For 1bpp sprites
+           setBitmapColor(uint16_t fgcolor, uint16_t bgcolor), // For 1bpp sprites
 
            setCursor(int16_t x, int16_t y),
            setCursor(int16_t x, int16_t y, uint8_t font),
@@ -632,7 +632,7 @@ class TFT_eSPI : public Print {
            getCursorY(void);
 
   uint16_t fontsLoaded(void),
-           color565(uint8_t r, uint8_t g, uint8_t b),
+           color565(uint8_t red, uint8_t green, uint8_t blue),   // Convert 8 bit red, green and blue to 16 bits
            color8to16(uint8_t color332);  // Convert 8 bit colour to 16 bits
 
   int16_t  drawNumber(long long_num,int poX, int poY, int font),
@@ -656,7 +656,8 @@ class TFT_eSPI : public Print {
            textWidth(const char *string),
            textWidth(const String& string, int font),
            textWidth(const String& string),
-           fontHeight(int16_t font);
+           fontHeight(int16_t font),
+           fontHeight(void);
 
   void     setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
 
