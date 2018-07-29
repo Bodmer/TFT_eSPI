@@ -256,7 +256,10 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 
   // 16 bit Unicode
   if (((c & 0xF0) == 0xE0) && (remaining > 2))
-    return ((c & 0x0F)<<12) | ((buf[(*index)++]&0x3F)<<6) | ((buf[(*index)++]&0x3F));
+  {
+    c = ((c & 0x0F)<<12) | ((buf[(*index)++]&0x3F)<<6);
+    return  c | ((buf[(*index)++]&0x3F));
+  }
 
   // 21 bit Unicode not supported so fall-back to extended ASCII
   // if ((c & 0xF8) == 0xF0) return c;

@@ -58,6 +58,26 @@ inline void TFT_eSPI::spi_end(void){
 #endif
 }
 
+inline void TFT_eSPI::spi_begin_read(void){
+#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(ESP32_PARALLEL)
+  if (locked) {locked = false; SPI.beginTransaction(SPISettings(SPI_READ_FREQUENCY, MSBFIRST, TFT_SPI_MODE));}
+#else
+  #if !defined(ESP32_PARALLEL)
+    SPI.setFrequency(SPI_READ_FREQUENCY);
+  #endif
+#endif
+}
+
+inline void TFT_eSPI::spi_end_read(void){
+#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(ESP32_PARALLEL)
+  if(!inTransaction) {if (!locked) {locked = true; SPI.endTransaction();}}
+#else
+  #if !defined(ESP32_PARALLEL)
+    SPI.setFrequency(SPI_FREQUENCY);
+  #endif
+#endif
+}
+
 #if defined (TOUCH_CS) && defined (SPI_TOUCH_FREQUENCY) // && !defined(ESP32_PARALLEL)
 
   inline void TFT_eSPI::spi_begin_touch(void){
@@ -495,7 +515,7 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
 
 #else
   // for ILI9341 Interface II i.e. IM [3:0] = "1101"
-  spi_begin();
+  spi_begin_read();
   index = 0x10 + (index & 0x0F);
 
   DC_C;
@@ -512,7 +532,7 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
   reg = tft_Write_8(0);
   CS_H;
 
-  spi_end();
+  spi_end_read();
 #endif
   return reg;
 }
@@ -526,7 +546,7 @@ uint16_t TFT_eSPI::readcommand16(uint8_t cmd_function, uint8_t index)
 {
   uint32_t reg;
 
-  reg |= (readcommand8(cmd_function, index + 0) <<  8);
+  reg  = (readcommand8(cmd_function, index + 0) <<  8);
   reg |= (readcommand8(cmd_function, index + 1) <<  0);
 
   return reg;
@@ -597,7 +617,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
 #else // Not ESP32_PARALLEL
 
-  spi_begin();
+  spi_begin_read();
 
   readAddrWindow(x0, y0, x0, y0); // Sets CS low
 
@@ -620,7 +640,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   CS_H;
 
-  spi_end();
+  spi_end_read();
     
   return color565(r, g, b);
 
@@ -733,7 +753,7 @@ void TFT_eSPI::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t
 
 #else // Not ESP32_PARALLEL
 
-  spi_begin();
+  spi_begin_read();
 
   readAddrWindow(x, y, x + w - 1, y + h - 1); // Sets CS low
 
@@ -764,7 +784,7 @@ void TFT_eSPI::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t
 
   CS_H;
 
-  spi_end();
+  spi_end_read();
 #endif
 }
 
@@ -1183,7 +1203,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint8_t *
     uint8_t msbColor = 0;
     uint8_t lsbColor = 0;
 
-    int32_t spx = x, spy = y;
+    //int32_t spx = x, spy = y;
 
     while (dh--)
     {
@@ -1317,7 +1337,7 @@ bool TFT_eSPI::getSwapBytes(void)
 void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t *data)
 {
 #if !defined(ESP32_PARALLEL)
-  spi_begin();
+  spi_begin_read();
 
   readAddrWindow(x0, y0, x0 + w - 1, y0 + h - 1); // Sets CS low
 
@@ -1347,7 +1367,7 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
   }
   CS_H;
 
-  spi_end();
+  spi_end_read();
 #endif
 }
 
@@ -2301,11 +2321,11 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, u
 
       uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
       uint8_t  w  = pgm_read_byte(&glyph->width),
-               h  = pgm_read_byte(&glyph->height),
-               xa = pgm_read_byte(&glyph->xAdvance);
+               h  = pgm_read_byte(&glyph->height);
+               //xa = pgm_read_byte(&glyph->xAdvance);
       int8_t   xo = pgm_read_byte(&glyph->xOffset),
                yo = pgm_read_byte(&glyph->yOffset);
-      uint8_t  xx, yy, bits, bit=0;
+      uint8_t  xx, yy, bits=0, bit=0;
       int16_t  xo16 = 0, yo16 = 0;
   
       if(size > 1) {
@@ -4054,8 +4074,10 @@ int16_t TFT_eSPI::drawChar(unsigned int uniCode, int x, int y, int font)
       //spi_begin();
       setAddrWindow(x, y, x + width - 1, y + height - 1);
 
+#ifdef RPI_WRITE_STROBE
       uint8_t textcolorBin[] = { (uint8_t) (textcolor >> 8), (uint8_t) textcolor };
       uint8_t textbgcolorBin[] = { (uint8_t) (textbgcolor >> 8), (uint8_t) textbgcolor };
+#endif
 
       // Maximum font size is equivalent to 180x180 pixels in area
       while (w > 0)

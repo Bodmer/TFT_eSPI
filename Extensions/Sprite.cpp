@@ -517,13 +517,14 @@ void TFT_eSprite::pushColor(uint32_t color, uint16_t len)
   if (!_created ) return;
 
   uint16_t pixelColor;
+
   if (_bpp == 16)
     pixelColor = (uint16_t) (color >> 8) | (color << 8);
 
   else  if (_bpp == 8)
     pixelColor = (color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3;
 
-  // else Nothing to do for 1bpp
+  else pixelColor = (uint16_t) color; // for 1bpp
 
   while(len--) writeColor(pixelColor);
 }
@@ -1213,11 +1214,11 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color
 
       uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
       uint8_t  w  = pgm_read_byte(&glyph->width),
-               h  = pgm_read_byte(&glyph->height),
-               xa = pgm_read_byte(&glyph->xAdvance);
+               h  = pgm_read_byte(&glyph->height);
+               //xa = pgm_read_byte(&glyph->xAdvance);
       int8_t   xo = pgm_read_byte(&glyph->xOffset),
                yo = pgm_read_byte(&glyph->yOffset);
-      uint8_t  xx, yy, bits, bit=0;
+      uint8_t  xx, yy, bits=0, bit=0;
       int16_t  xo16 = 0, yo16 = 0;
 
       if(size > 1) {
@@ -1609,7 +1610,6 @@ void TFT_eSprite::printToSprite(char *cbuffer, int len) //String string)
     }
 
     createSprite(sWidth, this->gFont.yAdvance);
-    uint16_t transparent = TFT_BLACK;
 
     if (this->textbgcolor != TFT_BLACK) fillSprite(this->textbgcolor);
   }
@@ -1646,7 +1646,7 @@ int16_t TFT_eSprite::printToSprite(int16_t x, int16_t y, uint16_t index)
   if (newSprite)
   {
     createSprite(sWidth, this->gFont.yAdvance);
-    uint16_t transparent = TFT_BLACK;
+
     if (this->textbgcolor != TFT_BLACK) fillSprite(this->textbgcolor);
 
     drawGlyph(this->gUnicode[index]);
