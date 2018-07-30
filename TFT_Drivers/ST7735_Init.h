@@ -173,6 +173,13 @@
          colstart = 0;
          rowstart = 32;
        }
+       else if (tabcolor == INITR_GREENTAB160x80)
+       {
+         commandList(Rcmd2green);
+         writecommand(TFT_INVON);
+         colstart = 26;
+         rowstart = 1;
+       }
        else if (tabcolor == INITR_REDTAB)
        {
          commandList(Rcmd2red);
