@@ -1,24 +1,120 @@
 
 // This is the command sequence that initialises the ST7789 driver
-
-// Configure ST7789 display
+//
+// This setup information uses simple 8 bit SPI writecommand() and writedata() functions
+//
+// See ST7735_Setup.h file for an alternative format
 
 {
-static const uint8_t PROGMEM
-  st7789[] = {
-    9,
-    TFT_SWRST, TFT_INIT_DELAY, 150,
-    TFT_SLPOUT, TFT_INIT_DELAY, 255,
-    TFT_COLMOD, 1+TFT_INIT_DELAY, 0x55, 10,
-    TFT_MADCTL, 1, TFT_MAD_RGB,
-    TFT_CASET, 4, 0x00, 0x00, 0x00, 0xF0,
-    TFT_PASET, 4, 0x00, 0x00, 0x00, 0xF0,
-    TFT_INVON, TFT_INIT_DELAY, 10,
-    TFT_NORON, TFT_INIT_DELAY, 10,
-    TFT_DISPON, TFT_INIT_DELAY, 255
-    };
+  writecommand(ST7789_SLPOUT);   // Sleep out
+  delay(120);
 
-    commandList(st7789);
+  writecommand(ST7789_NORON);    // Normal display mode on
+
+  //------------------------------display and color format setting--------------------------------//
+  writecommand(ST7789_MADCTL);
+  writedata(0x00);
+  writedata(0x48);
+
+  // JLX240 display datasheet
+  writecommand(0xB6);
+  writedata(0x0A);
+  writedata(0x82);
+
+  writecommand(ST7789_COLMOD);
+  writedata(0x55);
+
+  //--------------------------------ST7789V Frame rate setting----------------------------------//
+  writecommand(ST7789_PORCTRL);
+  writedata(0x0c);
+  writedata(0x0c);
+  writedata(0x00);
+  writedata(0x33);
+  writedata(0x33);
+
+  writecommand(ST7789_GCTRL);      // Voltages: VGH / VGL
+  writedata(0x35);
+
+  //---------------------------------ST7789V Power setting--------------------------------------//
+  writecommand(ST7789_VCOMS);
+  writedata(0x28);		// JLX240 display datasheet
+
+  writecommand(ST7789_LCMCTRL);
+  writedata(0x0C);
+
+  writecommand(ST7789_VDVVRHEN);
+  writedata(0x01);
+  writedata(0xFF);
+
+  writecommand(ST7789_VRHS);       // voltage VRHS
+  writedata(0x10);
+
+  writecommand(ST7789_VDVSET);
+  writedata(0x20);
+
+  writecommand(ST7789_FRCTR2);
+  writedata(0x0f);
+
+  writecommand(ST7789_PWCTRL1);
+  writedata(0xa4);
+  writedata(0xa1);
+
+  //--------------------------------ST7789V gamma setting---------------------------------------//
+  writecommand(ST7789_PVGAMCTRL);
+  writedata(0xd0);
+  writedata(0x00);
+  writedata(0x02);
+  writedata(0x07);
+  writedata(0x0a);
+  writedata(0x28);
+  writedata(0x32);
+  writedata(0x44);
+  writedata(0x42);
+  writedata(0x06);
+  writedata(0x0e);
+  writedata(0x12);
+  writedata(0x14);
+  writedata(0x17);
+
+  writecommand(ST7789_NVGAMCTRL);
+  writedata(0xd0);
+  writedata(0x00);
+  writedata(0x02);
+  writedata(0x07);
+  writedata(0x0a);
+  writedata(0x28);
+  writedata(0x31);
+  writedata(0x54);
+  writedata(0x47);
+  writedata(0x0e);
+  writedata(0x1c);
+  writedata(0x17);
+  writedata(0x1b);
+  writedata(0x1e);
+
+  writecommand(ST7789_INVOFF);
+
+  writecommand(ST7789_CASET);    // Column address set
+  writedata(0x00);
+  writedata(0x00);
+  writedata(0x00);
+  writedata(0xE5);    // 239
+
+  writecommand(ST7789_RASET);    // Row address set
+  writedata(0x00);
+  writedata(0x00);
+  writedata(0x01);
+  writedata(0x3F);    // 319
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  spi_end();
+  delay(120);
+  spi_begin();
+
+  writecommand(ST7789_DISPON);    //Display on
+
+  // Turn on the back-light LED
+  digitalWrite(TFT_BL, HIGH);
+  pinMode(TFT_BL, OUTPUT);
 }
-// End of ST7789 display configuration
-
