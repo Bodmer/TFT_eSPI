@@ -35,7 +35,11 @@
   #define SPI_READ_FREQUENCY SPI_FREQUENCY
 #endif
 
-#define TFT_SPI_MODE SPI_MODE0
+#ifdef ST7789_DRIVER
+  #define TFT_SPI_MODE SPI_MODE3
+#else
+  #define TFT_SPI_MODE SPI_MODE0
+#endif
 
 // If the frequency is not defined, set a default
 #ifndef SPI_TOUCH_FREQUENCY
