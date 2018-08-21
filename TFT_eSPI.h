@@ -30,6 +30,11 @@
   #define SPI_FREQUENCY  20000000
 #endif
 
+// If the frequency is not defined, set a default
+#ifndef SPI_READ_FREQUENCY
+  #define SPI_READ_FREQUENCY SPI_FREQUENCY
+#endif
+
 #ifdef ST7789_DRIVER
   #define TFT_SPI_MODE SPI_MODE3
 #else
@@ -213,8 +218,9 @@
   #define set_mask(C) xset_mask[C] // 63fps Sprite rendering test 33% faster, graphicstest only 1.8% faster than shifting in real time
 
   // Real-time shifting alternative to above to save 1KByte RAM, 47 fps Sprite rendering test
-  //#define set_mask(C) ((C&0x80)>>7)<<TFT_D7 | ((C&0x40)>>6)<<TFT_D6 | ((C&0x20)>>5)<<TFT_D5 | ((C&0x10)>>4)<<TFT_D4 | \
+  /*#define set_mask(C) ((C&0x80)>>7)<<TFT_D7 | ((C&0x40)>>6)<<TFT_D6 | ((C&0x20)>>5)<<TFT_D5 | ((C&0x10)>>4)<<TFT_D4 | \
                         ((C&0x08)>>3)<<TFT_D3 | ((C&0x04)>>2)<<TFT_D2 | ((C&0x02)>>1)<<TFT_D1 | ((C&0x01)>>0)<<TFT_D0
+  //*/
 
   // Write 8 bits to TFT
   #define tft_Write_8(C)  GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)C); WR_H
@@ -681,6 +687,9 @@ class TFT_eSPI : public Print {
   inline void spi_begin() __attribute__((always_inline));
   inline void spi_end()   __attribute__((always_inline));
 
+  inline void spi_begin_read() __attribute__((always_inline));
+  inline void spi_end_read()   __attribute__((always_inline));
+
   void     readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
 
   uint8_t  tabcolor,
@@ -716,7 +725,7 @@ class TFT_eSPI : public Print {
 
   bool     _booted;
 
-  int32_t  _lastColor;
+  uint32_t _lastColor;
 
 #ifdef LOAD_GFXFF
   GFXfont  *gfxFont;
