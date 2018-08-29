@@ -22,8 +22,13 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 
   T_CS_L;
   
+  // Dummy transfer
+  SPI.transfer(0xd0);
+  SPI.transfer(0);
+  SPI.transfer(0);
+
   // Start bit + YP sample request for x position
-  tmp = SPI.transfer(0xd0);
+  SPI.transfer(0xd0);
   tmp = SPI.transfer(0);
   tmp = tmp <<5;
   tmp |= 0x1f & (SPI.transfer(0)>>3);
