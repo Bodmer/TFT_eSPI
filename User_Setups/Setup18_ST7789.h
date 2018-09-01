@@ -29,6 +29,7 @@
 //#define M5STACK
 
 // For ST7735  and ILI9163 ONLY, define the pixel width and height in portrait orientation
+//#define TFT_WIDTH  80
 //#define TFT_WIDTH  128
 //#define TFT_HEIGHT 160
 //#define TFT_HEIGHT 128
@@ -45,6 +46,7 @@
 //#define ST7735_GREENTAB2
 //#define ST7735_GREENTAB3
 //#define ST7735_GREENTAB128 // For 128 x 128 display
+//#define ST7735_GREENTAB80160 // For 80 x 160 display
 //#define ST7735_REDTAB
 //#define ST7735_BLACKTAB
 

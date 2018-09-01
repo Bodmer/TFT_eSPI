@@ -39,7 +39,7 @@
 //#include <User_Setups/Setup16_ILI9488_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
 //#include <User_Setups/Setup17_ePaper.h>            // Setup file for any Waveshare ePaper display
 //#include <User_Setups/Setup18_ST7789.h>            // Setup file configured for HX8357D (untested)
-
+//#include <User_Setups/Setup19_ST7735_80x160.h>     // Setup file configured for ST7735 80x160 display
 //#include <User_Setups/Setup20_ILI9488.h>           // Setup file for ESP8266 and ILI9488 SPI bus TFT
 //#include <User_Setups/Setup21_ILI9488.h>           // Setup file for ESP32 and ILI9488 SPI bus TFT
 
