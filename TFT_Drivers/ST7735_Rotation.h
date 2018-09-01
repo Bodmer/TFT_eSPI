@@ -8,6 +8,10 @@
     case 0:
      if (tabcolor == INITR_BLACKTAB) {
        writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_RGB);
+     } else if(tabcolor == INITR_GREENTAB) {
+       writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_BGR);
+       colstart = 2;
+       rowstart = 1;
      } else if(tabcolor == INITR_GREENTAB2) {
        writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_RGB);
        colstart = 2;
@@ -35,6 +39,10 @@
     case 1:
      if (tabcolor == INITR_BLACKTAB) {
        writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_RGB);
+     } else if(tabcolor == INITR_GREENTAB) {
+       writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_BGR);
+       colstart = 1;
+       rowstart = 2;
      } else if(tabcolor == INITR_GREENTAB2) {
        writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_RGB);
        colstart = 1;
@@ -62,6 +70,10 @@
     case 2:
      if (tabcolor == INITR_BLACKTAB) {
        writedata(TFT_MAD_RGB);
+     } else if(tabcolor == INITR_GREENTAB) {
+       writedata(TFT_MAD_BGR);
+       colstart = 2;
+       rowstart = 1;
      } else if(tabcolor == INITR_GREENTAB2) {
        writedata(TFT_MAD_RGB);
        colstart = 2;
@@ -89,6 +101,10 @@
     case 3:
      if (tabcolor == INITR_BLACKTAB) {
        writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_RGB);
+     } else if(tabcolor == INITR_GREENTAB) {
+       writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_BGR);
+       colstart = 1;
+       rowstart = 2;
      } else if(tabcolor == INITR_GREENTAB2) {
        writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_RGB);
        colstart = 1;
