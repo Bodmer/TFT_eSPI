@@ -6,14 +6,20 @@
 {
 static const uint8_t PROGMEM
   st7789[] = {
+#ifdef IPS_LCD
     9,
+#else
+    8,
+#endif
     TFT_SWRST, TFT_INIT_DELAY, 150,
     TFT_SLPOUT, TFT_INIT_DELAY, 255,
     TFT_COLMOD, 1+TFT_INIT_DELAY, 0x55, 10,
     TFT_MADCTL, 1, TFT_MAD_RGB,
     TFT_CASET, 4, 0x00, 0x00, 0x00, 0xF0,
     TFT_PASET, 4, 0x00, 0x00, 0x00, 0xF0,
+#ifdef IPS_LCD
     TFT_INVON, TFT_INIT_DELAY, 10,
+#endif
     TFT_NORON, TFT_INIT_DELAY, 10,
     TFT_DISPON, TFT_INIT_DELAY, 255
     };

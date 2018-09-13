@@ -356,6 +356,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (ST7789_DRIVER)
     #include "TFT_Drivers/ST7789_Init.h"
 
+#elif defined (ILI9225_DRIVER)
+    #include "TFT_Drivers/ILI9225_Init.h"
+
 #endif
 
   spi_end();
@@ -403,6 +406,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (ST7789_DRIVER)
     #include "TFT_Drivers/ST7789_Rotation.h"
+
+#elif defined (ILI9225_DRIVER)
+    #include "TFT_Drivers/ILI9225_Rotation.h"
 
 #endif
 

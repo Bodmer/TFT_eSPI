@@ -38,10 +38,12 @@
 //#include <User_Setups/Setup15_HX8357D.h>           // Setup file configured for HX8357D (untested)
 //#include <User_Setups/Setup16_ILI9488_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
 //#include <User_Setups/Setup17_ePaper.h>            // Setup file for any Waveshare ePaper display
-//#include <User_Setups/Setup18_ST7789.h>            // Setup file configured for HX8357D (untested)
+//#include <User_Setups/Setup18_ST7789.h>            // Setup file configured for ST7789
 //#include <User_Setups/Setup19_ST7735_80x160.h>     // Setup file configured for ST7735 80x160 display
 //#include <User_Setups/Setup20_ILI9488.h>           // Setup file for ESP8266 and ILI9488 SPI bus TFT
 //#include <User_Setups/Setup21_ILI9488.h>           // Setup file for ESP32 and ILI9488 SPI bus TFT
+//#include <User_Setups/Setup22_ST7789_240x240.h>    // Setup file configured for ST7789 240x240 display
+//#include <User_Setups/Setup23_ILI9225.h>           // Setup file for ESP32 and ILI9225 SPI bus TFT
 
 //#include <User_Setups/SetupX_Template.h>
 
@@ -92,6 +94,9 @@
 #elif defined (ST7789_DRIVER)
      #include "TFT_Drivers/ST7789_Defines.h"
      #define  TFT_DRIVER 0x7789
+#elif defined (ILI9225_DRIVER)
+     #include "TFT_Drivers/ILI9225_Defines.h"
+     #define  TFT_DRIVER 0x9225
 #elif defined (XYZZY_DRIVER)  // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
      #include "TFT_Drivers/XYZZY_Defines.h"
      #define  TFT_DRIVER 0x0000
