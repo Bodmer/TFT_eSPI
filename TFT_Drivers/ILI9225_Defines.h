@@ -48,19 +48,3 @@
 
 // Delay between some initialisation commands
 #define TFT_INIT_DELAY 0x80 // Not used unless commandlist invoked
-
-// autoincrement modes (register ILI9225_ENTRY_MODE, bit 5..3 )
-enum autoIncMode_t { R2L_BottomUp, BottomUp_R2L, L2R_BottomUp, BottomUp_L2R, R2L_TopDown, TopDown_R2L, L2R_TopDown, TopDown_L2R };
-
-        // correspondig modes if orientation changed:
-        const autoIncMode_t modeTab [3][8] = {
-        //          { R2L_BottomUp, BottomUp_R2L, L2R_BottomUp, BottomUp_L2R, R2L_TopDown,  TopDown_R2L,  L2R_TopDown,  TopDown_L2R }//
-        /* 90° */   { BottomUp_L2R, L2R_BottomUp, TopDown_L2R,  L2R_TopDown,  BottomUp_R2L, R2L_BottomUp, TopDown_R2L,  R2L_TopDown },   
-        /*180° */   { L2R_TopDown , TopDown_L2R,  R2L_TopDown,  TopDown_R2L,  L2R_BottomUp, BottomUp_L2R, R2L_BottomUp, BottomUp_R2L}, 
-        /*270° */   { TopDown_R2L , R2L_TopDown,  BottomUp_R2L, R2L_BottomUp, TopDown_L2R,  L2R_TopDown,  BottomUp_L2R, L2R_BottomUp}
-                };
-
-#define TFT_CASET   0x20
-#define TFT_PASET   0x21
-#define TFT_RAMWR   0x22
-#define TFT_RAMRD   0x23

@@ -529,7 +529,7 @@ class TFT_eSPI : public Print {
   void     init(uint8_t tc = TAB_COLOUR), begin(uint8_t tc = TAB_COLOUR); // Same - begin included for backwards compatibility
 
   // These are virtual so the TFT_eSprite class can override them with sprite specific functions
-  virtual void     drawPixel(uint32_t x, uint32_t y, uint32_t color),
+  virtual void     drawPixel(int32_t x, int32_t y, uint32_t color),
                    drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size),
                    drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
                    drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
