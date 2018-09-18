@@ -356,6 +356,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (ST7789_DRIVER)
     #include "TFT_Drivers/ST7789_Init.h"
 
+#elif defined (ILI9225_DRIVER)
+    #include "TFT_Drivers/ILI9225_Init.h"
+
 #endif
 
   spi_end();
@@ -403,6 +406,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (ST7789_DRIVER)
     #include "TFT_Drivers/ST7789_Rotation.h"
+
+#elif defined (ILI9225_DRIVER)
+    #include "TFT_Drivers/ILI9225_Rotation.h"
 
 #endif
 
@@ -2684,6 +2690,43 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   y1+=rowstart;
 #endif
 
+#ifdef ILI9225_DRIVER
+  // Column addr set
+  DC_C;
+  CS_L;
+
+  tft_Write_8(ILI9225_HORIZONTAL_WINDOW_ADDR1);
+  DC_D;
+  tft_Write_16(x1);
+  DC_C;
+  tft_Write_8(ILI9225_HORIZONTAL_WINDOW_ADDR2);
+  DC_D;
+  tft_Write_16(x0);
+
+  // Row addr set
+  DC_C;
+  tft_Write_8(ILI9225_VERTICAL_WINDOW_ADDR1);
+  DC_D;
+  tft_Write_16(y1);
+  DC_C;
+  tft_Write_8(ILI9225_VERTICAL_WINDOW_ADDR2);
+  DC_D;
+  tft_Write_16(y0);
+
+  DC_C;
+  tft_Write_8(ILI9225_RAM_ADDR_SET1);
+  DC_D;
+  tft_Write_16(x1);
+  DC_C;
+  tft_Write_8(ILI9225_RAM_ADDR_SET2);
+  DC_D;
+  tft_Write_16(y1);
+
+  // write to RAM
+  DC_C;
+  tft_Write_8(ILI9225_GRAM_DATA_REG);
+  DC_D;
+#else
 #if !defined (RPI_ILI9486_DRIVER)
   uint32_t xaw = ((uint32_t)x0 << 16) | x1;
   uint32_t yaw = ((uint32_t)y0 << 16) | y1;
@@ -2725,6 +2768,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   DC_D;
 
   //spi_end();
+#endif // end ILI9225_DRIVER check
 }
 #endif // end RPI_ILI9486_DRIVER check
 #endif // end ESP32 check
@@ -2816,6 +2860,43 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   y1+=rowstart;
 #endif
 
+#ifdef ILI9225_DRIVER
+  // Column addr set
+  DC_C;
+  CS_L;
+
+  tft_Write_8(ILI9225_HORIZONTAL_WINDOW_ADDR1);
+  DC_D;
+  tft_Write_16(x1);
+  DC_C;
+  tft_Write_8(ILI9225_HORIZONTAL_WINDOW_ADDR2);
+  DC_D;
+  tft_Write_16(x0);
+
+  // Row addr set
+  DC_C;
+  tft_Write_8(ILI9225_VERTICAL_WINDOW_ADDR1);
+  DC_D;
+  tft_Write_16(y1);
+  DC_C;
+  tft_Write_8(ILI9225_VERTICAL_WINDOW_ADDR2);
+  DC_D;
+  tft_Write_16(y0);
+
+  DC_C;
+  tft_Write_8(ILI9225_RAM_ADDR_SET1);
+  DC_D;
+  tft_Write_16(x1);
+  DC_C;
+  tft_Write_8(ILI9225_RAM_ADDR_SET1);
+  DC_D;
+  tft_Write_16(y1);
+
+  DC_C;
+  tft_Write_8(ILI9225_GRAM_DATA_REG); // Read CGRAM command
+
+  DC_D;
+#else
   uint32_t xaw = ((uint32_t)x0 << 16) | x1;
   uint32_t yaw = ((uint32_t)y0 << 16) | y1;
   
@@ -2824,7 +2905,6 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   CS_L;
 
   tft_Write_8(TFT_CASET);
-
 
   DC_D;
 
@@ -2843,7 +2923,7 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   tft_Write_8(TFT_RAMRD); // Read CGRAM command
 
   DC_D;
-
+#endif
   //spi_end();
 }
 
@@ -3039,7 +3119,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
 #else // ESP32
 
-void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
+void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 {
   // Faster range checking, possible because x and y are unsigned
   if ((x >= _width) || (y >= _height)) return;
@@ -3050,6 +3130,54 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
   y+=rowstart;
 #endif
 
+#ifdef ILI9225_DRIVER
+  // Column addr set
+  CS_L;
+
+  // No need to send x if it has not changed (speeds things up)
+  if (addr_col != x) {
+
+  DC_C;
+  tft_Write_8(ILI9225_HORIZONTAL_WINDOW_ADDR1);
+  DC_D;
+  tft_Write_16(x);
+  DC_C;
+  tft_Write_8(ILI9225_HORIZONTAL_WINDOW_ADDR2);
+  DC_D;
+  tft_Write_16(x);
+    DC_C;
+    tft_Write_8(ILI9225_RAM_ADDR_SET1);
+    DC_D;
+    tft_Write_16(x);
+
+    addr_col = x;
+  }
+
+  // No need to send y if it has not changed (speeds things up)
+  if (addr_row != y) {
+  DC_C;
+  tft_Write_8(ILI9225_VERTICAL_WINDOW_ADDR1);
+  DC_D;
+  tft_Write_16(y);
+  DC_C;
+  tft_Write_8(ILI9225_VERTICAL_WINDOW_ADDR2);
+  DC_D;
+  tft_Write_16(y);
+    DC_C;
+    tft_Write_8(ILI9225_RAM_ADDR_SET2);
+    DC_D;
+    tft_Write_16(y);
+
+    addr_row = y;
+  }
+
+  DC_C;
+  tft_Write_8(ILI9225_GRAM_DATA_REG);
+  DC_D;
+  tft_Write_16(color);
+
+  CS_H;
+#else
 #if !defined (RPI_ILI9486_DRIVER)
   uint32_t xaw = ((uint32_t)x << 16) | x;
   uint32_t yaw = ((uint32_t)y << 16) | y;
@@ -3105,6 +3233,7 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
 
   CS_H;
 
+#endif
   spi_end();
 }
 #endif

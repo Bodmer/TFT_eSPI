@@ -22,13 +22,21 @@
       _width  = _init_width;
       _height = _init_height;
        colstart = 0;
+#if (TFT_HEIGHT == 240)
        rowstart = 80;
+#else
+       rowstart = 0;
+#endif
      break;
    case 3: // Inverted landscape
      writedata(TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_RGB);
       _width  = _init_height;
       _height = _init_width;
+#if (TFT_HEIGHT == 240)
        colstart = 80;
+#else
+       colstart = 0;
+#endif
        rowstart = 0;
      break;
   }

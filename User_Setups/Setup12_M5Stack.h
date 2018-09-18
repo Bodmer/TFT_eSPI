@@ -19,14 +19,25 @@
 //#define ILI9163_DRIVER
 //#define S6D02A1_DRIVER
 //#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
+//#define HX8357D_DRIVER
+//#define ILI9481_DRIVER
+//#define ILI9486_DRIVER
+//#define ILI9488_DRIVER
+//#define ST7789_DRIVER
+//#define ILI9225_DRIVER
+
+// For IPS LCD display
+//#define IPS_LCD
 
 // For M5Stack ESP32 module with integrated display ONLY, remove // in line below
 #define M5STACK
 
 // For ST7735  and ILI9163 ONLY, define the pixel width and height in portrait orientation
+//#define TFT_WIDTH  80
 //#define TFT_WIDTH  128
-//#define TFT_HEIGHT 160
 //#define TFT_HEIGHT 128
+//#define TFT_HEIGHT 160
+//#define TFT_HEIGHT 240
 
 // For ST7735 ONLY, define the type of display, originally this was based on the
 // colour of the tab on the screen protector film but this is not always true, so try
@@ -40,6 +51,7 @@
 //#define ST7735_GREENTAB2
 //#define ST7735_GREENTAB3
 //#define ST7735_GREENTAB128 // For 128 x 128 display
+//#define ST7735_GREENTAB80160 // For 80 x 160 display
 //#define ST7735_REDTAB
 //#define ST7735_BLACKTAB
 
