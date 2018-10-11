@@ -4156,17 +4156,17 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
   uint16_t cheight = 8 * textsize;
 
 #ifdef LOAD_GFXFF
-  if (font == 1) {
-    if(gfxFont) {
-      cheight = glyph_ab * textsize;
-      poY += cheight; // Adjust for baseline datum of free fonts
-      baseline = cheight;
-      padding =101; // Different padding method used for Free Fonts
+  bool freeFont = (font == 1 && gfxFont && !fontLoaded);
 
-      // We need to make an adjustment for the bottom of the string (eg 'y' character)
-      if ((textdatum == BL_DATUM) || (textdatum == BC_DATUM) || (textdatum == BR_DATUM)) {
-        cheight += glyph_bb * textsize;
-      }
+  if (freeFont) {
+    cheight = glyph_ab * textsize;
+    poY += cheight; // Adjust for baseline datum of free fonts
+    baseline = cheight;
+    padding =101; // Different padding method used for Free Fonts
+
+    // We need to make an adjustment for the bottom of the string (eg 'y' character)
+    if ((textdatum == BL_DATUM) || (textdatum == BC_DATUM) || (textdatum == BR_DATUM)) {
+      cheight += glyph_bb * textsize;
     }
   }
 #endif
@@ -4250,7 +4250,7 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
 
   int8_t xo = 0;
 #ifdef LOAD_GFXFF
-  if ((font == 1) && (gfxFont) && (textcolor!=textbgcolor))
+  if (freeFont && (textcolor!=textbgcolor))
     {
       cheight = (glyph_ab + glyph_bb) * textsize;
       // Get the offset for the first character only to allow for negative offsets
@@ -4306,7 +4306,7 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
   {
     int16_t padXc = poX+cwidth+xo;
 #ifdef LOAD_GFXFF
-    if ((font == 1) && (gfxFont))
+    if (freeFont)
     {
       poX +=xo; // Adjust for negative offset start character
       poY -= glyph_ab * textsize;
