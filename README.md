@@ -18,7 +18,7 @@ Drawing graphics into a sprite is very fast, for those familiar with the Adafrui
 
 Sprites can be plotted to the TFT with one colour being specified as "transparent", see Transparent_Sprite_Demo example.
 
-IF an ESP32 board with SPIRAM (i.e. PSRAM) fitted then Sprites will use the PSRAM memory and large full screen buffer Sprites can be created. Full screen Sprites take longer to render (~45ms for a 320 x 240 16 bit Sprite), so bear that in mind.
+If an ESP32 board has SPIRAM (i.e. PSRAM) fitted then Sprites will use the PSRAM memory and large full screen buffer Sprites can be created. Full screen Sprites take longer to render (~45ms for a 320 x 240 16 bit Sprite), so bear that in mind.
 
 The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed.
 
