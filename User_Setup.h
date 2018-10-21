@@ -236,7 +236,8 @@
 // #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
 // #define SPI_FREQUENCY  80000000
 
-#define SPI_READ_FREQUENCY  20000000 // Optional reduced SPI frequency for reading TFT
+// Optional reduced SPI frequency for reading TFT
+#define SPI_READ_FREQUENCY  20000000
 
 // The XPT2046 requires a lower SPI clock rate of 2.5MHz so we define that here:
 #define SPI_TOUCH_FREQUENCY  2500000

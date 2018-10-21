@@ -172,6 +172,7 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   textcolor   = bitmap_fg = 0xFFFF; // White
   textbgcolor = bitmap_bg = 0x0000; // Black
   padX = 0;             // No padding
+  isDigits   = false;   // No bounding box adjustment
   textwrapX  = true;    // Wrap text at end of line when using print stream
   textwrapY  = false;   // Wrap text at bottom of screen when using print stream
   textdatum = TL_DATUM; // Top Left text alignment is default
@@ -1548,7 +1549,7 @@ void TFT_eSPI::fillCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t corne
 ** Function name:           drawEllipse
 ** Description:             Draw a ellipse outline
 ***************************************************************************************/
-void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int16_t rx, int16_t ry, uint16_t color)
+void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color)
 {
   if (rx<2) return;
   if (ry<2) return;
@@ -1603,7 +1604,7 @@ void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int16_t rx, int16_t ry, uint1
 ** Function name:           fillEllipse
 ** Description:             draw a filled ellipse
 ***************************************************************************************/
-void TFT_eSPI::fillEllipse(int16_t x0, int16_t y0, int16_t rx, int16_t ry, uint16_t color)
+void TFT_eSPI::fillEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color)
 {
   if (rx<2) return;
   if (ry<2) return;
@@ -2102,13 +2103,14 @@ int16_t TFT_eSPI::textWidth(const char *string, int font)
           if (found)
           {
             if(str_width == 0 && gdX[gNum] < 0) str_width -= gdX[gNum];
-            if (*string) str_width += gxAdvance[gNum];
+            if (*string || isDigits) str_width += gxAdvance[gNum];
             else str_width += (gdX[gNum] + gWidth[gNum]);
           }
           else str_width += gFont.spaceWidth + 1;
         }
       }
     }
+    isDigits = false;
     return str_width;
   }
 #endif
@@ -2141,8 +2143,8 @@ int16_t TFT_eSPI::textWidth(const char *string, int font)
         {
           uniCode -= pgm_read_byte(&gfxFont->first);
           GFXglyph *glyph  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[uniCode]);
-          // If this is not the  last character then use xAdvance
-          if (*string) str_width += pgm_read_byte(&glyph->xAdvance);
+          // If this is not the  last character or is a digit then use xAdvance
+          if (*string  || isDigits) str_width += pgm_read_byte(&glyph->xAdvance);
           // Else use the offset plus width since this can be bigger than xAdvance
           else str_width += ((int8_t)pgm_read_byte(&glyph->xOffset) + pgm_read_byte(&glyph->width));
         }
@@ -2156,6 +2158,7 @@ int16_t TFT_eSPI::textWidth(const char *string, int font)
 #endif
     }
   }
+  isDigits = false;
   return str_width * textsize;
 }
 
@@ -3715,11 +3718,11 @@ size_t TFT_eSPI::write(uint8_t utf8)
 
     //fontFile = SPIFFS.open( _gFontFilename, "r" );
 
-    if(!fontFile)
-    {
-      fontLoaded = false;
-      return 0;
-    }
+    //if(!fontFile)
+    //{
+    //  fontLoaded = false;
+    //  return 0;
+    //}
 
     drawGlyph(unicode);
 
@@ -4147,6 +4150,7 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY)
 {
   return drawString(string, poX, poY, textfont);
 }
+
 // With font number
 int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
 {
@@ -4171,22 +4175,22 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
   }
 #endif
 
+
+  // If it is not font 1 (GLCD or free font) get the baseline and pixel height of the font
+#ifdef SMOOTH_FONT
+  if(fontLoaded) {
+    baseline = gFont.maxAscent;
+    cheight  = fontHeight();
+  }
+  else
+#endif
+  if (font!=1) {
+    baseline = pgm_read_byte( &fontdata[font].baseline ) * textsize;
+    cheight = fontHeight(font);
+  }
+
   if (textdatum || padX)
   {
-
-    // If it is not font 1 (GLCD or free font) get the baseline and pixel height of the font
-#ifdef SMOOTH_FONT
-    if(fontLoaded) {
-      baseline = gFont.maxAscent;
-      cheight  = fontHeight(0);
-    }
-
-    else
-#endif
-    if (font!=1) {
-      baseline = pgm_read_byte( &fontdata[font].baseline ) * textsize;
-      cheight = fontHeight(font);
-    }
 
     switch(textdatum) {
       case TC_DATUM:
@@ -4418,6 +4422,7 @@ int16_t TFT_eSPI::drawRightString(const char *string, int dX, int poY, int font)
 ***************************************************************************************/
 int16_t TFT_eSPI::drawNumber(long long_num, int poX, int poY)
 {
+  isDigits = true; // Eliminate jiggle in monospaced fonts
   char str[12];
   ltoa(long_num, str, 10);
   return drawString(str, poX, poY, textfont);
@@ -4425,6 +4430,7 @@ int16_t TFT_eSPI::drawNumber(long long_num, int poX, int poY)
 
 int16_t TFT_eSPI::drawNumber(long long_num, int poX, int poY, int font)
 {
+  isDigits = true; // Eliminate jiggle in monospaced fonts
   char str[12];
   ltoa(long_num, str, 10);
   return drawString(str, poX, poY, font);
@@ -4444,6 +4450,7 @@ int16_t TFT_eSPI::drawFloat(float floatNumber, int dp, int poX, int poY)
 
 int16_t TFT_eSPI::drawFloat(float floatNumber, int dp, int poX, int poY, int font)
 {
+  isDigits = true;
   char str[14];               // Array to contain decimal string
   uint8_t ptr = 0;            // Initialise pointer for array
   int8_t  digits = 1;         // Count the digits to avoid array overflow
@@ -4572,7 +4579,7 @@ void TFT_eSPI::setTextFont(uint8_t f)
 
 
 /***************************************************************************************
-** Function name:           spiBlockWrite
+** Function name:           writeBlock
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
 //Clear screen test 76.8ms theoretical. 81.5ms TFT_eSPI, 967ms Adafruit_ILI9341
@@ -4963,6 +4970,10 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 #endif
 
 #include "Extensions/Sprite.cpp"
+
+//  #ifdef ESP32
+//    #include "Extensions/pSprite.cpp"
+//  #endif
 
 #ifdef SMOOTH_FONT
   #include "Extensions/Smooth_font.cpp"

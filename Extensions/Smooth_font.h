@@ -13,7 +13,8 @@
 
   uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc);
 
-  void     drawGlyph(uint16_t code);
+  virtual void drawGlyph(uint16_t code);
+
   void     showFont(uint32_t td);
 
  fs::File   fontFile;

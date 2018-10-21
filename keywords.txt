@@ -36,6 +36,7 @@ getCursorY	KEYWORD2
 setTextColor	KEYWORD2
 setTextSize	KEYWORD2
 setTextFont	KEYWORD2
+setFreeFont	KEYWORD2
 setTextWrap	KEYWORD2
 setTextDatum	KEYWORD2
 setTextPadding	KEYWORD2

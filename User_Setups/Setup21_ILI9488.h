@@ -19,6 +19,9 @@
 //#define ILI9163_DRIVER
 //#define S6D02A1_DRIVER
 //#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
+//#define HX8357D_DRIVER
+//#define ILI9481_DRIVER
+//#define ILI9486_DRIVER
 #define ILI9488_DRIVER
 
 // For M5Stack ESP32 module with integrated display ONLY, remove // in line below

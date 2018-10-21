@@ -424,7 +424,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
     uint8_t pbuffer[gWidth[gNum]];
 
-    uint16_t xs = 0;
+    int16_t xs = 0;
     uint32_t dl = 0;
 
     int16_t cy = cursor_y + gFont.maxAscent - gdY[gNum];

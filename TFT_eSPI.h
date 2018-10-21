@@ -562,8 +562,8 @@ class TFT_eSPI : public Print {
            fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color),
            fillCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t cornername, int32_t delta, uint32_t color),
 
-           drawEllipse(int16_t x0, int16_t y0, int16_t rx, int16_t ry, uint16_t color),
-           fillEllipse(int16_t x0, int16_t y0, int16_t rx, int16_t ry, uint16_t color),
+           drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color),
+           fillEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color),
 
            drawTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint32_t color),
            fillTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint32_t color),
@@ -719,6 +719,7 @@ class TFT_eSPI : public Print {
   uint8_t  glyph_ab,  // glyph height above baseline
            glyph_bb;  // glyph height below baseline
 
+  bool     isDigits;  // adjust bounding box for numbers to reduce visual jiggling
   bool     textwrapX, textwrapY;   // If set, 'wrap' text at right and optionally bottom edge of display
   bool     _swapBytes; // Swap the byte order for TFT pushImage()
   bool     locked, inTransaction; // Transaction and mutex lock flags for ESP32
@@ -748,5 +749,10 @@ class TFT_eSPI : public Print {
 
 // Load the Sprite Class
 #include "Extensions/Sprite.h"
+
+//  #ifdef ESP32
+//    // Load the Sprite Class
+//    #include "Extensions/pSprite.h"
+//  #endif
 
 #endif
