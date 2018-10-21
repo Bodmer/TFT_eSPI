@@ -59,6 +59,18 @@ void setup(void) {
     while (1) yield(); // Stay here twiddling thumbs waiting
   }
   Serial.println("\r\nSPIFFS available!");
+  
+  // ESP32 will crash if any of the fonts are missing
+  bool font_missing = false;
+  if (SPIFFS.exists("/NotoSansBold15.vlw")    == false) font_missing = true;
+  if (SPIFFS.exists("/NotoSansBold36.vlw")    == false) font_missing = true;
+
+  if (font_missing)
+  {
+    Serial.println("\r\nFont missing in SPIFFS, did you upload it?");
+    while(1) yield();
+  }
+  else Serial.println("\r\nFonts found OK.");
 }
 
 
