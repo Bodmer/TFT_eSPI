@@ -148,73 +148,73 @@ void loop() {
   tft.loadFont(AA_FONT_SMALL);
   tft.setTextDatum(TL_DATUM);
   tft.drawString("[Top left]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(TC_DATUM);
   tft.drawString("[Top centre]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(TR_DATUM);
   tft.drawString("[Top right]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(ML_DATUM);
   tft.drawString("[Middle left]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(MC_DATUM);
   tft.drawString("[Middle centre]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(MR_DATUM);
   tft.drawString("[Middle right]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(BL_DATUM);
   tft.drawString("[Bottom left]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(BC_DATUM);
   tft.drawString("[Bottom centre]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(BR_DATUM);
   tft.drawString("[Bottom right]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(L_BASELINE);
   tft.drawString("[Left baseline]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(C_BASELINE);
   tft.drawString("[Centre baseline]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(R_BASELINE);
   tft.drawString("[Right baseline]", xpos, ypos);
-  drawDatumMarker(160,120);
+  drawDatumMarker(xpos, ypos);
   delay(1000);
 
   tft.unloadFont(); // Remove the font to recover memory used
