@@ -4160,7 +4160,11 @@ int16_t TFT_eSPI::drawString(const char *string, int poX, int poY, int font)
   uint16_t cheight = 8 * textsize;
 
 #ifdef LOAD_GFXFF
-  bool freeFont = (font == 1 && gfxFont && !fontLoaded);
+  #ifdef SMOOTH_FONT
+    bool freeFont = (font == 1 && gfxFont && !fontLoaded);
+  #else
+    bool freeFont = (font == 1 && gfxFont);
+  #endif
 
   if (freeFont) {
     cheight = glyph_ab * textsize;
