@@ -15,6 +15,7 @@
 #define INITR_GREENTAB2 0x3 // Use if you get random pixels on two edges of green tab display
 #define INITR_GREENTAB3 0x4 // Use if you get random pixels on edge(s) of 128x128 screen
 #define INITR_GREENTAB128 0x5 // Use if you only get part of 128x128 screen in rotation 0 & 1
+#define INITR_GREENTAB160x80 0x6 // Use if you only get part of 128x128 screen in rotation 0 & 1
 #define INITB           0xB
 
 
@@ -36,6 +37,10 @@
 
 #elif defined (ST7735_GREENTAB128)
   #define TAB_COLOUR INITR_GREENTAB128
+  #define CGRAM_OFFSET
+ 
+#elif defined (ST7735_GREENTAB160x80)
+  #define TAB_COLOUR INITR_GREENTAB160x80
   #define CGRAM_OFFSET
  
 #elif defined (ST7735_REDTAB)

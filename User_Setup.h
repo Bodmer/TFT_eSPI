@@ -30,8 +30,9 @@
 //#define M5STACK
 
 // For ST7735  and ILI9163 ONLY, define the pixel width and height in portrait orientation
-//#define TFT_WIDTH  128
-//#define TFT_HEIGHT 160
+// #define TFT_WIDTH  80
+// #define TFT_WIDTH  128
+// #define TFT_HEIGHT 160
 //#define TFT_HEIGHT 128
 
 // For ST7735 ONLY, define the type of display, originally this was based on the
@@ -41,12 +42,13 @@
 // Comment out ALL BUT ONE of these options for a ST7735 display driver, save this
 // this User_Setup file, then rebuild and upload the sketch to the board again:
 
-//#define ST7735_INITB
-//#define ST7735_GREENTAB
-//#define ST7735_GREENTAB2
-//#define ST7735_GREENTAB3
-//#define ST7735_GREENTAB128 // For 128 x 128 display
-//#define ST7735_REDTAB
+// #define ST7735_INITB
+// #define ST7735_GREENTAB
+// #define ST7735_GREENTAB2
+// #define ST7735_GREENTAB3
+// #define ST7735_GREENTAB128 // For 128 x 128 display
+// #define ST7735_GREENTAB160x80 // For 160 x 80 display (BGR, inverted, 26 offset)
+// #define ST7735_REDTAB
 //#define ST7735_BLACKTAB
 
 // ##################################################################################
