@@ -22,13 +22,13 @@
       _width  = _init_width;
       _height = _init_height;
        colstart = 0;
-       rowstart = 80;
+       rowstart = 0;
      break;
    case 3: // Inverted landscape
      writedata(TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_RGB);
       _width  = _init_height;
       _height = _init_width;
-       colstart = 80;
+       colstart = 0;
        rowstart = 0;
      break;
   }
