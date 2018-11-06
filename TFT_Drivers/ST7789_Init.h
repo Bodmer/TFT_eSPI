@@ -14,7 +14,12 @@
   //------------------------------display and color format setting--------------------------------//
   writecommand(ST7789_MADCTL);
   writedata(0x00);
-  writedata(0x48);
+#ifdef CGRAM_OFFSET
+  writedata(0x48); // BGR colour order for 240 x 240 TFT
+#else
+  writedata(0x40); // RGB colour order for 240 x 320 TFT (Issue #232)
+#endif
+
 
   // JLX240 display datasheet
   writecommand(0xB6);
@@ -114,7 +119,9 @@
 
   writecommand(ST7789_DISPON);    //Display on
 
+#ifdef TFT_BL
   // Turn on the back-light LED
   digitalWrite(TFT_BL, HIGH);
   pinMode(TFT_BL, OUTPUT);
+#endif
 }

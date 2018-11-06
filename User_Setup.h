@@ -24,16 +24,19 @@
 //#define ILI9481_DRIVER
 //#define ILI9486_DRIVER
 //#define ILI9488_DRIVER
-//#define ST7789_DRIVER
+//#define ST7789_DRIVER // Define the screen size below for this display
 
 // For M5Stack ESP32 module with integrated display ONLY, remove // in line below
 //#define M5STACK
 
-// For ST7735  and ILI9163 ONLY, define the pixel width and height in portrait orientation
+// For ST7789, ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
 // #define TFT_WIDTH  80
 // #define TFT_WIDTH  128
+// #define TFT_WIDTH  240 // ST7789 240 x 240 and 240 x 320
 // #define TFT_HEIGHT 160
-//#define TFT_HEIGHT 128
+// #define TFT_HEIGHT 128
+// #define TFT_HEIGHT 240 // ST7789 240 x 240
+// #define TFT_HEIGHT 320 // ST7789 240 x 320
 
 // For ST7735 ONLY, define the type of display, originally this was based on the
 // colour of the tab on the screen protector film but this is not always true, so try
@@ -46,10 +49,10 @@
 // #define ST7735_GREENTAB
 // #define ST7735_GREENTAB2
 // #define ST7735_GREENTAB3
-// #define ST7735_GREENTAB128 // For 128 x 128 display
+// #define ST7735_GREENTAB128    // For 128 x 128 display
 // #define ST7735_GREENTAB160x80 // For 160 x 80 display (BGR, inverted, 26 offset)
 // #define ST7735_REDTAB
-//#define ST7735_BLACKTAB
+// #define ST7735_BLACKTAB
 
 // ##################################################################################
 //
@@ -94,7 +97,9 @@
 #define TFT_CS   PIN_D8  // Chip select control pin D8
 #define TFT_DC   PIN_D3  // Data Command control pin
 #define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
-//#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
+//#define TFT_RST  -1    // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
+
+//#define TFT_BL PIN_D1  // LED back-light (only for ST7789 with backlight control pin)
 
 //#define TOUCH_CS PIN_D2     // Chip select pin (T_CS) of touch screen
 
@@ -124,10 +129,12 @@
 //#define TFT_MISO 19
 //#define TFT_MOSI 23
 //#define TFT_SCLK 18
-//#define TFT_CS    15  // Chip select control pin
+//#define TFT_CS   15  // Chip select control pin
 //#define TFT_DC    2  // Data Command control pin
 //#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
+//#define TFT_BL   32  // LED back-light (only for ST7789 with backlight control pin)
+
 
 // For the M5Stack module use these #define lines
 //#define TFT_MISO 19
@@ -136,7 +143,7 @@
 //#define TFT_CS   14  // Chip select control pin
 //#define TFT_DC   27  // Data Command control pin
 //#define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
-//#define TFT_BL   32  // LED back-light
+//#define TFT_BL   32  // LED back-light (required for M5Stack)
 
 //#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
 

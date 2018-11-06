@@ -7,28 +7,36 @@
      writedata(TFT_MAD_RGB);
       _width  = _init_width;
       _height = _init_height;
+#ifdef CGRAM_OFFSET
        colstart = 0;
        rowstart = 0;
+#endif
      break;
    case 1: // Landscape (Portrait + 90)
      writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_RGB);
       _width  = _init_height;
       _height = _init_width;
-       colstart = 0;
-       rowstart = 0;
-     break;
+#ifdef CGRAM_OFFSET
+      colstart = 0;
+      rowstart = 0;
+#endif
+       break;
    case 2: // Inverter portrait
      writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_RGB);
       _width  = _init_width;
       _height = _init_height;
-       colstart = 0;
-       rowstart = 80;
-     break;
+#ifdef CGRAM_OFFSET
+      colstart = 0;
+      rowstart = 80;
+#endif
+       break;
    case 3: // Inverted landscape
      writedata(TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_RGB);
       _width  = _init_height;
       _height = _init_width;
-       colstart = 80;
-       rowstart = 0;
-     break;
+#ifdef CGRAM_OFFSET
+      colstart = 80;
+      rowstart = 0;
+#endif
+       break;
   }
