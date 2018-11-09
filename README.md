@@ -71,6 +71,8 @@ IO32 wired to IO36
 
 ![Example](https://i.imgur.com/pUZn6lF.jpg)
 
+If the display board is fitted with a resistance based touch screen then this can be used by performing the modifications described here and the fork of the Adafruit library:
+https://github.com/s60sc/Adafruit_TouchScreen
 
 # ePaper displays
 
