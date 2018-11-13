@@ -53,6 +53,7 @@
 // #define ST7735_GREENTAB160x80 // For 160 x 80 display (BGR, inverted, 26 offset)
 // #define ST7735_REDTAB
 // #define ST7735_BLACKTAB
+// #define ST7735_REDTAB160x80 // For 160 x 80 display (24 offset) (https://www.aliexpress.com/item/ShengYang-1pcs-IPS-0-96-inch-7P-SPI-HD-65K-Full-Color-OLED-Module-ST7735-Drive/32918394604.html)
 
 // ##################################################################################
 //

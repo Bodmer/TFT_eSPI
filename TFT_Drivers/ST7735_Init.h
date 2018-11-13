@@ -180,6 +180,12 @@
          colstart = 26;
          rowstart = 1;
        }
+       else if (tabcolor == INITR_REDTAB160x80)
+       {
+         commandList(Rcmd2green);
+         colstart = 24;
+         rowstart = 0;
+       }
        else if (tabcolor == INITR_REDTAB)
        {
          commandList(Rcmd2red);
