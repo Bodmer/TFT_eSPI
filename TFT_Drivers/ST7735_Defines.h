@@ -9,15 +9,15 @@
 
 
 // Enumerate the different configurations
-#define INITR_GREENTAB  0x0
-#define INITR_REDTAB    0x1
-#define INITR_BLACKTAB  0x2
-#define INITR_GREENTAB2 0x3 // Use if you get random pixels on two edges of green tab display
-#define INITR_GREENTAB3 0x4 // Use if you get random pixels on edge(s) of 128x128 screen
-#define INITR_GREENTAB128 0x5 // Use if you only get part of 128x128 screen in rotation 0 & 1
+#define INITR_GREENTAB       0x0
+#define INITR_REDTAB         0x1
+#define INITR_BLACKTAB       0x2 // Display with no offsets
+#define INITR_GREENTAB2      0x3 // Use if you get random pixels on two edges of green tab display
+#define INITR_GREENTAB3      0x4 // Use if you get random pixels on edge(s) of 128x128 screen
+#define INITR_GREENTAB128    0x5 // Use if you only get part of 128x128 screen in rotation 0 & 1
 #define INITR_GREENTAB160x80 0x6 // Use if you only get part of 128x128 screen in rotation 0 & 1
-#define INITR_REDTAB160x80 0x7 // Added for https://www.aliexpress.com/item/ShengYang-1pcs-IPS-0-96-inch-7P-SPI-HD-65K-Full-Color-OLED-Module-ST7735-Drive/32918394604.html
-#define INITB           0xB
+#define INITR_REDTAB160x80   0x7 // Added for https://www.aliexpress.com/item/ShengYang-1pcs-IPS-0-96-inch-7P-SPI-HD-65K-Full-Color-OLED-Module-ST7735-Drive/32918394604.html
+#define INITB                0xB
 
 
 // Setup the tab color that will be used by the library setRotation() and setup command list

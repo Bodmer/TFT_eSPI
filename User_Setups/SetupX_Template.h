@@ -102,7 +102,7 @@
 
 //#define TFT_BL PIN_D1  // LED back-light (only for ST7789 with backlight control pin)
 
-//#define TOUCH_CS PIN_D2     // Chip select pin (T_CS) of touch screen
+//#define TOUCH_CS PIN_D1     // Chip select pin (T_CS) of touch screen
 
 //#define TFT_WR PIN_D2       // Write strobe for modified Raspberry Pi TFT only
 
@@ -113,14 +113,15 @@
 // but saves pins for other functions.
 // Use NodeMCU SD0=MISO, SD1=MOSI, CLK=SCLK to connect to TFT in overlap mode
 
+// In ESP8266 overlap mode the following must be defined
+//#define TFT_SPI_OVERLAP
+
 // In ESP8266 overlap mode the TFT chip select MUST connect to pin D3
 //#define TFT_CS   PIN_D3
 //#define TFT_DC   PIN_D5  // Data Command control pin
 //#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
-// In ESP8266 overlap mode the following must be defined
-//#define TFT_SPI_OVERLAP
 
 // ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP32 SETUP   ######
 
@@ -134,8 +135,10 @@
 //#define TFT_DC    2  // Data Command control pin
 //#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
-//#define TFT_BL   32  // LED back-light (only for ST7789 with backlight control pin)
 
+//#define TOUCH_CS 22     // Chip select pin (T_CS) of touch screen
+
+//#define TFT_WR 21    // Write strobe for modified Raspberry Pi TFT only
 
 // For the M5Stack module use these #define lines
 //#define TFT_MISO 19
@@ -144,11 +147,7 @@
 //#define TFT_CS   14  // Chip select control pin
 //#define TFT_DC   27  // Data Command control pin
 //#define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
-//#define TFT_BL   32  // LED back-light (required for M5Stack)
-
-//#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
-
-//#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
+//#define TFT_BL   32  // LED back-light (if needed)
 
 // ######       EDIT THE PINs BELOW TO SUIT YOUR ESP32 PARALLEL TFT SETUP        ######
 
@@ -209,9 +208,9 @@
 #define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
 #define LOAD_FONT4  // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
 #define LOAD_FONT6  // Font 6. Large 48 pixel font, needs ~2666 bytes in FLASH, only characters 1234567890:-.apm
-#define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:-.
-#define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
+#define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:.
 //#define LOAD_FONT8N // Font 8. Alternative to Font 8 above, slightly narrower, so 3 digits fit a 160 pixel TFT
+#define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
 #define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
 
 // Comment out the #define below to stop the SPIFFS filing system and smooth font code being loaded
@@ -263,4 +262,4 @@
 // Transactions are automatically enabled by the library for an ESP32 (to use HAL mutex)
 // so changing it here has no effect
 
-//#define SUPPORT_TRANSACTIONS
+// #define SUPPORT_TRANSACTIONS

@@ -185,8 +185,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 
   _booted = true;
 
-  addr_row = 0xFFFF;
-  addr_col = 0xFFFF;
+  ys_row = ye_row = addr_row = 0xFFFF;
+  xs_col = xe_col = addr_col = 0xFFFF;
 
 #ifdef LOAD_GLCD
   fontsloaded  = 0x0002; // Bit 1 set
@@ -530,7 +530,7 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
   CS_L;
   tft_Write_8(cmd_function);
   DC_D;
-  reg = tft_Write_8(0);
+  reg = tft_Read_8(0);
   CS_H;
 
   spi_end_read();
@@ -628,15 +628,15 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
   #if !defined (ILI9488_DRIVER)
-    uint8_t r = tft_Write_8(0);
-    uint8_t g = tft_Write_8(0);
-    uint8_t b = tft_Write_8(0);
+    uint8_t r = tft_Read_8(0);
+    uint8_t g = tft_Read_8(0);
+    uint8_t b = tft_Read_8(0);
   #else
     // The 6 colour bits are in MS 6 bits of each byte, but the ILI9488 needs an extra clock pulse
     // so bits appear shifted right 1 bit, so mask the middle 6 bits then shift 1 place left
-    uint8_t r = (tft_Write_8(0)&0x7E)<<1;
-    uint8_t g = (tft_Write_8(0)&0x7E)<<1;
-    uint8_t b = (tft_Write_8(0)&0x7E)<<1;
+    uint8_t r = (tft_Read_8(0)&0x7E)<<1;
+    uint8_t g = (tft_Read_8(0)&0x7E)<<1;
+    uint8_t b = (tft_Read_8(0)&0x7E)<<1;
   #endif
 
   CS_H;
@@ -768,15 +768,15 @@ void TFT_eSPI::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
   #if !defined (ILI9488_DRIVER)
-    uint8_t r = tft_Write_8(0);
-    uint8_t g = tft_Write_8(0);
-    uint8_t b = tft_Write_8(0);
+    uint8_t r = tft_Read_8(0);
+    uint8_t g = tft_Read_8(0);
+    uint8_t b = tft_Read_8(0);
   #else
     // The 6 colour bits are in LS 6 bits of each byte but we do not include the extra clock pulse
     // so we use a trick and mask the middle 6 bits of the byte, then only shift 1 place left
-    uint8_t r = (tft_Write_8(0)&0x7E)<<1;
-    uint8_t g = (tft_Write_8(0)&0x7E)<<1;
-    uint8_t b = (tft_Write_8(0)&0x7E)<<1;
+    uint8_t r = (tft_Read_8(0)&0x7E)<<1;
+    uint8_t g = (tft_Read_8(0)&0x7E)<<1;
+    uint8_t b = (tft_Read_8(0)&0x7E)<<1;
   #endif
 
     // Swapped colour byte order for compatibility with pushRect()
@@ -1354,15 +1354,15 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
   #if !defined (ILI9488_DRIVER)
-    *data++ = tft_Write_8(0);
-    *data++ = tft_Write_8(0);
-    *data++ = tft_Write_8(0);
+    *data++ = tft_Read_8(0);
+    *data++ = tft_Read_8(0);
+    *data++ = tft_Read_8(0);
   #else
     // The 6 colour bits are in MS 6 bits of each byte, but the ILI9488 needs an extra clock pulse
     // so bits appear shifted right 1 bit, so mask the middle 6 bits then shift 1 place left
-    *data++ = (tft_Write_8(0)&0x7E)<<1;
-    *data++ = (tft_Write_8(0)&0x7E)<<1;
-    *data++ = (tft_Write_8(0)&0x7E)<<1;
+    *data++ = (tft_Read_8(0)&0x7E)<<1;
+    *data++ = (tft_Read_8(0)&0x7E)<<1;
+    *data++ = (tft_Read_8(0)&0x7E)<<1;
   #endif
 
   }
@@ -2473,7 +2473,7 @@ void TFT_eSPI::setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 // Chip select stays low, use setWindow() from sketches
 
 #if defined (ESP8266) && !defined (RPI_WRITE_STROBE) && !defined (RPI_ILI9486_DRIVER)
-inline void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
+void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 {
   //spi_begin();
 
@@ -2563,8 +2563,8 @@ void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 
   DC_D;
 
-  uint8_t xBin[] = { 0, (uint8_t) (xs>>8), 0, (uint8_t) (xs>>0), 0, (uint8_t) (xe>>8), 0, (uint8_t) (xe>>0), };
-  SPI.writePattern(&xBin[0], 8, 1);
+  uint8_t xb[] = { 0, (uint8_t) (xs>>8), 0, (uint8_t) (xs>>0), 0, (uint8_t) (xe>>8), 0, (uint8_t) (xe>>0), };
+  SPI.writePattern(&xb[0], 8, 1);
 
   // Row addr set
   DC_C;
@@ -2577,8 +2577,8 @@ void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 
   DC_D;
 
-  uint8_t yBin[] = { 0, (uint8_t) (ys>>8), 0, (uint8_t) (ys>>0), 0, (uint8_t) (ye>>8), 0, (uint8_t) (ye>>0), };
-  SPI.writePattern(&yBin[0], 8, 1);
+  uint8_t yb[] = { 0, (uint8_t) (ys>>8), 0, (uint8_t) (ys>>0), 0, (uint8_t) (ye>>8), 0, (uint8_t) (ye>>0), };
+  SPI.writePattern(&yb[0], 8, 1);
 
   // write to RAM
   DC_C;
@@ -2596,7 +2596,7 @@ void TFT_eSPI::setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 #else
 
 #if defined (ESP8266) && defined (RPI_ILI9486_DRIVER) // This is for the RPi display that needs 16 bits
-inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
   //spi_begin();
 
@@ -2673,7 +2673,7 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
 
 #else // This is for the ESP32
 
-inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
   //spi_begin();
 
@@ -2687,42 +2687,48 @@ inline void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t 
   y1+=rowstart;
 #endif
 
-#if !defined (RPI_ILI9486_DRIVER)
-  uint32_t xaw = ((uint32_t)x0 << 16) | x1;
-  uint32_t yaw = ((uint32_t)y0 << 16) | y1;
-#endif
+  CS_L_DC_C;
 
-  // Column addr set
-  DC_C;
-  CS_L;
+  // No need to send x if it has not changed (small speed-up of complex transparent Sprites and bitmaps)
+  // Nb: caller must fill the set address area so that setting same area again will fill from xs, ys
+  if (xs_col != x0 || xe_col != x1) {
+    // Column addr set
 
-  tft_Write_8(TFT_CASET);
+    tft_Write_8(TFT_CASET);
 
-  DC_D;
+    DC_D;
 
 #if defined (RPI_ILI9486_DRIVER)
-  uint8_t xBin[] = { 0, (uint8_t) (x0>>8), 0, (uint8_t) (x0>>0), 0, (uint8_t) (x1>>8), 0, (uint8_t) (x1>>0), };
-  SPI.writePattern(&xBin[0], 8, 1);
+    uint8_t xb[] = { 0, (uint8_t) (x0>>8), 0, (uint8_t) (x0>>0), 0, (uint8_t) (x1>>8), 0, (uint8_t) (x1>>0), };
+    SPI.writePattern(&xb[0], 8, 1);
 #else
-  tft_Write_32(xaw);
+    tft_Write_32(SPI_32(x0, x1));
 #endif
 
-  // Row addr set
-  DC_C;
-  tft_Write_8(TFT_PASET);
+    DC_C;
+    xs_col = x0; xe_col = x1;
+  }
 
-  DC_D;
+  // No need to send y if it has not changed
+  if (ys_row != y0 || ye_row != y1) {
+
+    // Row addr set
+    tft_Write_8(TFT_PASET);
+
+    DC_D;
 
 #if defined (RPI_ILI9486_DRIVER)
-  uint8_t yBin[] = { 0, (uint8_t) (y0>>8), 0, (uint8_t) (y0>>0), 0, (uint8_t) (y1>>8), 0, (uint8_t) (y1>>0), };
-  SPI.writePattern(&yBin[0], 8, 1);
+    uint8_t yb[] = { 0, (uint8_t) (y0>>8), 0, (uint8_t) (y0>>0), 0, (uint8_t) (y1>>8), 0, (uint8_t) (y1>>0), };
+    SPI.writePattern(&yb[0], 8, 1);
 #else
-  tft_Write_32(yaw);
+    tft_Write_32(SPI_32(y0, y1));
 #endif
+
+    DC_C;
+    ys_row = y0; ye_row = y1;
+  }
 
   // write to RAM
-  DC_C;
-
   tft_Write_8(TFT_RAMWR);
 
   DC_D;
@@ -2819,19 +2825,15 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   y1+=rowstart;
 #endif
 
-  uint32_t xaw = ((uint32_t)x0 << 16) | x1;
-  uint32_t yaw = ((uint32_t)y0 << 16) | y1;
-  
   // Column addr set
-  DC_C;
-  CS_L;
+  CS_L_DC_C;
 
   tft_Write_8(TFT_CASET);
 
 
   DC_D;
 
-  tft_Write_32(xaw);
+  tft_Write_32(SPI_32(x0, x1));
 
   // Row addr set
   DC_C;
@@ -2840,7 +2842,7 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 
   DC_D;
 
-  tft_Write_32(yaw);
+  tft_Write_32(SPI_32(y0, y1));
   
   DC_C;
   tft_Write_8(TFT_RAMRD); // Read CGRAM command
@@ -3053,52 +3055,49 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
   y+=rowstart;
 #endif
 
-#if !defined (RPI_ILI9486_DRIVER)
-  uint32_t xaw = ((uint32_t)x << 16) | x;
-  uint32_t yaw = ((uint32_t)y << 16) | y;
-#endif
-
-  CS_L;
+  CS_L_DC_C;
 
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != x) {
-
-    DC_C;
 
     tft_Write_8(TFT_CASET);
 
     DC_D;
 
 #if defined (RPI_ILI9486_DRIVER)
-    uint8_t xBin[] = { 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), };
-    SPI.writePattern(&xBin[0], 8, 1);
+    uint8_t xb[] = { 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), 0, (uint8_t) (x>>8), 0, (uint8_t) (x>>0), };
+    SPI.writePattern(&xb[0], 8, 1);
 #else
-    tft_Write_32(xaw);
+    tft_Write_32(SPI_32(x, x));
 #endif
-    
+
+    DC_C;
+
     addr_col = x;
+    xs_col = xe_col = x;
+    
   }
 
   // No need to send y if it has not changed (speeds things up)
   if (addr_row != y) {
-
-    DC_C;
 
     tft_Write_8(TFT_PASET);
 
     DC_D;
 
 #if defined (RPI_ILI9486_DRIVER)
-    uint8_t yBin[] = { 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), };
-    SPI.writePattern(&yBin[0], 8, 1);
+    uint8_t yb[] = { 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), 0, (uint8_t) (y>>8), 0, (uint8_t) (y>>0), };
+    SPI.writePattern(&yb[0], 8, 1);
 #else
-    tft_Write_32(yaw);
+    tft_Write_32(SPI_32(y, y));
 #endif
 
+    DC_C;
+
     addr_row = y;
+    ys_row = ye_row = y;
   }
 
-  DC_C;
 
   tft_Write_8(TFT_RAMWR);
 
@@ -3157,6 +3156,48 @@ void TFT_eSPI::pushColor(uint16_t color, uint32_t len)
   CS_H;
 
   spi_end();
+}
+
+/***************************************************************************************
+** Function name:           startWrite
+** Description:             begin transaction with CS low, MUST later call endWrite
+***************************************************************************************/
+void TFT_eSPI::startWrite(void)
+{
+  spi_begin();
+
+  CS_L;
+}
+
+/***************************************************************************************
+** Function name:           endWrite
+** Description:             end transaction with CS high
+***************************************************************************************/
+void TFT_eSPI::endWrite(void)
+{
+
+  CS_H;
+
+  spi_end();
+}
+
+/***************************************************************************************
+** Function name:           writeColor (use startWrite() and endWrite() before & after)
+** Description:             raw write of "len" pixels avoiding transaction check
+***************************************************************************************/
+void TFT_eSPI::writeColor(uint16_t color, uint32_t len)
+{
+#ifdef RPI_WRITE_STROBE
+  uint8_t colorBin[] = { (uint8_t) (color >> 8), (uint8_t) color };
+  if(len) SPI.writePattern(&colorBin[0], 2, 1); len--;
+  while(len--) {WR_L; WR_H;}
+#else
+  #if defined (ESP32_PARALLEL)
+    while (len--) {tft_Write_16(color);}
+  #else
+    writeBlock(color, len);
+  #endif
+#endif
 }
 
 /***************************************************************************************
@@ -4655,7 +4696,7 @@ void writeBlock(uint16_t color, uint32_t repeat)
 #elif defined (ILI9488_DRIVER)
 
 #ifdef ESP8266
-void writeBlock(uint16_t color, uint32_t repeat)
+void TFT_eSPI::writeBlock(uint16_t color, uint32_t repeat)
 {
 
   uint32_t mask = ~(SPIMMOSI << SPILMOSI);
@@ -4721,9 +4762,6 @@ void writeBlock(uint16_t color, uint32_t repeat)
   SPI1U = SPIUMOSI | SPIUDUPLEX | SPIUSSE;
 }
 #else // Now the code for ESP32 and ILI9488
-
-#include "soc/spi_reg.h"
-#define SPI_NUM 0x3
 
 void writeBlock(uint16_t color, uint32_t repeat)
 {
@@ -4795,38 +4833,46 @@ void writeBlock(uint16_t color, uint32_t repeat)
 
 #else // Low level register based ESP32 code for 16 bit colour SPI TFTs
 
-#include "soc/spi_reg.h"
-#define SPI_NUM 0x3
-
-
 void writeBlock(uint16_t color, uint32_t repeat)
 {
-  uint16_t color16 = (color >> 8) | (color << 8);
-  uint32_t color32 = color16 | color16 << 16;
+  uint32_t color32 = SPI_32(color, color);
 
-  if (repeat > 15)
+  if (repeat > 31) // Revert legacy toggle buffer change
   {
-    SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 255, SPI_USR_MOSI_DBITLEN_S);
-
-    while(repeat>15)
+    WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_NUM), 511);
+    while(repeat>31)
     {
       while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
-      for (uint32_t i=0; i<8; i++) WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (i << 2)), color32);
+      WRITE_PERI_REG(SPI_W0_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W1_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W2_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W3_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W4_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W5_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W6_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W7_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W8_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W9_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W10_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W11_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W12_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W13_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W14_REG(SPI_NUM), color32);
+      WRITE_PERI_REG(SPI_W15_REG(SPI_NUM), color32);
       SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
-      repeat -= 16;
+      repeat -= 32;
     }
     while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
   }
 
   if (repeat)
   {
-    repeat = (repeat << 4) - 1;
-    SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, repeat, SPI_USR_MOSI_DBITLEN_S);
-    for (uint32_t i=0; i<8; i++) WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (i << 2)), color32);
+    // Revert toggle buffer change
+    WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_NUM), (repeat << 4) - 1);
+    for (uint32_t i=0; i <= (repeat>>1); i++) WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (i << 2)), color32);
     SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
     while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
   }
-
 }
 #endif
 
@@ -4974,10 +5020,6 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 #endif
 
 #include "Extensions/Sprite.cpp"
-
-//  #ifdef ESP32
-//    #include "Extensions/pSprite.cpp"
-//  #endif
 
 #ifdef SMOOTH_FONT
   #include "Extensions/Smooth_font.cpp"

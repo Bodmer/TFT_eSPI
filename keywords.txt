@@ -6,6 +6,9 @@ drawChar	KEYWORD2
 setAddrWindow	KEYWORD2
 setWindow	KEYWORD2
 readAddrWindow	KEYWORD2
+startWrite	KEYWORD2
+writeColor	KEYWORD2
+endWrite	KEYWORD2
 pushColor	KEYWORD2
 pushColors	KEYWORD2
 fillScreen	KEYWORD2

@@ -113,14 +113,15 @@
 // but saves pins for other functions.
 // Use NodeMCU SD0=MISO, SD1=MOSI, CLK=SCLK to connect to TFT in overlap mode
 
+// In ESP8266 overlap mode the following must be defined
+//#define TFT_SPI_OVERLAP
+
 // In ESP8266 overlap mode the TFT chip select MUST connect to pin D3
 //#define TFT_CS   PIN_D3
 //#define TFT_DC   PIN_D5  // Data Command control pin
 //#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
-// In ESP8266 overlap mode the following must be defined
-//#define TFT_SPI_OVERLAP
 
 // ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP32 SETUP   ######
 
@@ -136,6 +137,9 @@
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 //#define TFT_BL   32  // LED back-light (only for ST7789 with backlight control pin)
 
+//#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
+
+//#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
 // For the M5Stack module use these #define lines
 //#define TFT_MISO 19
@@ -145,10 +149,6 @@
 //#define TFT_DC   27  // Data Command control pin
 //#define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
 //#define TFT_BL   32  // LED back-light (required for M5Stack)
-
-//#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
-
-//#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
 // ######       EDIT THE PINs BELOW TO SUIT YOUR ESP32 PARALLEL TFT SETUP        ######
 
