@@ -16,4 +16,19 @@ And this is the result of this code:
 ### hands
 To draw a realistic clock hand, which should not be a single line and the anchor should not be exactly on one end of the hand, we design here a pentagon and scale this in one direction to our needs. Furthermore, because all of the TFTShape builder functions generate symmetrical shapes with the anchor point at the center, we need to move this anchor point (pivot point) nearly to the end of the hand.
 
-![clock-face](images/screenshot_4552.png)![clock-face](images/screenshot_4560.png)![clock-face](images/screenshot_4551.png)![clock-face](images/screenshot_4547.png)
+![clock-face](images/screenshot_4552.png)![clock-face](images/screenshot_4560.png)![clock-face](images/screenshot_4551.png)
+
+Here you can see the phases of boiding a hand: source shape, resized shape, moved shape
+
+```javascript
+  int pivy=35; //new pivot point for rotation and scaling
+  TFTShape hand=TFTShape::buildNgon(5,60); // generate a pentagon with the radius of 60
+  hand.setScale(.08,.8); //scale down the width to .08 and also shorten the hand  with a facor of .8
+  hand.setPivot(0,pivy); //set the pivot point
+```
+Now its time to rotate the hand to the desired position. Lets assume, we want to show the hour hand for 5:40:05, we have to rotate about 170 degrees. After then we can draw the hour hand with one of the drawing method of TFTShape.
+```javascript
+  hand.setRotation(170); //set the rotation to 170 degrees 
+  hand.fill(&tft,120,160-pivy,TFT_GREY); //draw an fill the hand. 
+```
+![clock-face](images/screenshot_4547.png)
