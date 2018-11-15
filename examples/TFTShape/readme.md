@@ -31,7 +31,29 @@ Now it's time to rotate the hand to the desired position. Lets assume, we want t
   hand.setRotation(170); //set the rotation to 170 degrees 
   hand.fill(&tft,120,160-pivy,TFT_GREY); //draw an fill the hand. 
 ```
-![clock-face](images/screenshot_4547.png)
+![clock-face](images/screenshot_4547.png)  ![clock-face](images/screenshot_4578.png)
 
-Repeating the steps above for the minutes and seconds hand and we are ready. 
+Repeating the steps above for the minutes and seconds hand and we are ready. And here is the complete code for drawing the analog clock:
+```javascript
+  TFTShape dot=TFTShape::buildNgon(8,6);
+  TFTShape grid5minutes=TFTShape::buildNgon(12,100);
+  //clock-face 
+  grid5minutes.fill(&tft2,120,160,dot,TFT_GREY);
+  int pivy=35;
+  //hour-hand
+  TFTShape hand=TFTShape::buildNgon(5,60);
+  hand.setScale(.08,.8); 
+  hand.setPivot(0,pivy);
+  hand.setRotation(170);
+  hand.fill(&tft2,120,160-pivy,TFT_GREY);
+  //minutes-hand
+  hand.setScale(.08,1);   hand.setRotation(240);
+  hand.fill(&tft2,120,160-pivy,TFT_LIGHTGREY);
+  //seconds-hand
+  hand.setScale(.03,1); hand.setRotation(30); 
+  hand.fill(&tft2,120,160-pivy,TFT_RED);
+  dot.fill(&tft2,120,160,TFT_RED);
+  dot.setScale(.4);
+  dot.fill(&tft2,120,160,TFT_DARKGREY);
+```
 
