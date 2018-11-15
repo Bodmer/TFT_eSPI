@@ -4,8 +4,8 @@ TFTShape is an extension  to draw shape-based objects on screen. The target of t
 ### clock-face
 To draw a clock face, only three lines of code will be needed. The basic idea is to define a 12-sided polygon and draw a small dot on the vertices of the polygon. Fortunately TFTShape has the functionality not only to draw the shape itself but it can take also an argument to draw another shape (at all vertices positions). So the code is very simple: create a shape used for the 5 minutes dots, create a shape for an invisible grid and finally draw this grid with a Shape as an argument:
 ```javascript
-  TFTShape dot=TFTShape::buildNgon(8,6); //generate an Oktogon with radius of 6 
-  TFTShape grid5minutes=TFTShape::buildNgon(12,100); //generate a Dodekagon with radius of 100
+  TFTShape dot=TFTShape::buildNgon(8,6); //generate an Oktogon with a radius of 6 
+  TFTShape grid5minutes=TFTShape::buildNgon(12,100); //generate a Dodekagon with a radius of 100
   grid5minutes.fill(&tft,120,160,dot,TFT_GREY); //place grid at 120/160 and draw/fill all vertices with the dot-shape 
 
 ```
@@ -22,7 +22,7 @@ Here you can see the phases of building a clock hand: source shape, resize shape
 
 ```javascript
   int pivy=35; //new pivot point for rotation and scaling
-  TFTShape hand=TFTShape::buildNgon(5,60); // generate a pentagon with the radius of 60
+  TFTShape hand=TFTShape::buildNgon(5,60); // generate a pentagon with a radius of 60
   hand.setScale(.08,.8); //scale down the width to .08 and also shorten the hand  with a facor of .8
   hand.setPivot(0,pivy); //set the pivot point
 ```
