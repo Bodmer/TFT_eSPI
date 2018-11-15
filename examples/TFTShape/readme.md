@@ -18,7 +18,7 @@ To draw a realistic clock hand, which should not be a single line and the anchor
 
 ![clock-face](images/screenshot_4552.png) ![clock-face](images/screenshot_4560.png) ![clock-face](images/screenshot_4551.png)
 
-Here you can see the phases of boiding a hand: source shape, resized shape, moved shape
+Here you can see the phases of building a clock hand: source shape, resize shape, move shape
 
 ```javascript
   int pivy=35; //new pivot point for rotation and scaling
