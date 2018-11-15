@@ -3,3 +3,6 @@ TFTShape is an extension  to draw shape-based objects on screen. The target of t
 ##Building an analog clock
 ### clock-face
 
+![clock-face](images/screenshot_4571.png)
+
+
