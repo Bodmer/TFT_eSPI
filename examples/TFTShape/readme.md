@@ -26,7 +26,7 @@ Here you can see the phases of building a clock hand: source shape, resize shape
   hand.setScale(.08,.8); //scale down the width to .08 and also shorten the hand  with a facor of .8
   hand.setPivot(0,pivy); //set the pivot point
 ```
-Now it's time to rotate the hand to the desired position. Lets assume, we want to show the hour hand for 5:40:05, we have to rotate about 170 degrees. After then we can draw the hour hand with one of the drawing method of TFTShape.
+Now it's time to rotate the hand to the desired position. Lets assume, we want to show the hour hand for 5:40:05, we have to rotate about 170 degrees. After then we can draw the hour hand with one of the drawing methods of TFTShape.
 ```javascript
   hand.setRotation(170); //set the rotation to 170 degrees 
   hand.fill(&tft,120,160-pivy,TFT_GREY); //draw an fill the hand. 
