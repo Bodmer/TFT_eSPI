@@ -42,12 +42,10 @@ Repeating the steps above for the minutes and seconds hand and we are ready. And
   int pivy=35;
   //hour-hand
   TFTShape hand=TFTShape::buildNgon(5,60);
-  hand.setScale(.08,.8); 
-  hand.setPivot(0,pivy);
-  hand.setRotation(170);
+  hand.setScale(.08,.8); hand.setPivot(0,pivy); hand.setRotation(170);
   hand.fill(&tft2,120,160-pivy,TFT_GREY);
   //minutes-hand
-  hand.setScale(.08,1);   hand.setRotation(240);
+  hand.setScale(.08,1); hand.setRotation(240);
   hand.fill(&tft2,120,160-pivy,TFT_LIGHTGREY);
   //seconds-hand
   hand.setScale(.03,1); hand.setRotation(30); 
