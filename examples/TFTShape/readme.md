@@ -16,7 +16,7 @@ And this is the result of this code:
 ### hands
 To draw a realistic clock hand, which should not be a single line and the anchor should not be exactly on one end of the hand, we design here a pentagon and scale this in one direction to our needs. Furthermore, because all of the TFTShape builder functions generate symmetrical shapes with the anchor point at the center, we need to move this anchor point (pivot point) nearly to the end of the hand.
 
-![clock-face](images/screenshot_4552.png)![clock-face](images/screenshot_4560.png)![clock-face](images/screenshot_4551.png)
+![clock-face](images/screenshot_4552.png) ![clock-face](images/screenshot_4560.png) ![clock-face](images/screenshot_4551.png)
 
 Here you can see the phases of boiding a hand: source shape, resized shape, moved shape
 
