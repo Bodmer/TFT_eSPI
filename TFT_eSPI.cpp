@@ -185,8 +185,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 
   _booted = true;
 
-  ys_row = ye_row = addr_row = 0xFFFF;
-  xs_col = xe_col = addr_col = 0xFFFF;
+  addr_row = 0xFFFF;
+  addr_col = 0xFFFF;
 
 #ifdef LOAD_GLCD
   fontsloaded  = 0x0002; // Bit 1 set
@@ -2689,44 +2689,32 @@ void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 
   CS_L_DC_C;
 
-  // No need to send x if it has not changed (small speed-up of complex transparent Sprites and bitmaps)
-  // Nb: caller must fill the set address area so that setting same area again will fill from xs, ys
-  if (xs_col != x0 || xe_col != x1) {
-    // Column addr set
+  tft_Write_8(TFT_CASET);
 
-    tft_Write_8(TFT_CASET);
-
-    DC_D;
+  DC_D;
 
 #if defined (RPI_ILI9486_DRIVER)
-    uint8_t xb[] = { 0, (uint8_t) (x0>>8), 0, (uint8_t) (x0>>0), 0, (uint8_t) (x1>>8), 0, (uint8_t) (x1>>0), };
-    SPI.writePattern(&xb[0], 8, 1);
+  uint8_t xb[] = { 0, (uint8_t) (x0>>8), 0, (uint8_t) (x0>>0), 0, (uint8_t) (x1>>8), 0, (uint8_t) (x1>>0), };
+  SPI.writePattern(&xb[0], 8, 1);
 #else
-    tft_Write_32(SPI_32(x0, x1));
+  tft_Write_32(SPI_32(x0, x1));
 #endif
 
-    DC_C;
-    xs_col = x0; xe_col = x1;
-  }
+  DC_C;
 
-  // No need to send y if it has not changed
-  if (ys_row != y0 || ye_row != y1) {
+  // Row addr set
+  tft_Write_8(TFT_PASET);
 
-    // Row addr set
-    tft_Write_8(TFT_PASET);
-
-    DC_D;
+  DC_D;
 
 #if defined (RPI_ILI9486_DRIVER)
-    uint8_t yb[] = { 0, (uint8_t) (y0>>8), 0, (uint8_t) (y0>>0), 0, (uint8_t) (y1>>8), 0, (uint8_t) (y1>>0), };
-    SPI.writePattern(&yb[0], 8, 1);
+  uint8_t yb[] = { 0, (uint8_t) (y0>>8), 0, (uint8_t) (y0>>0), 0, (uint8_t) (y1>>8), 0, (uint8_t) (y1>>0), };
+  SPI.writePattern(&yb[0], 8, 1);
 #else
-    tft_Write_32(SPI_32(y0, y1));
+  tft_Write_32(SPI_32(y0, y1));
 #endif
 
-    DC_C;
-    ys_row = y0; ye_row = y1;
-  }
+  DC_C;
 
   // write to RAM
   tft_Write_8(TFT_RAMWR);
@@ -3074,8 +3062,6 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
     DC_C;
 
     addr_col = x;
-    xs_col = xe_col = x;
-    
   }
 
   // No need to send y if it has not changed (speeds things up)
@@ -3095,7 +3081,6 @@ void TFT_eSPI::drawPixel(uint32_t x, uint32_t y, uint32_t color)
     DC_C;
 
     addr_row = y;
-    ys_row = ye_row = y;
   }
 
 
