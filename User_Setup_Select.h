@@ -60,6 +60,11 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 
+// Identical looking TFT displays may have a different colour ordering in the 16 bit colour
+#define TFT_BGR 0   // Colour order Blue-Green-Red
+#define TFT_RGB 1   // Colour order Red-Green-Blue
+
+
 // Load the right driver definition - do not tinker here !
 #if   defined (ILI9341_DRIVER)
      #include <TFT_Drivers/ILI9341_Defines.h>
@@ -100,6 +105,7 @@
 #else
      #define  TFT_DRIVER 0x0000
 #endif
+
 
 // These are the pins for all ESP8266 boards
 //      Name   GPIO    Function

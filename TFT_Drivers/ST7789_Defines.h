@@ -45,6 +45,20 @@
 #define TFT_MAD_SS  0x02
 #define TFT_MAD_GS  0x01
 
+#ifdef TFT_RGB_ORDER
+  #if (TFT_RGB_ORDER == 1)
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_RGB
+  #else
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_BGR
+  #endif
+#else
+  #ifdef CGRAM_OFFSET
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_BGR
+  #else
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_RGB
+  #endif
+#endif
+
 #define TFT_IDXRD   0x00 // ILI9341 only, indexed control register read
 
 // ST7789 specific commands used in init

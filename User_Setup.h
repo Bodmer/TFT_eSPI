@@ -29,6 +29,10 @@
 // For M5Stack ESP32 module with integrated display ONLY, remove // in line below
 //#define M5STACK
 
+// For ST7789 ONLY, define the colour order IF the blue and red are swapped on your display
+//#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
+//#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+
 // For ST7789, ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
 // #define TFT_WIDTH  80
 // #define TFT_WIDTH  128

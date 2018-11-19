@@ -26,6 +26,11 @@
 //#define ILI9488_DRIVER
 //#define ST7789_DRIVER // Define the screen size below for this display
 
+// For ST7789 ONLY, define the colour order if the blue and red are swapped on your display
+// Try ONE option at a time to find the correct colour order for your display
+//#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
+//#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+
 // For M5Stack ESP32 module with integrated display ONLY, remove // in line below
 //#define M5STACK
 
