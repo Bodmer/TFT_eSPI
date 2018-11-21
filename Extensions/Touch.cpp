@@ -12,7 +12,7 @@
 
 /***************************************************************************************
 ** Function name:           getTouchRaw
-** Description:             read raw touch position. Return false if not pressed. 
+** Description:             read raw touch position. Always returns true. 
 ***************************************************************************************/
 uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   uint16_t tmp;
