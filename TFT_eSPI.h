@@ -341,9 +341,13 @@
 #endif
 
 
-#ifndef ESP32_PARALLEL
-  // Support SPI TFT reads (not all displays support this)
+#if !defined (ESP32_PARALLEL) && !defined (TFT_SDA_READ)
+  // Support SPI TFT reads using MISO line (not all displays support this)
   #define tft_Read_8(C) SPI.transfer(C)
+#else
+  // For reading from a TFT with single SDA data in/out pin
+  // Uses a function in the .cpp file to read a bidirectional SDA line, the
+  // tft_Read_8() function will bit bang SCLK and use MOSI as an input
 #endif
 
 
@@ -741,6 +745,10 @@ class TFT_eSPI : public Print {
 
   size_t   write(uint8_t);
 
+#ifdef TFT_SDA_READ
+  uint8_t  tft_Read_8(uint8_t dummy);
+#endif
+
   void     getSetup(setup_t& tft_settings); // Sketch provides the instance to populate
 
   int32_t  cursor_x, cursor_y, padX;
@@ -768,7 +776,7 @@ class TFT_eSPI : public Print {
 
   volatile uint32_t *dcport, *csport;
 
-  uint32_t cspinmask, dcpinmask, wrpinmask;
+  uint32_t cspinmask, dcpinmask, wrpinmask, sclkpinmask;
 
 #if defined(ESP32_PARALLEL)
   uint32_t  xclr_mask, xdir_mask, xset_mask[256];

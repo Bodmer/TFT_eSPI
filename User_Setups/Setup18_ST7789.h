@@ -25,6 +25,11 @@
 //#define ILI9488_DRIVER
 #define ST7789_DRIVER
 
+// Some displays support SPI reads via the MISO pin, if the display has a single
+// bi-directional SDA pin the library will try to use bit banging to read the line
+// To use the SDA line for reading data from the TFT uncomment the following line:
+#define TFT_SDA_READ
+
 // For M5Stack ESP32 module with integrated display ONLY, remove // in line below
 //#define M5STACK
 
@@ -47,6 +52,7 @@
 //#define ST7735_GREENTAB128 // For 128 x 128 display
 //#define ST7735_REDTAB
 //#define ST7735_BLACKTAB
+
 
 // ##################################################################################
 //
