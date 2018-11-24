@@ -946,11 +946,14 @@ void TFT_eSprite::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t 
 {
   if (!_created ) return;
 
+  if ((x >= _iwidth) || (y >= _iheight)) return;
+  
   if (x < 0) { w += x; x = 0; }
+  if (y < 0) { h += y; y = 0; }
 
-  if ((x < 0) || (y < 0) || (x >= _iwidth) || (y >= _iheight)) return;
   if ((x + w) > _iwidth)  w = _iwidth  - x;
   if ((y + h) > _iheight) h = _iheight - y;
+
   if ((w < 1) || (h < 1)) return;
 
   int32_t yp = _iwidth * y + x;
