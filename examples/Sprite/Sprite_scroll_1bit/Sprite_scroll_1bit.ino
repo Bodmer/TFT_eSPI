@@ -7,7 +7,7 @@
   TFT_BLACK turns a pixel "OFF".
 
   The 1 bpp Sprite has a unique property that other bit depth Sprites
-  do not have, your can set the rotation of the coordinate frame e.g.:
+  do not have, you can set the rotation of the coordinate frame e.g.:
   spr.setRotation(1);
 
   This is similar to screen rotations, so for example text can
