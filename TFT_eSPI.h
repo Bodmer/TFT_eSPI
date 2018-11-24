@@ -341,13 +341,16 @@
 #endif
 
 
-#if !defined (ESP32_PARALLEL) && !defined (TFT_SDA_READ)
-  // Support SPI TFT reads using MISO line (not all displays support this)
-  #define tft_Read_8(C) SPI.transfer(C)
-#else
-  // For reading from a TFT with single SDA data in/out pin
-  // Uses a function in the .cpp file to read a bidirectional SDA line, the
-  // tft_Read_8() function will bit bang SCLK and use MOSI as an input
+#if !defined (ESP32_PARALLEL)
+  // Read from display using SPI or software SPI
+  #if defined (ESP8266) && defined (TFT_SDA_READ)
+    // Use a bit banged function call for ESP8266 and bi-directional SDA pin
+    #define SCLK_L GPOC=sclkpinmask
+    #define SCLK_H GPOS=sclkpinmask
+  #else
+    // Use a SPI read transfer
+    #define tft_Read_8() SPI.transfer(0)
+  #endif
 #endif
 
 
@@ -746,7 +749,11 @@ class TFT_eSPI : public Print {
   size_t   write(uint8_t);
 
 #ifdef TFT_SDA_READ
-  uint8_t  tft_Read_8(uint8_t dummy);
+  #if defined (ESP8266) && defined (TFT_SDA_READ)
+  uint8_t  tft_Read_8(void);
+  #endif
+  void     begin_SDA_Read(void);
+  void     end_SDA_Read(void);
 #endif
 
   void     getSetup(setup_t& tft_settings); // Sketch provides the instance to populate

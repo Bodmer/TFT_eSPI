@@ -26,6 +26,11 @@
 //#define ILI9488_DRIVER
 //#define ST7789_DRIVER // Define the screen size below for this display
 
+// Some displays support SPI reads via the MISO pin, if the display has a single
+// bi-directional SDA pin the library will try to use bit banging to read the line
+// To use the SDA line for reading data from the TFT uncomment the following line:
+// #define TFT_SDA_READ
+
 // For ST7789 ONLY, define the colour order if the blue and red are swapped on your display
 // Try ONE option at a time to find the correct colour order for your display
 //#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue

@@ -534,7 +534,7 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
   CS_L;
   tft_Write_8(cmd_function);
   DC_D;
-  reg = tft_Read_8(0);
+  reg = tft_Read_8();
   CS_H;
 
   spi_end_read();
@@ -624,62 +624,40 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   spi_begin_read();
 
-  #ifdef ST7789_DRIVER
-    writecommand(ST7789_COLMOD); // Switch from 16 bit colour to 18 bit (required)
-    writedata(0x66);
-  #endif
-
   readAddrWindow(x0, y0, x0, y0); // Sets CS low
 
   #ifdef TFT_SDA_READ
-    // To be investigated: spi_end_read() is VERY slow on the ESP8266 here
-    spi_end_read();                  // Releasing the HAL mutex is mandatory for the ESP32
-    SPI.end();                       // Disconnect the SPI peripheral to release the pins
-    digitalWrite(TFT_SCLK, HIGH);    // Set clock pin high
-    pinMode(TFT_SCLK, OUTPUT);       // Set the SCLK pin to output
-    pinMode(TFT_MOSI, INPUT_PULLUP); // Set the MOSI pin to input
+    begin_SDA_Read();
   #endif
 
   // Dummy read to throw away don't care value
-  tft_Read_8(0);
+  tft_Read_8();
+  
+  #if !defined (ILI9488_DRIVER)
 
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
-  #if !defined (ILI9488_DRIVER)
-
-    uint8_t r = tft_Read_8(0);
-    uint8_t g = tft_Read_8(0);
-    uint8_t b = tft_Read_8(0);
+    uint8_t r = tft_Read_8();
+    uint8_t g = tft_Read_8();
+    uint8_t b = tft_Read_8();
 
   #else
 
     // The 6 colour bits are in MS 6 bits of each byte, but the ILI9488 needs an extra clock pulse
     // so bits appear shifted right 1 bit, so mask the middle 6 bits then shift 1 place left
-    uint8_t r = (tft_Read_8(0)&0x7E)<<1;
-    uint8_t g = (tft_Read_8(0)&0x7E)<<1;
-    uint8_t b = (tft_Read_8(0)&0x7E)<<1;
+    uint8_t r = (tft_Read_8()&0x7E)<<1;
+    uint8_t g = (tft_Read_8()&0x7E)<<1;
+    uint8_t b = (tft_Read_8()&0x7E)<<1;
 
   #endif
 
   CS_H;
 
-#ifdef TFT_SDA_READ
-  #ifdef ESP32
-    SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
-  #else
-    #ifdef TFT_SPI_OVERLAP
-      SPI.pins(6, 7, 8, 0);
-    #else
-      SPI.begin();
-    #endif
+  #ifdef TFT_SDA_READ
+    end_SDA_Read();
   #endif
-  #ifdef ST7789_DRIVER
-    writecommand(ST7789_COLMOD);
-    writedata(0x55);
-  #endif
-#else
+
   spi_end_read();
-#endif
 
   return color565(r, g, b);
 
@@ -793,44 +771,34 @@ void TFT_eSPI::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t
 
   spi_begin_read();
 
-  #ifdef ST7789_DRIVER
-    writecommand(ST7789_COLMOD); // Switch from 16 bit colour to 18 bit (required)
-    writedata(0x66);
-  #endif
-
   readAddrWindow(x, y, x + w - 1, y + h - 1); // Sets CS low
 
   #ifdef TFT_SDA_READ
-    // To be investigated: spi_end_read() is VERY slow on the ESP8266 here
-    spi_end_read();                  // Releasing the HAL mutex is mandatory for the ESP32
-    SPI.end();                       // Disconnect the SPI peripheral to release the pins
-    digitalWrite(TFT_SCLK, HIGH);    // Set clock pin high
-    pinMode(TFT_SCLK, OUTPUT);       // Set the SCLK pin to output
-    pinMode(TFT_MOSI, INPUT_PULLUP); // Set the MOSI pin to input
+    begin_SDA_Read();
   #endif
 
   // Dummy read to throw away don't care value
-  tft_Read_8(0);
+  tft_Read_8();
 
   // Read window pixel 24 bit RGB values
   uint32_t len = w * h;
   while (len--) {
 
-    // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
-    // as the TFT stores colours as 18 bits
   #if !defined (ILI9488_DRIVER)
 
-    uint8_t r = tft_Read_8(0);
-    uint8_t g = tft_Read_8(0);
-    uint8_t b = tft_Read_8(0);
+    // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
+    // as the TFT stores colours as 18 bits
+    uint8_t r = tft_Read_8();
+    uint8_t g = tft_Read_8();
+    uint8_t b = tft_Read_8();
 
   #else
 
     // The 6 colour bits are in LS 6 bits of each byte but we do not include the extra clock pulse
     // so we use a trick and mask the middle 6 bits of the byte, then only shift 1 place left
-    uint8_t r = (tft_Read_8(0)&0x7E)<<1;
-    uint8_t g = (tft_Read_8(0)&0x7E)<<1;
-    uint8_t b = (tft_Read_8(0)&0x7E)<<1;
+    uint8_t r = (tft_Read_8()&0x7E)<<1;
+    uint8_t g = (tft_Read_8()&0x7E)<<1;
+    uint8_t b = (tft_Read_8()&0x7E)<<1;
 
   #endif
 
@@ -840,23 +808,11 @@ void TFT_eSPI::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t
 
   CS_H;
 
-#ifdef TFT_SDA_READ
-  #ifdef ESP32
-    SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
-  #else
-    #ifdef TFT_SPI_OVERLAP
-      SPI.pins(6, 7, 8, 0);
-    #else
-      SPI.begin();
-    #endif
+  #ifdef TFT_SDA_READ
+    end_SDA_Read();
   #endif
-  #ifdef ST7789_DRIVER
-    writecommand(ST7789_COLMOD);
-    writedata(0x55);
-  #endif
-#else
+
   spi_end_read();
-#endif
 
 #endif
 }
@@ -865,37 +821,63 @@ void TFT_eSPI::readRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t
 ** Function name:           tft_Read_8
 ** Description:             Software SPI to read bidirectional SDA line
 ***************************************************************************************/
-// For the ST7789 the tft_Read_8() macro is replaced by a function
-#ifdef TFT_SDA_READ
-  #ifdef ESP32
-    #define SCLK_L GPIO.out_w1tc = (1 << TFT_SCLK)
-    #define SCLK_H GPIO.out_w1ts = (1 << TFT_SCLK)
-  #else // ESP8266
-    #define SCLK_L GPOC=sclkpinmask
-    #define SCLK_H GPOS=sclkpinmask
-  #endif
-uint8_t TFT_eSPI::tft_Read_8(uint8_t dummy)
+#if defined (ESP8266) && defined (TFT_SDA_READ)
+uint8_t TFT_eSPI::tft_Read_8(void)
 {
   uint8_t  ret = 0;
   uint32_t reg = 0;
 
   for (uint8_t i = 0; i < 8; i++) {  // read results
     ret <<= 1;
-    #ifdef ESP32 // bit bangs at around 1MHz
-      SCLK_L;
-      //SCLK_L;
-      reg = gpio_input_get(); // SDA must connect to ESP32 pin in range 0-31
-      SCLK_H;
-      if (reg&(1<<TFT_MOSI)) ret |= 1;
-      SCLK_H; // Extra delay - must read slowly on an ST7789 to avoid bad data
-    #else
-      SCLK_L;
-      if (digitalRead(TFT_MOSI)) ret |= 1;
-      SCLK_H;
-    #endif
+    SCLK_L;
+    if (digitalRead(TFT_MOSI)) ret |= 1;
+    SCLK_H;
   }
 
   return ret;
+}
+#endif
+
+/***************************************************************************************
+** Function name:           beginSDA
+** Description:             Detach SPI from pin to permit software SPI
+***************************************************************************************/
+#ifdef TFT_SDA_READ
+void TFT_eSPI::begin_SDA_Read(void)
+{
+  #ifdef ESP32
+    pinMatrixOutDetach(TFT_MOSI, false, false);
+    pinMode(TFT_MOSI, INPUT);
+    pinMatrixInAttach(TFT_MOSI, VSPIQ_IN_IDX, false);
+  #else // ESP8266
+    #ifdef TFT_SPI_OVERLAP
+      // Reads in overlap mode not supported
+    #else
+      SPI.end();
+    #endif
+  #endif
+}
+#endif
+
+/***************************************************************************************
+** Function name:           endSDA
+** Description:             Attach SPI pins after software SPI
+***************************************************************************************/
+#ifdef TFT_SDA_READ
+void TFT_eSPI::end_SDA_Read(void)
+{
+  #ifdef ESP32
+    pinMode(TFT_MOSI, OUTPUT);
+    pinMatrixOutAttach(TFT_MOSI, VSPID_OUT_IDX, false, false);
+    pinMode(TFT_MISO, INPUT);
+    pinMatrixInAttach(TFT_MISO, VSPIQ_IN_IDX, false);
+  #else
+    #ifdef TFT_SPI_OVERLAP
+      SPI.pins(6, 7, 8, 0);
+    #else
+      SPI.begin();
+    #endif
+  #endif
 }
 #endif
 
@@ -1454,44 +1436,34 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
 
   spi_begin_read();
 
-  #ifdef ST7789_DRIVER
-    writecommand(ST7789_COLMOD); // Switch from 16 bit colour to 18 bit (required)
-    writedata(0x66);
-  #endif
-
   readAddrWindow(x0, y0, x0 + w - 1, y0 + h - 1); // Sets CS low
 
   #ifdef TFT_SDA_READ
-    // To be investigated: spi_end_read() is VERY slow on the ESP8266 here
-    spi_end_read();                  // Releasing the HAL mutex is mandatory for the ESP32
-    SPI.end();                       // Disconnect the SPI peripheral to release the pins
-    digitalWrite(TFT_SCLK, HIGH);    // Set clock pin high
-    pinMode(TFT_SCLK, OUTPUT);       // Set the SCLK pin to output
-    pinMode(TFT_MOSI, INPUT_PULLUP); // Set the MOSI pin to input
+    begin_SDA_Read();
   #endif
 
   // Dummy read to throw away don't care value
-  tft_Read_8(0);
-  
+  tft_Read_8();
+
   // Read window pixel 24 bit RGB values, buffer must be set in sketch to 3 * w * h
   uint32_t len = w * h;
   while (len--) {
 
-    // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
-    // as the TFT stores colours as 18 bits
   #if !defined (ILI9488_DRIVER)
 
-    *data++ = tft_Read_8(0);
-    *data++ = tft_Read_8(0);
-    *data++ = tft_Read_8(0);
+    // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
+    // as the TFT stores colours as 18 bits
+    *data++ = tft_Read_8();
+    *data++ = tft_Read_8();
+    *data++ = tft_Read_8();
 
   #else
 
     // The 6 colour bits are in MS 6 bits of each byte, but the ILI9488 needs an extra clock pulse
     // so bits appear shifted right 1 bit, so mask the middle 6 bits then shift 1 place left
-    *data++ = (tft_Read_8(0)&0x7E)<<1;
-    *data++ = (tft_Read_8(0)&0x7E)<<1;
-    *data++ = (tft_Read_8(0)&0x7E)<<1;
+    *data++ = (tft_Read_8()&0x7E)<<1;
+    *data++ = (tft_Read_8()&0x7E)<<1;
+    *data++ = (tft_Read_8()&0x7E)<<1;
 
   #endif
 
@@ -1499,23 +1471,11 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
 
   CS_H;
 
-#ifdef TFT_SDA_READ
-  #ifdef ESP32
-    SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
-  #else
-    #ifdef TFT_SPI_OVERLAP
-      SPI.pins(6, 7, 8, 0);
-    #else
-      SPI.begin();
-    #endif
+  #ifdef TFT_SDA_READ
+    end_SDA_Read();
   #endif
-  #ifdef ST7789_DRIVER
-    writecommand(ST7789_COLMOD);
-    writedata(0x55);
-  #endif
-#else
+
   spi_end_read();
-#endif
 
 #endif
 }
@@ -2966,7 +2926,6 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 
   tft_Write_8(TFT_CASET);
 
-
   DC_D;
 
   tft_Write_32(SPI_32(x0, x1));
@@ -2981,6 +2940,7 @@ void TFT_eSPI::readAddrWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   tft_Write_32(SPI_32(y0, y1));
   
   DC_C;
+
   tft_Write_8(TFT_RAMRD); // Read CGRAM command
 
   DC_D;
