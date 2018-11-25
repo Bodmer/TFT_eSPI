@@ -228,7 +228,11 @@
   #define SPI_32(H,L) ( (H)<<16 | (L) )
   #define COL_32(H,L) ( (H)<<16 | (L) )
 #else
-  #define SPI_32(H,L) ( (H)<<16 | (L) )
+  #ifdef ESP32_PARALLEL
+    #define SPI_32(H,L) ( (H)<<16 | (L) )
+  #else
+    #define SPI_32(H,L) ( ((H)<<8 | (H)>>8) | (((L)<<8 | (L)>>8)<<16 ) )
+  #endif
   // Swap byte order for concatenated 16 bit colors
   // AB CD -> DCBA for 32 bit register write
   #define COL_32(H,L) ( ((H)<<8 | (H)>>8) | (((L)<<8 | (L)>>8)<<16 ) )
