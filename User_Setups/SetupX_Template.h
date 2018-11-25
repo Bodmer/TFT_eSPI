@@ -25,6 +25,7 @@
 //#define ILI9486_DRIVER
 //#define ILI9488_DRIVER
 //#define ST7789_DRIVER // Define the screen size below for this display
+//#define R61581_DRIVER
 
 // Some displays support SPI reads via the MISO pin, if the display has a single
 // bi-directional SDA pin the library will try to use bit banging to read the line
