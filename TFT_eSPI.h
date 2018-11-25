@@ -226,10 +226,12 @@
 #ifdef ESP8266
   // Concatenate two 16 bit values for the SPI 32 bit register write
   #define SPI_32(H,L) ( (H)<<16 | (L) )
+  #define COL_32(H,L) ( (H)<<16 | (L) )
 #else
-  // Swap byte order for concatenated 16 bit window address or colors
-  // AB CD -> DCBA for SPI 32 bit register write
-  #define SPI_32(H,L) ( ((H)<<8 | (H)>>8) | (((L)<<8 | (L)>>8)<<16 ) )
+  #define SPI_32(H,L) ( (H)<<16 | (L) )
+  // Swap byte order for concatenated 16 bit colors
+  // AB CD -> DCBA for 32 bit register write
+  #define COL_32(H,L) ( ((H)<<8 | (H)>>8) | (((L)<<8 | (L)>>8)<<16 ) )
 #endif
 
 #if defined (ESP32) && defined (ESP32_PARALLEL)

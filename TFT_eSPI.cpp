@@ -4928,7 +4928,7 @@ void writeBlock(uint16_t color, uint32_t repeat)
 
 void writeBlock(uint16_t color, uint32_t repeat)
 {
-  uint32_t color32 = SPI_32(color, color);
+  uint32_t color32 = COL_32(color, color);
 
   if (repeat > 31) // Revert legacy toggle buffer change
   {
