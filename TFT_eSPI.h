@@ -228,7 +228,7 @@
   #define SPI_32(H,L) ( (H)<<16 | (L) )
   #define COL_32(H,L) ( (H)<<16 | (L) )
 #else
-  #ifdef ESP32_PARALLEL
+  #ifdef ESP32_PARALLEL || defined (ILI9488_DRIVER)
     #define SPI_32(H,L) ( (H)<<16 | (L) )
   #else
     #define SPI_32(H,L) ( ((H)<<8 | (H)>>8) | (((L)<<8 | (L)>>8)<<16 ) )
