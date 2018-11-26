@@ -1,3 +1,12 @@
+
+# News
+
+1. androdlang has published a really nice companion library to extend the graphics capabilities of TFT_eSPI, you can find this here:
+https://github.com/androdlang/TFTShape
+
+2. I have created a user updateable graphics extension library template that can be used to create your own graphics extensions. The Library contains examples and is commented so it should be clear what you need to do to add functions. You can find it here:
+https://github.com/Bodmer/TFT_eFX
+
 # TFT_eSPI
 
 An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with drivers for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9486, ILI9488, HX8357D and ST7789 based TFT displays that support SPI. The library can be loaded using the Arduino IDE's Library Manager.
