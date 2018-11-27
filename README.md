@@ -7,6 +7,12 @@ https://github.com/androdlang/TFTShape
 2. I have created a user updateable graphics extension library template that can be used to create your own graphics extensions. The Library contains examples and is commented so it should be clear what you need to do to add functions. You can find it here:
 https://github.com/Bodmer/TFT_eFX
 
+3. The capability to read from an ST7789V TFT with a single bidirectional SDA pin has been added. This is enabled with a #define TFT_SDA_READ in the setup file.
+
+4. ST7789V displays are manufactured in two variants that have the red and green pixels swapped, this is catered for by a new option in the setup file:
+    //#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
+    //#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+
 # TFT_eSPI
 
 An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with drivers for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9486, ILI9488, HX8357D and ST7789 based TFT displays that support SPI. The library can be loaded using the Arduino IDE's Library Manager.
