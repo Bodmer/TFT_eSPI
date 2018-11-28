@@ -132,16 +132,26 @@
 
     #else
       #if TFT_DC >= 32
-        #define DC_C GPIO.out1_w1tc.val = (1 << (TFT_DC - 32)); //\
-                     //GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
-        #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC - 32)); //\
-                     //GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
+        #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower DC change
+          #define DC_C GPIO.out1_w1ts.val = (1 << (TFT_DC - 32)); \
+                       GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
+          #define DC_D GPIO.out1_w1tc.val = (1 << (TFT_DC - 32)); \
+                       GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
+        #else
+          #define DC_C GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
+          #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
+        #endif
       #else
         #if TFT_DC >= 0
-          #define DC_C GPIO.out_w1tc = (1 << TFT_DC); //\
-                       //GPIO.out_w1tc = (1 << TFT_DC)
-          #define DC_D GPIO.out_w1ts = (1 << TFT_DC); //\
-                       //GPIO.out_w1ts = (1 << TFT_DC)
+          #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower DC change
+            #define DC_C GPIO.out_w1ts = (1 << TFT_DC); \
+                         GPIO.out_w1tc = (1 << TFT_DC)
+            #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
+                         GPIO.out_w1ts = (1 << TFT_DC)
+          #else
+            #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
+            #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
+          #endif
         #else
           #define DC_C
           #define DC_D
@@ -171,14 +181,24 @@
       #define CS_H
     #else
       #if TFT_CS >= 32
-        #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); //\
-                     //GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
-        #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32)); //\
-                     //GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
+        #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower CS change
+          #define CS_L GPIO.out1_w1ts.val = (1 << (TFT_CS - 32)); \
+                       GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
+          #define CS_H GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); \
+                       GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
+        #else
+          #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
+          #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
+        #endif
       #else
         #if TFT_CS >= 0
-          #define CS_L GPIO.out_w1tc = (1 << TFT_CS); //GPIO.out_w1tc = (1 << TFT_CS)
-          #define CS_H GPIO.out_w1ts = (1 << TFT_CS); //GPIO.out_w1ts = (1 << TFT_CS)
+          #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower CS change
+            #define CS_L GPIO.out_w1ts = (1 << TFT_CS); GPIO.out_w1tc = (1 << TFT_CS)
+            #define CS_H GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1ts = (1 << TFT_CS)
+          #else
+            #define CS_L GPIO.out_w1tc = (1 << TFT_CS)
+            #define CS_H GPIO.out_w1ts = (1 << TFT_CS)
+          #endif
         #else
           #define CS_L
           #define CS_H
@@ -194,8 +214,12 @@
 // Use single register write for CS_L and DC_C if pins are both in range 0-31
 #ifdef ESP32
   #if (TFT_CS >= 0) && (TFT_CS < 32) && (TFT_DC >= 0) && (TFT_DC < 32)
-    #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC)); //\
-                    //GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
+    #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower CD and DC change
+      #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC)); \
+                        GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
+    #else
+      #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
+    #endif
   #else
     #define CS_L_DC_C CS_L; DC_C
   #endif
@@ -261,7 +285,7 @@
     #define tft_Write_16(C) WR_L;GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
   #else
     #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 8)); WR_H; \
-                          GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
+                            GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
   #endif
 
   // 16 bit write with swapped bytes
