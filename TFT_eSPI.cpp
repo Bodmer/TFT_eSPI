@@ -366,6 +366,14 @@ void TFT_eSPI::init(uint8_t tc)
 
 #endif
 
+#ifdef TFT_INVERSION_ON
+  writecommand(TFT_INVON);
+#endif
+
+#ifdef TFT_INVERSION_OFF
+  writecommand(TFT_INVOFF);
+#endif
+
   spi_end();
 
   setRotation(rotation);

@@ -340,17 +340,16 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint1
       y = _dheight - tx - 1;
     }
 
-    uint8_t* pdata = (uint8_t*) data;
+    uint8_t* pdata = (uint8_t* ) data;
     uint32_t ww =  (w+7) & 0xFFF8;
     for (int32_t yp = 0; yp<h; yp++)
     {
-      for (int32_t xp = 0; xp<ww; xp+=8)
+      uint32_t yw = (yp * ww)>>3;
+      uint32_t yyp = y + yp;
+      for (int32_t xp = 0; xp<w; xp++)
       {
-        uint8_t pbyte = *pdata++;
-        for (uint8_t xc = 0; xc < 8; xc++)
-        {
-          if (xp+xc<w) drawPixel(x+xp+xc, y+yp, (pbyte<<xc) & 0x80);
-        }
+        uint16_t readPixel = (pdata[(xp>>3) + yw] & (0x80 >> (xp & 0x7)) );
+        drawPixel(x+xp, yyp, readPixel);
       }
     }
   }
@@ -732,7 +731,7 @@ int16_t TFT_eSprite::width(void)
 
   if (_rotation == 1 || _rotation == 3) return _dheight;
 
-  return _bitwidth;
+  return _dwidth;
 }
 
 
