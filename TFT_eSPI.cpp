@@ -4803,7 +4803,7 @@ void writeBlock(uint16_t color, uint32_t repeat)
 #elif defined (ILI9488_DRIVER)
 
 #ifdef ESP8266
-void TFT_eSPI::writeBlock(uint16_t color, uint32_t repeat)
+void writeBlock(uint16_t color, uint32_t repeat)
 {
 
   uint32_t mask = ~(SPIMMOSI << SPILMOSI);
