@@ -1,5 +1,5 @@
-// This **ONLY** works for 1 and 16 bpp Sprites due to lack of bounds checking in the
-// Sprite pushImage() function for 8 bit Sprites (it is on the TO DO list)
+// This **ONLY** works for 1 bpp Sprites due to lack of bounds checking in the
+// Sprite pushImage() function for 8 and 16 bit Sprites (it is on the TO DO list)
 
 // Wrapping scroll example by Bodmer for the TFT_eSPI library
 
@@ -44,14 +44,14 @@ void setup() {
 
   //tft.invertDisplay(true);
 
-  // Create a 1bpp sprite for the graphics
+  // Create a sprite for the graphics
   gfx.setColorDepth(1);
-  gfxPtr = (uint16_t*) gfx.createSprite(WIDTH, HEIGHT);      // 480 bytes needed
+  gfxPtr = (uint16_t*) gfx.createSprite(WIDTH, HEIGHT);      // 450 bytes needed
   gfx.fillSprite(TFT_BLACK); // Note: Sprite is filled with black when created
 
-  // Create a 1bpp sprite for the frame buffer
+  // Create a sprite for the frame buffer
   fb.setColorDepth(1);
-  fb.createSprite(WIDTH, HEIGHT);      // 480 bytes needed
+  fb.createSprite(WIDTH, HEIGHT);      // 450 bytes needed
   fb.fillSprite(TFT_BLACK); // Note: Sprite is filled with black when created
 
   // Text colour and alignment in graphics Sprite

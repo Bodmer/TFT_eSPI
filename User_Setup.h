@@ -8,9 +8,10 @@
 //   run without the need to make any more changes for a particular hardware setup!
 //   Note that some sketches are designed for a particular TFT pixel width/height
 
+
 // ##################################################################################
 //
-// Section 0. Call up the right driver file and any options for it
+// Section 1. Call up the right driver file and any options for it
 //
 // ##################################################################################
 
@@ -32,12 +33,13 @@
 // To use the SDA line for reading data from the TFT uncomment the following line:
 // #define TFT_SDA_READ
 
-// For M5Stack ESP32 module with integrated display ONLY, remove // in line below
-//#define M5STACK
-
 // For ST7789 ONLY, define the colour order IF the blue and red are swapped on your display
+// Try ONE option at a time to find the correct colour order for your display
 //#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
 //#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+
+// For M5Stack ESP32 module with integrated display ONLY, remove // in line below
+//#define M5STACK
 
 // For ST7789, ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
 // #define TFT_WIDTH  80
@@ -70,9 +72,10 @@
 //#define TFT_INVERSION_ON
 //#define TFT_INVERSION_OFF
 
+
 // ##################################################################################
 //
-// Section 1. Define the pins that are used to interface with the display here
+// Section 2. Define the pins that are used to interface with the display here
 //
 // ##################################################################################
 
@@ -150,6 +153,7 @@
 //#define TFT_DC    2  // Data Command control pin
 //#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
+
 //#define TFT_BL   32  // LED back-light (only for ST7789 with backlight control pin)
 
 //#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
@@ -179,11 +183,11 @@
 
 // The ESP32 and TFT the pins used for testing are:
 //#define TFT_CS   33  // Chip select control pin (library pulls permanently low
-//#define TFT_DC   15  // Data Command control pin - use a pin in the range 0-31
+//#define TFT_DC   15  // Data Command control pin - must use a pin in the range 0-31
 //#define TFT_RST  32  // Reset pin, toggles on startup
 
-//#define TFT_WR    4  // Write strobe control pin - use a pin in the range 0-31
-//#define TFT_RD    2  // Read strobe control pin  - use a pin in the range 0-31
+//#define TFT_WR    4  // Write strobe control pin - must use a pin in the range 0-31
+//#define TFT_RD    2  // Read strobe control pin
 
 //#define TFT_D0   12  // Must use pins in the range 0-31 for the data bus
 //#define TFT_D1   13  // so a single register write sets/clears all bits.
@@ -194,20 +198,6 @@
 //#define TFT_D6   27
 //#define TFT_D7   14
 
-// ##################################################################################
-//
-// Section 2. Define the way the DC and/or CS lines are driven (ESP8266 only)
-//
-// ##################################################################################
-
-// Normally the library uses direct register access for the DC and CS lines for speed
-// If D0 (GPIO16) is used for CS or DC then a different slower method must be used
-// Uncomment one line if D0 is used for DC or CS
-// DC on D0 = 6% performance penalty at 40MHz SPI running graphics test
-// CS on D0 = 2% performance penalty at 40MHz SPI running graphics test
-
-// #define D0_USED_FOR_DC
-// #define D0_USED_FOR_CS
 
 // ##################################################################################
 //
@@ -233,16 +223,10 @@
 // this will save ~20kbytes of FLASH
 #define SMOOTH_FONT
 
-// ##################################################################################
-//
-// Section 4. Not used
-//
-// ##################################################################################
-
 
 // ##################################################################################
 //
-// Section 5. Other options
+// Section 4. Other options
 //
 // ##################################################################################
 
@@ -278,4 +262,4 @@
 // Transactions are automatically enabled by the library for an ESP32 (to use HAL mutex)
 // so changing it here has no effect
 
-//#define SUPPORT_TRANSACTIONS
+// #define SUPPORT_TRANSACTIONS

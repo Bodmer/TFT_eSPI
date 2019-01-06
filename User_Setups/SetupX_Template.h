@@ -8,9 +8,10 @@
 //   run without the need to make any more changes for a particular hardware setup!
 //   Note that some sketches are designed for a particular TFT pixel width/height
 
+
 // ##################################################################################
 //
-// Section 0. Call up the right driver file and any options for it
+// Section 1. Call up the right driver file and any options for it
 //
 // ##################################################################################
 
@@ -71,9 +72,10 @@
 //#define TFT_INVERSION_ON
 //#define TFT_INVERSION_OFF
 
+
 // ##################################################################################
 //
-// Section 1. Define the pins that are used to interface with the display here
+// Section 2. Define the pins that are used to interface with the display here
 //
 // ##################################################################################
 
@@ -152,9 +154,11 @@
 //#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
-//#define TOUCH_CS 22     // Chip select pin (T_CS) of touch screen
+//#define TFT_BL   32  // LED back-light (only for ST7789 with backlight control pin)
 
-//#define TFT_WR 21    // Write strobe for modified Raspberry Pi TFT only
+//#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
+
+//#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
 // For the M5Stack module use these #define lines
 //#define TFT_MISO 19
@@ -163,7 +167,7 @@
 //#define TFT_CS   14  // Chip select control pin
 //#define TFT_DC   27  // Data Command control pin
 //#define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
-//#define TFT_BL   32  // LED back-light (if needed)
+//#define TFT_BL   32  // LED back-light (required for M5Stack)
 
 // ######       EDIT THE PINs BELOW TO SUIT YOUR ESP32 PARALLEL TFT SETUP        ######
 
@@ -178,12 +182,12 @@
 //#define ESP32_PARALLEL
 
 // The ESP32 and TFT the pins used for testing are:
-//#define TFT_CS   33  // Chip select control pin (library pulls permanently low
-//#define TFT_DC   15  // Data Command control pin - use a pin in the range 0-31
+//#define TFT_CS   33  // Chip select control pin (library pulls permanently low)
+//#define TFT_DC   15  // Data Command control pin - must use a pin in the range 0-31
 //#define TFT_RST  32  // Reset pin, toggles on startup
 
-//#define TFT_WR    4  // Write strobe control pin - use a pin in the range 0-31
-//#define TFT_RD    2  // Read strobe control pin  - use a pin in the range 0-31
+//#define TFT_WR    4  // Write strobe control pin - must use a pin in the range 0-31
+//#define TFT_RD    2  // Read strobe control pin
 
 //#define TFT_D0   12  // Must use pins in the range 0-31 for the data bus
 //#define TFT_D1   13  // so a single register write sets/clears all bits.
@@ -194,20 +198,6 @@
 //#define TFT_D6   27
 //#define TFT_D7   14
 
-// ##################################################################################
-//
-// Section 2. Define the way the DC and/or CS lines are driven (ESP8266 only)
-//
-// ##################################################################################
-
-// Normally the library uses direct register access for the DC and CS lines for speed
-// If D0 (GPIO16) is used for CS or DC then a different slower method must be used
-// Uncomment one line if D0 is used for DC or CS
-// DC on D0 = 6% performance penalty at 40MHz SPI running graphics test
-// CS on D0 = 2% performance penalty at 40MHz SPI running graphics test
-
-// #define D0_USED_FOR_DC
-// #define D0_USED_FOR_CS
 
 // ##################################################################################
 //
@@ -225,19 +215,13 @@
 #define LOAD_FONT4  // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
 #define LOAD_FONT6  // Font 6. Large 48 pixel font, needs ~2666 bytes in FLASH, only characters 1234567890:-.apm
 #define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:.
-//#define LOAD_FONT8N // Font 8. Alternative to Font 8 above, slightly narrower, so 3 digits fit a 160 pixel TFT
 #define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
+//#define LOAD_FONT8N // Font 8. Alternative to Font 8 above, slightly narrower, so 3 digits fit a 160 pixel TFT
 #define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
 
 // Comment out the #define below to stop the SPIFFS filing system and smooth font code being loaded
 // this will save ~20kbytes of FLASH
 #define SMOOTH_FONT
-
-// ##################################################################################
-//
-// Section 4. Not used
-//
-// ##################################################################################
 
 
 // ##################################################################################

@@ -282,11 +282,15 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
 {
 
 #ifdef DECODE_UTF8
+
+  // 7 bit Unicode
+  if ((c & 0x80) == 0x00) {
+    decoderState = 0;
+    return (uint16_t)c;
+  }
+
   if (decoderState == 0)
   {
-    // 7 bit Unicode
-    if ((c & 0x80) == 0x00) return (uint16_t)c;
-
     // 11 bit Unicode
     if ((c & 0xE0) == 0xC0)
     {
@@ -322,6 +326,7 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
   }
 #endif
 
+  decoderState = 0;
   return (uint16_t)c; // fall-back to extended ASCII
 }
 

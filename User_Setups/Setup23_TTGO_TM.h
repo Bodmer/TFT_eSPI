@@ -1,5 +1,7 @@
 // Setup for the TTGO TM (Music) ESP32 board with 2.4" ST7789V display
 
+// See SetupX_Template.h for all options available
+
 #define ST7789_DRIVER
 
 #define TFT_SDA_READ // Read from display, it only provides an SDA pin
@@ -28,7 +30,7 @@
 
 #define SMOOTH_FONT
 
-#define SPI_FREQUENCY  40000000 // The display also seems to work reliably at 80MHz
+#define SPI_FREQUENCY  40000000     // This display also seems to work reliably at 80MHz
+#define SPI_FREQUENCY  80000000
 
 #define SPI_READ_FREQUENCY  6000000 // 6 MHz is the maximum SPI read speed for the ST7789V
-

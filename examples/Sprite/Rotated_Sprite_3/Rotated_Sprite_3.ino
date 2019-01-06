@@ -1,9 +1,9 @@
 /*====================================================================================
 
-  This example draws a jpeg image in a Sprite then plots a rotated copy of the Sprite
+  This example draws a jpeg image in a Sprite then plot a rotated copy of the Sprite
   to the TFT.
 
-  The jpeg used is in the sketch Data folder (presss Ctrl+K to see folder)
+  The jpeg used in in the sketch Data folder (presss Ctrl+K to see folder)
 
   The jpeg must be uploaded to the ESP8266 or ESP32 SPIFFS by using the Tools menu
   sketch data upload option of the Arduino IDE. If you do not have that option it can

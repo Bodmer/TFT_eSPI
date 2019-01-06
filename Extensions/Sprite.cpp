@@ -301,7 +301,7 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
   if (max_x > _tft->width()) max_x = _tft->width();
   if (max_y > _tft->height()) max_y = _tft->height();
 
-
+  _tft->startWrite();
   // Scan destination bounding box and fetch transformed pixels from source Sprite
   for (int32_t x = min_x; x <= max_x; x++) {
     int32_t xt = x - _tft->_xpivot;
@@ -325,6 +325,7 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
       else if (column_drawn) y = max_y; // Skip remaining column pixels
     }
   }
+  _tft->endWrite();
 
   return true;
 }
