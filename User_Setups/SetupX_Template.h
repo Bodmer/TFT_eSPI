@@ -17,29 +17,32 @@
 
 // Only define one driver, the other ones must be commented out
 #define ILI9341_DRIVER
-//#define ST7735_DRIVER
-//#define ILI9163_DRIVER
+//#define ST7735_DRIVER      // Define additional parameters below for this display
+//#define ILI9163_DRIVER     // Define additional parameters below for this display
 //#define S6D02A1_DRIVER
 //#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
 //#define HX8357D_DRIVER
 //#define ILI9481_DRIVER
 //#define ILI9486_DRIVER
-//#define ILI9488_DRIVER
-//#define ST7789_DRIVER // Define the screen size below for this display
+//#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
+//#define ST7789_DRIVER      // Define additional parameters below for this display
 //#define R61581_DRIVER
 
-// Some displays support SPI reads via the MISO pin, if the display has a single
-// bi-directional SDA pin the library will try to use bit banging to read the line
+// Some displays support SPI reads via the MISO pin, other displays have a single
+// bi-directional SDA pin and the library will try to read this via the MOSI line.
 // To use the SDA line for reading data from the TFT uncomment the following line:
-// #define TFT_SDA_READ
 
-// For ST7789 ONLY, define the colour order if the blue and red are swapped on your display
+// #define TFT_SDA_READ      // This option if for ESP32 ONLY, tested with ST7789 display only
+
+// For ST7789 ONLY, define the colour order IF the blue and red are swapped on your display
 // Try ONE option at a time to find the correct colour order for your display
-//#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
-//#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
 
-// For M5Stack ESP32 module with integrated display ONLY, remove // in line below
-//#define M5STACK
+//  #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
+//  #define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+
+// For M5Stack ESP32 module with integrated ILI9341 display ONLY, remove // in line below
+
+// #define M5STACK
 
 // For ST7789, ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
 // #define TFT_WIDTH  80
@@ -65,13 +68,21 @@
 // #define ST7735_GREENTAB160x80 // For 160 x 80 display (BGR, inverted, 26 offset)
 // #define ST7735_REDTAB
 // #define ST7735_BLACKTAB
-// #define ST7735_REDTAB160x80 // For 160 x 80 display (24 offset) (https://www.aliexpress.com/item/ShengYang-1pcs-IPS-0-96-inch-7P-SPI-HD-65K-Full-Color-OLED-Module-ST7735-Drive/32918394604.html)
+// #define ST7735_REDTAB160x80   // For 160 x 80 display with 24 pixel offset
 
 // If colours are inverted (white shows as black) then uncomment one of the next
 // 2 lines try both options, one of the options should correct the inversion.
-//#define TFT_INVERSION_ON
-//#define TFT_INVERSION_OFF
 
+// #define TFT_INVERSION_ON
+// #define TFT_INVERSION_OFF
+
+// If a backlight control signal is available then define the TFT_BL pin in Section 2
+// below. The backlight will be turned ON when tft.begin() is called, but the library
+// needs to know if the LEDs are ON with the pin HIGH or LOW. If the LEDs are to be
+// driven with a PWM signal or turned OFF/ON then this must be handled by the user
+// sketch. e.g. with digitalWrite(TFT_BL, LOW);
+
+// #define TFT_BACKLIGHT_ON HIGH  // HIGH or LOW are options
 
 // ##################################################################################
 //
@@ -120,7 +131,7 @@
 
 //#define TFT_BL PIN_D1  // LED back-light (only for ST7789 with backlight control pin)
 
-//#define TOUCH_CS PIN_D1     // Chip select pin (T_CS) of touch screen
+//#define TOUCH_CS PIN_D2     // Chip select pin (T_CS) of touch screen
 
 //#define TFT_WR PIN_D2       // Write strobe for modified Raspberry Pi TFT only
 
@@ -182,7 +193,7 @@
 //#define ESP32_PARALLEL
 
 // The ESP32 and TFT the pins used for testing are:
-//#define TFT_CS   33  // Chip select control pin (library pulls permanently low)
+//#define TFT_CS   33  // Chip select control pin (library pulls permanently low
 //#define TFT_DC   15  // Data Command control pin - must use a pin in the range 0-31
 //#define TFT_RST  32  // Reset pin, toggles on startup
 
@@ -214,7 +225,7 @@
 #define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
 #define LOAD_FONT4  // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
 #define LOAD_FONT6  // Font 6. Large 48 pixel font, needs ~2666 bytes in FLASH, only characters 1234567890:-.apm
-#define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:.
+#define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:-.
 #define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
 //#define LOAD_FONT8N // Font 8. Alternative to Font 8 above, slightly narrower, so 3 digits fit a 160 pixel TFT
 #define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
@@ -226,7 +237,7 @@
 
 // ##################################################################################
 //
-// Section 5. Other options
+// Section 4. Other options
 //
 // ##################################################################################
 

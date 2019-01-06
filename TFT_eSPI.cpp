@@ -327,6 +327,17 @@ void TFT_eSPI::init(uint8_t tc)
   writecommand(TFT_SWRST); // Software reset
 #endif
 
+#if defined (TFT_BL) && defined (TFT_BACKLIGHT_ON)
+  digitalWrite(TFT_BL, TFT_BACKLIGHT_ON);
+  pinMode(TFT_BL, OUTPUT);
+#else
+  #if defined (TFT_BL) && defined (M5STACK)
+    // Turn on the back-light LED
+    digitalWrite(TFT_BL, HIGH);
+    pinMode(TFT_BL, OUTPUT);
+  #endif
+#endif
+
   spi_end();
   delay(150); // Wait for reset to complete
 
