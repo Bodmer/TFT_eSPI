@@ -213,12 +213,16 @@
 
 // Use single register write for CS_L and DC_C if pins are both in range 0-31
 #ifdef ESP32
-  #if (TFT_CS >= 0) && (TFT_CS < 32) && (TFT_DC >= 0) && (TFT_DC < 32)
-    #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower CD and DC change
-      #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC)); \
-                        GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
+  #ifdef TFT_CS
+    #if (TFT_CS >= 0) && (TFT_CS < 32) && (TFT_DC >= 0) && (TFT_DC < 32)
+      #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower CD and DC change
+        #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC)); \
+                          GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
+      #else
+        #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
+      #endif
     #else
-      #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
+      #define CS_L_DC_C CS_L; DC_C
     #endif
   #else
     #define CS_L_DC_C CS_L; DC_C
@@ -676,7 +680,7 @@ class TFT_eSPI : public Print {
            drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color),
            drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t fgcolor, uint16_t bgcolor),
            setBitmapColor(uint16_t fgcolor, uint16_t bgcolor), // For 1bpp sprites
-
+           setPivot(int16_t x, int16_t y),
            setCursor(int16_t x, int16_t y),
            setCursor(int16_t x, int16_t y, uint8_t font),
            setTextColor(uint16_t color),
@@ -741,6 +745,9 @@ class TFT_eSPI : public Print {
   int16_t  getCursorX(void),
            getCursorY(void);
 
+  int16_t  getPivotX(void),
+           getPivotY(void);
+
   uint16_t fontsLoaded(void),
            color565(uint8_t red, uint8_t green, uint8_t blue),   // Convert 8 bit red, green and blue to 16 bits
            color8to16(uint8_t color332);  // Convert 8 bit colour to 16 bits
@@ -797,6 +804,9 @@ class TFT_eSPI : public Print {
            textsize,  // Current font size multiplier
            textdatum, // Text reference datum
            rotation;  // Display rotation (0-3)
+
+  int16_t _xpivot;   // x pivot point coordinate
+  int16_t _ypivot;   // x pivot point coordinate
 
  private:
 

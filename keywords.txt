@@ -74,11 +74,11 @@ textWidth	KEYWORD2
 fontHeight	KEYWORD2
 
 getTouchRaw	KEYWORD2
+convertRawXY	KEYWORD2
 getTouchRawZ	KEYWORD2
 getTouch	KEYWORD2
 calibrateTouch	KEYWORD2
 setTouch	KEYWORD2
-validTouch	KEYWORD2
 
 TFT_eSPI_Button	KEYWORD1
 
@@ -97,7 +97,13 @@ TFT_eSprite	KEYWORD1
 
 createSprite	KEYWORD2
 setColorDepth	KEYWORD2
+getColorDepth	KEYWORD2
 deleteSprite	KEYWORD2
+pushRotated	KEYWORD2
+rotatedBounds	KEYWORD2
+setPivot	KEYWORD2
+getPivotX	KEYWORD2
+getPivotY	KEYWORD2
 fillSprite	KEYWORD2
 pushBitmap	KEYWORD2
 pushSprite	KEYWORD2

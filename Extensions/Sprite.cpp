@@ -33,6 +33,9 @@ TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
   _xptr = 0; // pushColor coordinate
   _yptr = 0;
 
+  _xpivot = 0;
+  _ypivot = 0;
+
   this->cursor_y = this->cursor_x = 0; // Text cursor position
 }
 
@@ -62,43 +65,61 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
   _sh = h;
   _scolor = TFT_BLACK;
 
+  _xpivot = w/2;
+  _ypivot = h/2;
+
+  _img8   = (uint8_t*) callocSprite(w, h, frames);
+  _img8_1 = _img8;
+  _img8_2 = _img8;
+  _img    = (uint16_t*) _img8;
+
+  // This is to make it clear what pointer size is expected to be used
+  // but casting in the user sketch is needed due to the use of void*
+  if (_bpp == 1)
+  {
+    w = (w+7) & 0xFFF8;
+    _img8_2 = _img8 + ( (w>>3) * h + 1 );
+  }
+
+  if (_img8)
+  {
+    _created = true;
+    return _img8;
+  }
+
+  return NULL;
+}
+
+
+/***************************************************************************************
+** Function name:           callocSprite
+** Description:             Allocate a memory area for the Sprite and return pointer
+*************************************************************************************x*/
+
+void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
+{
   // Add one extra "off screen" pixel to point out-of-bounds setWindow() coordinates
   // this means push/writeColor functions do not need additional bounds checks and
   // hence will run faster in normal circumstances.
+  uint8_t* ptr8 = NULL;
+
   if (_bpp == 16)
   {
 
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() ) _img8_1 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint16_t));
+    if ( psramFound() ) ptr8 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint16_t));
     else
 #endif
-    _img8_1 = ( uint8_t*) calloc(w * h + 1, sizeof(uint16_t));
-
-    _img8_2 = _img8_1;
-    _img    = (uint16_t*) _img8_1;
-
-    if (_img)
-    {
-      _created = true;
-      return _img;
-    }
+    ptr8 = ( uint8_t*) calloc(w * h + 1, sizeof(uint16_t));
   }
 
   else if (_bpp == 8)
   {
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() ) _img8_1 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint8_t));
+    if ( psramFound() ) ptr8 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint8_t));
     else
 #endif
-    _img8_1 = ( uint8_t*) calloc(w * h + 1, sizeof(uint8_t));
-
-    if (_img8_1)
-    {
-      _img8   = _img8_1;
-      _img8_2 = _img8_1;
-      _created = true;
-      return _img8;
-    }
+    ptr8 = ( uint8_t*) calloc(w * h + 1, sizeof(uint8_t));
   }
 
   else // Must be 1 bpp
@@ -114,21 +135,13 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
     if (frames > 2) frames = 2; // Currently restricted to 2 frame buffers
     if (frames < 1) frames = 1;
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() ) _img8 = ( uint8_t*) ps_calloc(frames * (w>>3) * h + frames, sizeof(uint8_t));
+    if ( psramFound() ) ptr8 = ( uint8_t*) ps_calloc(frames * (w>>3) * h + frames, sizeof(uint8_t));
     else
 #endif
-    _img8 = ( uint8_t*) calloc(frames * (w>>3) * h + frames, sizeof(uint8_t));
-
-    if (_img8)
-    {
-      _created = true;
-      _img8_1 = _img8;
-      _img8_2 = _img8 + ( (w>>3) * h + 1 );
-      return _img8_1;
-    }
+    ptr8 = ( uint8_t*) calloc(frames * (w>>3) * h + frames, sizeof(uint8_t));
   }
-  
-  return NULL;
+
+  return ptr8;
 }
 
 /***************************************************************************************
@@ -151,8 +164,8 @@ void* TFT_eSprite::frameBuffer(int8_t f)
 }
 
 /***************************************************************************************
-** Function name:           setDepth
-** Description:             Set bits per pixel for colour (8 or 16)
+** Function name:           setColorDepth
+** Description:             Set bits per pixel for colour (1, 8 or 16)
 *************************************************************************************x*/
 
 void* TFT_eSprite::setColorDepth(int8_t b)
@@ -174,6 +187,19 @@ void* TFT_eSprite::setColorDepth(int8_t b)
 
   return NULL;
 }
+
+
+/***************************************************************************************
+** Function name:           getColorDepth
+** Description:             Get bits per pixel for colour (1, 8 or 16)
+*************************************************************************************x*/
+
+int8_t TFT_eSprite::getColorDepth(void)
+{
+  if (_created) return _bpp;
+  else return 0;
+}
+
 
 /***************************************************************************************
 ** Function name:           setBitmapColor
@@ -198,6 +224,232 @@ void TFT_eSprite::deleteSprite(void)
   free(_img8_1);
 
   _created = false;
+}
+
+
+/***************************************************************************************
+** Function name:           setPivot
+** Description:             Set the pivot point in this Sprite
+*************************************************************************************x*/
+void TFT_eSprite::setPivot(int16_t x, int16_t y)
+{
+  _xpivot = x;
+  _ypivot = y;
+}
+
+
+/***************************************************************************************
+** Function name:           getPivotX
+** Description:             Get the x pivot position
+***************************************************************************************/
+int16_t TFT_eSprite::getPivotX(void)
+{
+  return _xpivot;
+}
+
+
+/***************************************************************************************
+** Function name:           getPivotY
+** Description:             Get the y pivot position
+***************************************************************************************/
+int16_t TFT_eSprite::getPivotY(void)
+{
+  return _ypivot;
+}
+
+
+/***************************************************************************************
+** Function name:           pushRotated
+** Description:             Push a rotated copy of the Sprite to TFT screen
+*************************************************************************************x*/
+bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
+{
+  if ( !_created ) return false;
+
+  // Trig values for the rotation
+  float radAngle = -angle * 0.0174532925; // Convert degrees to radians
+  float sinra = sin(radAngle);
+  float cosra = cos(radAngle);
+
+  // Bounding box parameters
+  int16_t min_x;
+  int16_t min_y;
+  int16_t max_x;
+  int16_t max_y;
+
+  // Get the bounding box of this rotated source Sprite relative to Sprite pivot
+  getRotatedBounds(sinra, cosra, width(), height(), _xpivot, _ypivot, &min_x, &min_y, &max_x, &max_y);
+
+  // Move bounding box so source Sprite pivot coincides with TFT pivot
+  min_x += _tft->_xpivot;
+  max_x += _tft->_xpivot;
+  min_y += _tft->_ypivot;
+  max_y += _tft->_ypivot;
+
+  // Test only to show bounding box on TFT
+  // _tft->drawRect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1, TFT_GREEN);
+
+  // Return if bounding box is outside of TFT area
+  if (min_x > _tft->width()) return true;
+  if (min_y > _tft->height()) return true;
+  if (max_x < 0) return true;
+  if (max_y < 0) return true;
+
+  // Clip bounding box to be within TFT area
+  if (min_x < 0) min_x = 0;
+  if (min_y < 0) min_y = 0;
+  if (max_x > _tft->width()) max_x = _tft->width();
+  if (max_y > _tft->height()) max_y = _tft->height();
+
+
+  // Scan destination bounding box and fetch transformed pixels from source Sprite
+  for (int32_t x = min_x; x <= max_x; x++) {
+    int32_t xt = x - _tft->_xpivot;
+    float cxt = cosra * xt + _xpivot;
+    float sxt = sinra * xt + _ypivot;
+    bool column_drawn = false;
+    for (int32_t y = min_y; y <= max_y; y++) {
+      int32_t yt = y - _tft->_ypivot;
+      int32_t xs = (int32_t)round(cxt - sinra * yt);
+      // Do not calculate ys unless xs is in bounds
+      if (xs >= 0 && xs < width())
+      {
+        int32_t ys = (int32_t)round(sxt + cosra * yt);
+        // Check if ys is in bounds
+        if (ys >= 0 && ys < height()) {
+          int32_t rp = readPixel(xs, ys);
+          if (rp != transp) _tft->drawPixel(x, y, rp);
+          column_drawn = true;
+        }
+      }
+      else if (column_drawn) y = max_y; // Skip remaining column pixels
+    }
+  }
+
+  return true;
+}
+
+
+/***************************************************************************************
+** Function name:           pushRotated
+** Description:             Push a rotated copy of the Sprite to another Sprite
+*************************************************************************************x*/
+bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
+{
+  if ( !_created ) return false;       // Check this Sprite is created
+  if ( !spr->_created ) return false;  // Ckeck destination Sprite is created
+
+  // Trig values for the rotation
+  float radAngle = -angle * 0.0174532925; // Convert degrees to radians
+  float sinra = sin(radAngle);
+  float cosra = cos(radAngle);
+
+  // Bounding box parameters
+  int16_t min_x;
+  int16_t min_y;
+  int16_t max_x;
+  int16_t max_y;
+
+  // Get the bounding box of this rotated source Sprite
+  getRotatedBounds(sinra, cosra, width(), height(), _xpivot, _ypivot, &min_x, &min_y, &max_x, &max_y);
+
+  // Move bounding box so source Sprite pivot coincides with destination Sprite pivot
+  min_x += spr->_xpivot;
+  max_x += spr->_xpivot;
+  min_y += spr->_ypivot;
+  max_y += spr->_ypivot;
+
+  // Test only to show bounding box
+  // spr->fillSprite(TFT_BLACK);
+  // spr->drawRect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1, TFT_GREEN);
+
+  // Return if bounding box is completely outside of destination Sprite
+  if (min_x > spr->width()) return true;
+  if (min_y > spr->height()) return true;
+  if (max_x < 0) return true;
+  if (max_y < 0) return true;
+
+  // Clip bounding box if it is partially within destination Sprite
+  if (min_x < 0) min_x = 0;
+  if (min_y < 0) min_y = 0;
+  if (max_x > spr->width()) max_x = spr->width();
+  if (max_y > spr->height()) max_y = spr->height();
+
+  // Scan destination bounding box and fetch transformed pixels from source Sprite
+  for (int32_t x = min_x; x <= max_x; x++)
+  {
+    int32_t xt = x - spr->_xpivot;
+    float cxt = cosra * xt + _xpivot;
+    float sxt = sinra * xt + _ypivot;
+    bool column_drawn = false;
+    for (int32_t y = min_y; y <= max_y; y++)
+    {
+      int32_t yt = y - spr->_ypivot;
+      int32_t xs = (int32_t)round(cxt - sinra * yt);
+      // Do not calculate ys unless xs is in bounds
+      if (xs >= 0 && xs < width())
+      {
+        int32_t ys = (int32_t)round(sxt + cosra * yt);
+        // Check if ys is in bounds
+        if (ys >= 0 && ys < height())
+        {
+          int32_t rp = readPixel(xs, ys);
+          if (rp != transp) spr->drawPixel(x, y, rp);
+          column_drawn = true;
+        }
+      }
+      else if (column_drawn) y = max_y; // Skip the remaining pixels below the Sprite
+    }
+  }
+
+  return true;
+}
+
+
+/***************************************************************************************
+** Function name:           rotatedBounds
+** Description:             Get bounding box of a rotated Sprite wrt pivot
+*************************************************************************************x*/
+void TFT_eSprite::getRotatedBounds(float sina, float cosa, int16_t w, int16_t h, int16_t xp, int16_t yp,
+                                   int16_t *min_x, int16_t *min_y, int16_t *max_x, int16_t *max_y)
+{
+  w -= xp; // w is now right edge coordinate relative to xp
+  h -= yp; // h is now bottom edge coordinate relative to yp
+
+  // Calculate new corner coordinates
+  int16_t x0 = -xp * cosa - yp * sina;
+  int16_t y0 =  xp * sina - yp * cosa;
+
+  int16_t x1 =  w * cosa - yp * sina;
+  int16_t y1 = -w * sina - yp * cosa;
+
+  int16_t x2 =  h * sina + w * cosa;
+  int16_t y2 =  h * cosa - w * sina;
+
+  int16_t x3 =  h * sina - xp * cosa;
+  int16_t y3 =  h * cosa + xp * sina;
+
+  // Find bounding box extremes, enlarge box to accomodate rounding errors
+  *min_x = x0-2;
+  if (x1 < *min_x) *min_x = x1-2;
+  if (x2 < *min_x) *min_x = x2-2;
+  if (x3 < *min_x) *min_x = x3-2;
+
+  *max_x = x0+2;
+  if (x1 > *max_x) *max_x = x1+2;
+  if (x2 > *max_x) *max_x = x2+2;
+  if (x3 > *max_x) *max_x = x3+2;
+
+  *min_y = y0-2;
+  if (y1 < *min_y) *min_y = y1-2;
+  if (y2 < *min_y) *min_y = y2-2;
+  if (y3 < *min_y) *min_y = y3-2;
+
+  *max_y = y0+2;
+  if (y1 > *max_y) *max_y = y1+2;
+  if (y2 > *max_y) *max_y = y2+2;
+  if (y3 > *max_y) *max_y = y3+2;
+
 }
 
 
@@ -289,33 +541,53 @@ uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
 ** Function name:           pushImage
 ** Description:             push 565 colour image into a defined area of a sprite 
 *************************************************************************************x*/
-// TODO Need to add more area boundary checks
 void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t *data)
 {
   if ((x >= _iwidth) || (y >= _iheight) || (w == 0) || (h == 0) || !_created) return;
+  if ((x + (int32_t)w < 0) || (y + (int32_t)h < 0)) return;
+
+  int32_t  xo = 0;
+  int32_t  yo = 0;
+
+  int32_t  xs = x;
+  int32_t  ys = y;
+
+  uint32_t ws = w;
+  uint32_t hs = h;
+
+  if (x < 0) { xo = -x; xs = 0; }
+  if (y < 0) { yo = -y; ys = 0; }
+
+  if (xs + w >= _iwidth)  ws = _iwidth  - xs;
+  if (ys + h >= _iheight) hs = _iheight - ys;
 
   if (_bpp == 16)
   {
-    for (uint32_t yp = y; yp < y + h; yp++)
+    for (uint32_t yp = yo; yp < yo + hs; yp++)
     {
-      for (uint32_t xp = x; xp < x + w; xp++)
+      x = xs;
+      for (uint32_t xp = xo; xp < xo + ws; xp++)
       {
-        uint16_t color =  *data++;
+        uint16_t color =  data[xp + yp * w];
         if(!_iswapBytes) color = color<<8 | color>>8;
-        _img[xp + yp * _iwidth] = color;
+        _img[x + ys * _iwidth] = color;
+        x++;
       }
+      ys++;
     }
   }
   else if (_bpp == 8)
   {
-    for (uint32_t yp = y; yp < y + h; yp++)
+    for (uint32_t yp = yo; yp < yo + hs; yp++)
     {
-      for (uint32_t xp = x; xp < x + w; xp++)
+      x = xs;
+      for (uint32_t xp = xo; xp < xo + ws; xp++)
       {
-        uint16_t color = *data++;
+        uint16_t color = data[xp + yp * w];
         if(_iswapBytes) color = color<<8 | color>>8;
-        _img8[xp + yp * _iwidth] = (uint8_t)((color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3);
+        _img8[x + ys * _iwidth] = (uint8_t)((color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3);
       }
+      ys++;
     }
   }
 
@@ -360,34 +632,54 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint1
 ** Function name:           pushImage
 ** Description:             push 565 colour FLASH (PROGMEM) image into a defined area
 *************************************************************************************x*/
-// TODO Need to add more area boundary checks
 void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const uint16_t *data)
 {
   if ((x >= _iwidth) || (y >= _iheight) || (w == 0) || (h == 0) || !_created) return;
+  if ((x + (int32_t)w < 0) || (y + (int32_t)h < 0)) return;
+
+  int32_t  xo = 0;
+  int32_t  yo = 0;
+
+  int32_t  xs = x;
+  int32_t  ys = y;
+
+  uint32_t ws = w;
+  uint32_t hs = h;
+
+  if (x < 0) { xo = -x; xs = 0; }
+  if (y < 0) { yo = -y; ys = 0; }
+
+  if (xs + w >= _iwidth)  ws = _iwidth  - xs;
+  if (ys + h >= _iheight) hs = _iheight - ys;
 
   if (_bpp == 16)
   {
-    for (uint32_t yp = y; yp < y + h; yp++)
+    for (uint32_t yp = yo; yp < yo + hs; yp++)
     {
-      for (uint32_t xp = x; xp < x + w; xp++)
+      x = xs;
+      for (uint32_t xp = xo; xp < xo + ws; xp++)
       {
-        uint16_t color = pgm_read_word(data++);
+        uint16_t color = pgm_read_word(data + xp + yp * w);
         if(!_iswapBytes) color = color<<8 | color>>8;
-        _img[xp + yp * _iwidth] = color;
+        _img[x + ys * _iwidth] = color;
+        x++;
       }
+      ys++;
     }
   }
 
   else if (_bpp == 8)
   {
-    for (uint32_t yp = y; yp < y + h; yp++)
+    for (uint32_t yp = yo; yp < yo + hs; yp++)
     {
-      for (uint32_t xp = x; xp < x + w; xp++)
+      x = xs;
+      for (uint32_t xp = xo; xp < xo + ws; xp++)
       {
-        uint16_t color = pgm_read_word(data++);
+        uint16_t color = pgm_read_word(data + xp + yp * w);
         if(_iswapBytes) color = color<<8 | color>>8;
-        _img8[xp + yp * _iwidth] = (uint8_t)((color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3);
+        _img8[x + ys * _iwidth] = (uint8_t)((color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3);
       }
+      ys++;
     }
   }
 

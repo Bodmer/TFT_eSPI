@@ -66,6 +66,11 @@
 // #define ST7735_BLACKTAB
 // #define ST7735_REDTAB160x80 // For 160 x 80 display (24 offset) (https://www.aliexpress.com/item/ShengYang-1pcs-IPS-0-96-inch-7P-SPI-HD-65K-Full-Color-OLED-Module-ST7735-Drive/32918394604.html)
 
+// If colours are inverted (white shows as black) then uncomment one of the next
+// 2 lines try both options, one of the options should correct the inversion.
+//#define TFT_INVERSION_ON
+//#define TFT_INVERSION_OFF
+
 // ##################################################################################
 //
 // Section 1. Define the pins that are used to interface with the display here

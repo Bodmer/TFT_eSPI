@@ -188,6 +188,9 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
 
+  _xpivot = 0;
+  _ypivot = 0;
+
 #ifdef LOAD_GLCD
   fontsloaded  = 0x0002; // Bit 1 set
 #endif
@@ -1062,7 +1065,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const uin
     for (int j = 0; j < 64; j++) {
       pix_buffer[j] = pgm_read_word(&data[i * 64 + j]);
     }
-    pushColors(pix_buffer, 64, !_swapBytes);
+    pushColors(pix_buffer, 64, _swapBytes);
   }
 
   // Work out number of pixels not yet sent
@@ -1074,7 +1077,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const uin
     {
       pix_buffer[i] = pgm_read_word(&data[nb * 64 + i]);
     }
-    pushColors(pix_buffer, np, !_swapBytes);
+    pushColors(pix_buffer, np, _swapBytes);
   }
 
   CS_H;
@@ -1115,7 +1118,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const uin
 
   uint16_t  lineBuf[dw];
 
-  if (_swapBytes) transp = transp >> 8 | transp << 8;
+  if (!_swapBytes) transp = transp >> 8 | transp << 8;
 
   while (dh--)
   {
@@ -1140,14 +1143,14 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const uin
         move = true;
         if (np)
         {
-           pushColors(lineBuf, np, !_swapBytes);
+           pushColors(lineBuf, np, _swapBytes);
            np = 0;
         }
       }
       px++;
       ptr++;
     }
-    if (np) pushColors(lineBuf, np, !_swapBytes);
+    if (np) pushColors(lineBuf, np, _swapBytes);
 
     y++;
     data += w;
@@ -2094,6 +2097,37 @@ void TFT_eSPI::setTextColor(uint16_t c, uint16_t b)
 {
   textcolor   = c;
   textbgcolor = b;
+}
+
+
+/***************************************************************************************
+** Function name:           setPivot
+** Description:             Set the pivot point on the TFT
+*************************************************************************************x*/
+void TFT_eSPI::setPivot(int16_t x, int16_t y)
+{
+  _xpivot = x;
+  _ypivot = y;
+}
+
+
+/***************************************************************************************
+** Function name:           getPivotX
+** Description:             Get the x pivot position
+***************************************************************************************/
+int16_t TFT_eSPI::getPivotX(void)
+{
+  return _xpivot;
+}
+
+
+/***************************************************************************************
+** Function name:           getPivotY
+** Description:             Get the y pivot position
+***************************************************************************************/
+int16_t TFT_eSPI::getPivotY(void)
+{
+  return _ypivot;
 }
 
 
@@ -3272,7 +3306,7 @@ void TFT_eSPI::pushColor(uint16_t color, uint32_t len)
 void TFT_eSPI::startWrite(void)
 {
   spi_begin();
-
+  inTransaction = true;
   CS_L;
 }
 
@@ -3282,9 +3316,8 @@ void TFT_eSPI::startWrite(void)
 ***************************************************************************************/
 void TFT_eSPI::endWrite(void)
 {
-
   CS_H;
-
+  inTransaction = false;
   spi_end();
 }
 

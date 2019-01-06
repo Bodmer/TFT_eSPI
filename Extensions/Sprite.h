@@ -22,9 +22,10 @@ class TFT_eSprite : public TFT_eSPI {
            // Select the frame buffer for graphics
   void*    frameBuffer(int8_t f);
   
-           // Set the colour depth to 8 or 16 bits. Can be used to change depth an existing
+           // Set or get the colour depth to 8 or 16 bits. Can be used to change depth an existing
            // sprite, but clears it to black, returns a new pointer if sprite is re-created.
   void*    setColorDepth(int8_t b);
+  int8_t   getColorDepth(void);
 
   void     setBitmapColor(uint16_t c, uint16_t b);
 
@@ -34,7 +35,7 @@ class TFT_eSprite : public TFT_eSPI {
 
            fillSprite(uint32_t color),
 
-           // Define a window to push 16 bit colour pixels into is a raster order
+           // Define a window to push 16 bit colour pixels into in a raster order
            // Colours are converted to 8 bit if depth is set to 8
            setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1),
            pushColor(uint32_t color),
@@ -59,8 +60,22 @@ class TFT_eSprite : public TFT_eSPI {
            // Set the sprite text cursor position for print class (does not change the TFT screen cursor)
            //setCursor(int16_t x, int16_t y);
 
+           // Set the rotation of the Sprite (for 1bpp Sprites only)
   void     setRotation(uint8_t rotation);
   uint8_t  getRotation(void);
+
+           // Push a rotated copy of Sprite to TFT with optional transparent colour
+  bool     pushRotated(int16_t angle, int32_t transp = -1);
+           // Push a rotated copy of Sprite to another different Sprite with optional transparent colour
+  bool     pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp = -1);
+           // Set and get the pivot point for this Sprite
+  void     setPivot(int16_t x, int16_t y);
+  int16_t  getPivotX(void),
+           getPivotY(void);
+
+           // Get the bounding box for a rotated copy of this Sprite
+  void     getRotatedBounds(float sina, float cosa, int16_t w, int16_t h, int16_t xp, int16_t yp,
+                                int16_t *min_x, int16_t *min_y, int16_t *max_x, int16_t *max_y);
 
            // Read the colour of a pixel at x,y and return value in 565 format 
   uint16_t readPixel(int32_t x0, int32_t y0);
@@ -98,15 +113,21 @@ class TFT_eSprite : public TFT_eSPI {
 
   TFT_eSPI *_tft;
 
+           // Reserve memory for the Sprite and return a pointer
+  void*    callocSprite(int16_t width, int16_t height, uint8_t frames = 1);
+
  protected:
 
-  uint8_t  _bpp;
+  uint8_t  _bpp;     // bits per pixel (1, 8 or 16)
   uint16_t *_img;    // pointer to 16 bit sprite
   uint8_t  *_img8;   // pointer to  8 bit sprite
   uint8_t  *_img8_1; // pointer to  frame 1
   uint8_t  *_img8_2; // pointer to  frame 2
 
-  bool     _created; // created and bits per pixel depth flags
+  int16_t _xpivot;   // x pivot point coordinate
+  int16_t _ypivot;   // y pivot point coordinate
+
+  bool     _created;    // A Sprite has been created and memory reserved
   bool     _gFont = false; 
 
 //  int32_t  _icursor_x, _icursor_y;
