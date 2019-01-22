@@ -105,7 +105,11 @@
 
 #ifdef ESP32
   #include "soc/spi_reg.h"
-  #define SPI_NUM 0x3
+  #ifdef USE_HSPI_PORT
+    #define SPI_PORT HSPI
+  #else
+    #define SPI_PORT VSPI
+  #endif
 #endif
 
 #ifdef SMOOTH_FONT
@@ -312,32 +316,32 @@
 #elif  defined (ILI9488_DRIVER) // 16 bit colour converted to 3 bytes for 18 bit RGB
 
   // Write 8 bits to TFT
-  #define tft_Write_8(C)   SPI.transfer(C)
+  #define tft_Write_8(C)   spi.transfer(C)
 
   // Convert 16 bit colour to 18 bit and write in 3 bytes
-  #define tft_Write_16(C)  SPI.transfer((C & 0xF800)>>8); \
-                           SPI.transfer((C & 0x07E0)>>3); \
-                           SPI.transfer((C & 0x001F)<<3)
+  #define tft_Write_16(C)  spi.transfer((C & 0xF800)>>8); \
+                           spi.transfer((C & 0x07E0)>>3); \
+                           spi.transfer((C & 0x001F)<<3)
 
   // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
-  #define tft_Write_16S(C) SPI.transfer(C & 0xF8); \
-                           SPI.transfer((C & 0xE0)>>11 | (C & 0x07)<<5); \
-                           SPI.transfer((C & 0x1F00)>>5)
+  #define tft_Write_16S(C) spi.transfer(C & 0xF8); \
+                           spi.transfer((C & 0xE0)>>11 | (C & 0x07)<<5); \
+                           spi.transfer((C & 0x1F00)>>5)
   // Write 32 bits to TFT
-  #define tft_Write_32(C)  SPI.write32(C)
+  #define tft_Write_32(C)  spi.write32(C)
 
 #elif  defined (RPI_ILI9486_DRIVER)
 
-  #define tft_Write_8(C)   SPI.transfer(0); SPI.transfer(C)
-  #define tft_Write_16(C)  SPI.write16(C)
-  #define tft_Write_16S(C) SPI.write16(C<<8 | C>>8)
-  #define tft_Write_32(C)  SPI.write32(C)
+  #define tft_Write_8(C)   spi.transfer(0); spi.transfer(C)
+  #define tft_Write_16(C)  spi.write16(C)
+  #define tft_Write_16S(C) spi.write16(C<<8 | C>>8)
+  #define tft_Write_32(C)  spi.write32(C)
 
 #elif defined ESP8266
 
-  #define tft_Write_8(C)   SPI.write(C)
-  #define tft_Write_16(C)  SPI.write16(C)
-  #define tft_Write_32(C)  SPI.write32(C)
+  #define tft_Write_8(C)   spi.write(C)
+  #define tft_Write_16(C)  spi.write16(C)
+  #define tft_Write_32(C)  spi.write32(C)
 
 #else // ESP32 using SPI with 16 bit color display
 
@@ -346,31 +350,31 @@
   
   // Write 8 bits
   #define tft_Write_8(C) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_NUM), 8-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_NUM), C); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
+  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 8-1); \
+  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), C); \
+  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
+  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
 
   // Write 16 bits with corrected endianess for 16 bit colours
   #define tft_Write_16(C) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_NUM), 16-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_NUM), C<<8 | C>>8); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
+  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 16-1); \
+  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), C<<8 | C>>8); \
+  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
+  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
 
   // Write 16 bits
   #define tft_Write_16S(C) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_NUM), 16-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_NUM), C); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
+  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 16-1); \
+  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), C); \
+  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
+  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
 
   // Write 32 bits
   #define tft_Write_32(C) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_NUM), 32-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_NUM), C); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
+  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 32-1); \
+  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), C); \
+  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
+  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
 
 #endif
 
@@ -383,7 +387,7 @@
     #define SCLK_H GPOS=sclkpinmask
   #else
     // Use a SPI read transfer
-    #define tft_Read_8() SPI.transfer(0)
+    #define tft_Read_8() spi.transfer(0)
   #endif
 #endif
 
@@ -650,7 +654,7 @@ class TFT_eSPI : public Print {
                    width(void);
 
   // The TFT_eSprite class inherits the following functions
-  void     setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
+  void     setWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye),
            pushColor(uint16_t color),
            pushColor(uint16_t color, uint32_t len),
            pushColors(uint16_t  *data, uint32_t len, bool swap = true), // With byte swap option
@@ -776,12 +780,12 @@ class TFT_eSPI : public Print {
            fontHeight(int16_t font),
            fontHeight(void);
 
-  void     setAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
+  void     setAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h);
 
-           // These 3 functions are used together, for every startWrite() there must be an endWrite()
-  void     startWrite(void); // Begin SPI transaction
-  void     writeColor(uint16_t color, uint32_t len); // Write a colour without transaction overhead
-  void     endWrite(void);   // End SPI transaction
+           // Compatibility additions (non-essential)
+  void     startWrite(void);                         // Begin SPI transaction (not normally needed)
+  void     writeColor(uint16_t color, uint32_t len); // Write colours without transaction overhead
+  void     endWrite(void);                           // End SPI transaction
 
   size_t   write(uint8_t);
 
@@ -816,7 +820,7 @@ class TFT_eSPI : public Print {
   inline void spi_begin_read() __attribute__((always_inline));
   inline void spi_end_read()   __attribute__((always_inline));
 
-  void     readAddrWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);
+  void     readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h);
 
   uint8_t  tabcolor,
            colstart = 0, rowstart = 0; // some ST7735 displays need this changed

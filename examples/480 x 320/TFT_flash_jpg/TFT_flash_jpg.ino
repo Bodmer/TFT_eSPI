@@ -171,11 +171,14 @@ void renderJPEG(int xpos, int ypos) {
     // calculate how many pixels must be drawn
     uint32_t mcu_pixels = win_w * win_h;
 
+    tft.startWrite();
+
     // draw image MCU block only if it will fit on the screen
     if (( mcu_x + win_w ) <= tft.width() && ( mcu_y + win_h ) <= tft.height())
     {
+
       // Now set a MCU bounding window on the TFT to push pixels into (x, y, x + width - 1, y + height - 1)
-      tft.setWindow(mcu_x, mcu_y, mcu_x + win_w - 1, mcu_y + win_h - 1);
+      tft.setAddrWindow(mcu_x, mcu_y, win_w, win_h);
 
       // Write all MCU pixels to the TFT window
       while (mcu_pixels--) {
@@ -185,6 +188,8 @@ void renderJPEG(int xpos, int ypos) {
 
     }
     else if ( (mcu_y + win_h) >= tft.height()) JpegDec.abort(); // Image has run off bottom of screen so abort decoding
+
+    tft.endWrite();
   }
 
   // calculate how long it took to draw the image

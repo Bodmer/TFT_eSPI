@@ -441,6 +441,8 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     int16_t cy = cursor_y + gFont.maxAscent - gdY[gNum];
     int16_t cx = cursor_x + gdX[gNum];
 
+    startWrite(); // Avoid slow ESP32 transaction overhead for every pixel
+
     for (int y = 0; y < gHeight[gNum]; y++)
     {
       fontFile.read(pbuffer, gWidth[gNum]); //<//
@@ -480,7 +482,8 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     drawRect(cursor_x, cursor_y + gFont.maxAscent - gFont.ascent, gFont.spaceWidth, gFont.ascent, fg);
     cursor_x += gFont.spaceWidth + 1;
   }
-  
+
+  endWrite();
 }
 
 /***************************************************************************************

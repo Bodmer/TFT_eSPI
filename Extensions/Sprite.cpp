@@ -301,7 +301,8 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
   if (max_x > _tft->width()) max_x = _tft->width();
   if (max_y > _tft->height()) max_y = _tft->height();
 
-  _tft->startWrite();
+  _tft->startWrite(); // ESP32: avoid transaction overhead for every tft pixel
+
   // Scan destination bounding box and fetch transformed pixels from source Sprite
   for (int32_t x = min_x; x <= max_x; x++) {
     int32_t xt = x - _tft->_xpivot;
@@ -325,7 +326,8 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
       else if (column_drawn) y = max_y; // Skip remaining column pixels
     }
   }
-  _tft->endWrite();
+
+  _tft->endWrite(); // ESP32: end transaction
 
   return true;
 }
@@ -465,7 +467,6 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y)
   if (_bpp == 16) _tft->pushImage(x, y, _iwidth, _iheight, _img );
 
   else _tft->pushImage(x, y, _dwidth, _dheight, _img8, (bool)(_bpp == 8));
-
 }
 
 
@@ -562,7 +563,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint1
   if (xs + w >= _iwidth)  ws = _iwidth  - xs;
   if (ys + h >= _iheight) hs = _iheight - ys;
 
-  if (_bpp == 16)
+  if (_bpp == 16) // Plot a 16 bpp image into a 16 bpp Sprite
   {
     for (uint32_t yp = yo; yp < yo + hs; yp++)
     {
@@ -577,7 +578,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint1
       ys++;
     }
   }
-  else if (_bpp == 8)
+  else if (_bpp == 8) // Plot a 16 bpp image into a 8 bpp Sprite
   {
     for (uint32_t yp = yo; yp < yo + hs; yp++)
     {
@@ -613,7 +614,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint1
       x = y;
       y = _dheight - tx - 1;
     }
-
+    // Plot a 1bpp image into a 1bpp Sprite
     uint8_t* pdata = (uint8_t* ) data;
     uint32_t ww =  (w+7) & 0xFFF8;
     for (int32_t yp = 0; yp<h; yp++)
@@ -636,6 +637,10 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint1
 *************************************************************************************x*/
 void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const uint16_t *data)
 {
+#ifdef ESP32
+  pushImage(x, y, w, h, (uint16_t*) data);
+#else
+  // Partitioned memory FLASH processor
   if ((x >= _iwidth) || (y >= _iheight) || (w == 0) || (h == 0) || !_created) return;
   if ((x + (int32_t)w < 0) || (y + (int32_t)h < 0)) return;
 
@@ -654,7 +659,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const
   if (xs + w >= _iwidth)  ws = _iwidth  - xs;
   if (ys + h >= _iheight) hs = _iheight - ys;
 
-  if (_bpp == 16)
+  if (_bpp == 16) // Plot a 16 bpp image into a 16 bpp Sprite
   {
     for (uint32_t yp = yo; yp < yo + hs; yp++)
     {
@@ -670,7 +675,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const
     }
   }
 
-  else if (_bpp == 8)
+  else if (_bpp == 8) // Plot a 16 bpp image into a 8 bpp Sprite
   {
     for (uint32_t yp = yo; yp < yo + hs; yp++)
     {
@@ -706,7 +711,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const
       x = y;
       y = _dheight - tx - 1;
     }
-
+    // Plot a 1bpp image into a 1bpp Sprite
     const uint8_t* pdata = (const uint8_t* ) data;
     uint32_t ww =  (w+7) & 0xFFF8;
     for (int32_t yp = 0; yp<h; yp++)
@@ -721,6 +726,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const
       }
     }
   }
+#endif // if ESP32 else ESP8266 check
 }
 
 

@@ -336,10 +336,10 @@ uint32_t testHaD()
 	tft.fillScreen(TFT_BLACK);
 
 	uint32_t start = micros_start();
-	
+
 	for (int i = 0; i < 0x10; i++)
 	{
-		tft.setWindow(0, 0, 240-1, 320-1);
+		tft.setAddrWindow(0, 0, 240, 320);
 
 		uint16_t cnt = 0;
 		uint16_t color = tft.color565((i << 4) | i, (i << 4) | i, (i << 4) | i);
@@ -347,6 +347,7 @@ uint32_t testHaD()
 
 		const uint8_t *cmp = &HaD_240x320[0];
 
+		tft.startWrite();
 		while (cmp < &HaD_240x320[sizeof(HaD_240x320)])
 		{
 			cnt = pgm_read_byte(cmp++);
@@ -354,6 +355,7 @@ uint32_t testHaD()
 			tft.pushColor(curcolor, cnt);	// PDQ_GFX has count
 			curcolor ^= color;
 		}
+		tft.endWrite();
 	}
 
 	uint32_t t = micros() - start;
