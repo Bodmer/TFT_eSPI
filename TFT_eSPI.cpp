@@ -3906,14 +3906,14 @@ size_t TFT_eSPI::write(uint8_t utf8)
   if(fontLoaded)
   {
     uint16_t unicode = decodeUTF8(utf8);
-    if (!unicode) return 0;
+    if (!unicode) return 1;
 
     //fontFile = SPIFFS.open( _gFontFilename, "r" );
 
     //if(!fontFile)
     //{
     //  fontLoaded = false;
-    //  return 0;
+    //  return 1;
     //}
 
     drawGlyph(unicode);
@@ -3925,7 +3925,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
 
   uint8_t uniCode = utf8;        // Work with a copy
   if (utf8 == '\n') uniCode+=22; // Make it a valid space character to stop errors
-  else if (utf8 < 32) return 0;
+  else if (utf8 < 32) return 1;
 
   uint16_t width = 0;
   uint16_t height = 0;
@@ -3945,7 +3945,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
 #ifdef LOAD_FONT2
   if (textfont == 2)
   {
-    if (utf8 > 127) return 0;
+    if (utf8 > 127) return 1;
     // This is 20us faster than using the fontdata structure (0.443ms per character instead of 0.465ms)
     width = pgm_read_byte(widtbl_f16 + uniCode-32);
     height = chr_hgt_f16;
@@ -3962,7 +3962,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
   {
     if ((textfont>2) && (textfont<9))
     {
-      if (utf8 > 127) return 0;
+      if (utf8 > 127) return 1;
       // Uses the fontinfo struct array to avoid lots of 'if' or 'switch' statements
       // A tad slower than above but this is not significant and is more convenient for the RLE fonts
       width = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[textfont].widthtbl ) ) + uniCode-32 );
@@ -3978,7 +3978,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
       height = 8;
   }
 #else
-  if (textfont==1) return 0;
+  if (textfont==1) return 1;
 #endif
 
   height = height * textsize;
@@ -4009,8 +4009,8 @@ size_t TFT_eSPI::write(uint8_t utf8)
       cursor_y += (int16_t)textsize *
                   (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
     } else {
-      if (uniCode > (uint8_t)pgm_read_byte(&gfxFont->last )) return 0;
-      if (uniCode < (uint8_t)pgm_read_byte(&gfxFont->first)) return 0;
+      if (uniCode > (uint8_t)pgm_read_byte(&gfxFont->last )) return 1;
+      if (uniCode < (uint8_t)pgm_read_byte(&gfxFont->first)) return 1;
 
       uint8_t   c2    = uniCode - pgm_read_byte(&gfxFont->first);
       GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
