@@ -15,6 +15,8 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
+#define TFT_ESPI_VERSION "1.4.0"
+
 //#define ESP32 //Just used to test ESP32 options
 
 // Include header file that defines the fonts loaded, the TFT drivers
@@ -142,8 +144,8 @@
           #define DC_D GPIO.out1_w1tc.val = (1 << (TFT_DC - 32)); \
                        GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
         #else
-          #define DC_C GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
-          #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
+          #define DC_C GPIO.out1_w1tc.val = (1 << (TFT_DC - 32));GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
+          #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC - 32));GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
         #endif
       #else
         #if TFT_DC >= 0
@@ -153,8 +155,8 @@
             #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
                          GPIO.out_w1ts = (1 << TFT_DC)
           #else
-            #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
-            #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
+            #define DC_C GPIO.out_w1tc = (1 << TFT_DC);GPIO.out_w1tc = (1 << TFT_DC)
+            #define DC_D GPIO.out_w1ts = (1 << TFT_DC);GPIO.out_w1ts = (1 << TFT_DC)
           #endif
         #else
           #define DC_C
@@ -191,8 +193,8 @@
           #define CS_H GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); \
                        GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
         #else
-          #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
-          #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
+          #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32));GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
+          #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32));GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
         #endif
       #else
         #if TFT_CS >= 0
@@ -200,8 +202,8 @@
             #define CS_L GPIO.out_w1ts = (1 << TFT_CS); GPIO.out_w1tc = (1 << TFT_CS)
             #define CS_H GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1ts = (1 << TFT_CS)
           #else
-            #define CS_L GPIO.out_w1tc = (1 << TFT_CS)
-            #define CS_H GPIO.out_w1ts = (1 << TFT_CS)
+            #define CS_L GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
+            #define CS_H GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1ts = (1 << TFT_CS)
           #endif
         #else
           #define CS_L
@@ -223,7 +225,7 @@
         #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC)); \
                           GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
       #else
-        #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
+        #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC)); GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
       #endif
     #else
       #define CS_L_DC_C CS_L; DC_C
@@ -525,10 +527,19 @@ swap_coord(T& a, T& b) { T t = a; a = b; b = t; }
 // by calling getSetup(), zero impact on code size unless used, mainly for diagnostics
 typedef struct
 {
+String  version = TFT_ESPI_VERSION;
 int16_t esp;
 uint8_t trans;
 uint8_t serial;
 uint8_t overlap;
+
+#if defined (ESP32)
+  #if defined (USE_HSPI_PORT)
+    uint8_t  port = HSPI;
+  #else
+    uint8_t  port = VSPI;
+  #endif
+#endif
 
 uint16_t tft_driver; // Hexadecimal code
 uint16_t tft_width;  // Rotation 0 width and height
@@ -565,6 +576,7 @@ int8_t pin_tft_d7;
 int8_t pin_tch_cs;
 
 int16_t tft_spi_freq;
+int16_t tft_rd_freq;
 int16_t tch_spi_freq;
 } setup_t;
 

@@ -345,6 +345,7 @@ void TFT_eSPI::init(uint8_t tc)
 #endif
 
   spi_end();
+
   delay(150); // Wait for reset to complete
 
   spi_begin();
@@ -506,13 +507,15 @@ void TFT_eSPI::spiwrite(uint8_t c)
 ***************************************************************************************/
 void TFT_eSPI::writecommand(uint8_t c)
 {
-  DC_C;
-  CS_L;
-
+  //DC_C;
+  //CS_L;
+  digitalWrite(TFT_DC, LOW);
+  digitalWrite(TFT_CS, LOW);
   tft_Write_8(c);
-
-  CS_H;
-  DC_D;
+  digitalWrite(TFT_CS, HIGH);
+  digitalWrite(TFT_DC, HIGH);
+  //CS_H;
+  //DC_D;
 }
 
 
@@ -522,11 +525,11 @@ void TFT_eSPI::writecommand(uint8_t c)
 ***************************************************************************************/
 void TFT_eSPI::writedata(uint8_t d)
 {
-  CS_L;
-
+  //CS_L;
+  digitalWrite(TFT_CS, LOW);
   tft_Write_8(d);
-
-  CS_H;
+  digitalWrite(TFT_CS, HIGH);
+  //CS_H;
 }
 
 
@@ -5084,6 +5087,7 @@ void writeBlock(uint16_t color, uint32_t repeat)
 ***************************************************************************************/
 void TFT_eSPI::getSetup(setup_t &tft_settings)
 {
+// tft_settings.version is set in header file
 
 #if defined (ESP8266)
   tft_settings.esp = 8266;
@@ -5105,6 +5109,9 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 #else
   tft_settings.serial = true;
   tft_settings.tft_spi_freq = SPI_FREQUENCY/100000;
+  #ifdef SPI_READ_FREQUENCY
+    tft_settings.tft_rd_freq = SPI_READ_FREQUENCY/100000;
+  #endif
 #endif
 
 #if defined(TFT_SPI_OVERLAP)
