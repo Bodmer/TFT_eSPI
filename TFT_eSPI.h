@@ -15,7 +15,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "1.4.0"
+#define TFT_ESPI_VERSION "1.4.1"
 
 //#define ESP32 //Just used to test ESP32 options
 
@@ -144,8 +144,8 @@
           #define DC_D GPIO.out1_w1tc.val = (1 << (TFT_DC - 32)); \
                        GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
         #else
-          #define DC_C GPIO.out1_w1tc.val = (1 << (TFT_DC - 32));GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
-          #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC - 32));GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
+          #define DC_C GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))//;GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
+          #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))//;GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
         #endif
       #else
         #if TFT_DC >= 0
@@ -155,8 +155,8 @@
             #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
                          GPIO.out_w1ts = (1 << TFT_DC)
           #else
-            #define DC_C GPIO.out_w1tc = (1 << TFT_DC);GPIO.out_w1tc = (1 << TFT_DC)
-            #define DC_D GPIO.out_w1ts = (1 << TFT_DC);GPIO.out_w1ts = (1 << TFT_DC)
+            #define DC_C GPIO.out_w1tc = (1 << TFT_DC)//;GPIO.out_w1tc = (1 << TFT_DC)
+            #define DC_D GPIO.out_w1ts = (1 << TFT_DC)//;GPIO.out_w1ts = (1 << TFT_DC)
           #endif
         #else
           #define DC_C
@@ -193,8 +193,8 @@
           #define CS_H GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); \
                        GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
         #else
-          #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32));GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
-          #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32));GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
+          #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
+          #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))//;GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
         #endif
       #else
         #if TFT_CS >= 0
@@ -203,7 +203,7 @@
             #define CS_H GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1ts = (1 << TFT_CS)
           #else
             #define CS_L GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
-            #define CS_H GPIO.out_w1ts = (1 << TFT_CS);GPIO.out_w1ts = (1 << TFT_CS)
+            #define CS_H GPIO.out_w1ts = (1 << TFT_CS)//;GPIO.out_w1ts = (1 << TFT_CS)
           #endif
         #else
           #define CS_L
@@ -653,15 +653,15 @@ class TFT_eSPI : public Print {
   void     init(uint8_t tc = TAB_COLOUR), begin(uint8_t tc = TAB_COLOUR); // Same - begin included for backwards compatibility
 
   // These are virtual so the TFT_eSprite class can override them with sprite specific functions
-  virtual void     drawPixel(uint32_t x, uint32_t y, uint32_t color),
+  virtual void     drawPixel(int32_t x, int32_t y, uint32_t color),
                    drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size),
                    drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
                    drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
                    drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
                    fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
 
-  virtual int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
-                   drawChar(unsigned int uniCode, int x, int y),
+  virtual int16_t  drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font),
+                   drawChar(uint16_t uniCode, int32_t x, int32_t y),
                    height(void),
                    width(void);
 
@@ -720,30 +720,30 @@ class TFT_eSPI : public Print {
 
            commandList(const uint8_t *addr);
 
-  uint8_t  readcommand8(uint8_t cmd_function, uint8_t index);
-  uint16_t readcommand16(uint8_t cmd_function, uint8_t index);
-  uint32_t readcommand32(uint8_t cmd_function, uint8_t index);
+  uint8_t  readcommand8(uint8_t cmd_function, uint8_t index = 0);
+  uint16_t readcommand16(uint8_t cmd_function, uint8_t index = 0);
+  uint32_t readcommand32(uint8_t cmd_function, uint8_t index = 0);
 
            // Read the colour of a pixel at x,y and return value in 565 format 
   uint16_t readPixel(int32_t x0, int32_t y0);
 
            // The next functions can be used as a pair to copy screen blocks (or horizontal/vertical lines) to another location
            // Read a block of pixels to a data buffer, buffer is 16 bit and the array size must be at least w * h
-  void     readRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+  void     readRect(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data);
            // Write a block of pixels to the screen
-  void     pushRect(uint32_t x0, uint32_t y0, uint32_t w, uint32_t h, uint16_t *data);
+  void     pushRect(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data);
 
            // These are used to render images or sprites stored in RAM arrays
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data);
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data, uint16_t transparent);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data, uint16_t transparent);
 
            // These are used to render images stored in FLASH (PROGMEM)
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data, uint16_t transparent);
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, const uint16_t *data, uint16_t transparent);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, const uint16_t *data);
 
            // These are used by pushSprite for 1 and 8 bit colours
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data, bool bpp8 = true);
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint8_t  *data, uint8_t  transparent, bool bpp8 = true);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t  *data, bool bpp8 = true);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t  *data, uint8_t  transparent, bool bpp8 = true);
 
            // Swap the byte order for pushImage() - corrects endianness
   void     setSwapBytes(bool swap);
@@ -768,26 +768,26 @@ class TFT_eSPI : public Print {
            color565(uint8_t red, uint8_t green, uint8_t blue),   // Convert 8 bit red, green and blue to 16 bits
            color8to16(uint8_t color332);  // Convert 8 bit colour to 16 bits
 
-  int16_t  drawNumber(long long_num,int poX, int poY, int font),
-           drawNumber(long long_num,int poX, int poY),
-           drawFloat(float floatNumber,int decimal,int poX, int poY, int font),
-           drawFloat(float floatNumber,int decimal,int poX, int poY),
+  int16_t  drawNumber(long long_num, int32_t poX, int32_t poY, uint8_t font),
+           drawNumber(long long_num, int32_t poX, int32_t poY),
+           drawFloat(float floatNumber, uint8_t decimal, int32_t poX, int32_t poY, uint8_t font),
+           drawFloat(float floatNumber, uint8_t decimal, int32_t poX, int32_t poY),
 
            // Handle char arrays
-           drawString(const char *string, int poX, int poY, int font),
-           drawString(const char *string, int poX, int poY),
-           drawCentreString(const char *string, int dX, int poY, int font), // Deprecated, use setTextDatum() and drawString()
-           drawRightString(const char *string, int dX, int poY, int font),  // Deprecated, use setTextDatum() and drawString()
+           drawString(const char *string, int32_t poX, int32_t poY, uint8_t font),
+           drawString(const char *string, int32_t poX, int32_t poY),
+           drawCentreString(const char *string, int32_t dX, int32_t poY, uint8_t font), // Deprecated, use setTextDatum() and drawString()
+           drawRightString(const char *string, int32_t dX, int32_t poY, uint8_t font),  // Deprecated, use setTextDatum() and drawString()
 
            // Handle String type
-           drawString(const String& string, int poX, int poY, int font),
-           drawString(const String& string, int poX, int poY),
-           drawCentreString(const String& string, int dX, int poY, int font), // Deprecated, use setTextDatum() and drawString()
-           drawRightString(const String& string, int dX, int poY, int font);  // Deprecated, use setTextDatum() and drawString()
+           drawString(const String& string, int32_t poX, int32_t poY, uint8_t font),
+           drawString(const String& string, int32_t poX, int32_t poY),
+           drawCentreString(const String& string, int32_t dX, int32_t poY, uint8_t font), // Deprecated, use setTextDatum() and drawString()
+           drawRightString(const String& string, int32_t dX, int32_t poY, uint8_t font);  // Deprecated, use setTextDatum() and drawString()
 
-  int16_t  textWidth(const char *string, int font),
+  int16_t  textWidth(const char *string, uint8_t font),
            textWidth(const char *string),
-           textWidth(const String& string, int font),
+           textWidth(const String& string, uint8_t font),
            textWidth(const String& string),
            fontHeight(int16_t font),
            fontHeight(void);
@@ -852,9 +852,9 @@ class TFT_eSPI : public Print {
 
   int32_t  win_xe, win_ye;
 
-  uint32_t _init_width, _init_height; // Display w/h as input, used by setRotation()
-  uint32_t _width, _height;           // Display w/h as modified by current rotation
-  uint32_t addr_row, addr_col;
+  int32_t  _init_width, _init_height; // Display w/h as input, used by setRotation()
+  int32_t  _width, _height;           // Display w/h as modified by current rotation
+  int32_t  addr_row, addr_col;
 
   uint32_t fontsloaded;
 

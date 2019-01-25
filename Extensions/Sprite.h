@@ -29,7 +29,7 @@ class TFT_eSprite : public TFT_eSPI {
 
   void     setBitmapColor(uint16_t c, uint16_t b);
 
-  void     drawPixel(uint32_t x, uint32_t y, uint32_t color);
+  void     drawPixel(int32_t x, int32_t y, uint32_t color);
 
   void     drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size),
 
@@ -45,7 +45,7 @@ class TFT_eSprite : public TFT_eSPI {
 
            // Set the scroll zone, top left corner at x,y with defined width and height
            // The colour (optional, black is default) is used to fill the gap after the scroll
-           setScrollRect(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t color = TFT_BLACK),
+           setScrollRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t color = TFT_BLACK),
            // Scroll the defined zone dx,dy pixels. Negative values left,up, positive right,down
            // dy is optional (default is then no up/down scroll).
            // The sprite coordinate frame does not move because pixels are moved
@@ -81,8 +81,8 @@ class TFT_eSprite : public TFT_eSPI {
   uint16_t readPixel(int32_t x0, int32_t y0);
 
            // Write an image (colour bitmap) to the sprite
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, uint16_t *data);
-  void     pushImage(int32_t x0, int32_t y0, uint32_t w, uint32_t h, const uint16_t *data);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, const uint16_t *data);
 
            // Swap the byte order for pushImage() - corrects different image endianness
   void     setSwapBytes(bool swap);
@@ -93,8 +93,8 @@ class TFT_eSprite : public TFT_eSPI {
   void     pushSprite(int32_t x, int32_t y);
   void     pushSprite(int32_t x, int32_t y, uint16_t transparent);
 
-  int16_t  drawChar(unsigned int uniCode, int x, int y, int font),
-           drawChar(unsigned int uniCode, int x, int y);
+  int16_t  drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font),
+           drawChar(uint16_t uniCode, int32_t x, int32_t y);
 
            // Return the width and height of the sprite
   int16_t  width(void),
@@ -106,7 +106,7 @@ class TFT_eSprite : public TFT_eSPI {
            // Functions associated with anti-aliased fonts
   void     drawGlyph(uint16_t code);
   void     printToSprite(String string);
-  void     printToSprite(char *cbuffer, int len);
+  void     printToSprite(char *cbuffer, uint16_t len);
   int16_t  printToSprite(int16_t x, int16_t y, uint16_t index);
 
  private:

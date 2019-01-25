@@ -543,10 +543,10 @@ uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
 ** Function name:           pushImage
 ** Description:             push 565 colour image into a defined area of a sprite 
 *************************************************************************************x*/
-void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t *data)
+void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data)
 {
   if ((x >= _iwidth) || (y >= _iheight) || (w == 0) || (h == 0) || !_created) return;
-  if ((x + (int32_t)w < 0) || (y + (int32_t)h < 0)) return;
+  if ((x + w < 0) || (y + h < 0)) return;
 
   int32_t  xo = 0;
   int32_t  yo = 0;
@@ -635,14 +635,14 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint1
 ** Function name:           pushImage
 ** Description:             push 565 colour FLASH (PROGMEM) image into a defined area
 *************************************************************************************x*/
-void  TFT_eSprite::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, const uint16_t *data)
+void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint16_t *data)
 {
 #ifdef ESP32
   pushImage(x, y, w, h, (uint16_t*) data);
 #else
   // Partitioned memory FLASH processor
   if ((x >= _iwidth) || (y >= _iheight) || (w == 0) || (h == 0) || !_created) return;
-  if ((x + (int32_t)w < 0) || (y + (int32_t)h < 0)) return;
+  if ((x + w < 0) || (y + h < 0)) return;
 
   int32_t  xo = 0;
   int32_t  yo = 0;
@@ -877,7 +877,7 @@ void TFT_eSprite::writeColor(uint16_t color)
 ** Function name:           setScrollRect
 ** Description:             Set scroll area within the sprite and the gap fill colour
 *************************************************************************************x*/
-void TFT_eSprite::setScrollRect(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t color)
+void TFT_eSprite::setScrollRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t color)
 {
   if ((x >= _iwidth) || (y >= _iheight) || !_created ) return;
 
@@ -1082,11 +1082,10 @@ uint8_t TFT_eSprite::getRotation(void)
 ** Function name:           drawPixel
 ** Description:             push a single pixel at an arbitrary position
 *************************************************************************************x*/
-void TFT_eSprite::drawPixel(uint32_t x, uint32_t y, uint32_t color)
+void TFT_eSprite::drawPixel(int32_t x, int32_t y, uint32_t color)
 {
-  // x and y are unsigned so that -ve coordinates turn into large positive ones
-  // this make bounds checking a bit faster
-  if ((x >= _iwidth) || (y >= _iheight) || !_created) return;
+  // Range checking
+  if ((x < 0) || (y < 0) ||(x >= _width) || (y >= _height) || !_created) return;
 
   if (_bpp == 16)
   {
@@ -1598,12 +1597,12 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color
 ** Function name:           drawChar
 ** Description:             draw a unicode onto the screen
 *************************************************************************************x*/
-int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y)
+int16_t TFT_eSprite::drawChar(uint16_t uniCode, int32_t x, int32_t y)
 {
   return drawChar(uniCode, x, y, textfont);
 }
 
-int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y, int font)
+int16_t TFT_eSprite::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 {
   if (!_created ) return 0;
 
@@ -1647,8 +1646,8 @@ int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y, int font)
 
   if ((font>1) && (font<9) && ((uniCode < 32) || (uniCode > 127))) return 0;
 
-  int width  = 0;
-  int height = 0;
+  int32_t width  = 0;
+  int32_t height = 0;
   uint32_t flash_address = 0;
   uniCode -= 32;
 
@@ -1677,9 +1676,9 @@ int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y, int font)
   }
 #endif
 
-  int w = width;
-  int pX      = 0;
-  int pY      = y;
+  int32_t w = width;
+  int32_t pX      = 0;
+  int32_t pY      = y;
   uint8_t line = 0;
 
 #ifdef LOAD_FONT2 // chop out code if we do not need it
@@ -1688,11 +1687,11 @@ int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y, int font)
     w = w / 8;
     if (x + width * textsize >= _iwidth) return width * textsize ;
 
-    for (int i = 0; i < height; i++)
+    for (int32_t i = 0; i < height; i++)
     {
       if (textcolor != textbgcolor) fillRect(x, pY, width * textsize, textsize, textbgcolor);
 
-      for (int k = 0; k < w; k++)
+      for (int32_t k = 0; k < w; k++)
       {
         line = pgm_read_byte((uint8_t *)flash_address + w * i + k);
         if (line) {
@@ -1738,8 +1737,8 @@ int16_t TFT_eSprite::drawChar(unsigned int uniCode, int x, int y, int font)
     int16_t color = textcolor;
     if (_bpp == 16) color = (textcolor >> 8) | (textcolor << 8);
     else if (_bpp == 8) color = ((textcolor & 0xE000)>>8 | (textcolor & 0x0700)>>6 | (textcolor & 0x0018)>>3);
-    int px = 0, py = pY; // To hold character block start and end column and row values
-    int pc = 0; // Pixel count
+    int32_t px = 0, py = pY; // To hold character block start and end column and row values
+    int32_t pc = 0; // Pixel count
     uint8_t np = textsize * textsize; // Number of pixels in a drawn pixel
     uint8_t tnp = 0; // Temporary copy of np for while loop
     uint8_t ts = textsize - 1; // Temporary copy of textsize
@@ -1845,10 +1844,10 @@ void TFT_eSprite::drawGlyph(uint16_t code)
     int16_t  xs = 0;
     uint16_t dl = 0;
 
-    for (int y = 0; y < this->gHeight[gNum]; y++)
+    for (int32_t y = 0; y < this->gHeight[gNum]; y++)
     {
       this->fontFile.read(pbuffer, this->gWidth[gNum]);
-      for (int x = 0; x < this->gWidth[gNum]; x++)
+      for (int32_t x = 0; x < this->gWidth[gNum]; x++)
       {
         uint8_t pixel = pbuffer[x];
         if (pixel)
@@ -1897,7 +1896,7 @@ void TFT_eSprite::drawGlyph(uint16_t code)
 void TFT_eSprite::printToSprite(String string)
 {
   if(!this->fontLoaded) return;
-  int16_t len = string.length();
+  uint16_t len = string.length();
   char cbuffer[len + 1];              // Add 1 for the null
   string.toCharArray(cbuffer, len + 1); // Add 1 for the null, otherwise characters get dropped
   printToSprite(cbuffer, len);
@@ -1909,7 +1908,7 @@ void TFT_eSprite::printToSprite(String string)
 ** Function name:           printToSprite
 ** Description:             Write a string to the sprite cursor position
 *************************************************************************************x*/
-void TFT_eSprite::printToSprite(char *cbuffer, int len) //String string)
+void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
 {
   if(!this->fontLoaded) return;
   

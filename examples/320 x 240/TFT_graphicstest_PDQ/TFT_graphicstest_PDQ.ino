@@ -434,7 +434,7 @@ uint32_t testPixels()
 	int32_t	h = tft.height();
 
 	uint32_t start = micros_start();
-
+	tft.startWrite();
 	for (uint16_t y = 0; y < h; y++)
 	{
 		for (uint16_t x = 0; x < w; x++)
@@ -442,7 +442,7 @@ uint32_t testPixels()
 			tft.drawPixel(x, y, tft.color565(x<<3, y<<3, x*y));
 		}
 	}
-	
+	tft.endWrite();
 	return micros() - start;
 }
 
