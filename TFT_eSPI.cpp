@@ -2927,10 +2927,10 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   addr_row = 0xFFFF;
   
 #ifdef CGRAM_OFFSET
-  xs+=colstart;
-  xe+=colstart;
-  ys+=rowstart;
-  ye+=rowstart;
+  xs += colstart;
+  xe += colstart;
+  ys += rowstart;
+  ye += rowstart;
 #endif
 
   // Column addr set
@@ -2996,10 +2996,10 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   addr_row = 0xFFFF;
 
 #ifdef CGRAM_OFFSET
-  x0+=colstart;
-  x1+=colstart;
-  y0+=rowstart;
-  y1+=rowstart;
+xs += colstart;
+xe += colstart;
+ys += rowstart;
+ye += rowstart;
 #endif
 
   // Column addr set
