@@ -15,7 +15,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "1.4.1"
+#define TFT_ESPI_VERSION "1.4.2"
 
 //#define ESP32 //Just used to test ESP32 options
 
@@ -172,6 +172,13 @@
 
 #if defined (TFT_SPI_OVERLAP)
   #undef TFT_CS
+  #define SPI1U_WRITE (SPIUMOSI | SPIUSSE | SPIUCSSETUP | SPIUCSHOLD)
+  #define SPI1U_READ  (SPIUMOSI | SPIUSSE | SPIUCSSETUP | SPIUCSHOLD | SPIUDUPLEX)
+#else
+  #ifdef ESP8266
+    #define SPI1U_WRITE (SPIUMOSI | SPIUSSE)
+    #define SPI1U_READ  (SPIUMOSI | SPIUSSE | SPIUDUPLEX)
+  #endif
 #endif
 
 #ifndef TFT_CS
