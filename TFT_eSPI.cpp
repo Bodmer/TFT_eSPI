@@ -60,7 +60,7 @@ inline void TFT_eSPI::spi_end(void){
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(ESP32_PARALLEL)
   if(!inTransaction) {if (!locked) {locked = true; CS_H; spi.endTransaction();}}
 #else
-  CS_H;
+  if(!inTransaction) CS_H;
 #endif
 }
 
