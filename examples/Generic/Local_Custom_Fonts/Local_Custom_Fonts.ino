@@ -45,7 +45,6 @@
 
 #include "SPI.h"
 #include "TFT_eSPI.h"
-#include "TFT_eFEX.h"
 
 // The custom font file attached to this sketch must be included
 #include "MyFont.h"
@@ -58,7 +57,6 @@
 
 // Use hardware SPI
 TFT_eSPI tft = TFT_eSPI();
-TFT_eFEX fex = TFT_eFEX(&tft);
 
 void setup(void) {
 
@@ -111,7 +109,7 @@ void loop() {
   tft.setFreeFont(MYFONT32);                   // Select the font
   tft.drawString(TEST_TEXT, 160, 140, GFXFF);  // Print the test text in the custom font
   delay(2000);
-fex.screenServer();
+
   // Setting textDatum does nothing when using tft.print
   tft.fillScreen(TFT_BLUE);  // Clear screen
   tft.setCursor(0,60);       // To be compatible with Adafruit_GFX the cursor datum is always bottom left
