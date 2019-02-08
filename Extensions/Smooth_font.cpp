@@ -246,6 +246,7 @@ void TFT_eSPI::unloadFont( void )
 ** Function name:           decodeUTF8
 ** Description:             Line buffer UTF-8 decoder with fall-back to extended ASCII
 *************************************************************************************x*/
+/* Function moved to TFT_eSPI.cpp
 #define DECODE_UTF8
 uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 {
@@ -273,11 +274,13 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 
   return c; // fall-back to extended ASCII
 }
+*/
 
 /***************************************************************************************
 ** Function name:           decodeUTF8
 ** Description:             Serial UTF-8 decoder with fall-back to extended ASCII
 *************************************************************************************x*/
+/* Function moved to TFT_eSPI.cpp
 uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
 {
 
@@ -329,6 +332,7 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
   decoderState = 0;
   return (uint16_t)c; // fall-back to extended ASCII
 }
+*/
 
 
 

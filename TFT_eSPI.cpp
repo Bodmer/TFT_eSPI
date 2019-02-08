@@ -13,6 +13,7 @@
   Bodmer: Added RPi 16 bit display support
  ****************************************************/
 
+
 #include "TFT_eSPI.h"
 
 #if defined (ESP32)
@@ -85,7 +86,7 @@ inline void TFT_eSPI::spi_end_read(void){
   #if !defined(ESP32_PARALLEL)
     spi.setFrequency(SPI_FREQUENCY);
   #endif
-   CS_H;
+   if(!inTransaction) CS_H;
 #endif
 #ifdef ESP8266
   SPI1U = SPI1U_WRITE;
@@ -342,17 +343,6 @@ void TFT_eSPI::init(uint8_t tc)
   writecommand(TFT_SWRST); // Software reset
 #endif
 
-#if defined (TFT_BL) && defined (TFT_BACKLIGHT_ON)
-  digitalWrite(TFT_BL, TFT_BACKLIGHT_ON);
-  pinMode(TFT_BL, OUTPUT);
-#else
-  #if defined (TFT_BL) && defined (M5STACK)
-    // Turn on the back-light LED
-    digitalWrite(TFT_BL, HIGH);
-    pinMode(TFT_BL, OUTPUT);
-  #endif
-#endif
-
   spi_end();
 
   delay(150); // Wait for reset to complete
@@ -407,6 +397,17 @@ void TFT_eSPI::init(uint8_t tc)
   spi_end();
 
   setRotation(rotation);
+
+#if defined (TFT_BL) && defined (TFT_BACKLIGHT_ON)
+  digitalWrite(TFT_BL, TFT_BACKLIGHT_ON);
+  pinMode(TFT_BL, OUTPUT);
+#else
+  #if defined (TFT_BL) && defined (M5STACK)
+    // Turn on the back-light LED
+    digitalWrite(TFT_BL, HIGH);
+    pinMode(TFT_BL, OUTPUT);
+  #endif
+#endif
 }
 
 
@@ -2324,7 +2325,7 @@ int16_t TFT_eSPI::textWidth(const char *string, uint8_t font)
     {
       while (*string)
       {
-        uniCode = *(string++);
+        uniCode = decodeUTF8(*string++);
         if ((uniCode >= (uint8_t)pgm_read_byte(&gfxFont->first)) && (uniCode <= (uint8_t)pgm_read_byte(&gfxFont->last )))
         {
           uniCode -= pgm_read_byte(&gfxFont->first);
@@ -3896,6 +3897,95 @@ void TFT_eSPI::invertDisplay(boolean i)
 
 
 /***************************************************************************************
+** Function name:           decodeUTF8
+** Description:             Serial UTF-8 decoder with fall-back to extended ASCII
+*************************************************************************************x*/
+#define DECODE_UTF8 // Test only, comment out to stop decoding
+uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
+{
+#ifdef DECODE_UTF8
+  // 7 bit Unicode Code Point
+  if ((c & 0x80) == 0x00) {
+    decoderState = 0;
+    return (uint16_t)c;
+  }
+
+  if (decoderState == 0)
+  {
+    // 11 bit Unicode Code Point
+    if ((c & 0xE0) == 0xC0)
+    {
+      decoderBuffer = ((c & 0x1F)<<6);
+      decoderState = 1;
+      return 0;
+    }
+
+    // 16 bit Unicode Code Point
+    if ((c & 0xF0) == 0xE0)
+    {
+      decoderBuffer = ((c & 0x0F)<<12);
+      decoderState = 2;
+      return 0;
+    }
+    // 21 bit Unicode  Code Point not supported so fall-back to extended ASCII
+    if ((c & 0xF8) == 0xF0) return (uint16_t)c;
+  }
+  else
+  {
+    if (decoderState == 2)
+    {
+      decoderBuffer |= ((c & 0x3F)<<6);
+      decoderState--;
+      return 0;
+    }
+    else
+    {
+      decoderBuffer |= (c & 0x3F);
+      decoderState = 0;
+      return decoderBuffer;
+    }
+  }
+
+  decoderState = 0;
+#endif
+
+  return (uint16_t)c; // fall-back to extended ASCII
+}
+
+
+/***************************************************************************************
+** Function name:           decodeUTF8
+** Description:             Line buffer UTF-8 decoder with fall-back to extended ASCII
+*************************************************************************************x*/
+uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
+{
+  byte c = buf[(*index)++];
+  //Serial.print("Byte from string = 0x"); Serial.println(c, HEX);
+
+#ifdef DECODE_UTF8
+  // 7 bit Unicode
+  if ((c & 0x80) == 0x00) return c;
+
+  // 11 bit Unicode
+  if (((c & 0xE0) == 0xC0) && (remaining > 1))
+    return ((c & 0x1F)<<6) | (buf[(*index)++]&0x3F);
+
+  // 16 bit Unicode
+  if (((c & 0xF0) == 0xE0) && (remaining > 2))
+  {
+    c = ((c & 0x0F)<<12) | ((buf[(*index)++]&0x3F)<<6);
+    return  c | ((buf[(*index)++]&0x3F));
+  }
+
+  // 21 bit Unicode not supported so fall-back to extended ASCII
+  // if ((c & 0xF8) == 0xF0) return c;
+#endif
+
+  return c; // fall-back to extended ASCII
+}
+
+
+/***************************************************************************************
 ** Function name:           write
 ** Description:             draw characters piped through serial stream
 ***************************************************************************************/
@@ -4008,6 +4098,8 @@ size_t TFT_eSPI::write(uint8_t utf8)
   } // Custom GFX font
   else
   {
+    uniCode = (uint8_t)decodeUTF8(utf8);
+    if (!uniCode) return 1;
 
     if(utf8 == '\n') {
       cursor_x  = 0;
@@ -4046,13 +4138,16 @@ size_t TFT_eSPI::write(uint8_t utf8)
 ** Function name:           drawChar
 ** Description:             draw a Unicode onto the screen
 ***************************************************************************************/
-int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y)
+int16_t TFT_eSPI::drawChar(uint16_t utf8, int32_t x, int32_t y)
 {
-    return drawChar(uniCode, x, y, textfont);
+    return drawChar(utf8, x, y, textfont);
 }
 
-int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
+int16_t TFT_eSPI::drawChar(uint16_t utf8, int32_t x, int32_t y, uint8_t font)
 {
+
+  uint16_t uniCode = decodeUTF8(utf8);
+  if (!uniCode) return 0;
 
   if (font==1)
   {
@@ -4458,7 +4553,12 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
     {
       cheight = (glyph_ab + glyph_bb) * textsize;
       // Get the offset for the first character only to allow for negative offsets
-      uint8_t   c2    = *string;
+      uint8_t c2 = 0;
+      uint16_t len = strlen(string);
+      uint16_t n = 0;
+
+      while (n < len && c2 == 0) c2 = decodeUTF8((uint8_t*)string, &n, len - n);
+
       if((c2 >= pgm_read_byte(&gfxFont->first)) && (c2 <= pgm_read_byte(&gfxFont->last) ))
       {
         c2 -= pgm_read_byte(&gfxFont->first);
@@ -4498,8 +4598,12 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
   }
   else
 #endif
-    while (*string) sumX += drawChar(*(string++), poX+sumX, poY, font);
-
+Serial.print("sumX=");
+    while (*string) {
+      sumX += drawChar(*(string++), poX+sumX, poY, font);
+      Serial.print(sumX);
+    }
+Serial.println();
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv DEBUG vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 // Switch on debugging for the padding areas
 //#define PADDING_DEBUG
