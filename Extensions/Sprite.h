@@ -31,7 +31,7 @@ class TFT_eSprite : public TFT_eSPI {
 
   void     drawPixel(int32_t x, int32_t y, uint32_t color);
 
-  void     drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size),
+  void     drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32_t bg, uint8_t size),
 
            fillSprite(uint32_t color),
 

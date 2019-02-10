@@ -1312,13 +1312,16 @@ void TFT_eSprite::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t 
 *************************************************************************************x*/
 size_t TFT_eSprite::write(uint8_t utf8)
 {
+  uint16_t uniCode = decodeUTF8(utf8);
+
+  if (!uniCode) return 1;
+
   if (utf8 == '\r') return 1;
 
 #ifdef SMOOTH_FONT
   if(this->fontLoaded)
   {
-    uint16_t unicode = decodeUTF8(utf8);
-    if (unicode < 32 && utf8 != '\n') return 1;
+    if (uniCode < 32 && utf8 != '\n') return 1;
 
     //fontFile = SPIFFS.open( _gFontFilename, "r" );
     //fontFile = SPIFFS.open( this->_gFontFilename, "r" );
@@ -1330,7 +1333,8 @@ size_t TFT_eSprite::write(uint8_t utf8)
     //}
     //Serial.print("Decoded Unicode = 0x");Serial.println(unicode,HEX);
 
-    drawGlyph(unicode);
+    drawGlyph(uniCode);
+
     //fontFile.close();
     return 1;
   }
@@ -1338,10 +1342,8 @@ size_t TFT_eSprite::write(uint8_t utf8)
 
   if (!_created ) return 1;
 
-
-  uint8_t uniCode = utf8;        // Work with a copy
-  if (utf8 == '\n') uniCode+=22; // Make it a valid space character to stop errors
-  else if (utf8 < 32) return 1;
+  if (uniCode == '\n') uniCode+=22; // Make it a valid space character to stop errors
+  else if (uniCode < 32) return 1;
 
   uint16_t width = 0;
   uint16_t height = 0;
@@ -1362,7 +1364,7 @@ size_t TFT_eSprite::write(uint8_t utf8)
   if (textfont == 2)
   {
     if (utf8 > 127) return 1;
-    // This is 20us faster than using the fontdata structure (0.443ms per character instead of 0.465ms)
+
     width = pgm_read_byte(widtbl_f16 + uniCode-32);
     height = chr_hgt_f16;
     // Font 2 is rendered in whole byte widths so we must allow for this
@@ -1380,7 +1382,6 @@ size_t TFT_eSprite::write(uint8_t utf8)
     {
       if (utf8 > 127) return 1;
       // Uses the fontinfo struct array to avoid lots of 'if' or 'switch' statements
-      // A tad slower than above but this is not significant and is more convenient for the RLE fonts
       width = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[textfont].widthtbl ) ) + uniCode-32 );
       height= pgm_read_byte( &fontdata[textfont].height );
     }
@@ -1420,15 +1421,14 @@ size_t TFT_eSprite::write(uint8_t utf8)
   } // Custom GFX font
   else
   {
-
     if(utf8 == '\n') {
       this->cursor_x  = 0;
       this->cursor_y += (int16_t)textsize * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
     } else {
-      if (uniCode > (uint8_t)pgm_read_byte(&gfxFont->last )) return 1;
-      if (uniCode < (uint8_t)pgm_read_byte(&gfxFont->first)) return 1;
+      if (uniCode > pgm_read_word(&gfxFont->last )) return 1;
+      if (uniCode < pgm_read_word(&gfxFont->first)) return 1;
 
-      uint8_t   c2    = uniCode - pgm_read_byte(&gfxFont->first);
+      uint8_t   c2    = uniCode - pgm_read_word(&gfxFont->first);
       GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
       uint8_t   w     = pgm_read_byte(&glyph->width),
                 h     = pgm_read_byte(&glyph->height);
@@ -1456,7 +1456,7 @@ size_t TFT_eSprite::write(uint8_t utf8)
 ** Function name:           drawChar
 ** Description:             draw a single character in the Adafruit GLCD or freefont
 *************************************************************************************x*/
-void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size)
+void TFT_eSprite::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32_t bg, uint8_t size)
 {
   if (!_created ) return;
 
@@ -1466,6 +1466,7 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color
       ((y + 8 * size - 1) < 0))   // Clip top
     return;
 
+  if (c < 32) return;
 #ifdef LOAD_GLCD
 //>>>>>>>>>>>>>>>>>>
 #ifdef LOAD_GFXFF
@@ -1534,15 +1535,15 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color
 
 #ifdef LOAD_GFXFF
     // Filter out bad characters not present in font
-    if ((c >= (uint8_t)pgm_read_byte(&gfxFont->first)) && (c <= (uint8_t)pgm_read_byte(&gfxFont->last )))
+    if ((c >= pgm_read_word(&gfxFont->first)) && (c <= pgm_read_word(&gfxFont->last )))
     {
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-      c -= pgm_read_byte(&gfxFont->first);
+      c -= pgm_read_word(&gfxFont->first);
       GFXglyph *glyph  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c]);
       uint8_t  *bitmap = (uint8_t *)pgm_read_dword(&gfxFont->bitmap);
 
-      uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
+      uint32_t bo = pgm_read_word(&glyph->bitmapOffset);
       uint8_t  w  = pgm_read_byte(&glyph->width),
                h  = pgm_read_byte(&glyph->height);
                //xa = pgm_read_byte(&glyph->xAdvance);
@@ -1597,14 +1598,18 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color
 ** Function name:           drawChar
 ** Description:             draw a unicode onto the screen
 *************************************************************************************x*/
+  // Any UTF-8 decoding must be done before calling drawChar()
 int16_t TFT_eSprite::drawChar(uint16_t uniCode, int32_t x, int32_t y)
 {
   return drawChar(uniCode, x, y, textfont);
 }
 
+  // Any UTF-8 decoding must be done before calling drawChar()
 int16_t TFT_eSprite::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 {
   if (!_created ) return 0;
+
+  if (!uniCode) return 0;
 
   if (font==1)
   {
@@ -1630,9 +1635,9 @@ int16_t TFT_eSprite::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t fo
     }
     else
     {
-      if((uniCode >= pgm_read_byte(&gfxFont->first)) && (uniCode <= pgm_read_byte(&gfxFont->last) ))
+      if((uniCode >= pgm_read_word(&gfxFont->first)) && (uniCode <= pgm_read_word(&gfxFont->last) ))
       {
-        uint8_t   c2    = uniCode - pgm_read_byte(&gfxFont->first);
+        uint16_t   c2    = uniCode - pgm_read_word(&gfxFont->first);
         GFXglyph *glyph = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c2]);
         return pgm_read_byte(&glyph->xAdvance) * textsize;
       }

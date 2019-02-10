@@ -668,7 +668,7 @@ class TFT_eSPI : public Print {
 
   // These are virtual so the TFT_eSprite class can override them with sprite specific functions
   virtual void     drawPixel(int32_t x, int32_t y, uint32_t color),
-                   drawChar(int32_t x, int32_t y, unsigned char c, uint32_t color, uint32_t bg, uint8_t size),
+                   drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32_t bg, uint8_t size),
                    drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color),
                    drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
                    drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
@@ -813,6 +813,8 @@ class TFT_eSPI : public Print {
   void     writeColor(uint16_t color, uint32_t len); // Write colours without transaction overhead
   void     endWrite(void);                           // End SPI transaction
 
+  uint16_t decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining);
+  uint16_t decodeUTF8(uint8_t c);
   size_t   write(uint8_t);
 
 #ifdef TFT_SDA_READ
@@ -837,6 +839,9 @@ class TFT_eSPI : public Print {
 
   int16_t _xpivot;   // x pivot point coordinate
   int16_t _ypivot;   // x pivot point coordinate
+
+  uint8_t  decoderState = 0;   // UTF8 decoder state
+  uint16_t decoderBuffer;      // Unicode code-point buffer
 
  private:
 

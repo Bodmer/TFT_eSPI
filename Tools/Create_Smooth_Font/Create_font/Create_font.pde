@@ -1,6 +1,8 @@
 // This is a Processing sketch, see https://processing.org/ to download the IDE
 
-// Select the character range in the user configure section starting at line 100
+// Select the font, size and character ranges in the user configuration section
+// of this sketch, which starts at line 120. Instructions start at line 50.
+
 
 /*
 Software License Agreement (FreeBSD License)
@@ -36,47 +38,61 @@ Software License Agreement (FreeBSD License)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 // This is a processing sketch to create font files for the TFT_eSPI library:
 
 // https://github.com/Bodmer/TFT_eSPI
 
-// Coded by Bodmer January 2018
+// Coded by Bodmer January 2018, updated 10/2/19
+// Version 0.8
 
-// See comments below in code for specifying the font parameters
-// (point size, unicode blocks to include etc). Ranges of characers or
-// specific individual unicodes can be included in the created font file/
+// >>>>>>>>>>>>>>>>>>>>             INSTRUCTIONS             <<<<<<<<<<<<<<<<<<<<
+
+// See comments below in code for specifying the font parameters (point size,
+// unicode blocks to include etc). Ranges of characters (glyphs) and specific
+// individual glyphs can be included in the created "*.vlw" font file.
 
 // Created fonts are saved in the sketches "FontFiles" folder. Press Ctrl+K to
-// see that folder.
+// see that folder location.
 
-// 16 bit unicodes in the range 0x0000 - 0xFFFF are supported.
+// 16 bit Unicode point codes in the range 0x0000 - 0xFFFF are supported.
+// Codes 0-31 are control codes such as "tab" and "carraige return" etc.
+// and 32 is a "space", these should NOT be included.
 
 // The sketch will convert True Type (a .ttf or .otf file) file stored in the
-// sketches "Data" folder as well as your computers system fonts.
+// sketches "Data" folder as well as your computers' system fonts.
 
-// To maximise rendering performance only include the characters you will use.
-// Characters at the start of the file will render faster than those at the end.
+// To maximise rendering performance and the memory consumed only include the characters
+// you will use. Characters at the start of the file will render faster than those at
+// the end due to the buffering and file seeking overhead.
+
+// The inclusion of "non-existant" characters in a font may give unpredicatable results
+// when rendering with the TFT_eSPI library. The Processing sketch window that pops up
+// to show the font characters will print "boxes" (also known as Tofu!) for non existant
+// characters.
 
 // Once created the files must be loaded into the ESP32 or ESP8266 SPIFFS memory
 // using the Arduino IDE plugin detailed here:
 // https://github.com/esp8266/arduino-esp8266fs-plugin
 // https://github.com/me-no-dev/arduino-esp32fs-plugin
 
-// The sketch list all the available PC fonts to the console, you may need to increase
-// console line count (in preferences.txt) to stop some fonts scrolling out of view.
+// When the sketch is run it will generate a file called "System_Font_List.txt" in the
+// sketch "FontFiles" folder, press Ctrl+K to see it. Open the file in a text editor to
+// view it. This list provides the font reference number needed below to locate that
+// font on your system.
+
+// The sketch also lists all the available system fonts to the console, you can increase
+// the console line count (in preferences.txt) to stop some fonts scrolling out of view.
 // See link in File>Preferences to locate "preferences.txt" file. You must close
 // Processing then edit the file lines. If Processing is not closed first then the
 // edits will be overwritten by defaults! Edit "preferences.txt" as follows for
-// 1000 lines, then save, then run Processing again:
+// 3000 lines, then save, then run Processing again:
 
- /*
-   console.length=1000             // Line 4 in file
-   console.scrollback.lines=1000   // Line 7 in file
- */
+//     console.length=3000;             // Line 4 in file
+//     console.scrollback.lines=3000;   // Line 7 in file
+
 
 // Useful links:
- /*
+/*
 
  https://en.wikipedia.org/wiki/Unicode_font
  
@@ -86,33 +102,39 @@ Software License Agreement (FreeBSD License)
  http://savannah.gnu.org/projects/freefont/
  
  http://www.google.com/get/noto/
-
+ 
  https://github.com/Bodmer/TFT_eSPI
  https://github.com/esp8266/arduino-esp8266fs-plugin
  https://github.com/me-no-dev/arduino-esp32fs-plugin
  
- */
-////////////////////////////////////////////////////////////////////////////////////////////////
+   >>>>>>>>>>>>>>>>>>>>         END OF INSTRUCTIONS         <<<<<<<<<<<<<<<<<<<< */
 
-import java.awt.Desktop;
+
+import java.awt.Desktop; // Required to allow sketch to open file windows
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 //                       >>>>>>>>>> USER CONFIGURED PARAMETERS START HERE <<<<<<<<<<
 
+// Use font number or name, -1 for fontNumber means use fontName below, a value >=0 means use system font number from list.
+// When the sketch is run it will generate a file called "systemFontList.txt" in the sketch folder, press Ctrl+K to see it.
+// Open the "systemFontList.txt" in a text editor to view the font files and reference numbers for your system.
 
-// Use font name for ttf files placed in the "Data" folder or the font number seen in IDE Console for system fonts
+int fontNumber = -1; // << Use [Number] in brackets from the fonts listed.
+
+// OR use font name for ttf files placed in the "Data" folder or the font number seen in IDE Console for system fonts
 //                                                  the font numbers are listed when the sketch is run.
-//                |         1         2     |       Maximum filename size for SPIFFS is 32 including leading /
+//                |         1         2     |       Maximum filename size for SPIFFS is 31 including leading /
 //                 1234567890123456789012345        and added point size and .vlw extension, so max is 25
-String fontName = "Final-Frontier";  //Manually crop the filename length later after creation if needed
-
-String fontType = ".ttf";            //SPIFFS does not accept underscore in filename!
+String fontName = "Final-Frontier";  // Manually crop the filename length later after creation if needed
+                                     // Note: SPIFFS does NOT accept underscore in a filename!
+String fontType = ".ttf";
 //String fontType = ".otf";
 
-// Use font number instead of name, -1 means use name above, or a value >=0 means use system font number from list.
-int fontNumber = -1; // << Use [Number] in brackets from the fonts listed in console window
 
-// Define the font size in points for the created font file
-int  fontSize = 28;
+// Define the font size in points for the TFT_eSPI font file
+int  fontSize = 20;
 
 // Font size to use in the Processing sketch display window that pops up (can be different to above)
 int displayFontSize = 28;
@@ -125,7 +147,7 @@ int displayFontSize = 28;
 static final int[] unicodeBlocks = {
   // The list below has been created from the table here: https://en.wikipedia.org/wiki/Unicode_block
   // Remove // at start of lines below to include that unicode block, different code ranges can also be specified by
-  // editting the start and end of range values. Multiple lines from the list below can be included, limited only by
+  // editting the start and end-of-range values. Multiple lines from the list below can be included, limited only by
   // the final font file size!
 
   // Block range,   //Block name, Code points, Assigned characters, Scripts
@@ -298,20 +320,20 @@ static final int[] unicodeBlocks = {
   //0x0061, 0x007A, //Example custom range (Lower case a-z)
 };
 
-// Here we specify specific individual Unicodes to be included (appended at end of selected range)
+// Here we specify particular individual Unicodes to be included (appended at end of selected range)
 static final int[] specificUnicodes = {
 
   // Commonly used codes, add or remove // in next line
   // 0x00A3, 0x00B0, 0x00B5, 0x03A9, 0x20AC, // £ ° µ Ω €
 
   // Numbers and characters for showing time, change next line to //* to use
-  /*
+/*
     0x002B, 0x002D, 0x002E, 0x0030, 0x0031, 0x0032, 0x0033, 0x0034, // - + . 0 1 2 3 4
     0x0035, 0x0036, 0x0037, 0x0038, 0x0039, 0x003A, 0x0061, 0x006D, // 5 6 7 8 9 : a m
     0x0070,                                                         // p
-  //*/
+ //*/
 
-  // More characters, change next line to //* to use
+  // More characters for TFT_eSPI test sketches, change next line to //* to use
   /*
     0x0102, 0x0103, 0x0104, 0x0105, 0x0106, 0x0107, 0x010C, 0x010D,
     0x010E, 0x010F, 0x0110, 0x0111, 0x0118, 0x0119, 0x011A, 0x011B,
@@ -337,8 +359,8 @@ static final int[] specificUnicodes = {
   //*/
 };
 
-
 //                       >>>>>>>>>> USER CONFIGURED PARAMETERS END HERE <<<<<<<<<<
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Variable to hold the inclusive Unicode range (16 bit values only for this sketch)
@@ -347,13 +369,25 @@ int lastUnicode  = 0;
 
 PFont myFont;
 
+PrintWriter logOutput;
+
 void setup() {
+  logOutput = createWriter("FontFiles/System_Font_List.txt"); 
 
   size(1000, 800);
 
   // Print the available fonts to the console as a list:
   String[] fontList = PFont.list();
   printArray(fontList);
+
+  // Save font list to file
+  for (int x = 0; x < fontList.length; x++)
+  {
+    logOutput.print("[" + x + "] ");
+    logOutput.println(fontList[x]);
+  }
+  logOutput.flush(); // Writes the remaining data to the file
+  logOutput.close(); // Finishes the file
 
   // Set the fontName from the array number or the defined fontName
   if (fontNumber >= 0)
@@ -410,19 +444,19 @@ void setup() {
     }
   }
 
-  // loading the range specified
+  // loading the specific point codes
   for (int i = 0; i < specificUnicodes.length; i++) {
     charset[index] = Character.toChars(specificUnicodes[i])[0];
     index++;
   }
-  
-  // Make font smooth
+
+  // Make font smooth (anti-aliased)
   boolean smooth = true;
 
   // Create the font in memory
   myFont = createFont(fontName+fontType, displayFontSize, smooth, charset);
 
-  // Print a few characters to the sketch window
+  // Print characters to the sketch window
   fill(0, 0, 0);
   textFont(myFont);
 
@@ -444,10 +478,10 @@ void setup() {
       int unicode = charset[index];
       float cwidth = textWidth((char)unicode) + 2;
       if ( (x + cwidth) > (width - gapx) ) break;
-      
-      // Draw the letter to the screen
+
+      // Draw the glyph to the screen
       text(new String(Character.toChars(unicode)), x, y);
-      
+
       // Move cursor
       x += cwidth;
       // Increment the counter
@@ -458,12 +492,12 @@ void setup() {
   }
 
 
-  // creating font
+  // creating font to save as a file
   PFont    font;
 
   font = createFont(fontName+fontType, fontSize, smooth, charset);
 
-    println("Created font " + fontName + str(fontSize) + ".vlw");
+  println("Created font " + fontName + str(fontSize) + ".vlw");
 
   // creating file
   try {

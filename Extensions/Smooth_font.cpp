@@ -97,7 +97,7 @@ void TFT_eSPI::loadFont(String fontName)
   gFont.ascent   = (uint16_t)readInt32(); // top of "d"
   gFont.descent  = (uint16_t)readInt32(); // bottom of "p"
 
-  // These next gFont values will be updated when the Metrics are fetched
+  // These next gFont values might be updated when the Metrics are fetched
   gFont.maxAscent  = gFont.ascent;   // Determined from metrics
   gFont.maxDescent = gFont.descent;  // Determined from metrics
   gFont.yAdvance   = gFont.ascent + gFont.descent;
@@ -147,11 +147,19 @@ void TFT_eSPI::loadMetrics(uint16_t gCount)
     gdX[gNum]       =   (int8_t)readInt32(); // x delta from cursor
     readInt32(); // ignored
 
-    // Different glyph sets have different ascent values not always based on "d", so get maximum glyph ascent
+    //Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", gHeight  = "); Serial.println(gHeight[gNum]);
+    //Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", gWidth  = "); Serial.println(gWidth[gNum]);
+    //Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", gxAdvance  = "); Serial.println(gxAdvance[gNum]);
+    //Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", gdY  = "); Serial.println(gdY[gNum]);
+
+    // Different glyph sets have different ascent values not always based on "d", so we could get
+    // the maximum glyph ascent by checking all characters. BUT this method can generate bad values
+    // for non-existant glyphs, so we will reply on processing for the value and disable this code for now...
+    /*
     if (gdY[gNum] > gFont.maxAscent)
     {
-      // Avoid UTF coding values and characters that tend to give duff values
-      if (((gUnicode[gNum] > 0x20) && (gUnicode[gNum] < 0xA0) && (gUnicode[gNum] != 0x7F)) || (gUnicode[gNum] > 0xFF))
+      // Try to avoid UTF coding values and characters that tend to give duff values
+      if (((gUnicode[gNum] > 0x20) && (gUnicode[gNum] < 0x7F)) || (gUnicode[gNum] > 0xA0))
       {
         gFont.maxAscent   = gdY[gNum];
 #ifdef SHOW_ASCENT_DESCENT
@@ -159,6 +167,7 @@ void TFT_eSPI::loadMetrics(uint16_t gCount)
 #endif
       }
     }
+    */
 
     // Different glyph sets have different descent values not always based on "p", so get maximum glyph descent
     if (((int16_t)gHeight[gNum] - (int16_t)gdY[gNum]) > gFont.maxDescent)
