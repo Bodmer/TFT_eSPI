@@ -389,6 +389,7 @@
 
 
 #if !defined (ESP32_PARALLEL)
+
   // Read from display using SPI or software SPI
   #if defined (ESP8266) && defined (TFT_SDA_READ)
     // Use a bit banged function call for ESP8266 and bi-directional SDA pin
@@ -398,6 +399,12 @@
     // Use a SPI read transfer
     #define tft_Read_8() spi.transfer(0)
   #endif
+
+  // Make sure TFT_MISO is defined if not used to avoid an error message
+  #ifndef TFT_MISO
+    #define TFT_MISO -1
+  #endif
+
 #endif
 
 
