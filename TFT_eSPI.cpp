@@ -4598,12 +4598,10 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
   }
   else
 #endif
-Serial.print("sumX=");
-    while (*string) {
-      sumX += drawChar(*(string++), poX+sumX, poY, font);
-      Serial.print(sumX);
-    }
-Serial.println();
+  {
+    while (*string) sumX += drawChar(*(string++), poX+sumX, poY, font);
+  }
+
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv DEBUG vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 // Switch on debugging for the padding areas
 //#define PADDING_DEBUG
