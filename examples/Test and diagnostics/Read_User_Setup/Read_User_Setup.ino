@@ -42,7 +42,7 @@ tft.getSetup(user); //
 
 Serial.printf("\n[code]\n");
 
-Serial.printf("TFT_eSPI ver = " + user.version) +"\n");
+Serial.print ("TFT_eSPI ver = " + user.version +"\n");
 Serial.printf("Processor    = ESP%i\n", user.esp, HEX);
 Serial.printf("Frequency    = %i MHz\n", ESP.getCpuFreqMHz());
 #ifdef ESP8266
