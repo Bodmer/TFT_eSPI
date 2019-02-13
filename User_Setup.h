@@ -114,7 +114,6 @@
 //
 // The NodeMCU D0 pin can be used for RST
 //
-// See Section 2. below if DC or CS is connected to D0
 //
 // Note: only some versions of the NodeMCU provide the USB 5V on the VIN pin
 // If 5V is not available at a pin you can use 3.3V but backlight brightness
