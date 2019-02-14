@@ -16,11 +16,8 @@
 ***************************************************************************************/
 uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   uint16_t tmp;
-  CS_H;
 
   spi_begin_touch();
-
-  T_CS_L;
   
   // Start YP sample request for x position, read 4 times and keep last sample
   spi.transfer(0xd0);                    // Start new YP conversion
@@ -51,8 +48,6 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 
   *y = tmp;
 
-  T_CS_H;
-
   spi_end_touch();
 
   return true;
@@ -63,19 +58,14 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 ** Description:             read raw pressure on touchpad and return Z value. 
 ***************************************************************************************/
 uint16_t TFT_eSPI::getTouchRawZ(void){
-  CS_H;
 
   spi_begin_touch();
 
-  T_CS_L;
-
-  // Calculate Z
+  // Z sample request
   int16_t tz = 0xFFF;
   spi.transfer(0xb0);               // Start new Z1 conversion
   tz += spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
   tz -= spi.transfer16(0x00) >> 3;  // Read Z2
-
-  T_CS_H;
 
   spi_end_touch();
 
@@ -86,7 +76,7 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
 ** Function name:           validTouch
 ** Description:             read validated position. Return false if not pressed. 
 ***************************************************************************************/
-#define _RAWERR 10 // Deadband error allowed in successive position samples
+#define _RAWERR 20 // Deadband error allowed in successive position samples
 uint8_t TFT_eSPI::validTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
   uint16_t x_tmp, y_tmp, x_tmp2, y_tmp2;
 

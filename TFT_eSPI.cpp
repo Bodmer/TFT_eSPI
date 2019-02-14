@@ -55,11 +55,17 @@ inline void TFT_eSPI::spi_begin(void){
 #else
   CS_L;
 #endif
+#ifdef ESP8266
+  SPI1U = SPI1U_WRITE;
+#endif
 }
 
 inline void TFT_eSPI::spi_end(void){
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(ESP32_PARALLEL)
   if(!inTransaction) {if (!locked) {locked = true; CS_H; spi.endTransaction();}}
+  #ifdef ESP8266
+    SPI1U = SPI1U_READ;
+  #endif
 #else
   if(!inTransaction) CS_H;
 #endif
@@ -96,18 +102,32 @@ inline void TFT_eSPI::spi_end_read(void){
 #if defined (TOUCH_CS) && defined (SPI_TOUCH_FREQUENCY) // && !defined(ESP32_PARALLEL)
 
   inline void TFT_eSPI::spi_begin_touch(void){
+   CS_H; // Just in case it has been left low
+
   #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
     if (locked) {locked = false; spi.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
   #else
     spi.setFrequency(SPI_TOUCH_FREQUENCY);
   #endif
+
+  #ifdef ESP8266
+    SPI1U = SPI1U_READ;
+  #endif
+
+  T_CS_L;
   }
 
   inline void TFT_eSPI::spi_end_touch(void){
+  T_CS_H;
+
   #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
     if(!inTransaction) {if (!locked) {locked = true; spi.endTransaction();}}
   #else
     spi.setFrequency(SPI_FREQUENCY);
+  #endif
+
+  #ifdef ESP8266
+    SPI1U = SPI1U_WRITE;
   #endif
   }
 
@@ -325,6 +345,7 @@ void TFT_eSPI::init(uint8_t tc)
 #endif
 
     _booted = false;
+    spi_end();
   } // end of: if just _booted
 
   // Toggle RST low to reset
@@ -475,8 +496,6 @@ void TFT_eSPI::commandList (const uint8_t *addr)
   uint8_t  numArgs;
   uint8_t  ms;
 
-  spi_begin();
-
   numCommands = pgm_read_byte(addr++);   // Number of commands to follow
 
   while (numCommands--)                  // For each command...
@@ -497,7 +516,7 @@ void TFT_eSPI::commandList (const uint8_t *addr)
       delay( (ms==255 ? 500 : ms) );
     }
   }
-  spi_end();
+
 }
 
 
@@ -2671,7 +2690,6 @@ void TFT_eSPI::setWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
   // Column addr set
   DC_C;
 
-  SPI1U = SPI1U_WRITE;
   SPI1U1 = (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
   SPI1W0 = TFT_CASET;
@@ -2733,7 +2751,6 @@ void TFT_eSPI::setWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
   // Column addr set
   DC_C;
 
-  SPI1U = SPI1U_WRITE;
   SPI1U1 = (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
   SPI1W0 = TFT_CASET<<8;
@@ -2779,7 +2796,6 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
   //spi_begin(); // Must be called before setWimdow
 
-  SPI1U = SPI1U_WRITE;
   SPI1U1 = (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
   // Column addr set
@@ -2912,7 +2928,6 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 #if defined (ESP8266) && !defined (RPI_WRITE_STROBE)
 void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 {
-  spi_begin();
 
   int32_t xe = xs + w - 1;
   int32_t ye = ys + h - 1;
@@ -2930,7 +2945,6 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   // Column addr set
   DC_C;
 
-  SPI1U = SPI1U_WRITE;
   SPI1U1 = (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
 
   SPI1W0 = TFT_CASET;
@@ -2971,14 +2985,13 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   while(SPI1CMD & SPIBUSY) {}
 
   DC_D;
-  //spi_end();
+
 }
 
 #else //ESP32
 
 void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 {
-  spi_begin();
 
   int32_t xe = xs + w - 1;
   int32_t ye = ys + h - 1;
@@ -3017,7 +3030,6 @@ ye += rowstart;
 
   DC_D;
 
-  //spi_end();
 }
 
 #endif
@@ -3039,7 +3051,6 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
   spi_begin();
 
-  SPI1U = SPI1U_WRITE;
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != x) {
 
@@ -3129,7 +3140,6 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
   spi_begin();
 
-  SPI1U = SPI1U_WRITE;
   SPI1U1 = (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO);
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != x) {
@@ -3398,7 +3408,6 @@ void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
 
   uint32_t color[8];
 
-  SPI1U = SPI1U_WRITE;
   SPI1U1 = (255 << SPILMOSI) | (255 << SPILMISO);
 
 
@@ -4351,14 +4360,10 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
           pc += line;
         }
       }
-
-      inTransaction = false;
-      spi_end();
     }
     else // Text colour != background && textsize = 1
          // so use faster drawing of characters and background using block write
     {
-      //spi_begin();
       setWindow(x, y, x + width - 1, y + height - 1);
 
 #ifdef RPI_WRITE_STROBE
@@ -4398,9 +4403,9 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 #endif
         }
       }
-
-      spi_end();
     }
+    inTransaction = false;
+    spi_end();
   }
   // End of RLE font rendering
 #endif
@@ -4616,6 +4621,7 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
     {
       poX +=xo; // Adjust for negative offset start character
       poY -= glyph_ab * textsize;
+      sumX += poX;
     }
 #endif
     switch(padding) {
@@ -4668,7 +4674,7 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
 #endif
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ DEBUG ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-return sumX + poX;
+return sumX;
 }
 
 
@@ -4896,8 +4902,6 @@ void writeBlock(uint16_t color, uint32_t repeat)
   uint16_t color16 = (color >> 8) | (color << 8);
   uint32_t color32 = color16 | color16 << 16;
 
-  SPI1U = SPI1U_WRITE;
-
   SPI1W0 = color32;
   SPI1W1 = color32;
   SPI1W2 = color32;
@@ -4953,8 +4957,6 @@ void writeBlock(uint16_t color, uint32_t repeat)
 #ifdef ESP8266
 void writeBlock(uint16_t color, uint32_t repeat)
 {
-
-  SPI1U = SPI1U_WRITE;
 
   // Split out the colours
   uint8_t r = (color & 0xF800)>>8;
