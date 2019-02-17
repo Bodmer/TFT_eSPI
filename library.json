@@ -1,6 +1,6 @@
 {
   "name": "TFT_eSPI",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "keywords": "tft, ePaper, display, ESP8266, NodeMCU, ESP32, M5Stack, ILI9341, ST7735, ILI9163, S6D02A1, ILI9486, ST7789",
   "description": "A TFT and ePaper SPI graphics library for ESP8266 and ESP32",
   "repository":

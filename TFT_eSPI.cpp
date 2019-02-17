@@ -218,7 +218,9 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   locked = true;        // ESP32 transaction mutex lock flags
   inTransaction = false;
 
-  _booted = true;
+  _booted   = true;
+  _cp437    = true;
+  _utf8     = true;
 
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
@@ -703,14 +705,14 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   // Dummy read to throw away don't care value
   tft_Read_8();
   
-  #if !defined (ILI9488_DRIVER)
+  //#if !defined (ILI9488_DRIVER)
 
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
     uint8_t r = tft_Read_8();
     uint8_t g = tft_Read_8();
     uint8_t b = tft_Read_8();
-
+/*
   #else
 
     // The 6 colour bits are in MS 6 bits of each byte, but the ILI9488 needs an extra clock pulse
@@ -720,7 +722,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
     uint8_t b = (tft_Read_8()&0x7E)<<1;
 
   #endif
-
+*/
   CS_H;
 
   #ifdef TFT_SDA_READ
@@ -3903,6 +3905,46 @@ void TFT_eSPI::invertDisplay(boolean i)
 }
 
 
+/**************************************************************************
+** Function name:           setAttribute
+** Description:             Sets a control parameter of an attribute
+**************************************************************************/
+void TFT_eSPI::setAttribute(uint8_t attr_id, uint8_t param) {
+    switch (attr_id) {
+            break;
+        case 1:
+            _cp437 = param;
+            break;
+        case 2:
+            _utf8  = param;
+            break;
+        //case 3: // TBD future feature control
+        //    _tbd = param;
+        //    break;
+    }
+}
+
+
+/**************************************************************************
+** Function name:           getAttribute
+** Description:             Get value of an attribute (control parameter)
+**************************************************************************/
+uint8_t TFT_eSPI::getAttribute(uint8_t attr_id) {
+    switch (attr_id) {
+        case 1: // ON/OFF control of full CP437 character set
+            return _cp437;
+            break;
+        case 2: // ON/OFF control of UTF-8 decoding
+            return _utf8;
+            break;
+        //case 3: // TBD future feature control
+        //    return _tbd;
+        //    break;
+    }
+
+    return false;
+}
+
 /***************************************************************************************
 ** Function name:           decodeUTF8
 ** Description:             Serial UTF-8 decoder with fall-back to extended ASCII
@@ -3998,11 +4040,13 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 ***************************************************************************************/
 size_t TFT_eSPI::write(uint8_t utf8)
 {
-  uint16_t uniCode = decodeUTF8(utf8);
-
-  if (!uniCode) return 1;
-
   if (utf8 == '\r') return 1;
+
+  uint16_t uniCode = utf8;
+
+  if (_utf8) uniCode = decodeUTF8(utf8);
+
+  if (uniCode == 0) return 1;
 
 #ifdef SMOOTH_FONT
   if(fontLoaded)
