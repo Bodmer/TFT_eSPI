@@ -2788,6 +2788,9 @@ void TFT_eSPI::setWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye)
 
   DC_D;
 
+  // Re-instate SPI flags settings corrupted by SPI library writePattern() call
+  SPI1U = SPI1U_WRITE;
+
   //spi_end();
 }
 
