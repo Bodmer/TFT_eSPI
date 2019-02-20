@@ -39,8 +39,6 @@ fontMetrics gFont = { 0, 0, 0, 0, 0, 0, 0 };
   int8_t*   gdX = NULL;       //leftExtent
   uint32_t* gBitmap = NULL;   //file pointer to greyscale bitmap
 
-  String   _gFontFilename;
-
   bool     fontLoaded = false; // Flags when a anti-aliased font is loaded
 
  private:

@@ -76,15 +76,13 @@ void TFT_eSPI::loadFont(String fontName)
 
    unloadFont();
     
-  _gFontFilename = "/" + fontName + ".vlw";
-
   // Avoid a crash on the ESP32 if the file does not exist
-  if (SPIFFS.exists(_gFontFilename) == false) {
+  if (SPIFFS.exists("/" + fontName + ".vlw") == false) {
     Serial.println("Font file " + fontName + " not found!");
     return;
   }
 
-  fontFile = SPIFFS.open( _gFontFilename, "r");
+  fontFile = SPIFFS.open( "/" + fontName + ".vlw", "r");
 
   if(!fontFile) return;
 
