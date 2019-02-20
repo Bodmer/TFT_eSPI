@@ -124,7 +124,7 @@ void TFT_eSPI::loadMetrics(uint16_t gCount)
   gHeight   =  (uint8_t*)malloc( gCount );    // Height of glyph
   gWidth    =  (uint8_t*)malloc( gCount );    // Width of glyph
   gxAdvance =  (uint8_t*)malloc( gCount );    // xAdvance - to move x cursor
-  gdY       =   (int8_t*)malloc( gCount );    // offset from bitmap top edge from lowest point in any character
+  gdY       =  (int16_t*)malloc( gCount * 2); // offset from bitmap top edge from lowest point in any character
   gdX       =   (int8_t*)malloc( gCount );    // offset for bitmap left edge relative to cursor X
   gBitmap   = (uint32_t*)malloc( gCount * 4); // seek pointer to glyph bitmap in SPIFFS file
 
@@ -141,7 +141,7 @@ void TFT_eSPI::loadMetrics(uint16_t gCount)
     gHeight[gNum]   =  (uint8_t)readInt32(); // Height of glyph
     gWidth[gNum]    =  (uint8_t)readInt32(); // Width of glyph
     gxAdvance[gNum] =  (uint8_t)readInt32(); // xAdvance - to move x cursor
-    gdY[gNum]       =   (int8_t)readInt32(); // y delta from baseline
+    gdY[gNum]       =  (int16_t)readInt32(); // y delta from baseline
     gdX[gNum]       =   (int8_t)readInt32(); // x delta from cursor
     readInt32(); // ignored
 
