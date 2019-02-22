@@ -4011,7 +4011,7 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
 *************************************************************************************x*/
 uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 {
-  byte c = buf[(*index)++];
+  uint16_t c = buf[(*index)++];
   //Serial.print("Byte from string = 0x"); Serial.println(c, HEX);
 
 #ifdef DECODE_UTF8
