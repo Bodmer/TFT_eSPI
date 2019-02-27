@@ -407,6 +407,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (R61581_DRIVER)
     #include "TFT_Drivers/R61581_Init.h"
 
+#elif defined (ST7789_DSTIKE_DRIVER)
+     #include "TFT_Drivers/ST7789_DSTIKE_Init.h"
+   
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -477,6 +480,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 #elif defined (R61581_DRIVER)
     #include "TFT_Drivers/R61581_Rotation.h"
 
+#elif defined (ST7789_DSTIKE_DRIVER)
+     #include "TFT_Drivers/ST7789_DSTIKE_Rotation.h"
+  
 #endif
 
   delayMicroseconds(10);

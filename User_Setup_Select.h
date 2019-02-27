@@ -47,7 +47,8 @@
 //#include <User_Setups/Setup22_TTGO_T4.h>           // Setup file for ESP32 and TTGO T4 (BTC) ILI9341 SPI bus TFT
 //#include <User_Setups/Setup23_TTGO_TM.h>           // Setup file for ESP32 and TTGO TM ST7789 SPI bus TFT
 
-//#include <User_Setups/Setup43_ST7735.h>              // Setup file configured for my ST7735S 80x160
+//#include <User_Setups/Setup43_ST7735.h>            // Setup file configured for my ST7735S 80x160
+//#include <User_Setups/Setup24_ST7789_DSTIKE.h>     // Setup file configured for ST7789 (DSTIKE on D-Duino32-XS) 240x240
 
 //#include <User_Setups/SetupX_Template.h>
 
@@ -106,6 +107,9 @@
 #elif defined (R61581_DRIVER)
      #include "TFT_Drivers/R61581_Defines.h"
      #define  TFT_DRIVER 0x6158
+#elif defined (ST7789_DSTIKE_DRIVER)
+     #include "TFT_Drivers/ST7789_DSTIKE_Defines.h"
+     #define  TFT_DRIVER 0x7789
 #elif defined (XYZZY_DRIVER)  // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
      #include "TFT_Drivers/XYZZY_Defines.h"
      #define  TFT_DRIVER 0x0000

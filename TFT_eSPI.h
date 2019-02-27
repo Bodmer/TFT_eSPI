@@ -37,7 +37,7 @@
   #define SPI_READ_FREQUENCY SPI_FREQUENCY
 #endif
 
-#ifdef ST7789_DRIVER
+#if defined(ST7789_DRIVER) || defined(ST7789_DSTIKE_DRIVER)
   #define TFT_SPI_MODE SPI_MODE3
 #else
   #define TFT_SPI_MODE SPI_MODE0
