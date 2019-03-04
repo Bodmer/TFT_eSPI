@@ -13,7 +13,7 @@
 
   //------------------------------display and color format setting--------------------------------//
   writecommand(ST7789_MADCTL);
-  writedata(0x00);
+  //writedata(0x00);
   writedata(TFT_MAD_COLOR_ORDER);
 
   // JLX240 display datasheet
