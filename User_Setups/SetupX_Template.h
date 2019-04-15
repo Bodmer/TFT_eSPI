@@ -25,7 +25,8 @@
 //#define ILI9481_DRIVER
 //#define ILI9486_DRIVER
 //#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
-//#define ST7789_DRIVER      // Define additional parameters below for this display
+//#define ST7789_DRIVER      // Full configuration option, define additional parameters below for this display
+//#define ST7789_2_DRIVER    // Minimal configuration option, define additional parameters below for this display
 //#define R61581_DRIVER
 
 // Some displays support SPI reads via the MISO pin, other displays have a single
@@ -37,8 +38,8 @@
 // For ST7789 ONLY, define the colour order IF the blue and red are swapped on your display
 // Try ONE option at a time to find the correct colour order for your display
 
-//  #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
-//  #define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+// #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
+// #define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
 
 // For M5Stack ESP32 module with integrated ILI9341 display ONLY, remove // in line below
 

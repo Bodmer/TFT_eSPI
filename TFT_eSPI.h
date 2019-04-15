@@ -37,7 +37,7 @@
   #define SPI_READ_FREQUENCY SPI_FREQUENCY
 #endif
 
-#ifdef ST7789_DRIVER
+#if defined(ST7789_DRIVER) || defined(ST7789_2_DRIVER)
   #define TFT_SPI_MODE SPI_MODE3
 #else
   #define TFT_SPI_MODE SPI_MODE0
@@ -830,6 +830,8 @@ class TFT_eSPI : public Print {
   uint8_t  getAttribute(uint8_t id = 0);
 
   void     getSetup(setup_t& tft_settings); // Sketch provides the instance to populate
+
+  static   SPIClass& getSPIinstance(void);
 
   int32_t  cursor_x, cursor_y, padX;
   uint32_t textcolor, textbgcolor;

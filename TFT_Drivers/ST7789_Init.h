@@ -23,6 +23,7 @@
 
   writecommand(ST7789_COLMOD);
   writedata(0x55);
+  delay(10);
 
   //--------------------------------ST7789V Frame rate setting----------------------------------//
   writecommand(ST7789_PORCTRL);
@@ -92,7 +93,7 @@
   writedata(0x1b);
   writedata(0x1e);
 
-  writecommand(ST7789_INVOFF);
+  writecommand(ST7789_INVON);
 
   writecommand(ST7789_CASET);    // Column address set
   writedata(0x00);
@@ -113,6 +114,7 @@
   spi_begin();
 
   writecommand(ST7789_DISPON);    //Display on
+  delay(120);
 
 #ifdef TFT_BL
   // Turn on the back-light LED

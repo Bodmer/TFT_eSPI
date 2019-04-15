@@ -2,8 +2,17 @@
 
 #define ST7789_DRIVER
 
+// #define TFT_SDA_READ      // This option is for ESP32 ONLY, tested with ST7789 display only
 
-#define TFT_SDA_READ
+// If colours are inverted (white shows as black) then uncomment one of the next
+// 2 lines try both options, one of the options should correct the inversion.
+// #define TFT_INVERSION_ON
+// #define TFT_INVERSION_OFF
+
+// For ST7789 ONLY, define the colour order IF the blue and red are swapped on your display
+// Try ONE option at a time to find the correct colour order for your display
+// #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
+// #define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
 
 
 // My ST7789 display has TCT_CS wired permananently low so the pin is not defined here

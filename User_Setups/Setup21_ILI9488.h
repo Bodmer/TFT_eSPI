@@ -2,6 +2,7 @@
 
 #define ILI9488_DRIVER
 
+//#define TFT_INVERSION_OFF
 
 #define TFT_MISO 19 // (leave TFT SDO disconnected if other SPI devices share MISO)
 #define TFT_MOSI 23
@@ -26,5 +27,8 @@
 #define SPI_FREQUENCY  27000000
 // #define SPI_FREQUENCY  40000000
 // #define SPI_FREQUENCY  80000000
+
+// Optional reduced SPI frequency for reading TFT
+#define SPI_READ_FREQUENCY  16000000
 
 #define SPI_TOUCH_FREQUENCY  2500000

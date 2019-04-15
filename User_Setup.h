@@ -25,14 +25,15 @@
 //#define ILI9481_DRIVER
 //#define ILI9486_DRIVER
 //#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
-//#define ST7789_DRIVER      // Define additional parameters below for this display
+//#define ST7789_DRIVER      // Full configuration option, define additional parameters below for this display
+//#define ST7789_2_DRIVER    // Minimal configuration option, define additional parameters below for this display
 //#define R61581_DRIVER
 
 // Some displays support SPI reads via the MISO pin, other displays have a single
 // bi-directional SDA pin and the library will try to read this via the MOSI line.
 // To use the SDA line for reading data from the TFT uncomment the following line:
 
-// #define TFT_SDA_READ      // This option if for ESP32 ONLY, tested with ST7789 display only
+// #define TFT_SDA_READ      // This option is for ESP32 ONLY, tested with ST7789 display only
 
 // For ST7789 ONLY, define the colour order IF the blue and red are swapped on your display
 // Try ONE option at a time to find the correct colour order for your display
