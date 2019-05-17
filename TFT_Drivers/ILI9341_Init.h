@@ -121,10 +121,4 @@
   
   writecommand(ILI9341_DISPON);    //Display on
 
-#ifdef M5STACK
-  // Turn on the back-light LED
-  digitalWrite(TFT_BL, HIGH);
-  pinMode(TFT_BL, OUTPUT);
-#endif
-
 }

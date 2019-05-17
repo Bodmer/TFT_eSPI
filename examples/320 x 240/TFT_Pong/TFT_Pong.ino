@@ -108,13 +108,17 @@ void midline() {
   // If the ball is not on the line then don't redraw the line
   if ((ball_x<dashline_x-ball_w) && (ball_x > dashline_x+dashline_w)) return;
 
+  tft.startWrite();
+
   // Quick way to draw a dashed line
-  tft.setWindow(dashline_x,0,dashline_x+dashline_w-1,h);
+  tft.setAddrWindow(dashline_x, 0, dashline_w, h);
   
   for(int16_t i = 0; i < dashline_n; i+=2) {
     tft.pushColor(WHITE, dashline_w*dashline_h); // push dash pixels
     tft.pushColor(BLACK, dashline_w*dashline_h); // push gap pixels
   }
+
+  tft.endWrite();
 }
 
 void lpaddle() {

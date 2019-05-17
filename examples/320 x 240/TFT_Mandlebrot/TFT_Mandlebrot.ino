@@ -7,7 +7,7 @@
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
-#define ILI9341_GREY 0x7BEF
+#define TFT_GREY 0x7BEF
 
 unsigned long runTime = 0;
 
@@ -16,8 +16,9 @@ uint16_t x0 = 0, x1 = 0, yy0 = 0, yy1 = 0;
 
 void setup()
 {
+  Serial.begin(250000);
   //randomSeed(analogRead(A0));
-
+  Serial.println();
   // Setup the LCD
   tft.init();
   tft.setRotation(3);
@@ -27,7 +28,8 @@ void loop()
 {
   runTime = millis();
 
-  tft.fillScreen(ILI9341_BLACK);
+  tft.fillScreen(TFT_BLACK);
+  tft.startWrite();
   for (int px = 1; px < 320; px++)
   {
     for (int py = 0; py < 240; py++)
@@ -49,6 +51,9 @@ void loop()
       yield();tft.drawPixel(px, py, color);
     }
   }
+  tft.endWrite();
+
+  Serial.println(millis()-runTime);
   while(1) yield();
 }
 

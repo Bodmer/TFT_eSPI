@@ -4,21 +4,18 @@
  public:
 
   // These are for the new antialiased fonts
-  void     loadFont(String fontName);
+  void     loadFont(String fontName, fs::FS &ffs);
+  void     loadFont(String fontName, bool flash = true);
   void     unloadFont( void );
   bool     getUnicodeIndex(uint16_t unicode, uint16_t *index);
 
-  uint16_t decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining);
-  uint16_t decodeUTF8(uint8_t c);
-
   uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc);
 
-  void     drawGlyph(uint16_t code);
+  virtual void drawGlyph(uint16_t code);
+
   void     showFont(uint32_t td);
 
- fs::File   fontFile;
-
-  // This is for the whole font
+ // This is for the whole font
   typedef struct
   {
     uint16_t gCount;     // Total number of characters
@@ -37,18 +34,17 @@ fontMetrics gFont = { 0, 0, 0, 0, 0, 0, 0 };
   uint8_t*  gHeight = NULL;   //cheight
   uint8_t*  gWidth = NULL;    //cwidth
   uint8_t*  gxAdvance = NULL; //setWidth
-  int8_t*   gdY = NULL;       //topExtent
+  int16_t*  gdY = NULL;       //topExtent
   int8_t*   gdX = NULL;       //leftExtent
   uint32_t* gBitmap = NULL;   //file pointer to greyscale bitmap
 
-  String   _gFontFilename;
-
-  uint8_t  decoderState = 0;   // UTF8 decoder state
-  uint16_t decoderBuffer;      // Unicode code-point buffer
-
   bool     fontLoaded = false; // Flags when a anti-aliased font is loaded
+  fs::File fontFile;
 
- private:
+  private:
 
   void     loadMetrics(uint16_t gCount);
   uint32_t readInt32(void);
+
+  fs::FS   &fontFS = SPIFFS;
+  bool     spiffs = true;

@@ -13,9 +13,10 @@
                                                                                  ^^^^
 */
 
-// When font files are placed in the Custom folder then they must also be #included here:
+// When font files are placed in the Custom folder (TFT_eSPI\Fonts\Custom) then they must
+// also be #included here:
 
-// The comment added is a shorthand reference but this is not essential
+// The CF_OL24 etc are a shorthand reference, but this is not essential to use the fonts
 
 #ifdef LOAD_GFXFF
 

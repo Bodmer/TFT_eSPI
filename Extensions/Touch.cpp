@@ -12,33 +12,41 @@
 
 /***************************************************************************************
 ** Function name:           getTouchRaw
-** Description:             read raw touch position. Return false if not pressed. 
+** Description:             read raw touch position.  Always returns true.
 ***************************************************************************************/
 uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   uint16_t tmp;
-  CS_H;
 
   spi_begin_touch();
-
-  T_CS_L;
   
-  // Start bit + YP sample request for x position
-  tmp = SPI.transfer(0xd0);
-  tmp = SPI.transfer(0);
+  // Start YP sample request for x position, read 4 times and keep last sample
+  spi.transfer(0xd0);                    // Start new YP conversion
+  spi.transfer(0);                       // Read first 8 bits
+  spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+  spi.transfer(0);                       // Read first 8 bits
+  spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+  spi.transfer(0);                       // Read first 8 bits
+  spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+
+  tmp = spi.transfer(0);                   // Read first 8 bits
   tmp = tmp <<5;
-  tmp |= 0x1f & (SPI.transfer(0)>>3);
+  tmp |= 0x1f & (spi.transfer(0x90)>>3);   // Read last 8 bits and start new XP conversion
 
   *x = tmp;
 
-  // Start bit + XP sample request for y position
-  SPI.transfer(0x90);
-  tmp = SPI.transfer(0);
+  // Start XP sample request for y position, read 4 times and keep last sample
+  spi.transfer(0);                       // Read first 8 bits
+  spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+  spi.transfer(0);                       // Read first 8 bits
+  spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+  spi.transfer(0);                       // Read first 8 bits
+  spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+
+  tmp = spi.transfer(0);                 // Read first 8 bits
   tmp = tmp <<5;
-  tmp |= 0x1f & (SPI.transfer(0)>>3);
+  tmp |= 0x1f & (spi.transfer(0)>>3);    // Read last 8 bits
 
   *y = tmp;
-
-  T_CS_H;
 
   spi_end_touch();
 
@@ -50,19 +58,14 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 ** Description:             read raw pressure on touchpad and return Z value. 
 ***************************************************************************************/
 uint16_t TFT_eSPI::getTouchRawZ(void){
-  CS_H;
 
   spi_begin_touch();
 
-  T_CS_L;
-
   // Z sample request
   int16_t tz = 0xFFF;
-  SPI.transfer(0xb1);
-  tz += SPI.transfer16(0xc1) >> 3;
-  tz -= SPI.transfer16(0x91) >> 3;
-  
-  T_CS_H;
+  spi.transfer(0xb0);               // Start new Z1 conversion
+  tz += spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
+  tz -= spi.transfer16(0x00) >> 3;  // Read Z2
 
   spi_end_touch();
 
@@ -73,11 +76,11 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
 ** Function name:           validTouch
 ** Description:             read validated position. Return false if not pressed. 
 ***************************************************************************************/
-#define _RAWERR 10 // Deadband in position samples
+#define _RAWERR 20 // Deadband error allowed in successive position samples
 uint8_t TFT_eSPI::validTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
   uint16_t x_tmp, y_tmp, x_tmp2, y_tmp2;
 
-  // Wait until pressure stops increasing
+  // Wait until pressure stops increasing to debounce pressure
   uint16_t z1 = 1;
   uint16_t z2 = 0;
   while (z1 > z2)
@@ -120,7 +123,7 @@ uint8_t TFT_eSPI::validTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
 ***************************************************************************************/
 #define Z_THRESHOLD 350 // Touch pressure threshold for validating touches
 uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
-  uint16_t x_tmp, y_tmp, xx, yy;
+  uint16_t x_tmp, y_tmp;
   
   if (threshold<20) threshold = 20;
   if (_pressTime > millis()) threshold=20;
@@ -135,6 +138,25 @@ uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
   if (valid<1) { _pressTime = 0; return false; }
   
   _pressTime = millis() + 50;
+
+  convertRawXY(&x_tmp, &y_tmp);
+
+  if (x_tmp >= _width || y_tmp >= _height) return valid;
+
+  _pressX = x_tmp;
+  _pressY = y_tmp;
+  *x = _pressX;
+  *y = _pressY;
+  return valid;
+}
+
+/***************************************************************************************
+** Function name:           convertRawXY
+** Description:             convert raw touch x,y values to screen coordinates 
+***************************************************************************************/
+void TFT_eSPI::convertRawXY(uint16_t *x, uint16_t *y)
+{
+  uint16_t x_tmp = *x, y_tmp = *y, xx, yy;
 
   if(!touchCalibration_rotate){
     xx=(x_tmp-touchCalibration_x0)*_width/touchCalibration_x1;
@@ -151,14 +173,8 @@ uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
     if(touchCalibration_invert_y)
       yy = _height - yy;
   }
-
-  if (xx >= _width || yy >= _height) return valid;
-
-  _pressX = xx;
-  _pressY = yy;
-  *x = _pressX;
-  *y = _pressY;
-  return valid;
+  *x = xx;
+  *y = yy;
 }
 
 /***************************************************************************************

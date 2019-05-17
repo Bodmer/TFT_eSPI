@@ -251,8 +251,10 @@ void drawIcon(const unsigned short* icon, int16_t x, int16_t y, int8_t width, in
 
   uint16_t  pix_buffer[BUFF_SIZE];   // Pixel buffer (16 bits per pixel)
 
+  tft.startWrite();
+
   // Set up a window the right size to stream pixels into
-  tft.setWindow(x, y, x + width - 1, y + height - 1);
+  tft.setAddrWindow(x, y, width, height);
 
   // Work out the number whole buffers to send
   uint16_t nb = ((uint16_t)height * width) / BUFF_SIZE;
@@ -273,5 +275,7 @@ void drawIcon(const unsigned short* icon, int16_t x, int16_t y, int8_t width, in
     for (int i = 0; i < np; i++) pix_buffer[i] = pgm_read_word(&icon[nb * BUFF_SIZE + i]);
     tft.pushColors(pix_buffer, np);
   }
+
+  tft.endWrite();
 }
 
