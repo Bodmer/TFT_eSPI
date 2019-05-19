@@ -334,7 +334,7 @@
 
   // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
   #define tft_Write_16S(C) spi.transfer(C & 0xF8); \
-                           spi.transfer((C & 0xE0)>>11 | (C & 0x07)<<5); \
+                           spi.transfer((C & 0xE000)>>11 | (C & 0x07)<<5); \
                            spi.transfer((C & 0x1F00)>>5)
   // Write 32 bits to TFT
   #define tft_Write_32(C)  spi.write32(C)
