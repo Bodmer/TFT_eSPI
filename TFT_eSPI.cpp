@@ -3389,7 +3389,7 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
     while (len--) {tft_Write_8(*data); data++;}
   #elif  defined (ILI9488_DRIVER)
     uint16_t color;
-    while (len>1) {color = (*data++) | ((*data++)<<8); tft_Write_16(color); len-=2;}
+    while (len>1) {color = (*data++); color |= ((*data++)<<8); tft_Write_16(color); len-=2;}
   #else
     #if (SPI_FREQUENCY == 80000000)
       while ( len >=64 ) {spi.writePattern(data, 64, 1); data += 64; len -= 64; }
@@ -4270,7 +4270,6 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
   {
     if ((font>2) && (font<9))
     {
-      //flash_address = pgm_read_dword( pgm_read_dword( &(fontdata[font].chartbl ) ) + uniCode*sizeof(void *) );
       flash_address = pgm_read_dword( (const void*)pgm_read_dword( &(fontdata[font].chartbl ) ) + uniCode*sizeof(void *) );
       width = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[font].widthtbl ) ) + uniCode );
       height= pgm_read_byte( &fontdata[font].height );
