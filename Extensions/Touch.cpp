@@ -141,7 +141,7 @@ uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
 
   convertRawXY(&x_tmp, &y_tmp);
 
-  if (x_tmp >= _width || y_tmp >= _height) return valid;
+  if (x_tmp >= _width || y_tmp >= _height) return false;
 
   _pressX = x_tmp;
   _pressY = y_tmp;
