@@ -445,6 +445,9 @@ void TFT_eSPI::init(uint8_t tc)
 /***************************************************************************************
 ** Function name:           setRotation
 ** Description:             rotate the screen orientation m = 0-3 or 4-7 for BMP drawing
+**                          When using the integrated touch handler, note that calibration
+**                          settings must be updated whenever the orientation is changed from
+**                          the orientation used during calibration.
 ***************************************************************************************/
 void TFT_eSPI::setRotation(uint8_t m)
 {
