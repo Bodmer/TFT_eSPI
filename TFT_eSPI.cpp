@@ -35,9 +35,9 @@
 
 // If it is a 16bit serial display we must transfer 16 bits every time
 #ifdef RPI_ILI9486_DRIVER
-  #define CMD_BITS 16-1
+  #define CMD_BITS (16-1)
 #else
-  #define CMD_BITS 8-1
+  #define CMD_BITS (8-1)
 #endif
 
 // Fast block write prototype
@@ -4270,7 +4270,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
   {
     if ((font>2) && (font<9))
     {
-      flash_address = pgm_read_dword( (const void*)pgm_read_dword( &(fontdata[font].chartbl ) ) + uniCode*sizeof(void *) );
+      flash_address = pgm_read_dword( (const void*)(pgm_read_dword( &(fontdata[font].chartbl ) ) + uniCode*sizeof(void *)));
       width = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[font].widthtbl ) ) + uniCode );
       height= pgm_read_byte( &fontdata[font].height );
     }
