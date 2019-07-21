@@ -412,6 +412,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (R61581_DRIVER)
     #include "TFT_Drivers/R61581_Init.h"
 
+#elif defined (RM68140_DRIVER)
+	#include "TFT_Drivers/RM68140_Init.h"
+
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Init.h"
 
@@ -484,6 +487,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (R61581_DRIVER)
     #include "TFT_Drivers/R61581_Rotation.h"
+
+#elif defined (RM68140_DRIVER)
+	#include "TFT_Drivers/RM68140_Rotation.h"
 
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Rotation.h"
@@ -4270,7 +4276,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
   {
     if ((font>2) && (font<9))
     {
-      flash_address = pgm_read_dword( (const void*)pgm_read_dword( &(fontdata[font].chartbl ) ) + uniCode*sizeof(void *) );
+      flash_address = pgm_read_dword( (const void*)(pgm_read_dword( &(fontdata[font].chartbl ) ) + uniCode*sizeof(void *)) );
       width = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[font].widthtbl ) ) + uniCode );
       height= pgm_read_byte( &fontdata[font].height );
     }
