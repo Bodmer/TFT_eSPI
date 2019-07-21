@@ -1,4 +1,4 @@
-  // This is the command sequence that rotates the ILI9481 driver coordinate frame
+  // This is the command sequence that rotates the RM68140 driver coordinate frame
 
 
   writecommand(TFT_MADCTL);
