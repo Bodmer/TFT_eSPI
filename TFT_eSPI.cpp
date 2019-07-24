@@ -2352,6 +2352,7 @@ int16_t TFT_eSPI::textWidth(const char *string, uint8_t font)
       str_width += pgm_read_byte( widthtable + uniCode); // Normally we need to subtract 32 from uniCode
       else str_width += pgm_read_byte( widthtable + 32); // Set illegal character = space width
     }
+    if ((font == 2) && (str_width > 0)) str_width--;
   }
   else
   {
