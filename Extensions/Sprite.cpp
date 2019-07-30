@@ -1102,7 +1102,9 @@ void TFT_eSprite::drawPixel(int32_t x, int32_t y, uint32_t color)
   }
   else // 1 bpp
   {
-    if ((x >= _dwidth) || (y >= _dheight)) return;
+
+    if ((x >= _iwidth) || (y >= _iheight)) return;
+
     if (_rotation == 1)
     {
       uint16_t tx = x;
