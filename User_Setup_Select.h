@@ -50,7 +50,9 @@
 //#include <User_Setups/Setup23_TTGO_TM.h>           // Setup file for ESP32 and TTGO TM ST7789 SPI bus TFT
 //#include <User_Setups/Setup24_ST7789.h>            // Setup file configured for ST7789 240 x 240
 
-//#include <User_Setups/Setup43_ST7735.h>              // Setup file configured for my ST7735S 80x160
+//#include <User_Setups/Setup43_ST7735.h>            // Setup file configured for my ST7735S 80x160
+
+//#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 125 x 240 TFT
 
 //#include <User_Setups/SetupX_Template.h>
 
