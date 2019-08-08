@@ -42,7 +42,7 @@ Sprites can be plotted to the TFT with one colour being specified as "transparen
 
 If an ESP32 board has SPIRAM (i.e. PSRAM) fitted then Sprites will use the PSRAM memory and large full screen buffer Sprites can be created. Full screen Sprites take longer to render (~45ms for a 320 x 240 16 bit Sprite), so bear that in mind.
 
-The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed.
+The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed. You will need to use calibration sketch in the generic category with the serial port open. And then put the code outputted at the end of void setup().
 
 The Button class from Adafruit_GFX is incorporated, with the enhancement that the button labels can be in any font.
 
