@@ -128,7 +128,7 @@
   #define DC_C // No macro allocated so it generates no code
   #define DC_D // No macro allocated so it generates no code
 #else
-  #if defined (ESP8266) && (TFT_DC == 16)
+#if defined (ESP8266) && (TFT_DC == D0)
     #define DC_C digitalWrite(TFT_DC, LOW)
     #define DC_D digitalWrite(TFT_DC, HIGH)
   #elif defined (ESP32)
@@ -185,7 +185,7 @@
   #define CS_L // No macro allocated so it generates no code
   #define CS_H // No macro allocated so it generates no code
 #else
-  #if defined (ESP8266) && (TFT_CS == 16)
+#if defined (ESP8266) && (TFT_CS == D0)
     #define CS_L digitalWrite(TFT_CS, LOW)
     #define CS_H digitalWrite(TFT_CS, HIGH)
   #elif defined (ESP32)
