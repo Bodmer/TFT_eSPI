@@ -156,8 +156,8 @@ void drawFSBmp(const char *filename, int16_t x, int16_t y) {
           *(qptr    ) += (qerr>>2) + qerr16; // Add 5/16 of error
           *(qptr + 1) +=  qerr16;            // Add 1/16 of error
 
-          *bptr++; // Move along pixel and error buffers
-          *qptr++;
+          bptr++; // Move along pixel and error buffers
+          qptr++;
           dx++;    // Move coordinate along
         }
         y--;
