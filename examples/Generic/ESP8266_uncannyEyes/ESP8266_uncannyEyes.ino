@@ -141,7 +141,7 @@ void drawEye( // Renders one eye.  Inputs must be pre-clipped & valid.
   // reset on each frame here in case of an SPI glitch.
 
   //eye[e].tft.setAddrWindow(319-127, 0, 319, 127);
-  eye[e].tft.setAddrWindow(0, 0, 127, 127);
+  eye[e].tft.setAddrWindow(0, 0, 128, 128);
   
   //digitalWrite(eye[e].cs, LOW);                       // Chip select
 
