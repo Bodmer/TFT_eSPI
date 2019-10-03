@@ -48,6 +48,18 @@
   #define SPI_TOUCH_FREQUENCY  2500000
 #endif
 
+#ifdef LOAD_ALL_FONTS
+  #define LOAD_GLCD
+  #define LOAD_FONT2
+  #define LOAD_FONT4
+  #define LOAD_FONT6
+  #define LOAD_FONT7
+  #define LOAD_FONT8
+  #define LOAD_FONT8N
+  #define LOAD_GFXFF
+  #define SMOOTH_FONT
+#endif
+
 // Use GLCD font in error case where user requests a smooth font file
 // that does not exist (this is a temporary fix to stop ESP32 reboot)
 #ifdef SMOOTH_FONT

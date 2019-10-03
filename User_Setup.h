@@ -235,6 +235,9 @@
 // this will save ~20kbytes of FLASH
 #define SMOOTH_FONT
 
+// If you want to load all fonts, including smooth fonts, define LOAD_ALL_FONTS
+//#define LOAD_ALL_FONTS
+
 
 // ##################################################################################
 //
