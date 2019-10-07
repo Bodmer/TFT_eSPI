@@ -66,7 +66,7 @@ void loop() {
 // start_angle = 0 - 359
 // r = radius
 
-int yinyang(int x, int y, int start_angle, int r)
+void yinyang(int x, int y, int start_angle, int r)
 {
   int x1 = 0; // getCoord() will update these
   int y1 = 0;

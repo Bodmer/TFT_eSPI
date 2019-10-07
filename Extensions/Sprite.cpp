@@ -464,7 +464,13 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y)
 {
   if (!_created) return;
 
-  if (_bpp == 16) _tft->pushImage(x, y, _iwidth, _iheight, _img );
+  if (_bpp == 16)
+  {
+    bool oldSwapBytes = _tft->getSwapBytes();
+    _tft->setSwapBytes(false);
+    _tft->pushImage(x, y, _iwidth, _iheight, _img );
+    _tft->setSwapBytes(oldSwapBytes);
+  }
 
   else _tft->pushImage(x, y, _dwidth, _dheight, _img8, (bool)(_bpp == 8));
 }
@@ -478,7 +484,13 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y, uint16_t transp)
 {
   if (!_created) return;
 
-  if (_bpp == 16) _tft->pushImage(x, y, _iwidth, _iheight, _img, transp );
+  if (_bpp == 16)
+  {
+    bool oldSwapBytes = _tft->getSwapBytes();
+    _tft->setSwapBytes(false);
+    _tft->pushImage(x, y, _iwidth, _iheight, _img, transp );
+    _tft->setSwapBytes(oldSwapBytes);
+  }
   else if (_bpp == 8)
   {
     transp = (uint8_t)((transp & 0xE000)>>8 | (transp & 0x0700)>>6 | (transp & 0x0018)>>3);
@@ -716,7 +728,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const u
     uint32_t ww =  (w+7) & 0xFFF8;
     for (int32_t yp = 0; yp<h; yp++)
     {
-      for (int32_t xp = 0; xp<ww; xp+=8)
+      for (uint32_t xp = 0; xp<ww; xp+=8)
       {
         uint8_t pbyte = pgm_read_byte(pdata++);
         for (uint8_t xc = 0; xc < 8; xc++)
