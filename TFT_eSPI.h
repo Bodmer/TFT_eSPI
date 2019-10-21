@@ -15,7 +15,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "1.4.16"
+#define TFT_ESPI_VERSION "1.4.18"
 
 //#define ESP32 //Just used to test ESP32 options
 

@@ -14,7 +14,7 @@ https://github.com/Bodmer/TFT_eFX
 
 5. The capability to read from an ST7789V TFT with a single bidirectional SDA pin has been added. At the moment this **ONLY** works with an ESP32. It is enabled with a #define TFT_SDA_READ in the setup file.
 
-6. ST7789V displays are manufactured in two variants that have the red and blue pixels swapped, this is catered for by a new option in the setup file:
+6. ST7789V and ILI9341 displays are manufactured in two variants that have the red and blue pixels swapped, this is catered for by a new option in the setup file:
     //#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
     //#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
 

@@ -25,5 +25,6 @@
 //#define SPI_FREQUENCY  27000000
   #define SPI_FREQUENCY  40000000   // Maximum for ILI9341
 
+#define USE_HSPI_PORT
 
 #define SPI_READ_FREQUENCY  6000000 // 6 MHz is the maximum SPI read speed for the ST7789V

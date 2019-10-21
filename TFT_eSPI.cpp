@@ -67,7 +67,7 @@ inline void TFT_eSPI::spi_end(void){
     SPI1U = SPI1U_READ;
   #endif
 #else
-  if(!inTransaction) CS_H;
+  if(!inTransaction) {CS_H;}
 #endif
 }
 
@@ -92,7 +92,7 @@ inline void TFT_eSPI::spi_end_read(void){
   #if !defined(ESP32_PARALLEL)
     spi.setFrequency(SPI_FREQUENCY);
   #endif
-   if(!inTransaction) CS_H;
+   if(!inTransaction) {CS_H;}
 #endif
 #ifdef ESP8266
   SPI1U = SPI1U_WRITE;
@@ -999,8 +999,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
 
-  if ((x + w) > _width ) dw = _width  - x;
-  if ((y + h) > _height) dh = _height - y;
+  if ((x + dw) > _width ) dw = _width  - x;
+  if ((y + dh) > _height) dh = _height - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -1038,8 +1038,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
   
-  if ((x + w) > _width ) dw = _width  - x;
-  if ((y + h) > _height) dh = _height - y;
+  if ((x + dw) > _width ) dw = _width  - x;
+  if ((y + dh) > _height) dh = _height - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -1113,8 +1113,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
   
-  if ((x + w) > _width ) dw = _width  - x;
-  if ((y + h) > _height) dh = _height - y;
+  if ((x + dw) > _width ) dw = _width  - x;
+  if ((y + dh) > _height) dh = _height - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -1177,8 +1177,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
   
-  if ((x + w) > _width ) dw = _width  - x;
-  if ((y + h) > _height) dh = _height - y;
+  if ((x + dw) > _width ) dw = _width  - x;
+  if ((y + dh) > _height) dh = _height - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -1251,8 +1251,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
   
-  if ((x + w) > _width ) dw = _width  - x;
-  if ((y + h) > _height) dh = _height - y;
+  if ((x + dw) > _width ) dw = _width  - x;
+  if ((y + dh) > _height) dh = _height - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -1357,8 +1357,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
   
-  if ((x + w) > _width ) dw = _width  - x;
-  if ((y + h) > _height) dh = _height - y;
+  if ((x + dw) > _width ) dw = _width  - x;
+  if ((y + dh) > _height) dh = _height - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -3938,6 +3938,7 @@ void TFT_eSPI::setAttribute(uint8_t attr_id, uint8_t param) {
             break;
         case 2:
             _utf8  = param;
+            decoderState = 0;
             break;
         //case 3: // TBD future feature control
         //    _tbd = param;
@@ -3998,7 +3999,7 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
       return 0;
     }
     // 21 bit Unicode  Code Point not supported so fall-back to extended ASCII
-    if ((c & 0xF8) == 0xF0) return (uint16_t)c;
+    // if ((c & 0xF8) == 0xF0) return (uint16_t)c;
   }
   else
   {

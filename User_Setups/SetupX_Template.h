@@ -35,7 +35,7 @@
 
 // #define TFT_SDA_READ      // This option if for ESP32 ONLY, tested with ST7789 display only
 
-// For ST7789 ONLY, define the colour order IF the blue and red are swapped on your display
+// For ST7789 and ILI9341 ONLY, define the colour order IF the blue and red are swapped on your display
 // Try ONE option at a time to find the correct colour order for your display
 
 // #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue

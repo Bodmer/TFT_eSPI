@@ -56,9 +56,9 @@
 
   writecommand(ILI9341_MADCTL);    // Memory Access Control
 #ifdef M5STACK
-  writedata(0xA8); // Rotation 0 (portrait mode)
+  writedata(TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_COLOR_ORDER); // Rotation 0 (portrait mode)
 #else
-  writedata(0x48); // Rotation 0 (portrait mode)
+  writedata(TFT_MAD_MX | TFT_MAD_COLOR_ORDER); // Rotation 0 (portrait mode)
 #endif
 
   writecommand(ILI9341_PIXFMT);
