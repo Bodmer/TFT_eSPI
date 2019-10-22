@@ -569,11 +569,11 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_
   uint32_t ws = w;
   uint32_t hs = h;
 
-  if (x < 0) { xo = -x; xs = 0; }
-  if (y < 0) { yo = -y; ys = 0; }
+  if (x < 0) { xo = -x; ws += x; xs = 0; }
+  if (y < 0) { yo = -y; hs += y; ys = 0; }
 
-  if (xs + w >= _iwidth)  ws = _iwidth  - xs;
-  if (ys + h >= _iheight) hs = _iheight - ys;
+  if (xs + ws >= _iwidth)  ws = _iwidth  - xs;
+  if (ys + hs >= _iheight) hs = _iheight - ys;
 
   if (_bpp == 16) // Plot a 16 bpp image into a 16 bpp Sprite
   {
@@ -665,11 +665,11 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const u
   uint32_t ws = w;
   uint32_t hs = h;
 
-  if (x < 0) { xo = -x; xs = 0; }
-  if (y < 0) { yo = -y; ys = 0; }
+  if (x < 0) { xo = -x; ws += x; xs = 0; }
+  if (y < 0) { yo = -y; hs += y; ys = 0; }
 
-  if (xs + w >= _iwidth)  ws = _iwidth  - xs;
-  if (ys + h >= _iheight) hs = _iheight - ys;
+  if (xs + ws >= _iwidth)  ws = _iwidth  - xs;
+  if (ys + hs >= _iheight) hs = _iheight - ys;
 
   if (_bpp == 16) // Plot a 16 bpp image into a 16 bpp Sprite
   {
@@ -768,22 +768,10 @@ bool TFT_eSprite::getSwapBytes(void)
 *************************************************************************************x*/
 void TFT_eSprite::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
-  bool duff_coord = false;
-
   if (x0 > x1) swap_coord(x0, x1);
   if (y0 > y1) swap_coord(y0, y1);
 
-  if (x0 < 0) x0 = 0;
-  if (x0 >= _iwidth) duff_coord = true;
-  if (x1 < 0) x1 = 0;
-  if (x1 >= _iwidth) x1 = _iwidth - 1;
-
-  if (y0 < 0) y0 = 0;
-  if (y0 >= _iheight) duff_coord = true;
-  if (y1 < 0) y1 = 0;
-  if (y1 >= _iheight) y1 = _iheight - 1;
-
-  if (duff_coord)
+  if ((x0 >= _iwidth) || (x1 < 0) || (y0 >= _iheight) || (y1 < 0))
   { // Point to that extra "off screen" pixel
     _xs = 0;
     _ys = _iheight;
@@ -792,6 +780,11 @@ void TFT_eSprite::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   }
   else
   {
+    if (x0 < 0) x0 = 0;
+    if (x1 >= _iwidth) x1 = _iwidth - 1;
+    if (y0 < 0) y0 = 0;
+    if (y1 >= _iheight) y1 = _iheight - 1;
+
     _xs = x0;
     _ys = y0;
     _xe = x1;
@@ -893,8 +886,8 @@ void TFT_eSprite::setScrollRect(int32_t x, int32_t y, int32_t w, int32_t h, uint
 {
   if ((x >= _iwidth) || (y >= _iheight) || !_created ) return;
 
-  if (x < 0) x = 0;
-  if (y < 0) y = 0;
+  if (x < 0) { w += x; x = 0; }
+  if (y < 0) { h += y; y = 0; }
 
   if ((x + w) > _iwidth ) w = _iwidth  - x;
   if ((y + h) > _iheight) h = _iheight - y;
@@ -1100,23 +1093,19 @@ void TFT_eSprite::drawPixel(int32_t x, int32_t y, uint32_t color)
 {
   // Range checking
   if ((x < 0) || (y < 0) || !_created) return;
+  if ((x >= _iwidth) || (y >= _iheight)) return;
 
   if (_bpp == 16)
   {
-    if ((x >= _iwidth) || (y >= _iheight)) return;
     color = (color >> 8) | (color << 8);
     _img[x+y*_iwidth] = (uint16_t) color;
   }
   else if (_bpp == 8)
   {
-    if ((x >= _iwidth) || (y >= _iheight)) return;
     _img8[x+y*_iwidth] = (uint8_t)((color & 0xE000)>>8 | (color & 0x0700)>>6 | (color & 0x0018)>>3);
   }
   else // 1 bpp
   {
-
-    if ((x >= _iwidth) || (y >= _iheight)) return;
-
     if (_rotation == 1)
     {
       uint16_t tx = x;
