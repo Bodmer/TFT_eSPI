@@ -50,8 +50,8 @@ PROGMEM const unsigned char chr_f16_23[16] =         // 1 unsigned char per row
 
 PROGMEM const unsigned char chr_f16_24[16] =         // 1 unsigned char per row
 {
-        0x00, 0x00, 0x00, 0x3C, 0x42, 0x40, 0x40, 0x70, 0x40, 0x70, 0x40,    // row 1 - 11
-        0x40, 0xFE, 0x00, 0x00, 0x00                                         // row 12 - 16
+        0x00, 0x00, 0x28, 0x38, 0x6C, 0xAA, 0xA8, 0x68, 0x3C, 0x2A, 0xAA,    // row 1 - 11
+        0x6C, 0x38, 0x28, 0x00, 0x00                                         // row 12 - 16
 };
 
 PROGMEM const unsigned char chr_f16_25[16] =         // 1 unsigned char per row
