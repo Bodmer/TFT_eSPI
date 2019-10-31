@@ -4,6 +4,8 @@
 // Bit bashes SPI so it does NOT assume hardware SPI wired up
 // No other libraries are needed
 
+// NOTE: This sketch does not work with parallel displays!
+
 // Original author unknown
 // Adapted by Bodmer 22/5/16, updated 16/9/16
 

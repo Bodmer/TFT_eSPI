@@ -12,7 +12,7 @@
 PROGMEM const unsigned char widtbl_f7s[96] =          // character width table
 {
         12, 12, 12, 12, 12, 12, 12, 12,     // char 32 - 39
-        12, 12, 12, 12, 12, 17, 12, 12,     // char 40 - 47
+        12, 12, 12, 12, 12, 32, 12, 12,     // char 40 - 47
         32, 32, 32, 32, 32, 32, 32, 32,     // char 48 - 55
         32, 32, 12, 12, 12, 12, 12, 12,     // char 56 - 63
         12, 12, 12, 12, 12, 12, 12, 12,     // char 64 - 71
@@ -32,10 +32,12 @@ PROGMEM const unsigned char chr_f7s_20[] =
 0x7F, 0x7F, 0x7F, 0x7F, 0x3F
 };
 
+// Make - sign look like a segment
 PROGMEM const unsigned char chr_f7s_2D[] = 
 {
-0x7F, 0x7F, 0x45, 0x8A, 0x05, 0x8A, 0x05, 0x8A, 
-0x05, 0x8A, 0x7F, 0x7F, 0x7F, 0x2B
+0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x27, 0x8E, 0x0E, 
+0x92, 0x0A, 0x96, 0x09, 0x94, 0x0C, 0x90, 0x7F, 
+0x7F, 0x7F, 0x7F, 0x7F, 0x47
 };
 
 PROGMEM const unsigned char chr_f7s_2E[] = 
