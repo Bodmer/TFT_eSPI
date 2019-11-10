@@ -73,7 +73,9 @@ Here is an example screenshot showing the anti-aliased Hiragana character Unicod
 
 ![Hiragana glyphs](https://i.imgur.com/jeXf2st.png)
 
+Antialiased fonts can also be drawn over a gradient background with a callback to fetch the backgorung colour of each pixel. This pixel colour can be set by the gradient algoritm or by readn back the TFT screen memory (if reading the display is supported.
 
+![AA_gradien](https://i.imgur.com/YMBcPHp.png)
 
 # ESP32 with 8 bit Mcufriend UNO shields
 
