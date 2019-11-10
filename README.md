@@ -1,22 +1,26 @@
 
 # News
 
-1. Sprites can now by pushed to the screen (or another Sprite) with a rotation angle. The new function is pushRotated(). Three new examples (Rotate_Sprite_1/2/3) have been added to show how the functions can be used to rotate text, images and to draw animated dials with moving needles.
+1. A callback function has been added, this allows anitaliased fonts to be rendered over colour gradients or images. Two new examples have been added to illustrate this new capability:
 
-2. A new TFT_eFEX support library has been created which includes extra functions such as drawing a BMP or Jpeg to the screen. This library will simplify the examples. It will be expanded at a future date to include meters, dials and GUI elements like progress bars, graphs and animated buttons:
+           "Smooth_font_reading_TFT"
+    
+           "Smooth_font_gradient"
+           
+      ![AA_gradien](https://i.imgur.com/YMBcPHp.png)
+    
+2. Sprites can now by pushed to the screen (or another Sprite) with a rotation angle. The new function is pushRotated(). Three new examples (Rotate_Sprite_1/2/3) have been added to show how the functions can be used to rotate text, images and to draw animated dials with moving needles.
+
+3. A new TFT_eFEX support library has been created which includes extra functions such as drawing a BMP or Jpeg to the screen. This library will simplify the examples. It will be expanded at a future date to include meters, dials and GUI elements like progress bars, graphs and animated buttons:
 https://github.com/Bodmer/TFT_eFEX
 
-3. androdlang has published a really nice companion library to extend the graphics capabilities of TFT_eSPI, you can find this here:
+4. androdlang has published a really nice companion library to extend the graphics capabilities of TFT_eSPI, you can find this here:
 https://github.com/androdlang/TFTShape
 
-4. I have created a user updateable graphics extension library template that can be used to create your own graphics extensions. The Library contains examples and is commented so it should be clear what you need to do to add functions. You can find it here:
+5. I have created a user updateable graphics extension library template that can be used to create your own graphics extensions. The Library contains examples and is commented so it should be clear what you need to do to add functions. You can find it here:
 https://github.com/Bodmer/TFT_eFX
 
-5. The capability to read from an ST7789V TFT with a single bidirectional SDA pin has been added. At the moment this **ONLY** works with an ESP32. It is enabled with a #define TFT_SDA_READ in the setup file.
-
-6. ST7789V and ILI9341 displays are manufactured in two variants that have the red and blue pixels swapped, this is catered for by a new option in the setup file:
-    //#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
-    //#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+6. The capability to read from an ST7789V TFT with a single bidirectional SDA pin has been added. At the moment this **ONLY** works with an ESP32. It is enabled with a #define TFT_SDA_READ in the setup file.
 
 # TFT_eSPI
 
@@ -74,8 +78,6 @@ Here is an example screenshot showing the anti-aliased Hiragana character Unicod
 ![Hiragana glyphs](https://i.imgur.com/jeXf2st.png)
 
 Antialiased fonts can also be drawn over a gradient background with a callback to fetch the background colour of each pixel. This pixel colour can be set by the gradient algorithm or by reading back the TFT screen memory (if reading the display is supported).
-
-![AA_gradien](https://i.imgur.com/YMBcPHp.png)
 
 # ESP32 with 8 bit Mcufriend UNO shields
 
