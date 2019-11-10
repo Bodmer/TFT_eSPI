@@ -39,7 +39,6 @@
 //
 //      tft.setFreeFont(NULL); // Set font to GLCD
 
-#define LOAD_GFXFF
 
 #ifdef LOAD_GFXFF // Only include the fonts if LOAD_GFXFF is defined in User_Setup.h
 
@@ -264,6 +263,8 @@
 #define FONT6 6
 #define FONT7 7
 #define FONT8 8
+
+#define TT1 1
 
 #define FF0 1
 #define FF1 1

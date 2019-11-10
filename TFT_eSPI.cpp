@@ -49,6 +49,8 @@ uint8_t readByte(void);
 // GPIO parallel input/output control
 void busDir(uint32_t mask, uint8_t mode);
 
+void gpioMode(uint8_t gpio, uint8_t mode);
+
 inline void TFT_eSPI::spi_begin(void){
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(ESP32_PARALLEL)
   if (locked) {locked = false; spi.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, TFT_SPI_MODE)); CS_L;}
@@ -377,6 +379,8 @@ void TFT_eSPI::init(uint8_t tc)
 
   spi_begin();
   
+  tc = tc; // Supress warning
+
   // This loads the driver specific initialisation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
 #if   defined (ILI9341_DRIVER)
     #include "TFT_Drivers/ILI9341_Init.h"
@@ -711,6 +715,11 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
 #else // Not ESP32_PARALLEL
 
+  // This function can get called during antialiased font rendering
+  // so a transaction may be in progress
+  bool wasInTransaction = inTransaction;
+  if (inTransaction) { inTransaction= false; spi_end();}
+
   spi_begin_read();
 
   readAddrWindow(x0, y0, 1, 1); // Sets CS low
@@ -748,9 +757,17 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   spi_end_read();
 
+  // Reinstate the transaction if one was in progress
+  if(wasInTransaction) { spi_begin(); inTransaction = true; }
+
   return color565(r, g, b);
 
 #endif
+}
+
+void TFT_eSPI::setCallback(getColorCallback getCol)
+{
+  getColor = getCol;
 }
 
 /***************************************************************************************
@@ -785,28 +802,44 @@ uint8_t readByte(void)
 }
 
 /***************************************************************************************
-** Function name:           masked GPIO direction control  - supports class functions
-** Description:             Set masked ESP32 GPIO pins to input or output
+** Function name:           GPIO direction control  - supports class functions
+** Description:             Set parallel bus to input or output
 ***************************************************************************************/
-void busDir(uint32_t mask, uint8_t mode)
-{
 #ifdef ESP32_PARALLEL
+void busDir(uint32_t mask, uint8_t mode)
+{//*
+  gpioMode(TFT_D0, mode);
+  gpioMode(TFT_D1, mode);
+  gpioMode(TFT_D2, mode);
+  gpioMode(TFT_D3, mode);
+  gpioMode(TFT_D4, mode);
+  gpioMode(TFT_D5, mode);
+  gpioMode(TFT_D6, mode);
+  gpioMode(TFT_D7, mode);
+  return; //*/
 
-  // Supports GPIO 0 - 31 on ESP32 only
-  gpio_config_t gpio;
-
-  gpio.pin_bit_mask = mask;
-  gpio.mode         = GPIO_MODE_INPUT;
-  gpio.pull_up_en   = GPIO_PULLUP_ENABLE;
-  gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;
-  gpio.intr_type    = GPIO_INTR_DISABLE;
-
-  if (mode == OUTPUT) gpio.mode = GPIO_MODE_OUTPUT;
-
-  gpio_config(&gpio);
-
-#endif
+  /*
+  // Arduino generic native function, but slower
+  pinMode(TFT_D0, mode);
+  pinMode(TFT_D1, mode);
+  pinMode(TFT_D2, mode);
+  pinMode(TFT_D3, mode);
+  pinMode(TFT_D4, mode);
+  pinMode(TFT_D5, mode);
+  pinMode(TFT_D6, mode);
+  pinMode(TFT_D7, mode);
+  return; //*/
 }
+
+// Set ESP32 GPIO pin to input or output
+void gpioMode(uint8_t gpio, uint8_t mode)
+{
+  if(mode == INPUT) GPIO.enable_w1tc = ((uint32_t)1 << gpio);
+  else GPIO.enable_w1ts = ((uint32_t)1 << gpio);
+  ESP_REG(DR_REG_IO_MUX_BASE + esp32_gpioMux[gpio].reg) = ((uint32_t)2 << FUN_DRV_S) | (FUN_IE) | ((uint32_t)2 << MCU_SEL_S);
+  GPIO.pin[gpio].val = 0;
+}
+#endif
 
 /***************************************************************************************
 ** Function name:           read rectangle (for SPI Interface II i.e. IM [3:0] = "1101")
