@@ -3,6 +3,10 @@
 // Comment out for £ sign for character 24
 #define TFT_ESPI_FONT2_DOLLAR
 
+// The grave ( ` ) diacritical mark will show as a degree ( ° ) symbol
+// Comment out next line to return character 0x60 to the grave accent:
+#define TFT_ESPI_GRAVE_IS_DEGREE
+
 #include <pgmspace.h>
 
 // Width has been increased by 1 pixel so pixel lengths are calculated correctly
@@ -18,8 +22,11 @@ PROGMEM const unsigned char widtbl_f16[96] =         // character width table
         8, 4, 8, 8, 7, 10, 8, 8,            // char 72 - 79
         8, 8, 8, 8, 8, 8, 8, 10,            // char 80 - 87
         8, 8, 8, 4, 7, 4, 7, 9,             // char 88 - 95
-//      4, 7, 7, 7, 7, 7, 6, 7,             // char 96 - 103 grave     see lines 411-414
-        5, 7, 7, 7, 7, 7, 6, 7,             // char 96 - 103 celcius
+#ifdef TFT_ESPI_GRAVE_IS_DEGREE
+        5, 7, 7, 7, 7, 7, 6, 7,             // char 96 - 103 0x60 is degree symbol
+#else
+        4, 7, 7, 7, 7, 7, 6, 7,             // char 96 - 103 0x60 is grave
+#endif
         7, 4, 5, 6, 4, 8, 7, 8,             // char 104 - 111
         7, 8, 6, 6, 5, 7, 8, 8,             // char 112 - 119
         6, 7, 7, 5, 3, 5, 8, 6              // char 120 - 127
@@ -416,10 +423,13 @@ PROGMEM const unsigned char chr_f16_5F[32] =         // 1 unsigned chars per row
 
 PROGMEM const unsigned char chr_f16_60[16] =         // 1 unsigned char per row
 {
-//      0x00, 0x00, 0x00, 0x40, 0x40, 0x40, 0x20, 0x00, 0x00, 0x00, 0x00,    // row 1 - 11   grave
-//      0x00, 0x00, 0x00, 0x00, 0x00                                         // row 12 - 16
-        0x00, 0x00, 0x00, 0x60, 0x90, 0x90, 0x60, 0x00, 0x00, 0x00, 0x00,    // row 1 - 11   Celcius
-        0x00, 0x00, 0x00, 0x00, 0x00    
+#ifdef TFT_ESPI_GRAVE_IS_DEGREE
+        0x00, 0x00, 0x00, 0x60, 0x90, 0x90, 0x60, 0x00, 0x00, 0x00, 0x00,    // row 1 - 11   Degree symbol
+        0x00, 0x00, 0x00, 0x00, 0x00
+#else
+        0x00, 0x00, 0x00, 0x40, 0x40, 0x40, 0x20, 0x00, 0x00, 0x00, 0x00,    // row 1 - 11   Grave accent
+        0x00, 0x00, 0x00, 0x00, 0x00                                         // row 12 - 16
+#endif
 };
 
 PROGMEM const unsigned char chr_f16_61[16] =         // 1 unsigned char per row
