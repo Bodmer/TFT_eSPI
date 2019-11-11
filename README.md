@@ -1,7 +1,7 @@
 
 # News
 
-1. A callback function has been added, this allows anitaliased fonts to be rendered over colour gradients or images. Two new examples have been added to illustrate this new capability:
+1. A callback function has been added, this allows antialiased fonts to be rendered over colour gradients or images. Two new examples have been added to illustrate this new capability:
 
            "Smooth_font_reading_TFT"
     
