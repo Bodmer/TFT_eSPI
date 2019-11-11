@@ -9,6 +9,13 @@
 
 #define ST7735_REDTAB
 
+// Overlap mode shares the ESP8266 FLASH SPI bus with the TFT so has a performance impact
+// but saves pins for other functions. It is best not to connect MISO as some displays
+// do not tristate that line wjen chip select is high!
+// On NodeMCU 1.0 SD0=MISO, SD1=MOSI, CLK=SCLK to connect to TFT in overlap mode
+// On NodeMCU V3  S0 =MISO, S1 =MOSI, S2 =SCLK
+// In ESP8266 overlap mode the following must be defined
+#define TFT_SPI_OVERLAP
 
 // In ESP8266 overlap mode the TFT chip select MUST connect to pin D3
 #define TFT_CS   PIN_D3
@@ -16,8 +23,7 @@
 #define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
-// In ESP8266 overlap mode the following must be defined
-#define TFT_SPI_OVERLAP
+
 
 
 #define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
