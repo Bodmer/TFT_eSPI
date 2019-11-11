@@ -392,8 +392,8 @@ PROGMEM const unsigned char chr_f16_5B[16] =         // 1 unsigned char per row
 
 PROGMEM const unsigned char chr_f16_5C[16] =         // 1 unsigned char per row
 {
-        0x00, 0x00, 0x04, 0x04, 0x08, 0x08, 0x10, 0x10, 0x20, 0x20, 0x40,    // row 1 - 11
-        0x40, 0x80, 0x80, 0x00, 0x00                                         // row 12 - 16
+        0x00, 0x00, 0x80, 0x80, 0x40, 0x40, 0x20, 0x20, 0x10, 0x10, 0x08,    // row 1 - 11
+        0x08, 0x04, 0x04, 0x00, 0x00                                         // row 12 - 16
 };
 
 PROGMEM const unsigned char chr_f16_5D[16] =         // 1 unsigned char per row
