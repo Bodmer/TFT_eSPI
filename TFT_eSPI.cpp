@@ -266,7 +266,6 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 #endif
 }
 
-
 /***************************************************************************************
 ** Function name:           begin
 ** Description:             Included for backwards compatibility
@@ -276,15 +275,18 @@ void TFT_eSPI::begin(uint8_t tc)
  init(tc);
 }
 
-
 /***************************************************************************************
 ** Function name:           init (tc is tab colour for ST7735 displays only)
 ** Description:             Reset, then initialise the TFT display registers
 ***************************************************************************************/
-void TFT_eSPI::init(uint8_t tc)
+void TFT_eSPI::init(uint8_t tc, void (*ext_dc_func)(bool state), void (*ext_cs_func)(bool state), void (*ext_rst_func)(void))
 {
   if (_booted)
   {
+	  ext_cs = ext_cs_func;
+	  ext_dc = ext_dc_func;
+	  ext_rst = ext_rst_func;
+	  
 #if !defined (ESP32)
   #if defined (TFT_CS) && (TFT_CS >= 0)
     cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
@@ -368,7 +370,8 @@ void TFT_eSPI::init(uint8_t tc)
   }
   else writecommand(TFT_SWRST); // Software reset
 #else
-  writecommand(TFT_SWRST); // Software reset
+	if (ext_rst) ext_rst(); // External function for reset
+	else writecommand(TFT_SWRST); // Software reset
 #endif
 
   spi_end();

@@ -125,8 +125,8 @@
 #endif
 
 #ifndef TFT_DC
-  #define DC_C // No macro allocated so it generates no code
-  #define DC_D // No macro allocated so it generates no code
+  #define DC_C if(ext_dc) ext_dc(false) // If callback set, call function
+  #define DC_D if(ext_dc) ext_dc(true) // If callback set, call function
 #else
   #if defined (ESP8266) && (TFT_DC == 16)
     #define DC_C digitalWrite(TFT_DC, LOW)
@@ -182,8 +182,8 @@
 #endif
 
 #ifndef TFT_CS
-  #define CS_L // No macro allocated so it generates no code
-  #define CS_H // No macro allocated so it generates no code
+  #define CS_L if(ext_cs) ext_cs(false) // If callback set, call function
+  #define CS_H if(ext_cs) ext_cs(true) // If callback set, call function
 #else
   #if defined (ESP8266) && (TFT_CS == 16)
     #define CS_L digitalWrite(TFT_CS, LOW)
@@ -664,8 +664,8 @@ class TFT_eSPI : public Print {
 
   TFT_eSPI(int16_t _W = TFT_WIDTH, int16_t _H = TFT_HEIGHT);
 
-  void     init(uint8_t tc = TAB_COLOUR), begin(uint8_t tc = TAB_COLOUR); // Same - begin included for backwards compatibility
-
+  void init(uint8_t tc = TAB_COLOUR, void (*ext_dc_func)(bool state) = NULL, void (*ext_cs_func)(bool state) = NULL, void (*ext_rst_func)(void) = NULL), begin(uint8_t tc = TAB_COLOUR); // Same - begin included for backwards compatibility
+	
   // These are virtual so the TFT_eSprite class can override them with sprite specific functions
   virtual void     drawPixel(int32_t x, int32_t y, uint32_t color),
                    drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32_t bg, uint8_t size),
@@ -850,6 +850,9 @@ class TFT_eSPI : public Print {
   uint16_t decoderBuffer;      // Unicode code-point buffer
 
  private:
+	void (*ext_dc)(bool state);
+	void (*ext_cs)(bool state);
+	void (*ext_rst)(void);
 
   inline void spi_begin() __attribute__((always_inline));
   inline void spi_end()   __attribute__((always_inline));
