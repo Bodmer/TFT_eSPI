@@ -92,6 +92,16 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
 
 
 /***************************************************************************************
+** Function name:           ~TFT_eSprite
+** Description:             Class destructor
+*************************************************************************************x*/
+TFT_eSprite::~TFT_eSprite()
+{
+  deleteSprite();
+}
+
+
+/***************************************************************************************
 ** Function name:           callocSprite
 ** Description:             Allocate a memory area for the Sprite and return pointer
 *************************************************************************************x*/
