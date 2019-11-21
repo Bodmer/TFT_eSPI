@@ -4222,8 +4222,12 @@ size_t TFT_eSPI::write(uint8_t utf8)
           cursor_y += (int16_t)textsize *
                       (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
         }
-        if (textwrapY && (cursor_y >= (int32_t)_height)) cursor_y = 0;
-        drawChar(cursor_x, cursor_y, uniCode, textcolor, textbgcolor, textsize);
+        int32_t y = cursor_y + glyph_ab * textsize;
+        if (textwrapY && (y >= (int32_t)_height)) {
+          cursor_y = 0;
+          y = glyph_ab * textsize;
+        }
+        drawChar(cursor_x, y, uniCode, textcolor, textbgcolor, textsize);
       }
       cursor_x += pgm_read_byte(&glyph->xAdvance) * (int16_t)textsize;
     }
