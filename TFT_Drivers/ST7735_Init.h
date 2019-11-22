@@ -197,4 +197,9 @@
        }
        commandList(Rcmd3);
      }
+	#ifdef TFT_BL
+  	// Turn on the back-light LED
+  	digitalWrite(TFT_BL, HIGH);
+  	pinMode(TFT_BL, OUTPUT);
+	#endif
 }
