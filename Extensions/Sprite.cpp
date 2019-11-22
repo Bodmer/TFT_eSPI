@@ -1447,8 +1447,12 @@ size_t TFT_eSprite::write(uint8_t utf8)
           this->cursor_x  = 0;
           this->cursor_y += (int16_t)textsize * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
         }
-        if (textwrapY && (this->cursor_y >= _iheight)) this->cursor_y = 0;
-        drawChar(this->cursor_x, this->cursor_y, uniCode, textcolor, textbgcolor, textsize);
+        int32_t y = this->cursor_y + glyph_ab * textsize; // Adjust for baseline datum of free fonts
+        if (textwrapY && (y >= (int32_t)_iheight)) {
+          this->cursor_y = 0;
+          y = glyph_ab * textsize;
+        }
+        drawChar(this->cursor_x, y, uniCode, textcolor, textbgcolor, textsize);
       }
       this->cursor_x += pgm_read_byte(&glyph->xAdvance) * (int16_t)textsize;
     }
