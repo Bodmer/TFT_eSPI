@@ -125,8 +125,8 @@
 #endif
 
 #ifndef TFT_DC
-  #define DC_C if(ext_dc) ext_dc(false) // If callback set, call function
-  #define DC_D if(ext_dc) ext_dc(true) // If callback set, call function
+  #define DC_C if(ext_dc) ext_dc(true) // If callback set, call function
+  #define DC_D if(ext_dc) ext_dc(false) // If callback set, call function
 #else
   #if defined (ESP8266) && (TFT_DC == 16)
     #define DC_C digitalWrite(TFT_DC, LOW)
@@ -182,8 +182,8 @@
 #endif
 
 #ifndef TFT_CS
-  #define CS_L if(ext_cs) ext_cs(false) // If callback set, call function
-  #define CS_H if(ext_cs) ext_cs(true) // If callback set, call function
+  #define CS_L if(ext_cs && !_app_cs) ext_cs(true) // If callback set, call function
+  #define CS_H if(ext_cs && !_app_cs) ext_cs(false) // If callback set, call function
 #else
   #if defined (ESP8266) && (TFT_CS == 16)
     #define CS_L digitalWrite(TFT_CS, LOW)
@@ -246,8 +246,8 @@
 
 // chip select signal for touchscreen
 #ifndef TOUCH_CS
-  #define T_CS_L // No macro allocated so it generates no code
-  #define T_CS_H // No macro allocated so it generates no code
+  #define T_CS_L if(ext_tcs && !_app_cs) ext_tcs(true) // If callback set, call function
+  #define T_CS_H if(ext_tcs && !_app_cs) ext_tcs(false) // If callback set, call function
 #else
   #define T_CS_L digitalWrite(TOUCH_CS, LOW)
   #define T_CS_H digitalWrite(TOUCH_CS, HIGH)
@@ -663,8 +663,9 @@ class TFT_eSPI : public Print {
  public:
 
   TFT_eSPI(int16_t _W = TFT_WIDTH, int16_t _H = TFT_HEIGHT);
-
-  void init(uint8_t tc = TAB_COLOUR, void (*ext_dc_func)(bool state) = NULL, void (*ext_cs_func)(bool state) = NULL, void (*ext_rst_func)(void) = NULL), begin(uint8_t tc = TAB_COLOUR); // Same - begin included for backwards compatibility
+  
+  void init(uint8_t tc = TAB_COLOUR), begin(uint8_t tc = TAB_COLOUR); // Same - begin included for backwards compatibility
+  void init(void (*ext_dc_func)(bool dc_state), void (*ext_cs_func)(bool cs_state), void (*ext_rst_func)(void), void (*ext_tcs_func)(bool tcs_state), bool app_cs = false, uint8_t tc = TAB_COLOUR);
 	
   // These are virtual so the TFT_eSprite class can override them with sprite specific functions
   virtual void     drawPixel(int32_t x, int32_t y, uint32_t color),
@@ -850,9 +851,10 @@ class TFT_eSPI : public Print {
   uint16_t decoderBuffer;      // Unicode code-point buffer
 
  private:
-	void (*ext_dc)(bool state);
-	void (*ext_cs)(bool state);
+	void (*ext_dc)(bool dc_state);
+	void (*ext_cs)(bool cs_state);
 	void (*ext_rst)(void);
+	void (*ext_tcs)(bool tcs_state);
 
   inline void spi_begin() __attribute__((always_inline));
   inline void spi_end()   __attribute__((always_inline));
@@ -897,17 +899,17 @@ class TFT_eSPI : public Print {
   bool     _booted;    // init() or begin() has already run once
   bool     _cp437;     // If set, use correct CP437 charset (default is ON)
   bool     _utf8;      // If set, use UTF-8 decoder in print stream 'write()' function (default ON)
-
+  bool		_app_cs;   // If CS is manipulated from main APP
   uint32_t _lastColor; // Buffered value of last colour used
 
 #ifdef LOAD_GFXFF
   GFXfont  *gfxFont;
 #endif
 
-// Load the Touch extension
-#ifdef TOUCH_CS
+// Load the Touch extension regardless TOUCH_CS state
+//#ifdef TOUCH_CS
   #include "Extensions/Touch.h"
-#endif
+//#endif
 
 // Load the Anti-aliased font extension
 #ifdef SMOOTH_FONT

@@ -99,7 +99,7 @@ inline void TFT_eSPI::spi_end_read(void){
 #endif
 }
 
-#if defined (TOUCH_CS) && defined (SPI_TOUCH_FREQUENCY) // && !defined(ESP32_PARALLEL)
+//#if defined (TOUCH_CS) && defined (SPI_TOUCH_FREQUENCY) // && !defined(ESP32_PARALLEL)
 
   inline void TFT_eSPI::spi_begin_touch(void){
    CS_H; // Just in case it has been left low
@@ -131,7 +131,7 @@ inline void TFT_eSPI::spi_end_read(void){
   #endif
   }
 
-#endif
+//#endif
 
 /***************************************************************************************
 ** Function name:           TFT_eSPI
@@ -146,12 +146,16 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 #ifdef TFT_CS
   digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
   pinMode(TFT_CS, OUTPUT);
+#else
+  if (ext_cs && !_app_cs) ext_cs(false); // CS high
 #endif
 
 // Configure chip select for touchscreen controller if present
 #ifdef TOUCH_CS
   digitalWrite(TOUCH_CS, HIGH); // Chip select high (inactive)
   pinMode(TOUCH_CS, OUTPUT);
+#else
+  if (ext_tcs && !_app_cs) ext_tcs(false); // CS high
 #endif
 
 #ifdef TFT_WR
@@ -162,6 +166,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 #ifdef TFT_DC
   digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
   pinMode(TFT_DC, OUTPUT);
+#else
+  if (ext_dc) ext_dc(false); //DC high
 #endif
 
 #ifdef TFT_RST
@@ -279,13 +285,20 @@ void TFT_eSPI::begin(uint8_t tc)
 ** Function name:           init (tc is tab colour for ST7735 displays only)
 ** Description:             Reset, then initialise the TFT display registers
 ***************************************************************************************/
-void TFT_eSPI::init(uint8_t tc, void (*ext_dc_func)(bool state), void (*ext_cs_func)(bool state), void (*ext_rst_func)(void))
+void TFT_eSPI::init(void (*ext_dc_func)(bool dc_state), void (*ext_cs_func)(bool cs_state), void (*ext_rst_func)(void), void (*ext_tcs_func)(bool tcs_state), bool app_cs, uint8_t tc)
+{
+  ext_cs = ext_cs_func;		// callback function to manipulate TFT CS
+  ext_dc = ext_dc_func;		// callback function to manipulate TFT DC
+  ext_rst = ext_rst_func;	// callback function to manipulate TFT RST
+  ext_tcs = ext_tcs_func;	// callback function to manipulate TouchPanel CS
+  _app_cs = app_cs;			// flag FALSE: library drives CS lines, TRUE: application must take care about CS manipulation (to increase performance in case of slow I2C mux)
+  init(tc);					// proceed with normal init
+}
+
+void TFT_eSPI::init(uint8_t tc)
 {
   if (_booted)
   {
-	  ext_cs = ext_cs_func;
-	  ext_dc = ext_dc_func;
-	  ext_rst = ext_rst_func;
 	  
 #if !defined (ESP32)
   #if defined (TFT_CS) && (TFT_CS >= 0)
@@ -343,7 +356,7 @@ void TFT_eSPI::init(uint8_t tc, void (*ext_dc_func)(bool state), void (*ext_cs_f
     digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
     pinMode(TFT_CS, OUTPUT);
   #else
-    spi.setHwCs(1); // Use hardware SS toggling
+	spi.setHwCs(1); // Use hardware SS toggling
   #endif
 #endif
 
@@ -5360,10 +5373,10 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#ifdef TOUCH_CS
+//#ifdef TOUCH_CS
   #include "Extensions/Touch.cpp"
   #include "Extensions/Button.cpp"
-#endif
+//#endif
 
 #include "Extensions/Sprite.cpp"
 
