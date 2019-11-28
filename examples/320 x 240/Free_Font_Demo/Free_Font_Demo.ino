@@ -38,10 +38,10 @@
   #########################################################################
 */
 
-#include "Free_Fonts.h" // Include the header file attached to this sketch
-
 #include "SPI.h"
 #include "TFT_eSPI.h"
+
+#include "Free_Fonts.h" // Include the header file attached to this sketch
 
 // Use hardware SPI
 TFT_eSPI tft = TFT_eSPI();

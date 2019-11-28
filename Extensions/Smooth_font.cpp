@@ -370,7 +370,6 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
 */
 
 
-
 /***************************************************************************************
 ** Function name:           alphaBlend
 ** Description:             Blend foreground and background and return new colour
@@ -509,6 +508,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
               else drawFastHLine( xs, y + cy, dl, fg);
               dl = 0;
             }
+            if (getColor) bg = getColor(x + cx, y + cy);
             drawPixel(x + cx, y + cy, alphaBlend(pixel, fg, bg));
           }
           else

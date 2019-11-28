@@ -34,6 +34,7 @@ void drawBmp(const char *filename, int16_t x, int16_t y) {
     {
       y += h - 1;
 
+      bool oldSwapBytes = tft.getSwapBytes();
       tft.setSwapBytes(true);
       bmpFS.seek(seekOffset);
 
@@ -58,6 +59,7 @@ void drawBmp(const char *filename, int16_t x, int16_t y) {
         // y is decremented as the BMP image is drawn bottom up
         tft.pushImage(x, y--, w, 1, (uint16_t*)lineBuffer);
       }
+      tft.setSwapBytes(oldSwapBytes);
       Serial.print("Loaded in "); Serial.print(millis() - startTime);
       Serial.println(" ms");
     }

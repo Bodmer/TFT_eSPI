@@ -52,7 +52,7 @@ void TFT_eSPI_Button::drawButton(boolean inverted) {
   _gfx->fillRoundRect(_x1, _y1, _w, _h, r, fill);
   _gfx->drawRoundRect(_x1, _y1, _w, _h, r, outline);
 
-  _gfx->setTextColor(text);
+  _gfx->setTextColor(text, fill);
   _gfx->setTextSize(_textsize);
 
   uint8_t tempdatum = _gfx->getTextDatum();

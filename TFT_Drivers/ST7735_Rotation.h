@@ -84,8 +84,8 @@
        rowstart = 0;
      } else if(tabcolor == INITR_GREENTAB160x80) {
        writedata(TFT_MAD_BGR);
-       colstart = 0;
-       rowstart = 0;
+       colstart = 26;
+       rowstart = 1;
      } else if(tabcolor == INITR_REDTAB160x80) {
        writedata(TFT_MAD_BGR);
        colstart = 24;
