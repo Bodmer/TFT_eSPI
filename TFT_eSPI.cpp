@@ -834,8 +834,23 @@ void busDir(uint32_t mask, uint8_t mode)
 // Set ESP32 GPIO pin to input or output
 void gpioMode(uint8_t gpio, uint8_t mode)
 {
-  if(mode == INPUT) GPIO.enable_w1tc = ((uint32_t)1 << gpio);
-  else GPIO.enable_w1ts = ((uint32_t)1 << gpio);
+  // vvvvvv Omitting this code may cause malfunction
+  uint32_t rtc_reg = rtc_gpio_desc[gpio].reg;
+  if(rtc_reg) {
+    ESP_REG(rtc_reg) = ESP_REG(rtc_reg) & ~(rtc_gpio_desc[gpio].pullup | rtc_gpio_desc[gpio].pulldown);
+  }
+  // ^^^^^^
+
+  if(gpio < 32)
+  {
+    if(mode == INPUT) GPIO.enable_w1tc = ((uint32_t)1 << gpio);
+    else GPIO.enable_w1ts = ((uint32_t)1 << gpio);
+  }
+  else
+  {
+    if(mode == INPUT) GPIO.enable1_w1tc.data = ((uint32_t)1 << (gpio-32));
+    else GPIO.enable1_w1ts.data = ((uint32_t)1 << (gpio-32));
+  }
   ESP_REG(DR_REG_IO_MUX_BASE + esp32_gpioMux[gpio].reg) = ((uint32_t)2 << FUN_DRV_S) | (FUN_IE) | ((uint32_t)2 << MCU_SEL_S);
   GPIO.pin[gpio].val = 0;
 }
