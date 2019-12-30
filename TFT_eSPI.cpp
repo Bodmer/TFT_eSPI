@@ -831,6 +831,7 @@ void busDir(uint32_t mask, uint8_t mode)
   return; //*/
 }
 
+#include "driver/rtc_io.h"
 // Set ESP32 GPIO pin to input or output
 void gpioMode(uint8_t gpio, uint8_t mode)
 {
