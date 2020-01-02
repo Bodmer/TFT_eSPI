@@ -1,6 +1,7 @@
 
 # News
 1. A new beta test branch has been added to support other processors, in particular STM32:
+
            https://github.com/Bodmer/TFT_eSPI/tree/STM32
     
 2. A callback function has been added, this allows antialiased fonts to be rendered over colour gradients or images. Two new examples have been added to illustrate this new capability:
