@@ -335,7 +335,7 @@ void TFT_eSPI::init(uint8_t tc)
 #endif
 
 #if defined(ESP32_PARALLEL)
-    digitalWrite(TFT_CS, LOW); // Chip select low permanently
+    digitalWrite(TFT_CS, HIGH);
     pinMode(TFT_CS, OUTPUT);
 #else
   #ifdef TFT_CS
