@@ -1,7 +1,9 @@
 
 # News
-
-1. A callback function has been added, this allows antialiased fonts to be rendered over colour gradients or images. Two new examples have been added to illustrate this new capability:
+1. A new beta test branch has been added to support other processors, in particular STM32:
+           https://github.com/Bodmer/TFT_eSPI/tree/STM32
+    
+2. A callback function has been added, this allows antialiased fonts to be rendered over colour gradients or images. Two new examples have been added to illustrate this new capability:
 
            "Smooth_font_reading_TFT"
     
@@ -9,18 +11,17 @@
            
       ![AA_gradien](https://i.imgur.com/YMBcPHp.png)
     
-2. Sprites can now by pushed to the screen (or another Sprite) with a rotation angle. The new function is pushRotated(). Three new examples (Rotate_Sprite_1/2/3) have been added to show how the functions can be used to rotate text, images and to draw animated dials with moving needles.
+3. Sprites can now by pushed to the screen (or another Sprite) with a rotation angle. The new function is pushRotated(). Three new examples (Rotate_Sprite_1/2/3) have been added to show how the functions can be used to rotate text, images and to draw animated dials with moving needles.
 
-3. A new TFT_eFEX support library has been created which includes extra functions such as drawing a BMP or Jpeg to the screen. This library will simplify the examples. It will be expanded at a future date to include meters, dials and GUI elements like progress bars, graphs and animated buttons:
+4. A new TFT_eFEX support library has been created which includes extra functions such as drawing a BMP or Jpeg to the screen. This library will simplify the examples. It will be expanded at a future date to include meters, dials and GUI elements like progress bars, graphs and animated buttons:
 https://github.com/Bodmer/TFT_eFEX
 
-4. androdlang has published a really nice companion library to extend the graphics capabilities of TFT_eSPI, you can find this here:
+5. androdlang has published a really nice companion library to extend the graphics capabilities of TFT_eSPI, you can find this here:
 https://github.com/androdlang/TFTShape
 
-5. I have created a user updateable graphics extension library template that can be used to create your own graphics extensions. The Library contains examples and is commented so it should be clear what you need to do to add functions. You can find it here:
+6. I have created a user updateable graphics extension library template that can be used to create your own graphics extensions. The Library contains examples and is commented so it should be clear what you need to do to add functions. You can find it here:
 https://github.com/Bodmer/TFT_eFX
 
-6. The capability to read from an ST7789V TFT with a single bidirectional SDA pin has been added. At the moment this **ONLY** works with an ESP32. It is enabled with a #define TFT_SDA_READ in the setup file.
 
 # TFT_eSPI
 
