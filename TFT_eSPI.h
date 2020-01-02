@@ -190,8 +190,16 @@
     #define CS_H digitalWrite(TFT_CS, HIGH)
   #elif defined (ESP32)
     #if defined (ESP32_PARALLEL)
-      #define CS_L // The TFT CS is set permanently low during init()
-      #define CS_H
+      #if TFT_CS >= 32
+          #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
+          #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
+      #elif TFT_CS >= 0
+          #define CS_L GPIO.out_w1tc = (1 << TFT_CS)
+          #define CS_H GPIO.out_w1ts = (1 << TFT_CS)
+      #else
+        #define CS_L
+        #define CS_H
+      #endif
     #else
       #if TFT_CS >= 32
         #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower CS change
