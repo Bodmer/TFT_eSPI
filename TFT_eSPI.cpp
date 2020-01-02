@@ -906,7 +906,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
   uint32_t len = w * h;
   while (len--) {
 
-  #if !defined (ILI9488_DRIVER)
+  //#if !defined (ILI9488_DRIVER)
 
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
     // as the TFT stores colours as 18 bits
@@ -914,15 +914,15 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
     uint8_t g = tft_Read_8();
     uint8_t b = tft_Read_8();
 
-  #else
+  //#else
 
     // The 6 colour bits are in LS 6 bits of each byte but we do not include the extra clock pulse
     // so we use a trick and mask the middle 6 bits of the byte, then only shift 1 place left
-    uint8_t r = (tft_Read_8()&0x7E)<<1;
-    uint8_t g = (tft_Read_8()&0x7E)<<1;
-    uint8_t b = (tft_Read_8()&0x7E)<<1;
+  //  uint8_t r = (tft_Read_8()&0x7E)<<1;
+  //  uint8_t g = (tft_Read_8()&0x7E)<<1;
+  //  uint8_t b = (tft_Read_8()&0x7E)<<1;
 
-  #endif
+  //#endif
 
     // Swapped colour byte order for compatibility with pushRect()
     *data++ = (r & 0xF8) | (g & 0xE0) >> 5 | (b & 0xF8) << 5 | (g & 0x1C) << 11;
