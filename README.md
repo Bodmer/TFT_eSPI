@@ -3,7 +3,7 @@ If you load a new copy of TFT_eSPI then it will over-write your setups if they a
 
 #include <../TFT_eSPI_Setups/my_custom_setup.h>
 
-You must make sure only one nsetup file is called. In the the custom setup file I add the file path as a commented out first line that can be cut and pasted back into the upgraded User_Setup_Select.h file.  The ../ at the start of the path means go up one directory level. Clearly you could use different file paths or directory names as long as it does not clash with another library or folder name.
+You must make sure only one setup file is called. In the the custom setup file I add the file path as a commented out first line that can be cut and pasted back into the upgraded User_Setup_Select.h file.  The ../ at the start of the path means go up one directory level. Clearly you could use different file paths or directory names as long as it does not clash with another library or folder name.
 
 # News
 1. A new beta test branch has been added to support other processors, in particular STM32:
