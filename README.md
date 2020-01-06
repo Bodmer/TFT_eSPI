@@ -5,7 +5,7 @@ If you load a new copy of TFT_eSPI then it will over-write your setups if they a
 ```
 You must make sure only one setup file is called. In the the custom setup file I add the file path as a commented out first line that can be cut and pasted back into the upgraded User_Setup_Select.h file.  The ../ at the start of the path means go up one directory level. Clearly you could use different file paths or directory names as long as it does not clash with another library or folder name.
 
-You can take this one setp further and have you own setup select file and then, when upgrading, you only need to replace the Setup.h line reference to for example:
+You can take this one step further and have you own setup select file and then you only need to replace the Setup.h line reference in User_Setup_Select.h to, for example:
 ```
 #include <../TFT_eSPI_Setups/my_setup_select.h>
 ```
