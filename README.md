@@ -9,7 +9,7 @@ You can take this one step further and have your own setup select file and then 
 ```
 #include <../TFT_eSPI_Setups/my_setup_select.h>
 ```
-To select a new setup you then edit your own my_setup_select.h file (which will not get over-writtem furing an upgrade).
+To select a new setup you then edit your own my_setup_select.h file (which will not get over-written during an upgrade).
 
 # News
 1. A new beta test branch has been added to support other processors, in particular STM32:
