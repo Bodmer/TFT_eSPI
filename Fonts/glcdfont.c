@@ -3,8 +3,6 @@
 #ifndef FONT5X7_H
 #define FONT5X7_H
 
-#include <pgmspace.h>
-
 // Standard ASCII 5x7 font
 
 static const unsigned char font[] PROGMEM = {

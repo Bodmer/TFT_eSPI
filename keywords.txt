@@ -5,7 +5,6 @@ drawPixel	KEYWORD2
 drawChar	KEYWORD2
 setAddrWindow	KEYWORD2
 setWindow	KEYWORD2
-readAddrWindow	KEYWORD2
 startWrite	KEYWORD2
 writeColor	KEYWORD2
 endWrite	KEYWORD2
@@ -72,6 +71,21 @@ height	KEYWORD2
 width	KEYWORD2
 textWidth	KEYWORD2
 fontHeight	KEYWORD2
+getSetup	KEYWORD2
+setAttribute	KEYWORD2
+getAttribute	KEYWORD2
+alphaBlend	KEYWORD2
+
+getSPIinstance	KEYWORD2
+pushBlock	KEYWORD2
+pushPixels	KEYWORD2
+
+initDMA	KEYWORD2
+deInitDMA	KEYWORD2
+pushImageDMA	KEYWORD2
+pushBlockDMA	KEYWORD2
+pushPixelsDMA	KEYWORD2
+dmaBusy	KEYWORD2
 
 getTouchRaw	KEYWORD2
 convertRawXY	KEYWORD2
@@ -100,6 +114,7 @@ setColorDepth	KEYWORD2
 getColorDepth	KEYWORD2
 deleteSprite	KEYWORD2
 pushRotated	KEYWORD2
+pushRotatedHP	KEYWORD2
 rotatedBounds	KEYWORD2
 setPivot	KEYWORD2
 getPivotX	KEYWORD2
@@ -113,7 +128,6 @@ printToSprite	KEYWORD2
 frameBuffer	KEYWORD2
 setBitmapColor	KEYWORD2
 
-alphaBlend	KEYWORD2
 showFont	KEYWORD2
 loadFont	KEYWORD2
 unloadFont	KEYWORD2

@@ -15,13 +15,35 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "1.4.21"
-
-//#define ESP32 //Just used to test ESP32 options
+#define TFT_ESPI_VERSION "1.4.30"
 
 // Include header file that defines the fonts loaded, the TFT drivers
-// available and the pins to be used
+// available and the pins to be used, etc, etc
 #include <User_Setup_Select.h>
+
+//Standard support
+#include <Arduino.h>
+#include <Print.h>
+#include <SPI.h>
+
+#ifdef __AVR__
+  #include <avr/pgmspace.h>
+#elif defined(ESP8266) || defined(ESP32)
+  #include <pgmspace.h>
+#else
+  #define PROGMEM
+#endif
+
+// Include the processor specific drivers
+#if defined (ESP32)
+  #include "Processors/TFT_eSPI_ESP32.h"
+#elif defined (ESP8266)
+  #include "Processors/TFT_eSPI_ESP8266.h"
+#elif defined (STM32)
+  //#include "Processors/TFT_eSPI_STM32.h"
+#else
+  //#include "Processors/TFT_eSPI_Generic.h"
+#endif
 
 #ifndef TAB_COLOUR
   #define TAB_COLOUR 0
@@ -98,398 +120,12 @@
   #endif
 #endif
 
-#include <Arduino.h>
-#include <Print.h>
-
-#include <pgmspace.h>
-
-#include <SPI.h>
-
-#ifdef ESP32
-  #include "soc/spi_reg.h"
-  #ifdef USE_HSPI_PORT
-    #define SPI_PORT HSPI
-  #else
-    #define SPI_PORT VSPI
-  #endif
-#endif
-
-#ifdef SMOOTH_FONT
-  // Call up the SPIFFS FLASH filing system for the anti-aliased fonts
-  #define FS_NO_GLOBALS
-  #include <FS.h>
-
-  #ifdef ESP32
-    #include "SPIFFS.h"
-  #endif
-#endif
-
-#ifndef TFT_DC
-  #define DC_C // No macro allocated so it generates no code
-  #define DC_D // No macro allocated so it generates no code
-#else
-  #if defined (ESP8266) && (TFT_DC == 16)
-    #define DC_C digitalWrite(TFT_DC, LOW)
-    #define DC_D digitalWrite(TFT_DC, HIGH)
-  #elif defined (ESP32)
-    #if defined (ESP32_PARALLEL)
-      #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
-      #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
-
-    #else
-      #if TFT_DC >= 32
-        #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower DC change
-          #define DC_C GPIO.out1_w1ts.val = (1 << (TFT_DC - 32)); \
-                       GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
-          #define DC_D GPIO.out1_w1tc.val = (1 << (TFT_DC - 32)); \
-                       GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
-        #else
-          #define DC_C GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))//;GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
-          #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))//;GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
-        #endif
-      #else
-        #if TFT_DC >= 0
-          #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower DC change
-            #define DC_C GPIO.out_w1ts = (1 << TFT_DC); \
-                         GPIO.out_w1tc = (1 << TFT_DC)
-            #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
-                         GPIO.out_w1ts = (1 << TFT_DC)
-          #else
-            #define DC_C GPIO.out_w1tc = (1 << TFT_DC)//;GPIO.out_w1tc = (1 << TFT_DC)
-            #define DC_D GPIO.out_w1ts = (1 << TFT_DC)//;GPIO.out_w1ts = (1 << TFT_DC)
-          #endif
-        #else
-          #define DC_C
-          #define DC_D
-        #endif
-      #endif
-    #endif
-  #else
-    #define DC_C GPOC=dcpinmask
-    #define DC_D GPOS=dcpinmask
-  #endif
-#endif
-
-#if defined (TFT_SPI_OVERLAP)
-  #undef TFT_CS
-  #define SPI1U_WRITE (SPIUMOSI | SPIUSSE | SPIUCSSETUP | SPIUCSHOLD)
-  #define SPI1U_READ  (SPIUMOSI | SPIUSSE | SPIUCSSETUP | SPIUCSHOLD | SPIUDUPLEX)
-#else
-  #ifdef ESP8266
-    #define SPI1U_WRITE (SPIUMOSI | SPIUSSE)
-    #define SPI1U_READ  (SPIUMOSI | SPIUSSE | SPIUDUPLEX)
-  #endif
-#endif
-
-#ifndef TFT_CS
-  #define CS_L // No macro allocated so it generates no code
-  #define CS_H // No macro allocated so it generates no code
-#else
-  #if defined (ESP8266) && (TFT_CS == 16)
-    #define CS_L digitalWrite(TFT_CS, LOW)
-    #define CS_H digitalWrite(TFT_CS, HIGH)
-  #elif defined (ESP32)
-    #if defined (ESP32_PARALLEL)
-      #if TFT_CS >= 32
-          #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
-          #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
-      #elif TFT_CS >= 0
-          #define CS_L GPIO.out_w1tc = (1 << TFT_CS)
-          #define CS_H GPIO.out_w1ts = (1 << TFT_CS)
-      #else
-        #define CS_L
-        #define CS_H
-      #endif
-    #else
-      #if TFT_CS >= 32
-        #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower CS change
-          #define CS_L GPIO.out1_w1ts.val = (1 << (TFT_CS - 32)); \
-                       GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
-          #define CS_H GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); \
-                       GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
-        #else
-          #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
-          #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))//;GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
-        #endif
-      #else
-        #if TFT_CS >= 0
-          #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower CS change
-            #define CS_L GPIO.out_w1ts = (1 << TFT_CS); GPIO.out_w1tc = (1 << TFT_CS)
-            #define CS_H GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1ts = (1 << TFT_CS)
-          #else
-            #define CS_L GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
-            #define CS_H GPIO.out_w1ts = (1 << TFT_CS)//;GPIO.out_w1ts = (1 << TFT_CS)
-          #endif
-        #else
-          #define CS_L
-          #define CS_H
-        #endif
-      #endif
-    #endif
-  #else
-    #define CS_L GPOC=cspinmask
-    #define CS_H GPOS=cspinmask
-  #endif
-#endif
-
-// Use single register write for CS_L and DC_C if pins are both in range 0-31
-#ifdef ESP32
-  #ifdef TFT_CS
-    #if (TFT_CS >= 0) && (TFT_CS < 32) && (TFT_DC >= 0) && (TFT_DC < 32)
-      #ifdef RPI_ILI9486_DRIVER  // RPi display needs a slower CD and DC change
-        #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC)); \
-                          GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
-      #else
-        #define CS_L_DC_C GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC)); GPIO.out_w1tc = ((1 << TFT_CS) | (1 << TFT_DC))
-      #endif
-    #else
-      #define CS_L_DC_C CS_L; DC_C
-    #endif
-  #else
-    #define CS_L_DC_C CS_L; DC_C
-  #endif
-#else // ESP8266
-  #define CS_L_DC_C CS_L; DC_C
-#endif
-
-// chip select signal for touchscreen
-#ifndef TOUCH_CS
-  #define T_CS_L // No macro allocated so it generates no code
-  #define T_CS_H // No macro allocated so it generates no code
-#else
-  #define T_CS_L digitalWrite(TOUCH_CS, LOW)
-  #define T_CS_H digitalWrite(TOUCH_CS, HIGH)
-#endif
-
-
-#ifdef TFT_WR
-  #if defined (ESP32)
-    #define WR_L GPIO.out_w1tc = (1 << TFT_WR)
-    #define WR_H GPIO.out_w1ts = (1 << TFT_WR)
-  #else
-    #define WR_L GPOC=wrpinmask
-    #define WR_H GPOS=wrpinmask
-  #endif
-#endif
-
-#ifdef ESP8266
-  // Concatenate two 16 bit values for the SPI 32 bit register write
-  #define SPI_32(H,L) ( (H)<<16 | (L) )
-  #define COL_32(H,L) ( (H)<<16 | (L) )
-#else
-  #if defined (ESP32_PARALLEL) || defined (ILI9488_DRIVER)
-    #define SPI_32(H,L) ( (H)<<16 | (L) )
-  #else
-    #define SPI_32(H,L) ( ((H)<<8 | (H)>>8) | (((L)<<8 | (L)>>8)<<16 ) )
-  #endif
-  // Swap byte order for concatenated 16 bit colors
-  // AB CD -> DCBA for 32 bit register write
-  #define COL_32(H,L) ( ((H)<<8 | (H)>>8) | (((L)<<8 | (L)>>8)<<16 ) )
-#endif
-
-#if defined (ESP32) && defined (ESP32_PARALLEL)
-  // Mask for the 8 data bits to set pin directions
-  #define dir_mask ((1 << TFT_D0) | (1 << TFT_D1) | (1 << TFT_D2) | (1 << TFT_D3) | (1 << TFT_D4) | (1 << TFT_D5) | (1 << TFT_D6) | (1 << TFT_D7))
-
-  // Data bits and the write line are cleared to 0 in one step
-  #define clr_mask (dir_mask | (1 << TFT_WR))
-
-  // A lookup table is used to set the different bit patterns, this uses 1kByte of RAM
-  #define set_mask(C) xset_mask[C] // 63fps Sprite rendering test 33% faster, graphicstest only 1.8% faster than shifting in real time
-
-  // Real-time shifting alternative to above to save 1KByte RAM, 47 fps Sprite rendering test
-  /*#define set_mask(C) ((C&0x80)>>7)<<TFT_D7 | ((C&0x40)>>6)<<TFT_D6 | ((C&0x20)>>5)<<TFT_D5 | ((C&0x10)>>4)<<TFT_D4 | \
-                        ((C&0x08)>>3)<<TFT_D3 | ((C&0x04)>>2)<<TFT_D2 | ((C&0x02)>>1)<<TFT_D1 | ((C&0x01)>>0)<<TFT_D0
-  //*/
-
-  // Write 8 bits to TFT
-  #define tft_Write_8(C)  GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)C); WR_H
-
-  // Write 16 bits to TFT
-  #ifdef PSEUDO_8_BIT
-    #define tft_Write_16(C) WR_L;GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
-  #else
-    #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 8)); WR_H; \
-                            GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C >> 0)); WR_H
-  #endif
-
-  // 16 bit write with swapped bytes
-  #define tft_Write_16S(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H; \
-                           GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H
-
-  // Write 32 bits to TFT
-  #define tft_Write_32(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 24)); WR_H; \
-                          GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >> 16)); WR_H; \
-                          GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  8)); WR_H; \
-                          GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (C >>  0)); WR_H
-
-  #ifdef TFT_RD
-    #define RD_L GPIO.out_w1tc = (1 << TFT_RD)
-    //#define RD_L digitalWrite(TFT_WR, LOW)
-    #define RD_H GPIO.out_w1ts = (1 << TFT_RD)
-    //#define RD_H digitalWrite(TFT_WR, HIGH)
-  #endif
-
-#elif  defined (ILI9488_DRIVER) // 16 bit colour converted to 3 bytes for 18 bit RGB
-
-  // Write 8 bits to TFT
-  #define tft_Write_8(C)   spi.transfer(C)
-
-  // Convert 16 bit colour to 18 bit and write in 3 bytes
-  #define tft_Write_16(C)  spi.transfer((C & 0xF800)>>8); \
-                           spi.transfer((C & 0x07E0)>>3); \
-                           spi.transfer((C & 0x001F)<<3)
-
-  // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
-  #define tft_Write_16S(C) spi.transfer(C & 0xF8); \
-                           spi.transfer((C & 0xE000)>>11 | (C & 0x07)<<5); \
-                           spi.transfer((C & 0x1F00)>>5)
-  // Write 32 bits to TFT
-  #define tft_Write_32(C)  spi.write32(C)
-
-#elif  defined (RPI_ILI9486_DRIVER)
-
-  #define tft_Write_8(C)   spi.transfer(0); spi.transfer(C)
-  #define tft_Write_16(C)  spi.write16(C)
-  #define tft_Write_16S(C) spi.write16(C<<8 | C>>8)
-  #define tft_Write_32(C)  spi.write32(C)
-
-#elif defined ESP8266
-
-  #define tft_Write_8(C)   spi.write(C)
-  #define tft_Write_16(C)  spi.write16(C)
-  #define tft_Write_32(C)  spi.write32(C)
-
-#else // ESP32 using SPI with 16 bit color display
-
-  // ESP32 low level SPI writes for 8, 16 and 32 bit values
-  // to avoid the function call overhead
-  
-  // Write 8 bits
-  #define tft_Write_8(C) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 8-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), C); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
-
-  // Write 16 bits with corrected endianess for 16 bit colours
-  #define tft_Write_16(C) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 16-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), C<<8 | C>>8); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
-
-  // Write 16 bits
-  #define tft_Write_16S(C) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 16-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), C); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
-
-  // Write 32 bits
-  #define tft_Write_32(C) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 32-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), C); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
-
-#endif
-
-
-#if !defined (ESP32_PARALLEL)
-
-  // Read from display using SPI or software SPI
-  #if defined (ESP8266) && defined (TFT_SDA_READ)
-    // Use a bit banged function call for ESP8266 and bi-directional SDA pin
-    #define SCLK_L GPOC=sclkpinmask
-    #define SCLK_H GPOS=sclkpinmask
-  #else
-    // Use a SPI read transfer
-    #define tft_Read_8() spi.transfer(0)
-  #endif
-
-  // Make sure TFT_MISO is defined if not used to avoid an error message
-  #ifndef TFT_MISO
-    #define TFT_MISO -1
-  #endif
-
-#endif
-
-
 #ifdef LOAD_GFXFF
   // We can include all the free fonts and they will only be built into
   // the sketch if they are used
-
   #include <Fonts/GFXFF/gfxfont.h>
-
   // Call up any user custom fonts
   #include <User_Setups/User_Custom_Fonts.h>
-
-  // Original Adafruit_GFX "Free Fonts"
-  #include <Fonts/GFXFF/TomThumb.h>  // TT1
-
-  #include <Fonts/GFXFF/FreeMono9pt7b.h>  // FF1 or FM9
-  #include <Fonts/GFXFF/FreeMono12pt7b.h> // FF2 or FM12
-  #include <Fonts/GFXFF/FreeMono18pt7b.h> // FF3 or FM18
-  #include <Fonts/GFXFF/FreeMono24pt7b.h> // FF4 or FM24
-
-  #include <Fonts/GFXFF/FreeMonoOblique9pt7b.h>  // FF5 or FMO9
-  #include <Fonts/GFXFF/FreeMonoOblique12pt7b.h> // FF6 or FMO12
-  #include <Fonts/GFXFF/FreeMonoOblique18pt7b.h> // FF7 or FMO18
-  #include <Fonts/GFXFF/FreeMonoOblique24pt7b.h> // FF8 or FMO24
-  
-  #include <Fonts/GFXFF/FreeMonoBold9pt7b.h>  // FF9  or FMB9
-  #include <Fonts/GFXFF/FreeMonoBold12pt7b.h> // FF10 or FMB12
-  #include <Fonts/GFXFF/FreeMonoBold18pt7b.h> // FF11 or FMB18
-  #include <Fonts/GFXFF/FreeMonoBold24pt7b.h> // FF12 or FMB24
-  
-  #include <Fonts/GFXFF/FreeMonoBoldOblique9pt7b.h>  // FF13 or FMBO9
-  #include <Fonts/GFXFF/FreeMonoBoldOblique12pt7b.h> // FF14 or FMBO12
-  #include <Fonts/GFXFF/FreeMonoBoldOblique18pt7b.h> // FF15 or FMBO18
-  #include <Fonts/GFXFF/FreeMonoBoldOblique24pt7b.h> // FF16 or FMBO24
-  
-  // Sans serif fonts
-  #include <Fonts/GFXFF/FreeSans9pt7b.h>  // FF17 or FSS9
-  #include <Fonts/GFXFF/FreeSans12pt7b.h> // FF18 or FSS12
-  #include <Fonts/GFXFF/FreeSans18pt7b.h> // FF19 or FSS18
-  #include <Fonts/GFXFF/FreeSans24pt7b.h> // FF20 or FSS24
-  
-  #include <Fonts/GFXFF/FreeSansOblique9pt7b.h>  // FF21 or FSSO9
-  #include <Fonts/GFXFF/FreeSansOblique12pt7b.h> // FF22 or FSSO12
-  #include <Fonts/GFXFF/FreeSansOblique18pt7b.h> // FF23 or FSSO18
-  #include <Fonts/GFXFF/FreeSansOblique24pt7b.h> // FF24 or FSSO24
-  
-  #include <Fonts/GFXFF/FreeSansBold9pt7b.h>  // FF25 or FSSB9
-  #include <Fonts/GFXFF/FreeSansBold12pt7b.h> // FF26 or FSSB12
-  #include <Fonts/GFXFF/FreeSansBold18pt7b.h> // FF27 or FSSB18
-  #include <Fonts/GFXFF/FreeSansBold24pt7b.h> // FF28 or FSSB24
-  
-  #include <Fonts/GFXFF/FreeSansBoldOblique9pt7b.h>  // FF29 or FSSBO9
-  #include <Fonts/GFXFF/FreeSansBoldOblique12pt7b.h> // FF30 or FSSBO12
-  #include <Fonts/GFXFF/FreeSansBoldOblique18pt7b.h> // FF31 or FSSBO18
-  #include <Fonts/GFXFF/FreeSansBoldOblique24pt7b.h> // FF32 or FSSBO24
-  
-  // Serif fonts
-  #include <Fonts/GFXFF/FreeSerif9pt7b.h>  // FF33 or FS9
-  #include <Fonts/GFXFF/FreeSerif12pt7b.h> // FF34 or FS12
-  #include <Fonts/GFXFF/FreeSerif18pt7b.h> // FF35 or FS18
-  #include <Fonts/GFXFF/FreeSerif24pt7b.h> // FF36 or FS24
-  
-  #include <Fonts/GFXFF/FreeSerifItalic9pt7b.h>  // FF37 or FSI9
-  #include <Fonts/GFXFF/FreeSerifItalic12pt7b.h> // FF38 or FSI12
-  #include <Fonts/GFXFF/FreeSerifItalic18pt7b.h> // FF39 or FSI18
-  #include <Fonts/GFXFF/FreeSerifItalic24pt7b.h> // FF40 or FSI24
-  
-  #include <Fonts/GFXFF/FreeSerifBold9pt7b.h>  // FF41 or FSB9
-  #include <Fonts/GFXFF/FreeSerifBold12pt7b.h> // FF42 or FSB12
-  #include <Fonts/GFXFF/FreeSerifBold18pt7b.h> // FF43 or FSB18
-  #include <Fonts/GFXFF/FreeSerifBold24pt7b.h> // FF44 or FSB24
-  
-  #include <Fonts/GFXFF/FreeSerifBoldItalic9pt7b.h>  // FF45 or FSBI9
-  #include <Fonts/GFXFF/FreeSerifBoldItalic12pt7b.h> // FF46 or FSBI12
-  #include <Fonts/GFXFF/FreeSerifBoldItalic18pt7b.h> // FF47 or FSBI18
-  #include <Fonts/GFXFF/FreeSerifBoldItalic24pt7b.h> // FF48 or FSBI24
-  
 #endif // #ifdef LOAD_GFXFF
 
 //These enumerate the text plotting alignment (reference datum point)
@@ -542,7 +178,7 @@ swap_coord(T& a, T& b) { T t = a; a = b; b = t; }
 
 #ifndef min
   // Return minimum of two numbers, may already be defined
-  #define min(a,b) (((a) < (b)) ? (a) : (b))
+  // #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 // This structure allows sketches to retrieve the user setup parameters at runtime
@@ -550,7 +186,7 @@ swap_coord(T& a, T& b) { T t = a; a = b; b = t; }
 typedef struct
 {
 String  version = TFT_ESPI_VERSION;
-int16_t esp;
+int32_t esp;
 uint8_t trans;
 uint8_t serial;
 uint8_t overlap;
@@ -702,7 +338,7 @@ class TFT_eSPI : public Print {
            fillRoundRect(int32_t x0, int32_t y0, int32_t w, int32_t h, int32_t radius, uint32_t color),
 
            setRotation(uint8_t r),
-           invertDisplay(boolean i),
+           invertDisplay(bool i),
 
            drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color),
            drawCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t cornername, uint32_t color),
@@ -715,10 +351,12 @@ class TFT_eSPI : public Print {
            drawTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint32_t color),
            fillTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint32_t color),
 
-           drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color),
-           drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color),
+           drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t fgcolor),
+           drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t fgcolor, uint16_t bgcolor),
+           drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t fgcolor),
            drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t fgcolor, uint16_t bgcolor),
            setBitmapColor(uint16_t fgcolor, uint16_t bgcolor), // For 1bpp sprites
+
            setPivot(int16_t x, int16_t y),
            setCursor(int16_t x, int16_t y),
            setCursor(int16_t x, int16_t y, uint8_t font),
@@ -726,7 +364,7 @@ class TFT_eSPI : public Print {
            setTextColor(uint16_t fgcolor, uint16_t bgcolor),
            setTextSize(uint8_t size),
 
-           setTextWrap(boolean wrapX, boolean wrapY = false),
+           setTextWrap(bool wrapX, bool wrapY = false),
            setTextDatum(uint8_t datum),
            setTextPadding(uint16_t x_width),
 
@@ -769,7 +407,13 @@ class TFT_eSPI : public Print {
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t  *data, bool bpp8 = true);
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t  *data, uint8_t  transparent, bool bpp8 = true);
 
-           // Swap the byte order for pushImage() - corrects endianness
+           // Write a solid block of a single colour
+  void     pushBlock(uint16_t color, uint32_t len);
+
+           // Write a set of pixels stored in memory, use setSwapBytes(true/false) function to correct endianess
+  void     pushPixels(const void * data_in, uint32_t len);
+
+           // Swap the byte order for pushImage() and pushPixels() - corrects endianness
   void     setSwapBytes(bool swap);
   bool     getSwapBytes(void);
 
@@ -820,15 +464,17 @@ class TFT_eSPI : public Print {
 
            // Compatibility additions
   void     startWrite(void);                         // Begin SPI transaction
-  void     writeColor(uint16_t color, uint32_t len); // Write colours without transaction overhead
+  void     writeColor(uint16_t color, uint32_t len); // Write colours without transaction overhead Deprecated, use pushBlock()
   void     endWrite(void);                           // End SPI transaction
 
   uint16_t decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining);
   uint16_t decodeUTF8(uint8_t c);
+  uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc);
+
   size_t   write(uint8_t);
 
 #ifdef TFT_SDA_READ
-  #if defined (ESP8266) && defined (TFT_SDA_READ)
+  #if defined (TFT_eSPI_ENABLE_8_BIT_READ)
   uint8_t  tft_Read_8(void);
   #endif
   void     begin_SDA_Read(void);
@@ -867,7 +513,19 @@ class TFT_eSPI : public Print {
   inline void spi_begin_read() __attribute__((always_inline));
   inline void spi_end_read()   __attribute__((always_inline));
 
+           // Private function, sketches must use pushPixels() with setSwapBytes(true)
+  void     pushSwapBytePixels(const void* data_in, uint32_t len);
+
   void     readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h);
+
+  // Byte read prototype
+  uint8_t  readByte(void);
+
+  // GPIO parallel input/output control
+  void     busDir(uint32_t mask, uint8_t mode);
+
+  // Single GPIO input/output direction control
+  void     gpioMode(uint8_t gpio, uint8_t mode);
 
   uint8_t  tabcolor,
            colstart = 0, rowstart = 0; // some ST7735 displays need this changed
@@ -900,7 +558,7 @@ class TFT_eSPI : public Print {
   bool     isDigits;   // adjust bounding box for numbers to reduce visual jiggling
   bool     textwrapX, textwrapY;   // If set, 'wrap' text at right and optionally bottom edge of display
   bool     _swapBytes; // Swap the byte order for TFT pushImage()
-  bool     locked, inTransaction; // Transaction and mutex lock flags for ESP32
+  bool     locked, inTransaction; // Transaction and mutex lock flags
 
   bool     _booted;    // init() or begin() has already run once
   bool     _cp437;     // If set, use correct CP437 charset (default is ON)

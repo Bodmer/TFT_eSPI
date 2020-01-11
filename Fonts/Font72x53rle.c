@@ -7,8 +7,6 @@
 // This font only contains characters [space] 0 1 2 3 4 5 6 7 8 9 0 : - .
 // All other characters print as a space
 
-#include <pgmspace.h>
-
 
 PROGMEM const unsigned char widtbl_f72[96] =          // character width table
 {

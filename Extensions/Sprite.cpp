@@ -269,10 +269,113 @@ int16_t TFT_eSprite::getPivotY(void)
 
 
 /***************************************************************************************
-** Function name:           pushRotated
-** Description:             Push a rotated copy of the Sprite to TFT screen
+** Function name:           pushRotated - Fast fixed point integer maths version
+** Description:             Push rotated Sprite to TFT screen
 *************************************************************************************x*/
+#define FP_SCALE 10
 bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
+{
+  if ( !_created ) return false;
+
+  // Trig values for the rotation
+  float radAngle = -angle * 0.0174532925; // Convert degrees to radians
+  float sinraf = sin(radAngle);
+  float cosraf = cos(radAngle);
+
+  int32_t sinra = sinraf * (1<<FP_SCALE);
+  int32_t cosra = cosraf * (1<<FP_SCALE);
+
+  // Bounding box parameters
+  int16_t min_x;
+  int16_t min_y;
+  int16_t max_x;
+  int16_t max_y;
+
+  // Get the bounding box of this rotated source Sprite relative to Sprite pivot
+  getRotatedBounds(sinraf, cosraf, width(), height(), _xpivot, _ypivot, &min_x, &min_y, &max_x, &max_y);
+
+  // Move bounding box so source Sprite pivot coincides with TFT pivot
+  min_x += _tft->_xpivot;
+  max_x += _tft->_xpivot;
+  min_y += _tft->_ypivot;
+  max_y += _tft->_ypivot;
+
+  // Test only to show bounding box on TFT
+  // _tft->drawRect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1, TFT_GREEN);
+
+  // Return if bounding box is outside of TFT area
+  if (min_x > _tft->width()) return true;
+  if (min_y > _tft->height()) return true;
+  if (max_x < 0) return true;
+  if (max_y < 0) return true;
+
+  // Clip bounding box to be within TFT area
+  if (min_x < 0) min_x = 0;
+  if (min_y < 0) min_y = 0;
+  if (max_x > _tft->width())  max_x = _tft->width();
+  if (max_y > _tft->height()) max_y = _tft->height();
+
+  uint16_t sline_buffer[max_y - min_y + 1];
+
+  int32_t xt = min_x - _tft->_xpivot;
+  int32_t yt = min_y - _tft->_ypivot;
+  
+  // Keep multiply out of the loop
+  int32_t cxt = cosra * xt + (_xpivot<<FP_SCALE);
+  int32_t sxt = sinra * xt + (_ypivot<<FP_SCALE);
+  int32_t init_cyt = cosra * yt;
+  int32_t init_syt = sinra * yt;
+
+  _tft->startWrite(); // ESP32: avoid transaction overhead for every tft pixel
+
+  // Scan destination bounding box and fetch transformed pixels from source Sprite
+  for (int32_t x = min_x; x <= max_x; x++) {
+    cxt += cosra;
+    sxt += sinra;
+    bool column_drawn = false;
+    uint32_t pixel_count = 0;
+    int32_t y_start = 0;
+    int32_t xs = cxt - init_syt;
+    int32_t cyt = init_cyt;
+    for (int32_t y = min_y; y <= max_y; y++) {
+      cyt += cosra;
+      xs  -= sinra;
+      // Do not calculate yp unless xp is in bounds
+      int32_t xp = truncateFP(xs, FP_SCALE);
+      if ((xp >= 0) && (xp < _iwidth))
+      {
+        int32_t yp = truncateFP(sxt + cyt, FP_SCALE);
+        // Check if yp is in bounds
+        if ((yp >= 0) && (yp < _iheight)) {
+          uint32_t rp;
+          if (_bpp == 16) {rp = _img[xp + yp * _iwidth]; rp = rp>>8 | rp<<8; }
+          else rp = readPixel(xp, yp);
+          if (transp >= 0 ) {
+            if (rp != transp) _tft->drawPixel(x, y, rp);
+          }
+          else {
+            if (!column_drawn) y_start = y;
+            sline_buffer[pixel_count++] = rp>>8 | rp<<8;
+          }
+          column_drawn = true;
+        }
+      }
+      else if (column_drawn) y = max_y; // Skip remaining column pixels
+    }
+    if (pixel_count) _tft->pushImage(x, y_start, 1, pixel_count, sline_buffer);
+  }
+
+  _tft->endWrite(); // ESP32: end transaction
+
+  return true;
+}
+
+
+/***************************************************************************************
+** Function name:           pushRotatedHP - Higher Precision version of pushRotated
+** Description:             Push rotated Sprite to TFT screen
+*************************************************************************************x*/
+bool TFT_eSprite::pushRotatedHP(int16_t angle, int32_t transp)
 {
   if ( !_created ) return false;
 
@@ -308,7 +411,7 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
   // Clip bounding box to be within TFT area
   if (min_x < 0) min_x = 0;
   if (min_y < 0) min_y = 0;
-  if (max_x > _tft->width()) max_x = _tft->width();
+  if (max_x > _tft->width())  max_x = _tft->width();
   if (max_y > _tft->height()) max_y = _tft->height();
 
   _tft->startWrite(); // ESP32: avoid transaction overhead for every tft pixel
@@ -344,10 +447,93 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
 
 
 /***************************************************************************************
-** Function name:           pushRotated
+** Function name:           pushRotated - Fast fixed point integer maths version
 ** Description:             Push a rotated copy of the Sprite to another Sprite
 *************************************************************************************x*/
 bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
+{
+  if ( !_created ) return false;       // Check this Sprite is created
+  if ( !spr->_created ) return false;  // Ckeck destination Sprite is created
+
+  // Trig values for the rotation
+  float radAngle = -angle * 0.0174532925; // Convert degrees to radians
+  float sinraf = sin(radAngle);
+  float cosraf = cos(radAngle);
+
+  int32_t sinra = sinraf * (1<<FP_SCALE);
+  int32_t cosra = cosraf * (1<<FP_SCALE);
+
+  // Bounding box parameters
+  int16_t min_x;
+  int16_t min_y;
+  int16_t max_x;
+  int16_t max_y;
+
+  // Get the bounding box of this rotated source Sprite
+  getRotatedBounds(sinraf, cosraf, width(), height(), _xpivot, _ypivot, &min_x, &min_y, &max_x, &max_y);
+
+  // Move bounding box so source Sprite pivot coincides with destination Sprite pivot
+  min_x += spr->_xpivot;
+  max_x += spr->_xpivot;
+  min_y += spr->_ypivot;
+  max_y += spr->_ypivot;
+
+  // Test only to show bounding box
+  // spr->fillSprite(TFT_BLACK);
+  // spr->drawRect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1, TFT_GREEN);
+
+  // Return if bounding box is completely outside of destination Sprite
+  if (min_x > spr->width()) return true;
+  if (min_y > spr->height()) return true;
+  if (max_x < 0) return true;
+  if (max_y < 0) return true;
+
+  // Clip bounding box if it is partially within destination Sprite
+  if (min_x < 0) min_x = 0;
+  if (min_y < 0) min_y = 0;
+  if (max_x > spr->width())  max_x = spr->width();
+  if (max_y > spr->height()) max_y = spr->height();
+
+  // Scan destination bounding box and fetch transformed pixels from source Sprite
+  for (int32_t x = min_x; x <= max_x; x++)
+  {
+    int32_t xt = x - spr->_xpivot;
+    float cxt = cosra * xt + (_xpivot<<FP_SCALE);
+    float sxt = sinra * xt + (_ypivot<<FP_SCALE);
+    bool column_drawn = false;
+    for (int32_t y = min_y; y <= max_y; y++)
+    {
+      int32_t yt = y - spr->_ypivot;
+      int32_t xs = cxt - sinra * yt;
+      // Do not calculate yp unless xp is in bounds
+      int32_t xp = truncateFP(xs, FP_SCALE);
+      if (xp >= 0 && xp < _iwidth)
+      {
+        int32_t ys = sxt + cosra * yt;
+        // Check if ys is in bounds
+        int32_t yp = truncateFP(ys, FP_SCALE);
+        if (yp >= 0 && yp < _iheight)
+        {
+          uint32_t rp;
+          if (_bpp == 16) {rp = _img[xp + yp * _iwidth]; rp = rp>>8 | rp<<8; }
+          else rp = readPixel(xp, yp);
+          if (rp != transp) spr->drawPixel(x, y, rp);
+          column_drawn = true;
+        }
+      }
+      else if (column_drawn) y = max_y; // Skip the remaining pixels below the Sprite
+    }
+  }
+
+  return true;
+}
+
+
+/***************************************************************************************
+** Function name:           pushRotated - Higher Precision version of pushRotated
+** Description:             Push a rotated copy of the Sprite to another Sprite
+*************************************************************************************x*/
+bool TFT_eSprite::pushRotatedHP(TFT_eSprite *spr, int16_t angle, int32_t transp)
 {
   if ( !_created ) return false;       // Check this Sprite is created
   if ( !spr->_created ) return false;  // Ckeck destination Sprite is created
@@ -385,7 +571,7 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
   // Clip bounding box if it is partially within destination Sprite
   if (min_x < 0) min_x = 0;
   if (min_y < 0) min_y = 0;
-  if (max_x > spr->width()) max_x = spr->width();
+  if (max_x > spr->width())  max_x = spr->width();
   if (max_y > spr->height()) max_y = spr->height();
 
   // Scan destination bounding box and fetch transformed pixels from source Sprite
@@ -516,7 +702,7 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y, uint16_t transp)
 *************************************************************************************x*/
 uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
 {
-  if ((x < 0) || (x >= _iwidth) || (y < 0) || (y >= _iheight) || !_created) return 0;
+  if ((x < 0) || (x >= _iwidth) || (y < 0) || (y >= _iheight) || !_created) return 0xFFFF;
 
   if (_bpp == 16)
   {
@@ -557,7 +743,8 @@ uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
 
   uint16_t color = (_img8[(x + y * _bitwidth)>>3] << (x & 0x7)) & 0x80;
 
-  return color >> 7;
+  if (color >> 7) return _tft->bitmap_fg;
+  else            return _tft->bitmap_bg;
 }
 
 
@@ -1148,7 +1335,7 @@ void TFT_eSprite::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint3
 {
   if (!_created ) return;
 
-  boolean steep = abs(y1 - y0) > abs(x1 - x0);
+  bool steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
     swap_coord(x0, y0);
     swap_coord(x1, y1);
@@ -1492,7 +1679,7 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uin
 #endif
 //>>>>>>>>>>>>>>>>>>
 
-  boolean fillbg = (bg != color);
+  bool fillbg = (bg != color);
 
   if ((size==1) && fillbg)
   {

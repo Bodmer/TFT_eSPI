@@ -4,8 +4,6 @@
 //
 // This font contains 96 ASCII characters
 
-#include <pgmspace.h>
-
 
 PROGMEM const unsigned char widtbl_f32[96] =         // character width table
 {

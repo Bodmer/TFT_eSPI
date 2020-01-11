@@ -57,9 +57,6 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
        a zero/one terminated character string giving the font name
        last byte is 0 for non-anti-aliased and 1 for anti-aliased (smoothed)
 
-    Then the font name seen by Java when it's created
-    Then the postscript name of the font
-    Then a boolean to tell if smoothing is on or not.
 
     Glyph bitmap example is:
     // Cursor coordinate positions for this and next character are marked by 'C'
@@ -79,7 +76,7 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
     // |   +     x..@@@@@@@..x     |   x marks the corner pixels of the bitmap
     // |                           |
     // +---------------------------+   yAdvance is y delta for the next line, font size or (ascent + descent)
-    //                                  some fonts can overlay in y direction so may need a user adjust value
+    //                                 some fonts can overlay in y direction so may need a user adjust value
 
   */
 
@@ -274,126 +271,6 @@ void TFT_eSPI::unloadFont( void )
 
   if(fontFile) fontFile.close();
   fontLoaded = false;
-}
-
-
-/***************************************************************************************
-** Function name:           decodeUTF8
-** Description:             Line buffer UTF-8 decoder with fall-back to extended ASCII
-*************************************************************************************x*/
-/* Function moved to TFT_eSPI.cpp
-#define DECODE_UTF8
-uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
-{
-  byte c = buf[(*index)++];
-  //Serial.print("Byte from string = 0x"); Serial.println(c, HEX);
-
-#ifdef DECODE_UTF8
-  // 7 bit Unicode
-  if ((c & 0x80) == 0x00) return c;
-
-  // 11 bit Unicode
-  if (((c & 0xE0) == 0xC0) && (remaining > 1))
-    return ((c & 0x1F)<<6) | (buf[(*index)++]&0x3F);
-
-  // 16 bit Unicode
-  if (((c & 0xF0) == 0xE0) && (remaining > 2))
-  {
-    c = ((c & 0x0F)<<12) | ((buf[(*index)++]&0x3F)<<6);
-    return  c | ((buf[(*index)++]&0x3F));
-  }
-
-  // 21 bit Unicode not supported so fall-back to extended ASCII
-  // if ((c & 0xF8) == 0xF0) return c;
-#endif
-
-  return c; // fall-back to extended ASCII
-}
-*/
-
-/***************************************************************************************
-** Function name:           decodeUTF8
-** Description:             Serial UTF-8 decoder with fall-back to extended ASCII
-*************************************************************************************x*/
-/* Function moved to TFT_eSPI.cpp
-uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
-{
-
-#ifdef DECODE_UTF8
-
-  // 7 bit Unicode
-  if ((c & 0x80) == 0x00) {
-    decoderState = 0;
-    return (uint16_t)c;
-  }
-
-  if (decoderState == 0)
-  {
-    // 11 bit Unicode
-    if ((c & 0xE0) == 0xC0)
-    {
-      decoderBuffer = ((c & 0x1F)<<6);
-      decoderState = 1;
-      return 0;
-    }
-
-    // 16 bit Unicode
-    if ((c & 0xF0) == 0xE0)
-    {
-      decoderBuffer = ((c & 0x0F)<<12);
-      decoderState = 2;
-      return 0;
-    }
-    // 21 bit Unicode not supported so fall-back to extended ASCII
-    if ((c & 0xF8) == 0xF0) return (uint16_t)c;
-  }
-  else
-  {
-    if (decoderState == 2)
-    {
-      decoderBuffer |= ((c & 0x3F)<<6);
-      decoderState--;
-      return 0;
-    }
-    else
-    {
-      decoderBuffer |= (c & 0x3F);
-      decoderState = 0;
-      return decoderBuffer;
-    }
-  }
-#endif
-
-  decoderState = 0;
-  return (uint16_t)c; // fall-back to extended ASCII
-}
-*/
-
-
-/***************************************************************************************
-** Function name:           alphaBlend
-** Description:             Blend foreground and background and return new colour
-*************************************************************************************x*/
-uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc)
-{
-  // For speed use fixed point maths and rounding to permit a power of 2 division
-  uint16_t fgR = ((fgc >> 10) & 0x3E) + 1;
-  uint16_t fgG = ((fgc >>  4) & 0x7E) + 1;
-  uint16_t fgB = ((fgc <<  1) & 0x3E) + 1;
-
-  uint16_t bgR = ((bgc >> 10) & 0x3E) + 1;
-  uint16_t bgG = ((bgc >>  4) & 0x7E) + 1;
-  uint16_t bgB = ((bgc <<  1) & 0x3E) + 1;
-
-  // Shift right 1 to drop rounding bit and shift right 8 to divide by 256
-  uint16_t r = (((fgR * alpha) + (bgR * (255 - alpha))) >> 9);
-  uint16_t g = (((fgG * alpha) + (bgG * (255 - alpha))) >> 9);
-  uint16_t b = (((fgB * alpha) + (bgB * (255 - alpha))) >> 9);
-
-  // Combine RGB565 colours into 16 bits
-  //return ((r&0x18) << 11) | ((g&0x30) << 5) | ((b&0x18) << 0); // 2 bit greyscale
-  //return ((r&0x1E) << 11) | ((g&0x3C) << 5) | ((b&0x1E) << 0); // 4 bit greyscale
-  return (r << 11) | (g << 5) | (b << 0);
 }
 
 

@@ -9,8 +9,6 @@
   void     unloadFont( void );
   bool     getUnicodeIndex(uint16_t unicode, uint16_t *index);
 
-  uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc);
-
   virtual void drawGlyph(uint16_t code);
 
   void     showFont(uint32_t td);

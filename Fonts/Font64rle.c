@@ -7,9 +7,6 @@
 // All other characters print as a space
 
 
-#include <pgmspace.h>
-
-
 PROGMEM const unsigned char widtbl_f64[96] =          // character width table
 {
         12, 12, 12, 12, 12, 12, 12, 12,     // char 32 - 39

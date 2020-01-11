@@ -7,8 +7,6 @@
 // Comment out next line to return character 0x60 to the grave accent:
 #define TFT_ESPI_GRAVE_IS_DEGREE
 
-#include <pgmspace.h>
-
 // Width has been increased by 1 pixel so pixel lengths are calculated correctly
 // for the displayed string
 
