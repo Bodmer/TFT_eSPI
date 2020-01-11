@@ -12,7 +12,7 @@ You can take this one step further and have your own setup select file and then 
 To select a new setup you then edit your own my_setup_select.h file (which will not get over-written during an upgrade).
 
 # News
-1. The ST7789 display controller has been added. The ST7796 RPi MHS-4.0 inch Display-B type display is supported (this is fast for a SPI display as an ESP32 can clock it at 80MHz (ESP8266 at 40MHz)), see setups 27 and 28.
+1. The ST7796 display controller has been added. The ST7796 RPi MHS-4.0 inch Display-B type display is supported (this is fast for a SPI display as an ESP32 can clock it at 80MHz (ESP8266 at 40MHz)), see setups 27 and 28.
 
 2. A new beta test branch has been added to support other processors, in particular STM32:
            https://github.com/Bodmer/TFT_eSPI/tree/STM32
