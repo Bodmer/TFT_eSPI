@@ -15,7 +15,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "1.4.30"
+#define TFT_ESPI_VERSION "1.5.0"
 
 // Include header file that defines the fonts loaded, the TFT drivers
 // available and the pins to be used, etc, etc
@@ -40,9 +40,9 @@
 #elif defined (ESP8266)
   #include "Processors/TFT_eSPI_ESP8266.h"
 #elif defined (STM32)
-  //#include "Processors/TFT_eSPI_STM32.h"
+  #include "Processors/TFT_eSPI_STM32.h"
 #else
-  //#include "Processors/TFT_eSPI_Generic.h"
+  #include "Processors/TFT_eSPI_Generic.h"
 #endif
 
 #ifndef TAB_COLOUR
@@ -486,6 +486,15 @@ class TFT_eSPI : public Print {
   uint8_t  getAttribute(uint8_t id = 0);
 
   void     getSetup(setup_t& tft_settings); // Sketch provides the instance to populate
+
+  // DMA support functions
+  bool     initDMA(void);
+  void     deInitDMA(void);
+  void     pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t* data, uint16_t* buffer = nullptr);
+  //void   pushBlockDMA(uint16_t color, uint32_t len);
+  void     pushPixelsDMA(uint16_t* image, uint32_t len);
+  bool     dmaBusy(void);
+  bool     DMA_Enabled = false;
 
   static   SPIClass& getSPIinstance(void);
 

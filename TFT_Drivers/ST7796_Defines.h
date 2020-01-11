@@ -10,9 +10,7 @@
 #define TFT_CASET   0x2A
 #define TFT_PASET   0x2B
 #define TFT_RAMWR   0x2C
-
 #define TFT_RAMRD   0x2E
-#define TFT_IDXRD   0xDD // ILI9341 only, indexed control register read
 
 #define TFT_MADCTL  0x36
 #define TFT_MAD_MY  0x80
@@ -37,7 +35,7 @@
 #define TFT_INVON   0x21
 
 
-// All ST7796 specific commands some are used by init()
+// ST7796 specific commands
 #define ST7796_NOP     0x00
 #define ST7796_SWRESET 0x01
 #define ST7796_RDDID   0x04
@@ -56,7 +54,7 @@
 
 #define ST7796_INVOFF  0x20
 #define ST7796_INVON   0x21
-#define ST7796_GAMMASET 0x26
+
 #define ST7796_DISPOFF 0x28
 #define ST7796_DISPON  0x29
 
@@ -84,17 +82,11 @@
 #define ST7796_PWCTR1  0xC0
 #define ST7796_PWCTR2  0xC1
 #define ST7796_PWCTR3  0xC2
-#define ST7796_PWCTR4  0xC3
-#define ST7796_PWCTR5  0xC4
+
 #define ST7796_VMCTR1  0xC5
-#define ST7796_VMCTR2  0xC7
+#define ST7796_VMCOFF  0xC6
 
 #define ST7796_RDID4   0xD3
-#define ST7796_RDINDEX 0xD9
-#define ST7796_RDID1   0xDA
-#define ST7796_RDID2   0xDB
-#define ST7796_RDID3   0xDC
-#define ST7796_RDIDX   0xDD // TBC
 
 #define ST7796_GMCTRP1 0xE0
 #define ST7796_GMCTRN1 0xE1

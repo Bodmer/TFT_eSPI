@@ -35,7 +35,7 @@ void TFT_eSPI_Button::initButtonUL(
   strncpy(_label, label, 9);
 }
 
-void TFT_eSPI_Button::drawButton(boolean inverted) {
+void TFT_eSPI_Button::drawButton(bool inverted) {
   uint16_t fill, outline, text;
 
   if(!inverted) {
@@ -57,20 +57,20 @@ void TFT_eSPI_Button::drawButton(boolean inverted) {
 
   uint8_t tempdatum = _gfx->getTextDatum();
   _gfx->setTextDatum(MC_DATUM);
-  _gfx->drawString(_label, _x1 + (_w/2), _y1 + (_h/2));
+  _gfx->drawString(_label, _x1 + (_w/2), _y1 + (_h/2) -4);
   _gfx->setTextDatum(tempdatum);
 }
 
-boolean TFT_eSPI_Button::contains(int16_t x, int16_t y) {
+bool TFT_eSPI_Button::contains(int16_t x, int16_t y) {
   return ((x >= _x1) && (x < (_x1 + _w)) &&
           (y >= _y1) && (y < (_y1 + _h)));
 }
 
-void TFT_eSPI_Button::press(boolean p) {
+void TFT_eSPI_Button::press(bool p) {
   laststate = currstate;
   currstate = p;
 }
 
-boolean TFT_eSPI_Button::isPressed()    { return currstate; }
-boolean TFT_eSPI_Button::justPressed()  { return (currstate && !laststate); }
-boolean TFT_eSPI_Button::justReleased() { return (!currstate && laststate); }
+bool TFT_eSPI_Button::isPressed()    { return currstate; }
+bool TFT_eSPI_Button::justPressed()  { return (currstate && !laststate); }
+bool TFT_eSPI_Button::justReleased() { return (!currstate && laststate); }

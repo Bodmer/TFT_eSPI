@@ -18,13 +18,13 @@ class TFT_eSPI_Button {
   void     initButtonUL(TFT_eSPI *gfx, int16_t x1, int16_t y1,
   uint16_t w, uint16_t h, uint16_t outline, uint16_t fill,
   uint16_t textcolor, char *label, uint8_t textsize);
-  void     drawButton(boolean inverted = false);
-  boolean  contains(int16_t x, int16_t y);
+  void     drawButton(bool inverted = false);
+  bool  contains(int16_t x, int16_t y);
 
-  void     press(boolean p);
-  boolean  isPressed();
-  boolean  justPressed();
-  boolean  justReleased();
+  void     press(bool p);
+  bool  isPressed();
+  bool  justPressed();
+  bool  justReleased();
 
  private:
   TFT_eSPI *_gfx;
@@ -34,5 +34,5 @@ class TFT_eSPI_Button {
   uint16_t _outlinecolor, _fillcolor, _textcolor;
   char     _label[10];
 
-  boolean  currstate, laststate;
+  bool  currstate, laststate;
 };

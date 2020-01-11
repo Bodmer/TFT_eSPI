@@ -1,3 +1,36 @@
+// My specials below
+
+///#include <User_Setups/Setup24_ST7789.h>           // Setup file for ESP32 and TTGO TM ST7789 SPI bus TFT
+// // //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP32 and TTGO TM ST7789 SPI bus TFT
+
+//    #include <User_Setups/zSetup42_ST7735.hpp>              // Setup file configured for my ST7735S
+//#include <User_Setups/zSetup123_ILI9xxx.hpp>            // Setup file for ESP32 and ILI9341 SPI bus TFT
+//    #include <User_Setups/zHSPI_Setup123_ILI9xxx.hpp>         // Setup file for ESP32 and ILI9341 SPI bus TFT
+//#include <../TFT_eSPI_Setup/zHSPI_Setup123_ILI9xxx.hpp>
+    //#include <zHSPI_Setup123_ILI9xxx.hpp>
+//#include <User_Setups/zSetup124_R61581.hpp>             //Compile error test only I do not have one of these
+
+//  #include <User_Setups/zSetup111_RPi_touch_ILI9486.hpp> // SD ESP32
+
+
+  //#include <User_Setups/zSetup111_RPi_ST7796.hpp>         // ESP32 RPi
+  //#include <User_Setups/zSetup111_RPi_ST7796_ESP8266.hpp> // ESP8266 RPi
+
+
+//#include <User_Setups/zSetup99_ILI9xxx_Overlap.hpp>     // Setup file configured for my ILI9xxx
+
+//#include <User_Setups/Setup77_ePaper.h>            // Setup file for 2.9" Waveshare ePaper display
+
+//#include <User_Setups/Setup43_ST7735_2.h>            // Setup file configured for my ST7735S 80x160
+
+//#include <../TFT_eSPI_Setup/zHSPI_Setup123_ILI9xxx.hpp>
+//#include <User_Setups/zSetup1b_ILI9341.hpp>         // Setup file configured for my ESP8266 and ILI9341
+#include <User_Setups/Setup29_ILI9341_STM32.h>          // Setup for Nucleo board
+//#include <../TFT_eSPI_Setup/Setup_STM32F103_ILI9341.h>          // Setup for Blue Pill
+//#include <../TFT_eSPI_Setup/Setup_Due_ILI9341.h>          // Setup for Blue Pill
+
+//#include <User_Setups/Setup30_ILI9341_Parallel_STM32.h> // Setup for Nucleo board and parallel display
+
 // This header file contains a list of user setup files and defines which one the
 // compiler uses when the IDE performs a Verify/Compile or Upload.
 //
@@ -19,7 +52,7 @@
 
 // Only ONE line below should be uncommented.  Add extra lines and files as needed.
 
-#include <User_Setup.h>           // Default setup is root library folder
+//#include <User_Setup.h>           // Default setup is root library folder
 
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file configured for my ILI9341
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file configured for my ST7735
@@ -57,7 +90,7 @@
 
 //#include <User_Setups/Setup43_ST7735.h>            // Setup file configured for my ST7735S 80x160
 
-//#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 125 x 240 TFT
+//#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 
 //#include <User_Setups/SetupX_Template.h>
 

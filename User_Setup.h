@@ -253,14 +253,13 @@
 // With an ILI9341 display 40MHz works OK, 80MHz sometimes fails
 // With a ST7735 display more than 27MHz may not work (spurious pixels and lines)
 // With an ILI9163 display 27 MHz works OK.
-// The RPi typically only works at 20MHz maximum.
 
 // #define SPI_FREQUENCY   1000000
 // #define SPI_FREQUENCY   5000000
 // #define SPI_FREQUENCY  10000000
 // #define SPI_FREQUENCY  20000000
 #define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
-// #define SPI_FREQUENCY  40000000 // Maximum to use SPIFFS
+// #define SPI_FREQUENCY  40000000
 // #define SPI_FREQUENCY  80000000
 
 // Optional reduced SPI frequency for reading TFT
