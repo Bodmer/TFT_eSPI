@@ -21,6 +21,8 @@ class TFT_eSprite : public TFT_eSPI {
            //  - 1 bit per pixel for 1 bit colour depth
            //  - 1 byte per pixel for 8 bit colour
            //  - 2 bytes per pixel for 16 bit color depth
+  ~TFT_eSprite(void);
+
   void*    createSprite(int16_t width, int16_t height, uint8_t frames = 1);  
 
            // Delete the sprite to free up the RAM
