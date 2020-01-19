@@ -17,5 +17,5 @@
     }
   ],
   "frameworks": "arduino",
-  "platforms": "espressif8266, espressif32, st stm32"
+  "platforms": "espressif8266, espressif32, ststm32"
 }
