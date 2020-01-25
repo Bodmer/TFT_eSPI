@@ -63,7 +63,7 @@ void setup() {
   // Create a sprite for the graph
   graph1.setColorDepth(4);
   graph1.createSprite(128, 61);
-  graph1.setColorMap(cmap, 16);
+  graph1.createPalette(cmap, 16);
   graph1.fillSprite(9); // Note: Sprite is filled with black when created
 
   // The scroll area is set to the full sprite size upon creation of the sprite
@@ -74,7 +74,7 @@ void setup() {
   // Create a sprite for the scrolling numbers
   stext1.setColorDepth(4);
   stext1.createSprite(32, 64);
-  stext1.setColorMap(cmap, 16);
+  stext1.createPalette(cmap, 16);
   stext1.fillSprite(9); // Fill sprite with blue
   stext1.setScrollRect(0, 0, 32, 64, 9);     // here we set scroll gap fill color to blue
   stext1.setTextColor(15); // White text, no background
@@ -83,7 +83,7 @@ void setup() {
   // Create a sprite for Hello World
   stext2.setColorDepth(4);
   stext2.createSprite(80, 16);
-  stext2.setColorMap(cmap, 16);
+  stext2.createPalette(cmap, 16);
   stext2.fillSprite(7);
   stext2.setScrollRect(0, 0, 40, 16, 7); // Scroll the "Hello" in the first 40 pixels
   stext2.setTextColor(15); // White text, no background

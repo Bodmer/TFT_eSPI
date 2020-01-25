@@ -84,7 +84,7 @@ void loop(void)
   cmap[14] = TFT_YELLOW;
   cmap[15] = TFT_WHITE;
 
-  spr.setColorMap(cmap, 16);
+  spr.createPalette(cmap, 16);
  
   spr.pushSprite(-40, -40);
   spr.pushSprite(tft.width() / 2 - WIDTH / 2, tft.height() / 2 - HEIGHT / 2, 10);
@@ -147,7 +147,7 @@ void loop(void)
     cmap[i] = random(0x10000);
   }
 
-  spr.setColorMap(cmap, 16);
+  spr.createPalette(cmap, 16);
   // Now push the sprite to the TFT at position 0,0 on screen
 
   spr.pushSprite(-40, -40);
@@ -162,7 +162,7 @@ void loop(void)
   // Draw a blue rectangle in sprite so when we move it 1 pixel it does not leave a trail
   // on the blue screen background
   cmap[14] = TFT_BLUE;
-  spr.setColorMap(cmap, 16);
+  spr.createPalette(cmap, 16);
 
   spr.drawRect(0, 0, WIDTH, HEIGHT, 14);
 

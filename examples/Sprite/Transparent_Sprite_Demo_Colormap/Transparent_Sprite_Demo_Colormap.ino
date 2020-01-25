@@ -102,7 +102,7 @@ void drawStar(int x, int y, int star_color)
   cmap[14] = TFT_YELLOW;
   cmap[15] = TFT_WHITE; // this one will be transparent.
 
-  img.setColorMap(cmap, 16);
+  img.createPalette(cmap, 16);
 
   // Fill Sprite with a "transparent" colour
   // TFT_TRANSPARENT is already defined for convenience
@@ -156,7 +156,7 @@ void numberBox(int x, int y, float num )
   img.setTextDatum(MR_DATUM);
 
   // Draw the number to 3 decimal places at 70,20 in font 4
-  img.drawFloat(num, 3, 70, 20, 1);
+  img.drawFloat(num, 3, 70, 20, 4);
 
   // Push sprite to TFT screen CGRAM at coordinate x,y (top left corner)
   // All black pixels will not be drawn hence will show as "transparent"

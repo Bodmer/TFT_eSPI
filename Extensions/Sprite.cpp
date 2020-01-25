@@ -171,15 +171,20 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
 }
 
 /***************************************************************************************
-** Function name:           setColorMap
-** Description:             Set a colour map for a 4-bit per pixel sprite
+** Function name:           createPalette
+** Description:             Set a palette for a 4-bit per pixel sprite
 *************************************************************************************x*/
 
-void TFT_eSprite::setColorMap(uint16_t colorMap[], int colors)
+void TFT_eSprite::createPalette(uint16_t colorMap[], int colors)
 {
   if (_colorMap != nullptr)
   {
     free(_colorMap);
+  }
+
+  if (colorMap == nullptr)
+  {
+    return; // do nothing other than clear the existing map
   }
 
   // allocate color map
@@ -263,6 +268,28 @@ void TFT_eSprite::setBitmapColor(uint16_t c, uint16_t b)
   _tft->bitmap_bg = b;
 }
 
+/***************************************************************************************
+** Function name:           setPaletteColor
+** Description:             Set the palette color at the given index
+***************************************************************************************/
+void TFT_eSprite::setPaletteColor(uint8_t index, uint16_t color)
+{
+  if (_colorMap == nullptr || index > 15)
+    return; // out of bounds
+  _colorMap[index] = color;
+}
+
+/***************************************************************************************
+** Function name:           getPaletteColor
+** Description:             Return the palette color at index, or 0 (black) on error.
+***************************************************************************************/
+uint16_t TFT_eSprite::getPaletteColor(uint8_t index)
+{
+  if (_colorMap == nullptr || index > 15)
+    return 0;
+
+  return _colorMap[index];
+}
 
 /***************************************************************************************
 ** Function name:           deleteSprite
@@ -754,10 +781,10 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y, uint16_t transp)
 
 
 /***************************************************************************************
-** Function name:           cmapPixel
+** Function name:           readPixelValue
 ** Description:             Read the color map index of a pixel at defined coordinates
 *************************************************************************************x*/
-uint8_t TFT_eSprite::cmapPixel(int32_t x, int32_t y)
+uint8_t TFT_eSprite::readPixelValue(int32_t x, int32_t y)
 {
   if ((x < 0) || (x >= _iwidth) || (y < 0) || (y >= _iheight) || !_created) return 0xFFFF;
 
@@ -892,7 +919,9 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_
   {
     // not supported.  The image is unlikely to have the correct colors for the color map.
     // we could implement a way to push a 4-bit image using the color map?
+    #ifdef TFT_eSPI_DEBUG
     Serial.println("pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data) not implemented");
+    #endif
     return;
   }
 
@@ -995,7 +1024,9 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const u
 
   else if (_bpp == 4)
   {
+    #ifdef TFT_eSPI_DEBUG
     Serial.println("TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint16_t *data) not implemented");
+    #endif
     return;
   }
 
@@ -1286,8 +1317,8 @@ void TFT_eSprite::scroll(int16_t dx, int16_t dy)
     { // move pixels one by one
       for (uint16_t xp = 0; xp < w; xp++)
       {
-        if (dx <= 0) drawPixel(tx + xp, ty, cmapPixel(fx + xp, fy));
-        if (dx >  0) drawPixel(tx - xp, ty, cmapPixel(fx - xp, fy));
+        if (dx <= 0) drawPixel(tx + xp, ty, readPixelValue(fx + xp, fy));
+        if (dx >  0) drawPixel(tx - xp, ty, readPixelValue(fx - xp, fy));
       }
       if (dy <= 0)  { ty++; fy++; }
       else  { ty--; fy--; }

@@ -37,8 +37,14 @@ class TFT_eSprite : public TFT_eSPI {
   void*    setColorDepth(int8_t b);
   int8_t   getColorDepth(void);
 
-           // Set the colour map for a 4 bit depth sprite.  Only the first 16 colours in the map are used.
-  void     setColorMap(uint16_t *colorMap, int colors);
+           // Set the palette for a 4 bit depth sprite.  Only the first 16 colours in the map are used.
+  void     createPalette(uint16_t *palette, int colors = 16);
+
+            // Set a single palette index to the given color
+  void     setPaletteColor(uint8_t index, uint16_t color);
+
+            // Get the color at the given palette index
+  uint16_t getPaletteColor(uint8_t index);
 
            // Set foreground and background colours for 1 bit per pixel Sprite
   void     setBitmapColor(uint16_t fg, uint16_t bg);
@@ -104,7 +110,7 @@ class TFT_eSprite : public TFT_eSPI {
   uint16_t readPixel(int32_t x0, int32_t y0);
 
            // return the color map index of the pixel at x,y (used when scrolling)
-  uint8_t  cmapPixel(int32_t x, int32_t y);
+  uint8_t  readPixelValue(int32_t x, int32_t y);
 
            // Write an image (colour bitmap) to the sprite.  Not implemented for _bpp == 4.
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data);
