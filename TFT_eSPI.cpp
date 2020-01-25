@@ -296,15 +296,15 @@ void TFT_eSPI::init(uint8_t tc)
   #if defined (TFT_DC) && (TFT_DC >= 0)
     dcpinmask = (uint32_t) digitalPinToBitMask(TFT_DC);
   #endif
-  
+
   #if defined (TFT_WR) && (TFT_WR >= 0)
     wrpinmask = (uint32_t) digitalPinToBitMask(TFT_WR);
   #endif
-  
+
   #if defined (TFT_SCLK) && (TFT_SCLK >= 0)
     sclkpinmask = (uint32_t) digitalPinToBitMask(TFT_SCLK);
   #endif
-  
+
   #if defined (TFT_SPI_OVERLAP) && defined (ESP8266)
     // Overlap mode SD0=MISO, SD1=MOSI, CLK=SCLK must use D3 as CS
     //    pins(int8_t sck, int8_t miso, int8_t mosi, int8_t ss);
@@ -372,7 +372,7 @@ void TFT_eSPI::init(uint8_t tc)
   delay(150); // Wait for reset to complete
 
   spi_begin();
-  
+
   tc = tc; // Supress warning
 
   // This loads the driver specific initialisation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
@@ -599,7 +599,7 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
   uint8_t reg = 0;
 #ifdef TFT_PARALLEL_8_BIT
 
-  writecommand(cmd_function); // Sets DC and CS high 
+  writecommand(cmd_function); // Sets DC and CS high
 
   busDir(dir_mask, INPUT);
 
@@ -676,7 +676,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   readAddrWindow(x0, y0, 1, 1); // Sets CS low
 
   // Set masked pins D0- D7 to input
-  busDir(dir_mask, INPUT); 
+  busDir(dir_mask, INPUT);
 
   // Dummy read to throw away don't care value
   readByte();
@@ -727,7 +727,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   // Dummy read to throw away don't care value
   tft_Read_8();
-  
+
   //#if !defined (ILI9488_DRIVER)
 
     // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
@@ -940,7 +940,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
-  
+
   if ((x + dw) > _width ) dw = _width  - x;
   if ((y + dh) > _height) dh = _height - y;
 
@@ -1073,7 +1073,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
-  
+
   if ((x + dw) > _width ) dw = _width  - x;
   if ((y + dh) > _height) dh = _height - y;
 
@@ -1128,10 +1128,11 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 
 /***************************************************************************************
 ** Function name:           pushImage
-** Description:             plot 8 bit image or sprite using a line buffer
+** Description:             plot 8 bit or 4 bit or 1 bit image or sprite using a line buffer
 ***************************************************************************************/
-void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data, bool bpp8)
+void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data, bool bpp8,  uint16_t *cmap)
 {
+
   if ((x >= _width) || (y >= (int32_t)_height)) return;
 
   int32_t dx = 0;
@@ -1141,7 +1142,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
-  
+
   if ((x + dw) > _width ) dw = _width  - x;
   if ((y + dh) > _height) dh = _height - y;
 
@@ -1192,7 +1193,59 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
       data += w;
     }
   }
-  else {
+  else if (cmap != nullptr)
+  {
+    bool swap = _swapBytes; _swapBytes = true;
+
+    w = (w+1) & 0xFFFE;   // if this is a sprite, w will already be even; this does no harm.
+    bool splitFirst = (dx & 0x01) != 0; // split first means we have to push a single px from the left of the sprite / image
+
+    if (splitFirst) {
+      data += ((dx - 1 + dy * w) >> 1);
+    }
+    else {
+      data += ((dx + dy * w) >> 1);
+    }
+
+    while (dh--) {
+      uint32_t len = dw;
+      uint8_t * ptr = data;
+      uint16_t *linePtr = lineBuf;
+      uint8_t colors; // two colors in one byte
+      uint16_t index;
+
+      if (splitFirst) {
+        colors = *ptr;
+        index = (colors & 0x0F);
+        *linePtr++ = cmap[index];
+        len--;
+        ptr++;
+      }
+
+      while (len--)
+      {
+        colors = *ptr;
+        index = ((colors & 0xF0) >> 4) & 0x0F;
+        *linePtr++ = cmap[index];
+
+        if (len--)
+        {
+          index = colors & 0x0F;
+          *linePtr++ = cmap[index];
+        } else {
+          break;  // nothing to do here
+        }
+
+        ptr++;
+      }
+
+      pushPixels(lineBuf, dw);
+      data += (w >> 1);
+    }
+    _swapBytes = swap; // Restore old value
+  }
+  else
+  {
     while (dh--) {
       w =  (w+7) & 0xFFF8;
 
@@ -1228,9 +1281,9 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
 /***************************************************************************************
 ** Function name:           pushImage
-** Description:             plot 8 or 1 bit image or sprite with a transparent colour
+** Description:             plot 8 or 4 or 1 bit image or sprite with a transparent colour
 ***************************************************************************************/
-void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data, uint8_t transp, bool bpp8)
+void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data, uint8_t transp, bool bpp8, uint16_t *cmap)
 {
   if ((x >= _width) || (y >= _height)) return;
 
@@ -1241,7 +1294,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
   if (x < 0) { dw += x; dx = -x; x = 0; }
   if (y < 0) { dh += y; dy = -y; y = 0; }
-  
+
   if ((x + dw) > _width ) dw = _width  - x;
   if ((y + dh) > _height) dh = _height - y;
 
@@ -1311,6 +1364,97 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
       data += w;
     }
   }
+  else if (cmap != nullptr) // 4bpp with color map
+  {
+    bool swap = _swapBytes; _swapBytes = true;
+
+    w = (w+1) & 0xFFFE; // here we try to recreate iwidth from dwidth.
+    bool splitFirst = ((dx & 0x01) != 0);
+    if (splitFirst) {
+      data += ((dx - 1 + dy * w) >> 1);
+    }
+    else {
+      data += ((dx + dy * w) >> 1);
+    }
+
+    while (dh--) {
+      uint32_t len = dw;
+      uint8_t * ptr = data;
+
+      int32_t px = x;
+      bool move = true;
+      uint16_t np = 0;
+
+      uint8_t index;  // index into cmap.
+
+      if (splitFirst) {
+        index = (*ptr & 0x0F);  // odd = bits 3 .. 0
+        if (index != transp) {
+          move = false; setWindow(px, y, xe, ye);
+          lineBuf[np] = cmap[index];
+          np++;
+        }
+        px++; ptr++;
+        len--;
+      }
+
+      while (len--)
+      {
+        uint8_t color = *ptr;
+
+        // find the actual color you care about.  There will be two pixels here!
+        // but we may only want one at the end of the row
+        uint16_t index = ((color & 0xF0) >> 4) & 0x0F;  // high bits are the even numbers
+        if (index != transp) {
+          if (move) {
+            move = false; setWindow(px, y, xe, ye);
+          }
+          lineBuf[np] = cmap[index];
+          np++; // added a pixel
+        }
+        else {
+          move = true;
+          if (np) {
+            pushPixels(lineBuf, np);
+            np = 0;
+          }
+        }
+        px++;
+
+        if (len--)
+        {
+          index = color & 0x0F; // the odd number is 3 .. 0
+          if (index != transp) {
+            if (move) {
+              move = false; setWindow(px, y, xe, ye);
+             }
+            lineBuf[np] = cmap[index];
+            np++;
+          }
+          else {
+            move = true;
+            if (np) {
+              pushPixels(lineBuf, np);
+              np = 0;
+            }
+          }
+          px++;
+        }
+        else {
+          break;  // we are done with this row.
+        }
+        ptr++;  // we only increment ptr once in the loop (deliberate)
+      }
+
+      if (np) {
+        pushPixels(lineBuf, np);
+        np = 0;
+      }
+      data += (w>>1);
+      y++;
+    }
+    _swapBytes = swap; // Restore old value
+  }
   else { // 1 bit per pixel
     w =  (w+7) & 0xFFF8;
     while (dh--) {
@@ -1356,7 +1500,6 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
   inTransaction = false;
   spi_end();
 }
-
 
 /***************************************************************************************
 ** Function name:           setSwapBytes
@@ -1566,7 +1709,7 @@ void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
     drawFastHLine(x0 - x, y0 - r, 2 * x+1, color);
   }
 
-  inTransaction = false;  
+  inTransaction = false;
   spi_end();              // Does nothing if Sprite class uses this function
 }
 
@@ -1756,7 +1899,7 @@ void TFT_eSPI::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t
   drawCircleHelper(x + w - r - 1, y + r    , r, 2, color);
   drawCircleHelper(x + w - r - 1, y + h - r - 1, r, 4, color);
   drawCircleHelper(x + r    , y + h - r - 1, r, 8, color);
-  
+
   inTransaction = false;
   spi_end();              // Does nothing if Sprite class uses this function
 }
@@ -1778,7 +1921,7 @@ void TFT_eSPI::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t
   // draw four corners
   fillCircleHelper(x + r, y + h - r - 1, r, 1, w - r - r - 1, color);
   fillCircleHelper(x + r    , y + r, r, 2, w - r - r - 1, color);
-  
+
   inTransaction = false;
   spi_end();              // Does nothing if Sprite class uses this function
 }
@@ -2396,7 +2539,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
                yo = pgm_read_byte(&glyph->yOffset);
       uint8_t  xx, yy, bits=0, bit=0;
       int16_t  xo16 = 0, yo16 = 0;
-  
+
       if(size > 1) {
         xo16 = xo;
         yo16 = yo;
@@ -2644,7 +2787,7 @@ void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
 {
   spi_begin();
   if (swap) {swap = _swapBytes; _swapBytes = true; }
-  
+
   pushPixels(data, len);
 
   _swapBytes = swap; // Restore old value
@@ -2736,7 +2879,7 @@ void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
   setWindow(x, y, x, y + h - 1);
 
   pushBlock(color, h);
-  
+
   spi_end();
 }
 
@@ -2761,7 +2904,7 @@ void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
   setWindow(x, y, x + w - 1, y);
 
   pushBlock(color, w);
-  
+
   spi_end();
 }
 
@@ -2774,7 +2917,7 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
 {
   // Clipping
   if ((x >= _width) || (y >= _height)) return;
-  
+
   if (x < 0) { w += x; x = 0; }
   if (y < 0) { h += y; y = 0; }
 
@@ -3790,7 +3933,7 @@ void TFT_eSPI::setFreeFont(const GFXfont *f)
   glyph_ab = 0;
   glyph_bb = 0;
   uint16_t numChars = pgm_read_word(&gfxFont->last) - pgm_read_word(&gfxFont->first);
-  
+
   // Find the biggest above and below baseline offsets
   for (uint8_t c = 0; c < numChars; c++) {
     GFXglyph *glyph1  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c]);
@@ -3814,7 +3957,7 @@ void TFT_eSPI::setTextFont(uint8_t f)
 
 #else
 
-    
+
 /***************************************************************************************
 ** Function name:           setFreeFont
 ** Descriptions:            Sets the GFX free font to use
