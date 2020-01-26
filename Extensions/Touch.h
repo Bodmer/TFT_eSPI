@@ -18,9 +18,13 @@
   void     setTouch(uint16_t *data);
 
  private:
-           // Handlers for the SPI settings and clock speed change
-  inline void spi_begin_touch() __attribute__((always_inline));
-  inline void spi_end_touch()   __attribute__((always_inline));
+           // Legacy support only - deprecated
+  void     spi_begin_touch() {begin_touch_read_write();}
+  void     spi_end_touch()   {  end_touch_read_write();}
+
+           // Handlers for the touch controller bus settings
+  inline void begin_touch_read_write() __attribute__((always_inline));
+  inline void end_touch_read_write()   __attribute__((always_inline));
 
            // Private function to validate a touch, allow settle time and reduce spurious coordinates
   uint8_t  validTouch(uint16_t *x, uint16_t *y, uint16_t threshold = 600);

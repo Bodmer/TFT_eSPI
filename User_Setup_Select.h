@@ -55,6 +55,11 @@
 //#include <User_Setups/Setup27_RPi_ST7796_ESP32.h>    // ESP32   RPi MHS-4.0 inch Display-B
 //#include <User_Setups/Setup28_RPi_ST7796_ESP8266.h>  // ESP8266 RPi MHS-4.0 inch Display-B
 
+//#include <User_Setups/Setup29_ILI9341_STM32.h>          // Setup for Nucleo board
+//#include <User_Setups/Setup30_ILI9341_Parallel_STM32.h> // Setup for Nucleo board and parallel display
+//#include <User_Setups/Setup31_ST7796_Parallel_STM32.h>  // Setup for Nucleo board and parallel display
+//#include <User_Setups/Setup32_ILI9341_STM32F103.h>      // Setup for "Blue Pill"
+
 //#include <User_Setups/Setup43_ST7735.h>            // Setup file configured for my ST7735S 80x160
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
@@ -69,7 +74,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
 //     DON'T TINKER WITH ANY OF THE FOLLOWING LINES, THESE ADD THE TFT DRIVERS     //
-//       AND ESP8266 PIN DEFINITONS THEY ARE HERE FOR BODMER'S CONVENIENCE!        //
+//       AND ESP8266 PIN DEFINITONS, THEY ARE HERE FOR BODMER'S CONVENIENCE!       //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -78,6 +83,23 @@
 #define TFT_BGR 0   // Colour order Blue-Green-Red
 #define TFT_RGB 1   // Colour order Red-Green-Blue
 
+// Legacy setup support, RPI_DISPLAY_TYPE replaces RPI_DRIVER
+#if defined (RPI_DRIVER)
+  #if !defined (RPI_DISPLAY_TYPE)
+    #define RPI_DISPLAY_TYPE
+  #endif
+#endif
+
+// Legacy setup support, RPI_ILI9486_DRIVER form is deprecated
+// Instead define RPI_DISPLAY_TYPE and also define driver (e.g. ILI9486_DRIVER) 
+#if defined (RPI_ILI9486_DRIVER)
+  #if !defined (ILI9486_DRIVER)
+    #define ILI9486_DRIVER
+  #endif
+  #if !defined (RPI_DISPLAY_TYPE)
+    #define RPI_DISPLAY_TYPE
+  #endif
+#endif
 
 // Load the right driver definition - do not tinker here !
 #if   defined (ILI9341_DRIVER)
@@ -93,11 +115,8 @@
      #include <TFT_Drivers/S6D02A1_Defines.h>
      #define  TFT_DRIVER 0x6D02
 #elif defined (ST7796_DRIVER)
-	   #include "TFT_Drivers/ST7796_Defines.h"
-	   #define  TFT_DRIVER 0x7796
-#elif defined (RPI_ILI9486_DRIVER)
-     #include <TFT_Drivers/ILI9486_Defines.h>
-     #define  TFT_DRIVER 0x9486
+      #include "TFT_Drivers/ST7796_Defines.h"
+      #define  TFT_DRIVER 0x7796
 #elif defined (ILI9486_DRIVER)
      #include <TFT_Drivers/ILI9486_Defines.h>
      #define  TFT_DRIVER 0x9486
@@ -125,7 +144,9 @@
 #elif defined (RM68140_DRIVER)
      #include "TFT_Drivers/RM68140_Defines.h"
      #define  TFT_DRIVER 0x6814
-#elif defined (XYZZY_DRIVER)  // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
+                              // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
+                              // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.c
+#elif defined (XYZZY_DRIVER)
      #include "TFT_Drivers/XYZZY_Defines.h"
      #define  TFT_DRIVER 0x0000
 #else

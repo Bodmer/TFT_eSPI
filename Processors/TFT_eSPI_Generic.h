@@ -12,8 +12,8 @@
 // None
 
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
-#define SET_SPI_WRITE_MODE // Not used
-#define SET_SPI_READ_MODE  // Not used
+#define SET_BUS_WRITE_MODE // Not used
+#define SET_BUS_READ_MODE  // Not used
 
 // Code to check if DMA is busy, used by SPI bus transaction startWrite and endWrite functions
 #define DMA_BUSY_CHECK // Not used so leave blank
@@ -111,7 +111,7 @@
 // Macros to write commands/pixel colour data to other displays
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
-  #if  defined (RPI_ILI9486_DRIVER) // RPi TFT always needs 16 bit transfers
+  #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
     #define tft_Write_8(C)     spi.transfer(0); spi.transfer(C)
   #else
     #ifdef __AVR__ // AVR processors do not have 16 bit transfer
@@ -123,7 +123,7 @@
       #define tft_Write_16(C)  spi.transfer16(C)
       #define tft_Write_16S(C) spi.transfer16(((C)>>8) | ((C)<<8))
     #endif // AVR    
-  #endif // RPI_ILI9486_DRIVER
+  #endif // RPI_DISPLAY_TYPE
 
   #define tft_Write_32(C) \
   tft_Write_16((uint16_t) ((C)>>16)); \

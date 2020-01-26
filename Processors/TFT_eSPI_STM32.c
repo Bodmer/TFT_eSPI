@@ -353,7 +353,7 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
   if (len == 0) return;
 
   // Wait for any current DMA transaction to end
-  while (dmaHal.State == HAL_DMA_STATE_BUSY);
+  while (spiHal.State == HAL_SPI_STATE_BUSY_TX); // Check if SPI Tx is busy
 
   if(_swapBytes) {
     for (uint32_t i = 0; i < len; i++) (image[i] = image[i] << 8 | image[i] >> 8);
@@ -389,8 +389,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   uint32_t len = dw*dh;
 
-  // Wait for any current DMA transaction to end
-  while (dmaHal.State == HAL_DMA_STATE_BUSY);
+  while (spiHal.State == HAL_SPI_STATE_BUSY_TX); // Check if SPI Tx is busy
 
   // If image is clipped, copy pixels into a contiguous block
   if ( (dw != w) || (dh != h) ) {
@@ -418,9 +417,6 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
     }
   }
 
-  // Wait for any current SPI transaction to end
-  while (spiHal.State == HAL_SPI_STATE_BUSY_TX);
-
   setWindow(x, y, x + dw - 1, y + dh - 1);
 
   // DMA byte count for transmit is only 16 bits maximum, so to avoid this constraint
@@ -446,7 +442,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 ** Description:             Override the default HAL stream 3 interrupt handler
 ***************************************************************************************/
 extern "C" void DMA2_Stream3_IRQHandler();
-void DMA2_Stream3_IRQHandler()
+void DMA2_Stream3_IRQHandler(void)
 {
   // Call the default end of buffer handler
   HAL_DMA_IRQHandler(&dmaHal);
@@ -490,7 +486,7 @@ bool TFT_eSPI::initDMA(void)
 ***************************************************************************************/
 extern "C" void DMA1_Channel3_IRQHandler();
 
-void DMA1_Channel3_IRQHandler()
+void DMA1_Channel3_IRQHandler(void)
 {
   // Call the default end of buffer handler
   HAL_DMA_IRQHandler(&dmaHal);

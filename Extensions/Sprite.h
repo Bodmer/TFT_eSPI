@@ -38,12 +38,13 @@ class TFT_eSprite : public TFT_eSPI {
   int8_t   getColorDepth(void);
 
            // Set the palette for a 4 bit depth sprite.  Only the first 16 colours in the map are used.
-  void     createPalette(uint16_t *palette, int colors = 16);
+  void     createPalette(uint16_t *palette, int colors = 16);       // Palette in RAM
+  void     createPalette(const uint16_t *palette, int colors = 16); // Palette in FLASH
 
-            // Set a single palette index to the given color
+           // Set a single palette index to the given color
   void     setPaletteColor(uint8_t index, uint16_t color);
 
-            // Get the color at the given palette index
+           // Get the color at the given palette index
   uint16_t getPaletteColor(uint8_t index);
 
            // Set foreground and background colours for 1 bit per pixel Sprite

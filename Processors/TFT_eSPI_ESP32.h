@@ -12,8 +12,8 @@
 #include "soc/spi_reg.h"
 
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
-#define SET_SPI_WRITE_MODE // Not used
-#define SET_SPI_READ_MODE  // Not used
+#define SET_BUS_WRITE_MODE // Not used
+#define SET_BUS_READ_MODE  // Not used
 
 // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
 #define DMA_BUSY_CHECK // DMA not implemented for this processor (yet)
@@ -30,15 +30,7 @@
   #define SPI_PORT VSPI
 #endif
 
-// If it is a 16bit serial display we must transfer 16 bits every time
-// Set commands bits to 16 or 8
-#ifdef RPI_ILI9486_DRIVER
-  #ifndef RPI_DRIVER
-    #define RPI_DRIVER
-  #endif
-#endif
-
-#ifdef RPI_DRIVER
+#ifdef RPI_DISPLAY_TYPE
   #define CMD_BITS (16-1)
 #else
   #define CMD_BITS (8-1)
@@ -73,7 +65,7 @@
     #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
   #else
     #if TFT_DC >= 32
-      #ifdef RPI_DRIVER  // RPi displays need a slower DC change
+      #ifdef RPI_DISPLAY_TYPE  // RPi displays need a slower DC change
         #define DC_C GPIO.out1_w1ts.val = (1 << (TFT_DC - 32)); \
                      GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
         #define DC_D GPIO.out1_w1tc.val = (1 << (TFT_DC - 32)); \
@@ -83,12 +75,12 @@
         #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))//;GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
       #endif
     #elif TFT_DC >= 0
-      #ifdef RPI_ILI9486_DRIVER  // RPi ILI9486 display needs a slower DC change
+      #ifdef RPI_DISPLAY_TYPE  // RPi ILI9486 display needs a slower DC change
         #define DC_C GPIO.out_w1tc = (1 << TFT_DC); \
                      GPIO.out_w1tc = (1 << TFT_DC)
         #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
                      GPIO.out_w1ts = (1 << TFT_DC)
-      #elif defined (RPI_DRIVER)  // Other RPi displays need a slower C->D change
+      #elif defined (RPI_DISPLAY_TYPE)  // Other RPi displays need a slower C->D change
         #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
         #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
                      GPIO.out_w1ts = (1 << TFT_DC)
@@ -123,7 +115,7 @@
     #endif
   #else
     #if TFT_CS >= 32
-      #ifdef RPI_ILI9486_DRIVER  // RPi ILI9486 display needs a slower CS change
+      #ifdef RPI_DISPLAY_TYPE  // RPi ILI9486 display needs a slower CS change
         #define CS_L GPIO.out1_w1ts.val = (1 << (TFT_CS - 32)); \
                      GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
         #define CS_H GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); \
@@ -133,7 +125,7 @@
         #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))//;GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
       #endif
     #elif TFT_CS >= 0
-      #ifdef RPI_ILI9486_DRIVER  // RPi ILI9486 display needs a slower CS change
+      #ifdef RPI_DISPLAY_TYPE  // RPi ILI9486 display needs a slower CS change
         #define CS_L GPIO.out_w1ts = (1 << TFT_CS); GPIO.out_w1tc = (1 << TFT_CS)
         #define CS_H GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1ts = (1 << TFT_CS)
       #else
@@ -277,7 +269,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to an Raspberry Pi TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif  defined (RPI_DRIVER)
+#elif  defined (RPI_DISPLAY_TYPE)
 
   // ESP32 low level SPI writes for 8, 16 and 32 bit values
   // to avoid the function call overhead

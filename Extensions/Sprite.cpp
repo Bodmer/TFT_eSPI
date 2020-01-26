@@ -171,7 +171,7 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
 }
 
 /***************************************************************************************
-** Function name:           createPalette
+** Function name:           createPalette (from RAM array)
 ** Description:             Set a palette for a 4-bit per pixel sprite
 *************************************************************************************x*/
 
@@ -194,6 +194,33 @@ void TFT_eSprite::createPalette(uint16_t colorMap[], int colors)
   for (auto i = 0; i < colors; i++)
   {
     _colorMap[i] = colorMap[i];
+  }
+}
+
+/***************************************************************************************
+** Function name:           createPalette (from FLASH array)
+** Description:             Set a palette for a 4-bit per pixel sprite
+*************************************************************************************x*/
+
+void TFT_eSprite::createPalette(const uint16_t colorMap[], int colors)
+{
+  if (_colorMap != nullptr)
+  {
+    free(_colorMap);
+  }
+
+  if (colorMap == nullptr)
+  {
+    return; // do nothing other than clear the existing map
+  }
+
+  // allocate color map
+  _colorMap = (uint16_t *)calloc(16, sizeof(uint16_t));
+  if (colors > 16)
+    colors = 16;
+  for (auto i = 0; i < colors; i++)
+  {
+    _colorMap[i] = pgm_read_word(colorMap++);
   }
 }
 
@@ -487,6 +514,8 @@ bool TFT_eSprite::pushRotatedHP(int16_t angle, int32_t transp)
   if (max_x > _tft->width())  max_x = _tft->width();
   if (max_y > _tft->height()) max_y = _tft->height();
 
+  uint16_t sline_buffer[max_y - min_y + 1];
+
   _tft->startWrite(); // ESP32: avoid transaction overhead for every tft pixel
 
   // Scan destination bounding box and fetch transformed pixels from source Sprite
@@ -495,6 +524,8 @@ bool TFT_eSprite::pushRotatedHP(int16_t angle, int32_t transp)
     float cxt = cosra * xt + _xpivot;
     float sxt = sinra * xt + _ypivot;
     bool column_drawn = false;
+    uint32_t pixel_count = 0;
+    int32_t y_start = 0;
     for (int32_t y = min_y; y <= max_y; y++) {
       int32_t yt = y - _tft->_ypivot;
       int32_t xs = (int32_t)round(cxt - sinra * yt);
@@ -505,12 +536,19 @@ bool TFT_eSprite::pushRotatedHP(int16_t angle, int32_t transp)
         // Check if ys is in bounds
         if (ys >= 0 && ys < height()) {
           int32_t rp = readPixel(xs, ys);
-          if (rp != transp) _tft->drawPixel(x, y, rp);
+          if (transp >= 0 ) {
+            if (rp != transp) _tft->drawPixel(x, y, rp);
+          }
+          else {
+            if (!column_drawn) y_start = y;
+            sline_buffer[pixel_count++] = rp>>8 | rp<<8;
+          }
           column_drawn = true;
         }
       }
       else if (column_drawn) y = max_y; // Skip remaining column pixels
     }
+    if (pixel_count) _tft->pushImage(x, y_start, 1, pixel_count, sline_buffer);
   }
 
   _tft->endWrite(); // ESP32: end transaction
@@ -665,7 +703,10 @@ bool TFT_eSprite::pushRotatedHP(TFT_eSprite *spr, int16_t angle, int32_t transp)
         // Check if ys is in bounds
         if (ys >= 0 && ys < height())
         {
-          int32_t rp = readPixel(xs, ys);
+          uint32_t rp;
+          // Can avoid bounds check overhead for reading 16bpp
+          if (_bpp == 16) {rp = _img[xs + ys * _iwidth]; rp = rp>>8 | rp<<8; }
+          else rp = readPixel(xs, ys);
           if (rp != transp) spr->drawPixel(x, y, rp);
           column_drawn = true;
         }

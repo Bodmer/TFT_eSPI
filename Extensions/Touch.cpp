@@ -17,7 +17,7 @@
 uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   uint16_t tmp;
 
-  spi_begin_touch();
+  begin_touch_read_write();
   
   // Start YP sample request for x position, read 4 times and keep last sample
   spi.transfer(0xd0);                    // Start new YP conversion
@@ -48,7 +48,7 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 
   *y = tmp;
 
-  spi_end_touch();
+  end_touch_read_write();
 
   return true;
 }
@@ -59,7 +59,7 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 ***************************************************************************************/
 uint16_t TFT_eSPI::getTouchRawZ(void){
 
-  spi_begin_touch();
+  begin_touch_read_write();
 
   // Z sample request
   int16_t tz = 0xFFF;
@@ -67,7 +67,7 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
   tz += spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
   tz -= spi.transfer16(0x00) >> 3;  // Read Z2
 
-  spi_end_touch();
+  end_touch_read_write();
 
   return (uint16_t)tz;
 }

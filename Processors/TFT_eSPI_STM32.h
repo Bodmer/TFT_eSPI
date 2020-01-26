@@ -11,9 +11,11 @@
 // Include processor specific header
 // None
 
+// RPi support not tested - Fast RPi not supported
+
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
-#define SET_SPI_WRITE_MODE // Not used
-#define SET_SPI_READ_MODE  // Not used
+#define SET_BUS_WRITE_MODE // Not used
+#define SET_BUS_READ_MODE  // Not used
 
 // SUPPORT_TRANSACTIONS is mandatory for STM32
 #if !defined (SUPPORT_TRANSACTIONS)
@@ -43,7 +45,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Write strobe timing setup
 ////////////////////////////////////////////////////////////////////////////////////////
-  #if defined (ILI9341_DRIVER) // WRX twc spec is 66ns = 15.15MHz
+  #if defined (ILI9341_DRIVER) || defined (ST7796_DRIVER) // WRX twc spec is 66ns = 15.15MHz
 
     // Extra write pulse low time (delay for data setup)
     #if defined (STM32F2xx) || defined (STM32F4xx)
@@ -731,7 +733,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to a SPI Raspberry Pi TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif  defined (RPI_ILI9486_DRIVER)
+#elif  defined (RPI_DISPLAY_TYPE)
 
   #define tft_Write_8(C) \
   { spiBuffer[0] = 0; spiBuffer[1] = C; \

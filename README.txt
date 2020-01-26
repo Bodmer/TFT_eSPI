@@ -1,18 +1,7 @@
 This is a standalone library that contains both graphics functions
-and the TFT chip driver library.
-
-This library has been derived from the Adafruit_GFX and driver library with
-further code from other authors.
-
-It is not compatible with legacy versions of the IDE (e.g. 1.0.6 and
-older. Use the latest version.
-
-New functions have been added in particular it contains proportional fonts
-in addition to the original Adafruit font.
-
-A sprite class has been added to aid the generation of flicker free complex
-graphics.
-
-Note: This version of the library might not be fully compatible with the
-original.
-
+and the TFT chip driver library. It supports the ESP8266, ESP32 and
+STM32 processors with performance optimised code. Other Arduino IDE
+compatible boards are also supported but the library then uses
+generic functions which will be slower. The library uses 32 bit
+variables extensively so this will affect performance on 8 and 16
+bit processors.

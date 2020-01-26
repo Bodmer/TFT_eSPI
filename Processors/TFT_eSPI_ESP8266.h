@@ -12,8 +12,8 @@
 // None
 
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
-#define SET_SPI_WRITE_MODE SPI1U=SPI1U_WRITE
-#define SET_SPI_READ_MODE  SPI1U=SPI1U_READ
+#define SET_BUS_WRITE_MODE SPI1U=SPI1U_WRITE
+#define SET_BUS_READ_MODE  SPI1U=SPI1U_READ
 
 // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
 #define DMA_BUSY_CHECK // DMA not available, leave blank
@@ -41,14 +41,6 @@
 #endif
 #ifdef TFT_PARALLEL_8_BIT
   #undef TFT_PARALLEL_8_BIT
-#endif
-
-// If it is a 16bit serial display we must transfer 16 bits every time
-// Set commands bits to 16 or 8
-#ifdef RPI_ILI9486_DRIVER
-  #ifndef RPI_DRIVER
-    #define RPI_DRIVER
-  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +143,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to an Raspberry Pi TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif  defined (RPI_DRIVER)
+#elif  defined (RPI_DISPLAY_TYPE)
   // Command is 16 bits
   #define CMD_BITS 16
 

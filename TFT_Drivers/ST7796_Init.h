@@ -102,9 +102,9 @@
 	writecommand(0xF0); //Command Set control                                 
 	writedata(0x69);    //Disable extension command 2 partII
 
-  spi_end();
+  end_tft_write();
   delay(120);
-  spi_begin();
+  begin_tft_write();
 
 	writecommand(0x29); //Display on                                          	
 }

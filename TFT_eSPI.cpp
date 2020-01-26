@@ -28,10 +28,10 @@
 
 
 /***************************************************************************************
-** Function name:           spi_begin
+** Function name:           begin_tft_write (was called spi_begin)
 ** Description:             Start SPI transaction for writes and select TFT
 ***************************************************************************************/
-inline void TFT_eSPI::spi_begin(void){
+inline void TFT_eSPI::begin_tft_write(void){
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT)
   if (locked) {
     locked = false;
@@ -41,14 +41,14 @@ inline void TFT_eSPI::spi_begin(void){
 #else
   CS_L;
 #endif
-  SET_SPI_WRITE_MODE;
+  SET_BUS_WRITE_MODE;
 }
 
 /***************************************************************************************
-** Function name:           spi_end
+** Function name:           end_tft_write (was called spi_end)
 ** Description:             End transaction for write and deselect TFT
 ***************************************************************************************/
-inline void TFT_eSPI::spi_end(void){
+inline void TFT_eSPI::end_tft_write(void){
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT)
   if(!inTransaction) {
     if (!locked) {
@@ -57,18 +57,18 @@ inline void TFT_eSPI::spi_end(void){
       spi.endTransaction();
     }
   }
-  SET_SPI_READ_MODE;
+  SET_BUS_READ_MODE;
 #else
   if(!inTransaction) {CS_H;}
 #endif
 }
 
 /***************************************************************************************
-** Function name:           spi_begin_read
-** Description:             Start SPI transaction for reads and select TFT
+** Function name:           begin_tft_read  (was called spi_begin_read)
+** Description:             Start transaction for reads and select TFT
 ***************************************************************************************/
-// Reads require a lower SPI clock rate that writes
-inline void TFT_eSPI::spi_begin_read(void){
+// Reads require a lower SPI clock rate than writes
+inline void TFT_eSPI::begin_tft_read(void){
   DMA_BUSY_CHECK; // Wait for any DMA transfer to complete before changing SPI settings
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT)
   if (locked) {
@@ -82,14 +82,14 @@ inline void TFT_eSPI::spi_begin_read(void){
   #endif
    CS_L;
 #endif
-  SET_SPI_READ_MODE;
+  SET_BUS_READ_MODE;
 }
 
 /***************************************************************************************
-** Function name:           spi_end_read
-** Description:             End SPI transaction for reads and deselect TFT
+** Function name:           end_tft_read (was called spi_end_read)
+** Description:             End transaction for reads and deselect TFT
 ***************************************************************************************/
-inline void TFT_eSPI::spi_end_read(void){
+inline void TFT_eSPI::end_tft_read(void){
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT)
   if(!inTransaction) {
     if (!locked) {
@@ -104,17 +104,17 @@ inline void TFT_eSPI::spi_end_read(void){
   #endif
    if(!inTransaction) {CS_H;}
 #endif
-  SET_SPI_WRITE_MODE;
+  SET_BUS_WRITE_MODE;
 }
 
-#if defined (TOUCH_CS) && defined (SPI_TOUCH_FREQUENCY) // && !defined(TFT_PARALLEL_8_BIT)
+#if defined (TOUCH_CS) && defined (SPI_TOUCH_FREQUENCY)
 
 /***************************************************************************************
-** Function name:           spi_begin_touch
-** Description:             Start SPI transaction and select touch controller
+** Function name:           begin_touch_read_write - was spi_begin_touch
+** Description:             Start transaction and select touch controller
 ***************************************************************************************/
 // The touch controller has a low SPI clock rate
-inline void TFT_eSPI::spi_begin_touch(void){
+inline void TFT_eSPI::begin_touch_read_write(void){
   DMA_BUSY_CHECK;
   CS_H; // Just in case it has been left low
   #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
@@ -122,22 +122,22 @@ inline void TFT_eSPI::spi_begin_touch(void){
   #else
     spi.setFrequency(SPI_TOUCH_FREQUENCY);
   #endif
-  SET_SPI_READ_MODE;
+  SET_BUS_READ_MODE;
   T_CS_L;
 }
 
 /***************************************************************************************
-** Function name:           spi_end_touch
-** Description:             End SPI transaction and deselect touch controller
+** Function name:           end_touch_read_write - was spi_end_touch
+** Description:             End transaction and deselect touch controller
 ***************************************************************************************/
-  inline void TFT_eSPI::spi_end_touch(void){
+  inline void TFT_eSPI::end_touch_read_write(void){
   T_CS_H;
   #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
     if(!inTransaction) {if (!locked) {locked = true; spi.endTransaction();}}
   #else
     spi.setFrequency(SPI_FREQUENCY);
   #endif
-  SET_SPI_WRITE_MODE;
+  SET_BUS_WRITE_MODE;
   }
 
 #endif
@@ -348,11 +348,11 @@ void TFT_eSPI::init(uint8_t tc)
 #endif
 
     _booted = false;
-    spi_end();
+    end_tft_write();
   } // end of: if just _booted
 
   // Toggle RST low to reset
-  spi_begin();
+  begin_tft_write();
 
 #ifdef TFT_RST
   if (TFT_RST >= 0) {
@@ -367,11 +367,11 @@ void TFT_eSPI::init(uint8_t tc)
   writecommand(TFT_SWRST); // Software reset
 #endif
 
-  spi_end();
+  end_tft_write();
 
   delay(150); // Wait for reset to complete
 
-  spi_begin();
+  begin_tft_write();
 
   tc = tc; // Supress warning
 
@@ -391,9 +391,6 @@ void TFT_eSPI::init(uint8_t tc)
 
 #elif defined (ST7796_DRIVER)
     #include "TFT_Drivers/ST7796_Init.h"
-
-#elif defined (RPI_ILI9486_DRIVER)
-    #include "TFT_Drivers/ILI9486_Init.h"
 
 #elif defined (ILI9486_DRIVER)
     #include "TFT_Drivers/ILI9486_Init.h"
@@ -429,7 +426,7 @@ void TFT_eSPI::init(uint8_t tc)
   writecommand(TFT_INVOFF);
 #endif
 
-  spi_end();
+  end_tft_write();
 
   setRotation(rotation);
 
@@ -453,7 +450,7 @@ void TFT_eSPI::init(uint8_t tc)
 void TFT_eSPI::setRotation(uint8_t m)
 {
 
-  spi_begin();
+  begin_tft_write();
 
     // This loads the driver specific rotation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
 #if   defined (ILI9341_DRIVER)
@@ -470,9 +467,6 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (ST7796_DRIVER)
     #include "TFT_Drivers/ST7796_Rotation.h"
-
-#elif defined (RPI_ILI9486_DRIVER)
-    #include "TFT_Drivers/ILI9486_Rotation.h"
 
 #elif defined (ILI9486_DRIVER)
     #include "TFT_Drivers/ILI9486_Rotation.h"
@@ -502,7 +496,7 @@ void TFT_eSPI::setRotation(uint8_t m)
 
   delayMicroseconds(10);
 
-  spi_end();
+  end_tft_write();
 
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
@@ -559,7 +553,7 @@ void TFT_eSPI::spiwrite(uint8_t c)
 ***************************************************************************************/
 void TFT_eSPI::writecommand(uint8_t c)
 {
-  spi_begin(); // CS_L;
+  begin_tft_write();
 
   DC_C;
 
@@ -567,7 +561,7 @@ void TFT_eSPI::writecommand(uint8_t c)
 
   DC_D;
 
-  spi_end();  // CS_H;
+  end_tft_write();
 
 }
 
@@ -578,7 +572,7 @@ void TFT_eSPI::writecommand(uint8_t c)
 ***************************************************************************************/
 void TFT_eSPI::writedata(uint8_t d)
 {
-  spi_begin(); // CS_L;
+  begin_tft_write();
 
   DC_D;        // Play safe, but should already be in data mode
 
@@ -586,7 +580,7 @@ void TFT_eSPI::writedata(uint8_t d)
 
   CS_L;        // Allow more hold time for low VDI rail
 
-  spi_end();   // CS_H;
+  end_tft_write();
 }
 
 
@@ -614,7 +608,7 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
 
 #else // SPI interface
   // Tested with ILI9341 set to Interface II i.e. IM [3:0] = "1101"
-  spi_begin_read();
+  begin_tft_read();
   index = 0x10 + (index & 0x0F);
 
   DC_C; tft_Write_8(0xD9);
@@ -627,7 +621,7 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
   DC_D;
   reg = tft_Read_8();
 
-  spi_end_read();
+  end_tft_read();
 #endif
   return reg;
 }
@@ -715,9 +709,9 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   // This function can get called during antialiased font rendering
   // so a transaction may be in progress
   bool wasInTransaction = inTransaction;
-  if (inTransaction) { inTransaction= false; spi_end();}
+  if (inTransaction) { inTransaction= false; end_tft_write();}
 
-  spi_begin_read();
+  begin_tft_read();
 
   readAddrWindow(x0, y0, 1, 1); // Sets CS low
 
@@ -752,10 +746,10 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
     end_SDA_Read();
   #endif
 
-  spi_end_read();
+  end_tft_read();
 
   // Reinstate the transaction if one was in progress
-  if(wasInTransaction) { spi_begin(); inTransaction = true; }
+  if(wasInTransaction) { begin_tft_write(); inTransaction = true; }
 
   return color565(r, g, b);
 
@@ -819,7 +813,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 
 #else // SPI interface
 
-  spi_begin_read();
+  begin_tft_read();
 
   readAddrWindow(x, y, w, h); // Sets CS low
 
@@ -862,7 +856,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
     end_SDA_Read();
   #endif
 
-  spi_end_read();
+  end_tft_read();
 
 #endif
 }
@@ -902,7 +896,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 
   if (dw < 1 || dh < 1) return;
 
-  spi_begin();
+  begin_tft_write();
   inTransaction = true;
 
   setWindow(x, y, x + dw - 1, y + dh - 1);
@@ -921,7 +915,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
   }
 
   inTransaction = false;
-  spi_end();
+  end_tft_write();
 }
 
 /***************************************************************************************
@@ -946,7 +940,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 
   if (dw < 1 || dh < 1) return;
 
-  spi_begin();
+  begin_tft_write();
   inTransaction = true;
 
   data += dx + dy * w;
@@ -992,7 +986,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
   }
 
   inTransaction = false;
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -1019,7 +1013,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 
   if (dw < 1 || dh < 1) return;
 
-  spi_begin();
+  begin_tft_write();
   inTransaction = true;
 
   data += dx + dy * w;
@@ -1053,7 +1047,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
   }
 
   inTransaction = false;
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -1079,7 +1073,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 
   if (dw < 1 || dh < 1) return;
 
-  spi_begin();
+  begin_tft_write();
   inTransaction = true;
 
   data += dx + dy * w;
@@ -1122,7 +1116,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
   }
 
   inTransaction = false;
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -1148,7 +1142,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
   if (dw < 1 || dh < 1) return;
 
-  spi_begin();
+  begin_tft_write();
   inTransaction = true;
 
   setWindow(x, y, x + dw - 1, y + dh - 1); // Sets CS low and sent RAMWR
@@ -1275,7 +1269,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
   }
 
   inTransaction = false;
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -1300,7 +1294,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
   if (dw < 1 || dh < 1) return;
 
-  spi_begin();
+  begin_tft_write();
   inTransaction = true;
 
   int32_t xe = x + dw - 1, ye = y + dh - 1;
@@ -1498,8 +1492,9 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
   }
 
   inTransaction = false;
-  spi_end();
+  end_tft_write();
 }
+
 
 /***************************************************************************************
 ** Function name:           setSwapBytes
@@ -1520,6 +1515,7 @@ bool TFT_eSPI::getSwapBytes(void)
   return _swapBytes;
 }
 
+
 /***************************************************************************************
 ** Function name:           read rectangle (for SPI Interface II i.e. IM [3:0] = "1101")
 ** Description:             Read RGB pixel colours from a defined area
@@ -1533,7 +1529,7 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
 
 #else  // Not TFT_PARALLEL_8_BIT
 
-  spi_begin_read();
+  begin_tft_read();
 
   readAddrWindow(x0, y0, w, h); // Sets CS low
 
@@ -1574,7 +1570,7 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
     end_SDA_Read();
   #endif
 
-  spi_end_read();
+  end_tft_read();
 
 #endif
 }
@@ -1592,7 +1588,7 @@ void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
   int32_t  dy = r+r;
   int32_t  p  = -(r>>1);
 
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   // These are ordered to minimise coordinate changes in x or y
@@ -1629,7 +1625,7 @@ void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
   }
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -1685,7 +1681,7 @@ void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
   int32_t  dy = r+r;
   int32_t  p  = -(r>>1);
 
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   drawFastHLine(x0 - r, y0, dy+1, color);
@@ -1710,7 +1706,7 @@ void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
   }
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -1766,7 +1762,7 @@ void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint1
   int32_t fy2 = 4 * ry2;
   int32_t s;
 
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   for (x = 0, y = ry, s = 2*ry2+rx2*(1-2*ry); ry2*x <= rx2*y; x++) {
@@ -1799,7 +1795,7 @@ void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint1
   }
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -1818,7 +1814,7 @@ void TFT_eSPI::fillEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint1
   int32_t fy2 = 4 * ry2;
   int32_t s;
 
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   for (x = 0, y = ry, s = 2*ry2+rx2*(1-2*ry); ry2*x <= rx2*y; x++) {
@@ -1844,7 +1840,7 @@ void TFT_eSPI::fillEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint1
   }
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -1865,7 +1861,7 @@ void TFT_eSPI::fillScreen(uint32_t color)
 // Draw a rectangle
 void TFT_eSPI::drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   drawFastHLine(x, y, w, color);
@@ -1875,7 +1871,7 @@ void TFT_eSPI::drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
   drawFastVLine(x + w - 1, y+1, h-2, color);
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -1886,7 +1882,7 @@ void TFT_eSPI::drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
 // Draw a rounded rectangle
 void TFT_eSPI::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint32_t color)
 {
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   // smarter version
@@ -1901,7 +1897,7 @@ void TFT_eSPI::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t
   drawCircleHelper(x + r    , y + h - r - 1, r, 8, color);
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -1912,7 +1908,7 @@ void TFT_eSPI::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t
 // Fill a rounded rectangle, changed to horizontal lines (faster in sprites)
 void TFT_eSPI::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint32_t color)
 {
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   // smarter version
@@ -1923,7 +1919,7 @@ void TFT_eSPI::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t
   fillCircleHelper(x + r    , y + r, r, 2, w - r - r - 1, color);
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -1934,7 +1930,7 @@ void TFT_eSPI::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t
 // Draw a triangle
 void TFT_eSPI::drawTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint32_t color)
 {
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   drawLine(x0, y0, x1, y1, color);
@@ -1942,7 +1938,7 @@ void TFT_eSPI::drawTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int3
   drawLine(x2, y2, x0, y0, color);
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -1976,7 +1972,7 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
     return;
   }
 
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   int32_t
@@ -2023,7 +2019,7 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
   }
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -2033,7 +2029,7 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
 ***************************************************************************************/
 void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color)
 {
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   int32_t i, j, byteWidth = (w + 7) / 8;
@@ -2047,7 +2043,7 @@ void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w
   }
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -2057,7 +2053,7 @@ void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w
 ***************************************************************************************/
 void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t fgcolor, uint16_t bgcolor)
 {
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   int32_t i, j, byteWidth = (w + 7) / 8;
@@ -2071,7 +2067,7 @@ void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w
   }
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 /***************************************************************************************
@@ -2080,7 +2076,7 @@ void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w
 ***************************************************************************************/
 void TFT_eSPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color)
 {
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   int32_t i, j, byteWidth = (w + 7) / 8;
@@ -2094,7 +2090,7 @@ void TFT_eSPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t 
   }
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -2104,7 +2100,7 @@ void TFT_eSPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t 
 ***************************************************************************************/
 void TFT_eSPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bgcolor)
 {
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   int32_t i, j, byteWidth = (w + 7) / 8;
@@ -2118,7 +2114,7 @@ void TFT_eSPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t 
   }
 
   inTransaction = false;
-  spi_end();              // Does nothing if Sprite class uses this function
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
 
@@ -2467,7 +2463,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
   if ((size==1) && fillbg) {
     uint8_t column[6];
     uint8_t mask = 0x1;
-    spi_begin();
+    begin_tft_write();
 
     setWindow(x, y, x+5, y+8);
 
@@ -2483,10 +2479,10 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
       tft_Write_16(bg);
     }
 
-    spi_end();
+    end_tft_write();
   }
   else {
-    //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+    //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
     inTransaction = true;
     for (int8_t i = 0; i < 6; i++ ) {
       uint8_t line;
@@ -2510,7 +2506,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
       }
     }
     inTransaction = false;
-    spi_end();              // Does nothing if Sprite class uses this function
+    end_tft_write();              // Does nothing if Sprite class uses this function
   }
 
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -2523,7 +2519,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
 #ifdef LOAD_GFXFF
     // Filter out bad characters not present in font
     if ((c >= pgm_read_word(&gfxFont->first)) && (c <= pgm_read_word(&gfxFont->last ))) {
-      //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+      //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
       inTransaction = true;
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -2572,7 +2568,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
       }
 
       inTransaction = false;
-      spi_end();              // Does nothing if Sprite class uses this function
+      end_tft_write();              // Does nothing if Sprite class uses this function
     }
 #endif
 
@@ -2592,11 +2588,11 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
 // Chip select is high at the end of this function
 void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t w, int32_t h)
 {
-  spi_begin();
+  begin_tft_write();
 
   setWindow(x0, y0, x0 + w - 1, y0 + h - 1);
 
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -2604,10 +2600,10 @@ void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t w, int32_t h)
 ** Function name:           setWindow
 ** Description:             define an area to receive a stream of pixels
 ***************************************************************************************/
-// Chip select stays low, call spi_begin first. Use setAddrWindow() from sketches
+// Chip select stays low, call begin_tft_write first. Use setAddrWindow() from sketches
 void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
-  //spi_begin(); // Must be called before setWindow
+  //begin_tft_write(); // Must be called before setWindow
 
   addr_col = 0xFFFF;
   addr_row = 0xFFFF;
@@ -2631,7 +2627,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 
   DC_D;
 
-  //spi_end(); // Must be called after setWindow
+  //end_tft_write(); // Must be called after setWindow
 }
 
 
@@ -2684,7 +2680,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   y+=rowstart;
 #endif
 
-  spi_begin();
+  begin_tft_write();
 
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != x) {
@@ -2703,7 +2699,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D; tft_Write_16(color);
 
-  spi_end();
+  end_tft_write();
 }
 
 /***************************************************************************************
@@ -2712,11 +2708,11 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 ***************************************************************************************/
 void TFT_eSPI::pushColor(uint16_t color)
 {
-  spi_begin();
+  begin_tft_write();
 
   tft_Write_16(color);
 
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -2726,11 +2722,11 @@ void TFT_eSPI::pushColor(uint16_t color)
 ***************************************************************************************/
 void TFT_eSPI::pushColor(uint16_t color, uint32_t len)
 {
-  spi_begin();
+  begin_tft_write();
 
   pushBlock(color, len);
 
-  spi_end();
+  end_tft_write();
 }
 
 /***************************************************************************************
@@ -2739,7 +2735,7 @@ void TFT_eSPI::pushColor(uint16_t color, uint32_t len)
 ***************************************************************************************/
 void TFT_eSPI::startWrite(void)
 {
-  spi_begin();
+  begin_tft_write();
   inTransaction = true;
 }
 
@@ -2751,7 +2747,7 @@ void TFT_eSPI::endWrite(void)
 {
   inTransaction = false;
   DMA_BUSY_CHECK;         // Safety check - user code should have checked this!
-  spi_end();
+  end_tft_write();
 }
 
 /***************************************************************************************
@@ -2771,11 +2767,11 @@ void TFT_eSPI::writeColor(uint16_t color, uint32_t len)
 // len is number of bytes, not pixels
 void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
 {
-  spi_begin();
+  begin_tft_write();
 
   pushPixels(data, len>>1);
 
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -2785,13 +2781,13 @@ void TFT_eSPI::pushColors(uint8_t *data, uint32_t len)
 ***************************************************************************************/
 void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
 {
-  spi_begin();
+  begin_tft_write();
   if (swap) {swap = _swapBytes; _swapBytes = true; }
 
   pushPixels(data, len);
 
   _swapBytes = swap; // Restore old value
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -2803,7 +2799,7 @@ void TFT_eSPI::pushColors(uint16_t *data, uint32_t len, bool swap)
 // an efficient FastH/V Line draw routine for line segments of 2 pixels or more
 void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color)
 {
-  //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   bool steep = abs(y1 - y0) > abs(x1 - x0);
@@ -2855,7 +2851,7 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
   }
 
   inTransaction = false;
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -2874,13 +2870,13 @@ void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 
   if (h < 1) return;
 
-  spi_begin();
+  begin_tft_write();
 
   setWindow(x, y, x, y + h - 1);
 
   pushBlock(color, h);
 
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -2899,13 +2895,13 @@ void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 
   if (w < 1) return;
 
-  spi_begin();
+  begin_tft_write();
 
   setWindow(x, y, x + w - 1, y);
 
   pushBlock(color, w);
 
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -2926,13 +2922,13 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
 
   if ((w < 1) || (h < 1)) return;
 
-  spi_begin();
+  begin_tft_write();
 
   setWindow(x, y, x + w - 1, y + h - 1);
 
   pushBlock(color, w * h);
 
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -2980,11 +2976,11 @@ uint16_t TFT_eSPI::color8to16(uint8_t color)
 ***************************************************************************************/
 void TFT_eSPI::invertDisplay(bool i)
 {
-  spi_begin();
+  begin_tft_write();
   // Send the command twice as otherwise it does not always work!
   writecommand(i ? TFT_INVON : TFT_INVOFF);
   writecommand(i ? TFT_INVON : TFT_INVOFF);
-  spi_end();
+  end_tft_write();
 }
 
 
@@ -3366,7 +3362,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
     if (x + width * textsize >= (int16_t)_width) return width * textsize ;
 
     if (textcolor == textbgcolor || textsize != 1) {
-      //spi_begin();          // Sprite class can use this function, avoiding spi_begin()
+      //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
       inTransaction = true;
 
       for (int32_t i = 0; i < height; i++) {
@@ -3403,10 +3399,10 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
       }
 
       inTransaction = false;
-      spi_end();
+      end_tft_write();
     }
     else { // Faster drawing of characters and background using block write
-      spi_begin();
+      begin_tft_write();
 
       setWindow(x, y, x + width - 1, y + height - 1);
 
@@ -3426,7 +3422,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
         if (pX) {tft_Write_16(textbgcolor);}
       }
 
-      spi_end();
+      end_tft_write();
     }
   }
 
@@ -3438,7 +3434,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 #ifdef LOAD_RLE  //674 bytes of code
   // Font is not 2 and hence is RLE encoded
   {
-    spi_begin();
+    begin_tft_write();
     inTransaction = true;
 
     w *= height; // Now w is total number of pixels in the character
@@ -3508,7 +3504,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
       }
     }
     inTransaction = false;
-    spi_end();
+    end_tft_write();
   }
   // End of RLE font rendering
 #endif
