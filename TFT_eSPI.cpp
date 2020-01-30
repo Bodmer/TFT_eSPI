@@ -107,41 +107,14 @@ inline void TFT_eSPI::end_tft_read(void){
   SET_BUS_WRITE_MODE;
 }
 
-#if defined (TOUCH_CS) && defined (SPI_TOUCH_FREQUENCY)
-
 /***************************************************************************************
-** Function name:           begin_touch_read_write - was spi_begin_touch
-** Description:             Start transaction and select touch controller
+** Function name:           Legacy - deprecated
+** Description:             Start/end transaction
 ***************************************************************************************/
-// The touch controller has a low SPI clock rate
-inline void TFT_eSPI::begin_touch_read_write(void){
-  DMA_BUSY_CHECK;
-  CS_H; // Just in case it has been left low
-  #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
-    if (locked) {locked = false; spi.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
-  #else
-    spi.setFrequency(SPI_TOUCH_FREQUENCY);
-  #endif
-  SET_BUS_READ_MODE;
-  T_CS_L;
-}
-
-/***************************************************************************************
-** Function name:           end_touch_read_write - was spi_end_touch
-** Description:             End transaction and deselect touch controller
-***************************************************************************************/
-  inline void TFT_eSPI::end_touch_read_write(void){
-  T_CS_H;
-  #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
-    if(!inTransaction) {if (!locked) {locked = true; spi.endTransaction();}}
-  #else
-    spi.setFrequency(SPI_FREQUENCY);
-  #endif
-  SET_BUS_WRITE_MODE;
-  }
-
-#endif
-
+  void TFT_eSPI::spi_begin()       {begin_tft_write();}
+  void TFT_eSPI::spi_end()         {  end_tft_write();}
+  void TFT_eSPI::spi_begin_read()  {begin_tft_read(); }
+  void TFT_eSPI::spi_end_read()    {  end_tft_read(); }
 
 /***************************************************************************************
 ** Function name:           TFT_eSPI
@@ -2969,6 +2942,31 @@ uint16_t TFT_eSPI::color8to16(uint8_t color)
   return color16;
 }
 
+/***************************************************************************************
+** Function name:           color16to24
+** Description:             convert 16 bit colour to a 24 bit 888 colour value
+***************************************************************************************/
+uint32_t TFT_eSPI::color16to24(uint16_t color565)
+{
+  uint8_t r = (color565 >> 8) & 0xF8; r |= (r >> 5);
+  uint8_t g = (color565 >> 3) & 0xFC; g |= (g >> 6);
+  uint8_t b = (color565 << 3) & 0xF8; b |= (b >> 5);
+
+  return ((uint32_t)r << 16) | ((uint32_t)g << 8) | ((uint32_t)b << 0);
+}
+
+/***************************************************************************************
+** Function name:           color24to16
+** Description:             convert 24 bit colour to a 16 bit 565 colour value
+***************************************************************************************/
+uint32_t TFT_eSPI::color24to16(uint32_t color888)
+{
+  uint16_t r = (color888 >> 8) & 0xF800;
+  uint16_t g = (color888 >> 5) & 0x07E0;
+  uint16_t b = (color888 >> 3) & 0x001F;
+
+  return (r | g | b);
+}
 
 /***************************************************************************************
 ** Function name:           invertDisplay
@@ -3108,7 +3106,7 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 
 /***************************************************************************************
 ** Function name:           alphaBlend
-** Description:             Blend foreground and background and return new colour
+** Description:             Blend 16bit foreground and background
 *************************************************************************************x*/
 uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc)
 {
@@ -3132,6 +3130,53 @@ uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc)
   return (r << 11) | (g << 5) | (b << 0);
 }
 
+/***************************************************************************************
+** Function name:           alphaBlend
+** Description:             Blend 16bit foreground and background with dither
+*************************************************************************************x*/
+uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc, uint8_t dither)
+{
+  if (dither) {
+    int16_t alphaDither = (int16_t)alpha - dither + random(2*dither+1); // +/-4 randomised
+    alpha = (uint8_t)alphaDither;
+    if (alphaDither <  0) alpha = 0;
+    if (alphaDither >255) alpha = 255;
+  }
+  
+  return alphaBlend(alpha, fgc, bgc);
+}
+
+/***************************************************************************************
+** Function name:           alphaBlend
+** Description:             Blend 24bit foreground and background with optional dither
+*************************************************************************************x*/
+uint32_t TFT_eSPI::alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8_t dither)
+{
+
+  if (dither) {
+    int16_t alphaDither = (int16_t)alpha - dither + random(2*dither+1); // +/-dither randomised
+    alpha = (uint8_t)alphaDither;
+    if (alphaDither <  0) alpha = 0;
+    if (alphaDither >255) alpha = 255;
+  }
+
+  // For speed use fixed point maths and rounding to permit a power of 2 division
+  uint16_t fgR = ((fgc >> 15) & 0x1FE) + 1;
+  uint16_t fgG = ((fgc >>  7) & 0x1FE) + 1;
+  uint16_t fgB = ((fgc <<  1) & 0x1FE) + 1;
+
+  uint16_t bgR = ((bgc >> 15) & 0x1FE) + 1;
+  uint16_t bgG = ((bgc >>  7) & 0x1FE) + 1;
+  uint16_t bgB = ((bgc <<  1) & 0x1FE) + 1;
+
+  // Shift right 1 to drop rounding bit and shift right 8 to divide by 256
+  uint16_t r = (((fgR * alpha) + (bgR * (255 - alpha))) >> 9);
+  uint16_t g = (((fgG * alpha) + (bgG * (255 - alpha))) >> 9);
+  uint16_t b = (((fgB * alpha) + (bgB * (255 - alpha))) >> 9);
+
+  // Combine RGB colours into 24 bits
+  return (r << 16) | (g << 8) | (b << 0);
+}
 
 /***************************************************************************************
 ** Function name:           write

@@ -827,7 +827,7 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y, uint16_t transp)
 *************************************************************************************x*/
 uint8_t TFT_eSprite::readPixelValue(int32_t x, int32_t y)
 {
-  if ((x < 0) || (x >= _iwidth) || (y < 0) || (y >= _iheight) || !_created) return 0xFFFF;
+  if ((x < 0) || (x >= _iwidth) || (y < 0) || (y >= _iheight) || !_created) return 0xFF;
 
   if (_bpp == 4)
   {

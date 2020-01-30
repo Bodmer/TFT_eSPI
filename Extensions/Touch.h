@@ -18,9 +18,9 @@
   void     setTouch(uint16_t *data);
 
  private:
-           // Legacy support only - deprecated
-  void     spi_begin_touch() {begin_touch_read_write();}
-  void     spi_end_touch()   {  end_touch_read_write();}
+           // Legacy support only - deprecated TODO: delete
+  void     spi_begin_touch();
+  void     spi_end_touch();
 
            // Handlers for the touch controller bus settings
   inline void begin_touch_read_write() __attribute__((always_inline));

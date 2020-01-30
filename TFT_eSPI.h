@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.0.0"
+#define TFT_ESPI_VERSION "2.0.1"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -558,10 +558,18 @@ class TFT_eSPI : public Print {
            // Convert 16 bit colour to 8 bits
   uint8_t  color16to8(uint16_t color565);
 
+           // Convert 16 bit colour to/from 24 bit, R+G+B concatenated into LS 24 bits
+  uint32_t color16to24(uint16_t color565);
+  uint32_t color24to16(uint32_t color888);
+
            // Alpha blend 2 colours, see generic "alphaBlend_Test" example
            // alpha =   0 = 100% background colour
            // alpha = 255 = 100% foreground colour
   uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc);
+           // 16 bit colour alphaBlend with alpha dither (dither reduces colour banding)
+  uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc, uint8_t dither);
+           // 24 bit colour alphaBlend with optional alpha dither
+  uint32_t alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8_t dither = 0);
 
 
   // DMA support functions - these are currently just for SPI writes whe using the STM32 processors
@@ -640,20 +648,20 @@ class TFT_eSPI : public Print {
            textdatum, // Text reference datum
            rotation;  // Display rotation (0-3)
 
-  int16_t _xpivot;   // TFT x pivot point coordinate for rotated Sprites
-  int16_t _ypivot;   // TFT x pivot point coordinate for rotated Sprites
+  int16_t  _xpivot;   // TFT x pivot point coordinate for rotated Sprites
+  int16_t  _ypivot;   // TFT x pivot point coordinate for rotated Sprites
 
   uint8_t  decoderState = 0;   // UTF8 decoder state        - not for user access
   uint16_t decoderBuffer;      // Unicode code-point buffer - not for user access
 
  //--------------------------------------- private ------------------------------------//
  private:
-           // Legacy begin and end prototypes - deprecated
-         void spi_begin()      {begin_tft_write();}
-         void spi_end()        {  end_tft_write();}
+           // Legacy begin and end prototypes - deprecated TODO: delete
+  void     spi_begin();
+  void     spi_end();
 
-         void spi_begin_read() {begin_tft_read(); }
-         void spi_end_read()   {  end_tft_read(); }
+  void     spi_begin_read();
+  void     spi_end_read();
 
            // New begin and end prototypes
            // begin/end a TFT write transaction
