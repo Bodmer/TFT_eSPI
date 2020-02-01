@@ -61,6 +61,8 @@ void TFT_eSPI_Button::drawButton(bool inverted) {
   _gfx->setTextDatum(tempdatum);
 }
 
+// Some added arguments for more custom buttons
+// Mod author: https://github.com/justcallmekoko
 void TFT_eSPI_Button::drawButton(uint8_t d, int padding, String button_name, boolean inverted) {
   uint16_t fill, outline, text;
 
