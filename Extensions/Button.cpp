@@ -85,6 +85,8 @@ void TFT_eSPI_Button::drawButton(uint8_t d, int padding, String button_name, boo
 
   uint8_t tempdatum = _gfx->getTextDatum();
   _gfx->setTextDatum(d);
+  
+  // Button label will be limited length unless string argument is provided
   if (button_name == "")
 	_gfx->drawString(_label, _x1 + padding, _y1 + (_h/2));
   else
