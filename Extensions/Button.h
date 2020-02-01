@@ -19,7 +19,7 @@ class TFT_eSPI_Button {
   uint16_t w, uint16_t h, uint16_t outline, uint16_t fill,
   uint16_t textcolor, char *label, uint8_t textsize);
   void     drawButton(bool inverted = false);
-  void     drawButton(uint8_t d, int padding = 0, String button_name = "", boolean inverted = false);
+  void     drawButton(uint8_t d = ML_DATUM, int padding = 0, String button_name = "", boolean inverted = false);
   bool  contains(int16_t x, int16_t y);
 
   void     press(bool p);
