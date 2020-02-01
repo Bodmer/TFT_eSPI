@@ -831,7 +831,6 @@ uint8_t TFT_eSprite::readPixelValue(int32_t x, int32_t y)
 
   if (_bpp == 4)
   {
-    uint16_t color;
     if ((x & 0x01) == 0)
       return ((_img4[((x+y*_iwidth)>>1)] & 0xF0) >> 4) & 0x0F; // even index = bits 7 .. 4
     else
@@ -1639,14 +1638,14 @@ void TFT_eSprite::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
     {
       uint8_t c = (uint8_t) (color & 0xF) << 4;
       while (h--) {
-        _img4[(x + _iwidth * y)>>1] = (uint8_t) (c | _img4[(x + _iwidth * y)>>1] & 0x0F);
+        _img4[(x + _iwidth * y)>>1] = (uint8_t) (c | (_img4[(x + _iwidth * y)>>1] & 0x0F));
         y++;
       }
     }
     else {
       uint8_t c = (uint8_t)color & 0xF;
       while (h--) {
-        _img4[(x - 1 + _iwidth * y)>>1] = (uint8_t) (c | _img4[(x - 1 + _iwidth * y)>>1] & 0xF0); // x is odd; new color goes into the low bits.
+        _img4[(x - 1 + _iwidth * y)>>1] = (uint8_t) (c | (_img4[(x - 1 + _iwidth * y)>>1] & 0xF0)); // x is odd; new color goes into the low bits.
         y++;
       }
     }
