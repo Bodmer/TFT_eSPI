@@ -21,9 +21,6 @@
 /***************************************************************************************
 **                         Section 1: Load required header files
 ***************************************************************************************/
-// Include header file that defines the fonts loaded, the TFT drivers
-// available and the pins to be used, etc, etc
-#include <User_Setup_Select.h>
 
 //Standard support
 #include <Arduino.h>
@@ -31,8 +28,13 @@
 #include <SPI.h>
 
 /***************************************************************************************
-**                         Section 2: Load processor specific header files
+**                         Section 2: Load library and processor specific header files
 ***************************************************************************************/
+// Include header file that defines the fonts loaded, the TFT drivers
+// available and the pins to be used, etc, etc
+#include <User_Setup_Select.h>
+
+// Handle FLASH based storage e.g. PROGMEM
 #ifdef __AVR__
   #include <avr/pgmspace.h>
 #elif defined(ESP8266) || defined(ESP32)
@@ -670,7 +672,7 @@ class TFT_eSPI : public Print {
   inline void end_tft_write()        __attribute__((always_inline));
 
            // begin/end a TFT read transaction
-           // For SPI bus begin lowers SPI clock rate, end reinstates transmit clock rate
+           // For SPI bus: begin lowers SPI clock rate, end reinstates transmit clock rate
   inline void begin_tft_read() __attribute__((always_inline));
   inline void end_tft_read()   __attribute__((always_inline));
 
