@@ -129,9 +129,9 @@
 // ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP8266 SETUP ######
 
 // For NodeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
-#define TFT_CS   PIN_D8  // Chip select control pin D8
-#define TFT_DC   PIN_D3  // Data Command control pin
-#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
+//#define TFT_CS   PIN_D8  // Chip select control pin D8
+//#define TFT_DC   PIN_D3  // Data Command control pin
+//#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1    // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
 //#define TFT_BL PIN_D1  // LED back-light (only for ST7789 with backlight control pin)
@@ -164,17 +164,26 @@
 // For ESP32 Dev board (only tested with ILI9341 display)
 // The hardware SPI can be mapped to any pins
 
+<<<<<<< HEAD
 //#define TFT_MISO 19 // Matching T_DO
 //#define TFT_MOSI 23 // Matching T_DIN
 //#define TFT_SCLK 18 // Matching T_CLK
 //#define TFT_CS   17  // Chip select control pin
 //#define TFT_DC   16  // Data Command control pin
 //#define TFT_RST   5  // Reset pin (could connect to RST pin)
+=======
+#define TFT_MISO 19 // Matching T_DO
+#define TFT_MOSI 23 // Matching T_DIN
+#define TFT_SCLK 18 // Matching T_CLK
+#define TFT_CS   17  // Chip select control pin
+#define TFT_DC   16  // Data Command control pin
+#define TFT_RST   5  // Reset pin (could connect to RST pin)
+>>>>>>> 0f793cb... Add setLabelDatum
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
-//#define TFT_BL   32  // LED back-light (only for ST7789 with backlight control pin)
+#define TFT_BL   32  // LED back-light (only for ST7789 with backlight control pin)
 
-//#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
+#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
 
 //#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
