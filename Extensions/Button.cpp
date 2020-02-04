@@ -86,40 +86,6 @@ void TFT_eSPI_Button::drawButton(bool inverted, String long_name) {
   _gfx->setTextDatum(tempdatum);
 }
 
-// Some added arguments for more custom buttons
-// Mod author: https://github.com/justcallmekoko
-/*
-void TFT_eSPI_Button::drawButton(uint8_t d, int padding, String button_name, boolean inverted) {
-  uint16_t fill, outline, text;
-
-  if(!inverted) {
-    fill    = _fillcolor;
-    outline = _outlinecolor;
-    text    = _textcolor;
-  } else {
-    fill    = _textcolor;
-    outline = _outlinecolor;
-    text    = _fillcolor;
-  }
-
-  uint8_t r = min(_w, _h) / 4; // Corner radius
-  _gfx->fillRoundRect(_x1, _y1, _w, _h, r, fill);
-  _gfx->drawRoundRect(_x1, _y1, _w, _h, r, outline);
-
-  _gfx->setTextColor(text);
-  _gfx->setTextSize(_textsize);
-
-  uint8_t tempdatum = _gfx->getTextDatum();
-  _gfx->setTextDatum(d);
-  
-  // Button label will be limited length unless string argument is provided
-  if (button_name == "")
-	_gfx->drawString(_label, _x1 + padding, _y1 + (_h/2));
-  else
-	_gfx->drawString(button_name, _x1 + padding, _y1 + (_h/2));
-  _gfx->setTextDatum(tempdatum);
-}*/
-
 bool TFT_eSPI_Button::contains(int16_t x, int16_t y) {
   return ((x >= _x1) && (x < (_x1 + _w)) &&
           (y >= _y1) && (y < (_y1 + _h)));
