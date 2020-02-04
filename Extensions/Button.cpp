@@ -69,9 +69,13 @@ void TFT_eSPI_Button::drawButton(bool inverted, String long_name) {
   uint8_t tempdatum = _gfx->getTextDatum();
   _gfx->setTextDatum(_textdatum);
   if (long_name == "")
+<<<<<<< HEAD
   //_gfx->drawString(_label, _x1 + (_w/2), _y1 + (_h/2) -4);
 <<<<<<< HEAD
 	_gfx->drawString(_label, _x1 + _xd, _y1 + (_h/2) + _yd);
+=======
+    _gfx->drawString(_label, _x1 + _xd, _y1 + (_h/2) + _yd);
+>>>>>>> a21f7e5... Fix indentation in Button.cpp
   else
     _gfx->drawString(long_name, _x1 + _xd, _y1 + (_h/2) + _yd);
 =======
