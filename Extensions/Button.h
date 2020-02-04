@@ -18,8 +18,12 @@ class TFT_eSPI_Button {
   void     initButtonUL(TFT_eSPI *gfx, int16_t x1, int16_t y1,
   uint16_t w, uint16_t h, uint16_t outline, uint16_t fill,
   uint16_t textcolor, char *label, uint8_t textsize);
-  void     drawButton(bool inverted = false);
-  void     drawButton(uint8_t d = ML_DATUM, int padding = 0, String button_name = "", boolean inverted = false);
+  
+  // Adjust text datum and x, y deltas
+  void setLabelDatum(int16_t x_delta, int16_t y_delta, uint8_t datum = MC_DATUM);
+  
+  void     drawButton(bool inverted = false, String long_name = "");
+  //void     drawButton(uint8_t d = ML_DATUM, int padding = 0, String button_name = "", boolean inverted = false);
   bool  contains(int16_t x, int16_t y);
 
   void     press(bool p);
@@ -29,9 +33,9 @@ class TFT_eSPI_Button {
 
  private:
   TFT_eSPI *_gfx;
-  int16_t  _x1, _y1; // Coordinates of top-left corner
+  int16_t  _x1, _y1, _xd, _yd; // Coordinates of top-left corner
   uint16_t _w, _h;
-  uint8_t  _textsize;
+  uint8_t  _textsize, _textdatum;
   uint16_t _outlinecolor, _fillcolor, _textcolor;
   char     _label[10];
 

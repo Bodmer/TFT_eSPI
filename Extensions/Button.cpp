@@ -27,15 +27,26 @@ void TFT_eSPI_Button::initButtonUL(
   _y1           = y1;
   _w            = w;
   _h            = h;
+  _xd           = 0;
+  _yd           = 0;
   _outlinecolor = outline;
   _fillcolor    = fill;
   _textcolor    = textcolor;
   _textsize     = textsize;
+  _textdatum    = MC_DATUM;
   _gfx          = gfx;
   strncpy(_label, label, 9);
 }
 
-void TFT_eSPI_Button::drawButton(bool inverted) {
+// Adjust text datum and x, y deltas
+void TFT_eSPI_Button::setLabelDatum(int16_t x_delta, int16_t y_delta, uint8_t datum)
+{
+  _xd        = x_delta;
+  _yd        = y_delta;
+  _textdatum = datum;
+}
+
+void TFT_eSPI_Button::drawButton(bool inverted, String long_name) {
   uint16_t fill, outline, text;
 
   if(!inverted) {
@@ -56,13 +67,18 @@ void TFT_eSPI_Button::drawButton(bool inverted) {
   _gfx->setTextSize(_textsize);
 
   uint8_t tempdatum = _gfx->getTextDatum();
-  _gfx->setTextDatum(MC_DATUM);
-  _gfx->drawString(_label, _x1 + (_w/2), _y1 + (_h/2) -4);
+  _gfx->setTextDatum(_textdatum);
+  if (long_name == "")
+  //_gfx->drawString(_label, _x1 + (_w/2), _y1 + (_h/2) -4);
+	_gfx->drawString(_label, _x1 + _xd, _y1 + (_h/2) + _yd);
+  else
+    _gfx->drawString(long_name, _x1 + _xd, _y1 + (_h/2) + _yd);
   _gfx->setTextDatum(tempdatum);
 }
 
 // Some added arguments for more custom buttons
 // Mod author: https://github.com/justcallmekoko
+/*
 void TFT_eSPI_Button::drawButton(uint8_t d, int padding, String button_name, boolean inverted) {
   uint16_t fill, outline, text;
 
@@ -92,7 +108,7 @@ void TFT_eSPI_Button::drawButton(uint8_t d, int padding, String button_name, boo
   else
 	_gfx->drawString(button_name, _x1 + padding, _y1 + (_h/2));
   _gfx->setTextDatum(tempdatum);
-}
+}*/
 
 bool TFT_eSPI_Button::contains(int16_t x, int16_t y) {
   return ((x >= _x1) && (x < (_x1 + _w)) &&
