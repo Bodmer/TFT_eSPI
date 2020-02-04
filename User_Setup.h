@@ -165,12 +165,17 @@
 // The hardware SPI can be mapped to any pins
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9d52417... Update User_Setup.h
 //#define TFT_MISO 19 // Matching T_DO
 //#define TFT_MOSI 23 // Matching T_DIN
 //#define TFT_SCLK 18 // Matching T_CLK
 //#define TFT_CS   17  // Chip select control pin
 //#define TFT_DC   16  // Data Command control pin
 //#define TFT_RST   5  // Reset pin (could connect to RST pin)
+<<<<<<< HEAD
 =======
 #define TFT_MISO 19 // Matching T_DO
 #define TFT_MOSI 23 // Matching T_DIN
@@ -179,6 +184,8 @@
 #define TFT_DC   16  // Data Command control pin
 #define TFT_RST   5  // Reset pin (could connect to RST pin)
 >>>>>>> 0f793cb... Add setLabelDatum
+=======
+>>>>>>> 9d52417... Update User_Setup.h
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
 #define TFT_BL   32  // LED back-light (only for ST7789 with backlight control pin)
