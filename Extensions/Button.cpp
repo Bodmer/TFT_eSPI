@@ -3,7 +3,10 @@
 ** Grabbed from Adafruit_GFX library and enhanced to handle any label font
 ***************************************************************************************/
 TFT_eSPI_Button::TFT_eSPI_Button(void) {
-  _gfx = 0;
+  _gfx       = 0;
+  _xd        = 0;
+  _yd        = 0;
+  _textdatum = MC_DATUM;
 }
 
 // Classic initButton() function: pass center & size
@@ -35,7 +38,15 @@ void TFT_eSPI_Button::initButtonUL(
   strncpy(_label, label, 9);
 }
 
-void TFT_eSPI_Button::drawButton(bool inverted) {
+// Adjust text datum and x, y deltas
+void TFT_eSPI_Button::setLabelDatum(int16_t x_delta, int16_t y_delta, uint8_t datum)
+{
+  _xd        = x_delta;
+  _yd        = y_delta;
+  _textdatum = datum;
+}
+
+void TFT_eSPI_Button::drawButton(bool inverted, String long_name) {
   uint16_t fill, outline, text;
 
   if(!inverted) {
@@ -56,8 +67,11 @@ void TFT_eSPI_Button::drawButton(bool inverted) {
   _gfx->setTextSize(_textsize);
 
   uint8_t tempdatum = _gfx->getTextDatum();
-  _gfx->setTextDatum(MC_DATUM);
-  _gfx->drawString(_label, _x1 + (_w/2), _y1 + (_h/2) -4);
+  _gfx->setTextDatum(_textdatum);
+  if (long_name == "")
+    _gfx->drawString(_label, _x1 + _xd, _y1 + (_h/2) + _yd);
+  else
+    _gfx->drawString(long_name, _x1 + _xd, _y1 + (_h/2) + _yd);
   _gfx->setTextDatum(tempdatum);
 }
 
