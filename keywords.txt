@@ -99,6 +99,7 @@ TFT_eSPI_Button	KEYWORD1
 initButton	KEYWORD2
 textcolor	KEYWORD2
 initButtonUL	KEYWORD2
+setLabelDatum   KEYWORD2
 drawButton	KEYWORD2
 contains	KEYWORD2
 press	KEYWORD2
