@@ -118,7 +118,7 @@ void drawButtons()
 
     // Adjust button label X delta according to array position
     // setLabelDatum(uint16_t x_delta, uint16_t y_delta, uint8_t datum)
-    key[i].setLabelDatum(i * 10, 0, ML_DATUM);
+    key[i].setLabelDatum(i * 10 - (KEY_W/2), 0, ML_DATUM);
 
     // Draw button and specify label string
     // Specifying label string here will allow more than the default 10 byte label
