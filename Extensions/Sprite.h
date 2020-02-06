@@ -160,8 +160,8 @@ class TFT_eSprite : public TFT_eSPI {
 
   uint16_t *_colorMap; // color map: 16 entries, used with 4 bit color map.
 
-  int16_t _xpivot;   // x pivot point coordinate
-  int16_t _ypivot;   // y pivot point coordinate
+  int16_t  _xpivot;   // x pivot point coordinate
+  int16_t  _ypivot;   // y pivot point coordinate
 
   bool     _created;    // A Sprite has been created and memory reserved
   bool     _gFont = false; 
@@ -173,7 +173,7 @@ class TFT_eSprite : public TFT_eSPI {
   uint32_t _sw, _sh; // w,h for scroll zone
   uint32_t _scolor;  // gap fill colour for scroll zone
 
-  bool  _iswapBytes; // Swap the byte order for Sprite pushImage()
+  bool     _iswapBytes; // Swap the byte order for Sprite pushImage()
 
   int32_t  _iwidth, _iheight; // Sprite memory image bit width and height (swapped during rotations)
   int32_t  _dwidth, _dheight; // Real display width and height (for <8bpp Sprites)

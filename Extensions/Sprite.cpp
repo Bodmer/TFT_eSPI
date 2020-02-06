@@ -39,6 +39,8 @@ TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
   _colorMap = nullptr;
 
   this->cursor_y = this->cursor_x = 0; // Text cursor position
+
+  this->_psram_enable = true;
 }
 
 
@@ -120,9 +122,8 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
 
   if (_bpp == 16)
   {
-
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() ) ptr8 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint16_t));
+    if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint16_t));
     else
 #endif
     ptr8 = ( uint8_t*) calloc(w * h + 1, sizeof(uint16_t));
@@ -131,7 +132,7 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
   else if (_bpp == 8)
   {
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() ) ptr8 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint8_t));
+    if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint8_t));
     else
 #endif
     ptr8 = ( uint8_t*) calloc(w * h + 1, sizeof(uint8_t));
@@ -142,7 +143,7 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
     w = (w+1) & 0xFFFE; // width needs to be multiple of 2, with an extra "off screen" pixel
     _iwidth = w;
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() ) ptr8 = ( uint8_t*) ps_calloc(((w * h) >> 1) + 1, sizeof(uint8_t));
+    if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(((w * h) >> 1) + 1, sizeof(uint8_t));
     else
 #endif
     ptr8 = ( uint8_t*) calloc(((w * h) >> 1) + 1, sizeof(uint8_t));
@@ -161,7 +162,7 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
     if (frames > 2) frames = 2; // Currently restricted to 2 frame buffers
     if (frames < 1) frames = 1;
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() ) ptr8 = ( uint8_t*) ps_calloc(frames * (w>>3) * h + frames, sizeof(uint8_t));
+    if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(frames * (w>>3) * h + frames, sizeof(uint8_t));
     else
 #endif
     ptr8 = ( uint8_t*) calloc(frames * (w>>3) * h + frames, sizeof(uint8_t));

@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.0.3"
+#define TFT_ESPI_VERSION "2.0.4"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -629,8 +629,10 @@ class TFT_eSPI : public Print {
   //       id = 0: reserved - may be used in fuuture to reset all attributes to a default state
   //       id = 1: Turn on (a=true) or off (a=false) GLCD cp437 font character error correction
   //       id = 2: Turn on (a=true) or off (a=false) UTF8 decoding
+  //       id = 3: Enable or disable use of ESP32 PSRAM (if available)
            #define CP437_SWITCH 1
            #define UTF8_SWITCH  2
+           #define PSRAM_ENABLE 3
   void     setAttribute(uint8_t id = 0, uint8_t a = 0); // Set attribute value
   uint8_t  getAttribute(uint8_t id = 0);                // Get attribute value
 
@@ -734,8 +736,9 @@ class TFT_eSPI : public Print {
   bool     _booted;    // init() or begin() has already run once
   
                        // User sketch manages these via set/getAttribute()
-  bool     _cp437;     // If set, use correct CP437 charset (default is ON)
-  bool     _utf8;      // If set, use UTF-8 decoder in print stream 'write()' function (default ON)
+  bool     _cp437;        // If set, use correct CP437 charset (default is ON)
+  bool     _utf8;         // If set, use UTF-8 decoder in print stream 'write()' function (default ON)
+  bool     _psram_enable; // Enable PSRAM use for library functions (TBD) and Sprites
 
   uint32_t _lastColor; // Buffered value of last colour used
 
