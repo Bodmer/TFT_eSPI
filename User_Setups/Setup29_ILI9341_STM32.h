@@ -12,8 +12,7 @@
 // and require appropriate selection in IDE. ^---- Note the extra 2 in part number!
 
 
-// Define STM32 to invoke STM32 optimised driver (optimised fns only tested on STM32F767 so far)
-// so you may need to comment this out
+// Define STM32 to invoke STM32 optimised driver
 #define STM32
 
 // Define the TFT display driver
@@ -23,7 +22,7 @@
 // MOSI and SCK do not need to be defined, connect:
 //  - Arduino SCK  to TFT SCK
 //  - Arduino MOSI to TFT SDI(may be marked SDA or MOSI)
-// Standard Arduino SPI pins are(SCK=D13, MOSI=D11) this is port pins PA5 and PA7 on Nucleo-F767ZI
+// Standard Arduino SPI pins are p(SCK=D13, MOSI=D11) this is port pins PA5 and PA7 on Nucleo-F767ZI
 
 // Can use Ardiuno pin references, arbitrary allocation, TFT_eSPI controls chip select
 #define TFT_CS   D5 // Chip select control pin to TFT CS
@@ -60,9 +59,9 @@
 #define SPI_FREQUENCY  27000000   // 27MHz SPI clock
 //#define SPI_FREQUENCY  55000000   // 55MHz is over-clocking ILI9341 but seems to work reliably!
 
-//#define SPI_READ_FREQUENCY  15000000 // Reads need a slower SPI clock, probably ends up at 13.75MHz (CPU clock/16)
+#define SPI_READ_FREQUENCY  15000000 // Reads need a slower SPI clock, probably ends up at 13.75MHz (CPU clock/16)
 
-//#define SPI_TOUCH_FREQUENCY  2500000 // Must be very slow
+#define SPI_TOUCH_FREQUENCY  2500000 // Must be very slow
 
 // This has no effect, transactions for STM32 are automatically enabled
 #define SUPPORT_TRANSACTIONS
