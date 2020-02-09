@@ -4,8 +4,7 @@
 
 // Last update by Bodmer: 14/1/20
 
-// Define STM32 to invoke STM32 optimised driver (optimised fns only tested on STM32F767 so far)
-// so you may need to comment this out
+// Define STM32 to invoke STM32 optimised driver
 #define STM32
 
 // Define the TFT display driver
