@@ -383,8 +383,8 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
   float sinraf = sin(radAngle);
   float cosraf = cos(radAngle);
 
-  int32_t sinra = sinraf * (1<<FP_SCALE);
-  int32_t cosra = cosraf * (1<<FP_SCALE);
+  int32_t sinra = round(sinraf * (1<<FP_SCALE));
+  int32_t cosra = round(cosraf * (1<<FP_SCALE));
 
   // Bounding box parameters
   int16_t min_x;
@@ -416,54 +416,43 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
   if (max_x > _tft->width())  max_x = _tft->width();
   if (max_y > _tft->height()) max_y = _tft->height();
 
-  uint16_t sline_buffer[max_y - min_y + 1];
+  uint16_t sline_buffer[max_x - min_x + 1];
 
   int32_t xt = min_x - _tft->_xpivot;
   int32_t yt = min_y - _tft->_ypivot;
-  
-  // Keep multiply out of the loop
-  int32_t cxt = cosra * xt + (_xpivot<<FP_SCALE);
-  int32_t sxt = sinra * xt + (_ypivot<<FP_SCALE);
-  int32_t init_cyt = cosra * yt;
-  int32_t init_syt = sinra * yt;
+  uint32_t xe = _iwidth << FP_SCALE;
+  uint32_t ye = _iheight << FP_SCALE;
+  uint32_t tpcolor = transp;  // convert to unsigned
 
   _tft->startWrite(); // ESP32: avoid transaction overhead for every tft pixel
 
   // Scan destination bounding box and fetch transformed pixels from source Sprite
-  for (int32_t x = min_x; x <= max_x; x++) {
-    cxt += cosra;
-    sxt += sinra;
-    bool column_drawn = false;
+  for (int32_t y = min_y; y <= max_y; y++, yt++) {
+    int32_t x = min_x;
+    uint32_t xs = (cosra * xt - (sinra * yt - (_xpivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
+    uint32_t ys = (sinra * xt + (cosra * yt + (_ypivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
+
+    while ((xs >= xe || ys >= ye) && x < max_x) { x++; xs += cosra; ys += sinra; }
+    if (x == max_x) continue;
+
     uint32_t pixel_count = 0;
-    int32_t y_start = 0;
-    int32_t xs = cxt - init_syt;
-    int32_t cyt = init_cyt;
-    for (int32_t y = min_y; y <= max_y; y++) {
-      cyt += cosra;
-      xs  -= sinra;
-      // Do not calculate yp unless xp is in bounds
-      int32_t xp = truncateFP(xs, FP_SCALE);
-      if ((xp >= 0) && (xp < _iwidth))
-      {
-        int32_t yp = truncateFP(sxt + cyt, FP_SCALE);
-        // Check if yp is in bounds
-        if ((yp >= 0) && (yp < _iheight)) {
-          uint32_t rp;
-          if (_bpp == 16) {rp = _img[xp + yp * _iwidth]; rp = rp>>8 | rp<<8; }
-          else rp = readPixel(xp, yp);
-          if (transp >= 0 ) {
-            if (rp != transp) _tft->drawPixel(x, y, rp);
-          }
-          else {
-            if (!column_drawn) y_start = y;
-            sline_buffer[pixel_count++] = rp>>8 | rp<<8;
-          }
-          column_drawn = true;
+    do {
+      uint32_t rp;
+      int32_t xp = xs >> FP_SCALE;
+      int32_t yp = ys >> FP_SCALE;
+      if (_bpp == 16) {rp = _img[xp + yp * _iwidth]; rp = rp>>8 | rp<<8; }
+      else rp = readPixel(xp, yp);
+      if (tpcolor == rp) {
+        if (pixel_count) {
+          _tft->pushImage(x - pixel_count, y, pixel_count, 1, sline_buffer);
+          pixel_count = 0;
         }
       }
-      else if (column_drawn) y = max_y; // Skip remaining column pixels
-    }
-    if (pixel_count) _tft->pushImage(x, y_start, 1, pixel_count, sline_buffer);
+      else {
+        sline_buffer[pixel_count++] = rp>>8 | rp<<8;
+      }
+    } while (++x < max_x && (xs += cosra) < xe && (ys += sinra) < ye);
+    if (pixel_count) _tft->pushImage(x - pixel_count, y, pixel_count, 1, sline_buffer);
   }
 
   _tft->endWrite(); // ESP32: end transaction
