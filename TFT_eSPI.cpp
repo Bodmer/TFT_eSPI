@@ -258,6 +258,19 @@ void TFT_eSPI::begin(uint8_t tc)
  init(tc);
 }
 
+/***************************************************************************************
+** Function name:           init (tc is tab colour for ST7735 displays only)
+** Description:             Reset, then initialise the TFT display registers
+***************************************************************************************/
+void TFT_eSPI::init(void (*ext_dc_func)(bool dc_state), void (*ext_cs_func)(bool cs_state), void (*ext_rst_func)(void), void (*ext_tcs_func)(bool tcs_state), bool app_cs, uint8_t tc)
+{
+  ext_cs = ext_cs_func;		// callback function to manipulate TFT CS
+  ext_dc = ext_dc_func;		// callback function to manipulate TFT DC
+  ext_rst = ext_rst_func;	// callback function to manipulate TFT RST
+  ext_tcs = ext_tcs_func;	// callback function to manipulate TouchPanel CS
+  _app_cs = app_cs;			// flag FALSE: library drives CS lines, TRUE: application must take care about CS manipulation (to increase performance in case of slow I2C mux)
+  init(tc);					// proceed with normal init
+}
 
 /***************************************************************************************
 ** Function name:           init (tc is tab colour for ST7735 displays only)
@@ -4186,10 +4199,10 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#ifdef TOUCH_CS
+//#ifdef TOUCH_CS
   #include "Extensions/Touch.cpp"
   #include "Extensions/Button.cpp"
-#endif
+//#endif
 
 #include "Extensions/Sprite.cpp"
 

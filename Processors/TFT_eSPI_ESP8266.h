@@ -47,8 +47,8 @@
 // Define the DC (TFT Data/Command or Register Select (RS))pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TFT_DC
-  #define DC_C // No macro allocated so it generates no code
-  #define DC_D // No macro allocated so it generates no code
+  #define DC_D if(ext_dc) ext_dc(true) // If callback set, call function
+  #define DC_D if(ext_dc) ext_dc(false) // If callback set, call function
 #else
   #if (TFT_DC == 16)
     #define DC_C digitalWrite(TFT_DC, LOW)
@@ -63,8 +63,8 @@
 // Define the CS (TFT chip select) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TFT_CS
-  #define CS_L // No macro allocated so it generates no code
-  #define CS_H // No macro allocated so it generates no code
+  #define CS_L if(ext_cs && !_app_cs) ext_cs(true) // If callback set, call function
+  #define CS_H if(ext_cs && !_app_cs) ext_cs(false) // If callback set, call function
 #else
   #if (TFT_CS == 16)
     #define CS_L digitalWrite(TFT_CS, LOW)
@@ -87,8 +87,8 @@
 // Define the touch screen chip select pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TOUCH_CS
-  #define T_CS_L // No macro allocated so it generates no code
-  #define T_CS_H // No macro allocated so it generates no code
+  #define T_CS_L if(ext_tcs && !_app_cs) ext_tcs(true) // If callback set, call function
+  #define T_CS_H if(ext_tcs && !_app_cs) ext_tcs(false) // If callback set, call function
 #else
   #define T_CS_L digitalWrite(TOUCH_CS, LOW)
   #define T_CS_H digitalWrite(TOUCH_CS, HIGH)
