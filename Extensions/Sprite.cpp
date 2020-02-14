@@ -2359,19 +2359,28 @@ void TFT_eSprite::drawGlyph(uint16_t code)
       this->cursor_y = 0;
     }
 
+#if defined (ESP32) || defined (ESP8266)
     this->fontFile.seek(this->gBitmap[gNum], fs::SeekSet); // This is slow for a significant position shift!
-
     uint8_t pbuffer[this->gWidth[gNum]];
+#else
+    const uint8_t* gPtr = (const uint8_t*) this->gFont.gArray;
+#endif
 
     int16_t  xs = 0;
     uint16_t dl = 0;
 
     for (int32_t y = 0; y < this->gHeight[gNum]; y++)
     {
+#if defined (ESP32) || defined (ESP8266)
       this->fontFile.read(pbuffer, this->gWidth[gNum]);
+#endif
       for (int32_t x = 0; x < this->gWidth[gNum]; x++)
       {
+#if defined (ESP32) || defined (ESP8266)
         uint8_t pixel = pbuffer[x];
+#else
+        uint8_t pixel = gPtr[gBitmap[gNum] + x + gWidth[gNum] * y];
+#endif
         if (pixel)
         {
           if (pixel != 0xFF)

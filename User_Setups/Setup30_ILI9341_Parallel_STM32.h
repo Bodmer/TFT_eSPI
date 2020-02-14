@@ -1,6 +1,6 @@
         ////////////////////////////////////////////////////
         // Setup for Nucleo 64 or 144 and ILI9341 display //
-        ///////////////////////////////////////////////////
+        ////////////////////////////////////////////////////
         
 // See SetupX_Template.h for all options available
 
@@ -49,4 +49,4 @@
 
 // At the moment SMOOTH fonts must be disabled for STM32 processors (due to lack of SPIFFS)
 // Support for smooth fonts via SD cards is planned.
-//#define SMOOTH_FONT
+#define SMOOTH_FONT

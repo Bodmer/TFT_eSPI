@@ -1,6 +1,7 @@
 // See SetupX_Template.h for all options available
 
-#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
+#define RPI_DISPLAY_TYPE
+#define ILI9486_DRIVER // 20MHz maximum SPI
 
 // For NodeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
 #define TFT_CS   PIN_D2  // Chip select control pin D2

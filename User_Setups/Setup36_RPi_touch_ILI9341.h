@@ -1,6 +1,8 @@
 // See SetupX_Template.h for all options available
+
 #define RPI_DISPLAY_TYPE
-#define ILI9486_DRIVER // 20MHz maximum SPI
+#define ST7796_DRIVER // 20MHz maximum SPI
+
 
 #define TFT_MISO 19
 #define TFT_MOSI 23
@@ -24,6 +26,6 @@
 #define SMOOTH_FONT
 
 
-#define SPI_FREQUENCY  20000000
+#define SPI_FREQUENCY  40000000
 
 #define SPI_TOUCH_FREQUENCY  2500000

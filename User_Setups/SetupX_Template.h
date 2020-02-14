@@ -8,19 +8,31 @@
 //   run without the need to make any more changes for a particular hardware setup!
 //   Note that some sketches are designed for a particular TFT pixel width/height
 
-
 // ##################################################################################
 //
 // Section 1. Call up the right driver file and any options for it
 //
 // ##################################################################################
 
+// Define STM32 to invoke optimised processor support (only for STM32)
+//#define STM32
+
+// Defining the STM32 board allows the library to optimise the performance
+// for UNO compatible "MCUfriend" style shields
+//#define NUCLEO_64_TFT
+//#define NUCLEO_144_TFT
+
+// Tell the library to use 8 bit parallel mode(otherwise SPI is assumed)
+//#define TFT_PARALLEL_8_BIT
+
+// Display type -  only define if RPi display
+//#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
+
 // Only define one driver, the other ones must be commented out
 #define ILI9341_DRIVER
 //#define ST7735_DRIVER      // Define additional parameters below for this display
 //#define ILI9163_DRIVER     // Define additional parameters below for this display
 //#define S6D02A1_DRIVER
-//#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
 //#define HX8357D_DRIVER
 //#define ILI9481_DRIVER
 //#define ILI9486_DRIVER
@@ -29,6 +41,7 @@
 //#define ST7789_2_DRIVER    // Minimal configuration option, define additional parameters below for this display
 //#define R61581_DRIVER
 //#define RM68140_DRIVER
+//#define ST7796_DRIVER
 
 // Some displays support SPI reads via the MISO pin, other displays have a single
 // bi-directional SDA pin and the library will try to read this via the MOSI line.

@@ -15,8 +15,19 @@
 //
 // ##################################################################################
 
+// Define STM32 to invoke optimised processor support (only for STM32)
+//#define STM32
+
+// Defining the STM32 board allows the library to optimise the performance
+// for UNO compatible "MCUfriend" style shields
+//#define NUCLEO_64_TFT
+//#define NUCLEO_144_TFT
+
+// Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
+//#define TFT_PARALLEL_8_BIT
+
 // Display type -  only define if RPi display
-//#define RPI_DRIVER
+//#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
 
 // Only define one driver, the other ones must be commented out
 #define ILI9341_DRIVER

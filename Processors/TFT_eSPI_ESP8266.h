@@ -147,7 +147,7 @@
   // Command is 16 bits
   #define CMD_BITS 16
 
-  // ESP32 low level SPI writes for 8, 16 and 32 bit values
+  // ESP8266 low level SPI writes for 8, 16 and 32 bit values
   // to avoid the function call overhead
   #define TFT_WRITE_BITS(D, B) \
   SPI1U1 = ((B-1) << SPILMOSI); \
@@ -176,11 +176,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
   // Command is 8 bits
-  #define CMD_BITS (8-1)
+  #define CMD_BITS 8
 
   #define tft_Write_8(C) \
-  SPI1U1 = (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO); \
-  SPI1W0 = (C)<<(CMD_BITS + 1 - 8); \
+  SPI1U1 = ((CMD_BITS-1) << SPILMOSI) | ((CMD_BITS-1) << SPILMISO); \
+  SPI1W0 = (C)<<(CMD_BITS - 8); \
   SPI1CMD |= SPIBUSY; \
   while(SPI1CMD & SPIBUSY) {;}
 

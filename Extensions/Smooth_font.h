@@ -4,7 +4,10 @@
  public:
 
   // These are for the new antialiased fonts
+  void     loadFont(const uint8_t array[]);
+#if defined (ESP32) || defined (ESP8266)
   void     loadFont(String fontName, fs::FS &ffs);
+#endif
   void     loadFont(String fontName, bool flash = true);
   void     unloadFont( void );
   bool     getUnicodeIndex(uint16_t unicode, uint16_t *index);
@@ -16,13 +19,14 @@
  // This is for the whole font
   typedef struct
   {
-    uint16_t gCount;     // Total number of characters
-    uint16_t yAdvance;   // Line advance
-    uint16_t spaceWidth; // Width of a space character
-    int16_t  ascent;     // Height of top of 'd' above baseline, other characters may be taller
-    int16_t  descent;    // Offset to bottom of 'p', other characters may have a larger descent
-    uint16_t maxAscent;  // Maximum ascent found in font
-    uint16_t maxDescent; // Maximum descent found in font
+    const uint8_t* gArray = nullptr; //array start pointer
+    uint16_t gCount;                 // Total number of characters
+    uint16_t yAdvance;               // Line advance
+    uint16_t spaceWidth;             // Width of a space character
+    int16_t  ascent;                 // Height of top of 'd' above baseline, other characters may be taller
+    int16_t  descent;                // Offset to bottom of 'p', other characters may have a larger descent
+    uint16_t maxAscent;              // Maximum ascent found in font
+    uint16_t maxDescent;             // Maximum descent found in font
   } fontMetrics;
 
 fontMetrics gFont = { 0, 0, 0, 0, 0, 0, 0 };
@@ -37,12 +41,19 @@ fontMetrics gFont = { 0, 0, 0, 0, 0, 0, 0 };
   uint32_t* gBitmap = NULL;   //file pointer to greyscale bitmap
 
   bool     fontLoaded = false; // Flags when a anti-aliased font is loaded
+
+#if defined (ESP32) || defined (ESP8266)
   fs::File fontFile;
+  fs::FS   &fontFS = SPIFFS;
+  bool     spiffs  = true;
+#else
+  bool     fontFile = true;
+#endif
 
   private:
 
-  void     loadMetrics(uint16_t gCount);
+  void     loadMetrics(void);
   uint32_t readInt32(void);
 
-  fs::FS   &fontFS = SPIFFS;
-  bool     spiffs = true;
+  uint8_t* fontPtr = nullptr;
+
