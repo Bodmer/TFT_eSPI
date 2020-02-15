@@ -19,7 +19,7 @@
  // This is for the whole font
   typedef struct
   {
-    const uint8_t* gArray = nullptr; //array start pointer
+    const uint8_t* gArray;           //array start pointer
     uint16_t gCount;                 // Total number of characters
     uint16_t yAdvance;               // Line advance
     uint16_t spaceWidth;             // Width of a space character
@@ -29,7 +29,7 @@
     uint16_t maxDescent;             // Maximum descent found in font
   } fontMetrics;
 
-fontMetrics gFont = { 0, 0, 0, 0, 0, 0, 0 };
+fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
 
   // These are for the metrics for each individual glyph (so we don't need to seek this in file and waste time)
   uint16_t* gUnicode = NULL;  //UTF-16 code, the codes are searched so do not need to be sequential
