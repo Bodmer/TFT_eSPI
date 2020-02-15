@@ -1840,19 +1840,10 @@ size_t TFT_eSprite::write(uint8_t utf8)
   {
     if (uniCode < 32 && utf8 != '\n') return 1;
 
-    //fontFile = SPIFFS.open( _gFontFilename, "r" );
-    //fontFile = SPIFFS.open( this->_gFontFilename, "r" );
-
-    //if(!fontFile)
-    //{
-    //  fontLoaded = false;
-    //  return 1;
-    //}
     //Serial.print("Decoded Unicode = 0x");Serial.println(unicode,HEX);
 
     drawGlyph(uniCode);
 
-    //fontFile.close();
     return 1;
   }
 #endif
@@ -2359,28 +2350,37 @@ void TFT_eSprite::drawGlyph(uint16_t code)
       this->cursor_y = 0;
     }
 
-#if defined (ESP32) || defined (ESP8266)
-    this->fontFile.seek(this->gBitmap[gNum], fs::SeekSet); // This is slow for a significant position shift!
-    uint8_t pbuffer[this->gWidth[gNum]];
-#else
+    uint8_t* pbuffer = nullptr;
     const uint8_t* gPtr = (const uint8_t*) this->gFont.gArray;
+
+#ifdef FONT_FS_AVAILABLE
+    if (this->fs_font) {
+      this->fontFile.seek(this->gBitmap[gNum], fs::SeekSet); // This is slow for a significant position shift!
+      pbuffer =  (uint8_t*)malloc(this->gWidth[gNum]);
+    }
 #endif
 
     int16_t  xs = 0;
     uint16_t dl = 0;
+    uint8_t pixel = 0;
 
     for (int32_t y = 0; y < this->gHeight[gNum]; y++)
     {
-#if defined (ESP32) || defined (ESP8266)
-      this->fontFile.read(pbuffer, this->gWidth[gNum]);
+#ifdef FONT_FS_AVAILABLE
+      if (this->fs_font) {
+        this->fontFile.read(pbuffer, this->gWidth[gNum]);
+      }
 #endif
       for (int32_t x = 0; x < this->gWidth[gNum]; x++)
       {
-#if defined (ESP32) || defined (ESP8266)
-        uint8_t pixel = pbuffer[x];
-#else
-        uint8_t pixel = gPtr[gBitmap[gNum] + x + gWidth[gNum] * y];
+#ifdef FONT_FS_AVAILABLE
+        if (this->fs_font) {
+          pixel = pbuffer[x];
+        }
+        else
 #endif
+        pixel = pgm_read_byte(gPtr + this->gBitmap[gNum] + x + this->gWidth[gNum] * y);
+
         if (pixel)
         {
           if (pixel != 0xFF)
@@ -2402,6 +2402,8 @@ void TFT_eSprite::drawGlyph(uint16_t code)
       }
       if (dl) { drawFastHLine( xs, y + this->cursor_y + this->gFont.maxAscent - this->gdY[gNum], dl, fg); dl = 0; }
     }
+
+    if (pbuffer) free(pbuffer);
 
     if (newSprite)
     {
@@ -2442,14 +2444,6 @@ void TFT_eSprite::printToSprite(String string)
 void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
 {
   if(!this->fontLoaded) return;
-  
-  //fontFile = SPIFFS.open( this->_gFontFilename, "r" );
-
-  if(!this->fontFile)
-  {
-    this->fontLoaded = false;
-    return;
-  }
 
   uint16_t n = 0;
   bool newSprite = !_created;
@@ -2491,8 +2485,6 @@ void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
     pushSprite(_tft->cursor_x, _tft->cursor_y);
     deleteSprite();
   }
-    
-  //fontFile.close();
 }
 
 

@@ -5,7 +5,7 @@
 
   // These are for the new antialiased fonts
   void     loadFont(const uint8_t array[]);
-#if defined (ESP32) || defined (ESP8266)
+#ifdef FONT_FS_AVAILABLE
   void     loadFont(String fontName, fs::FS &ffs);
 #endif
   void     loadFont(String fontName, bool flash = true);
@@ -42,10 +42,12 @@ fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
 
   bool     fontLoaded = false; // Flags when a anti-aliased font is loaded
 
-#if defined (ESP32) || defined (ESP8266)
+#ifdef FONT_FS_AVAILABLE
   fs::File fontFile;
-  fs::FS   &fontFS = SPIFFS;
-  bool     spiffs  = true;
+  fs::FS   &fontFS  = SPIFFS;
+  bool     spiffs   = true;
+  bool     fs_font = false;    // For ESP32/8266 use smooth font file or FLASH (PROGMEM) array
+
 #else
   bool     fontFile = true;
 #endif

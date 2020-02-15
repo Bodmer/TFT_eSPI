@@ -33,6 +33,7 @@
   // Call up the SPIFFS FLASH filing system for the anti-aliased fonts
   #define FS_NO_GLOBALS
   #include <FS.h>
+  #define FONT_FS_AVAILABLE
 #endif
 
 // Do not allow parallel mode for ESP8266

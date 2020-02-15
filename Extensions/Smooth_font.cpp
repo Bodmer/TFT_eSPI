@@ -12,12 +12,12 @@
 *************************************************************************************x*/
 void TFT_eSPI::loadFont(const uint8_t array[])
 {
-  if(array == nullptr) return;
+  if (array == nullptr) return;
   fontPtr = (uint8_t*) array;
   loadFont("", false);
 }
 
-#if defined (ESP32) || defined (ESP8266)
+#ifdef FONT_FS_AVAILABLE
 /***************************************************************************************
 ** Function name:           loadFont
 ** Description:             loads parameters from a font vlw file
@@ -96,23 +96,27 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
 
   if (fontLoaded) unloadFont();
 
-#if defined (ESP32) || defined (ESP8266)
+#ifdef FONT_FS_AVAILABLE
+  if (fontName == "") fs_font = false;
+  else { fontPtr = nullptr; fs_font = true; }
 
-  spiffs = flash; // true if font is in SPIFFS
+  if (fs_font) {
+    spiffs = flash; // true if font is in SPIFFS
 
-  if(spiffs) fontFS = SPIFFS;
+    if(spiffs) fontFS = SPIFFS;
 
-  // Avoid a crash on the ESP32 if the file does not exist
-  if (fontFS.exists("/" + fontName + ".vlw") == false) {
-    Serial.println("Font file " + fontName + " not found!");
-    return;
+    // Avoid a crash on the ESP32 if the file does not exist
+    if (fontFS.exists("/" + fontName + ".vlw") == false) {
+      Serial.println("Font file " + fontName + " not found!");
+      return;
+    }
+
+    fontFile = fontFS.open( "/" + fontName + ".vlw", "r");
+
+    if(!fontFile) return;
+
+    fontFile.seek(0, fs::SeekSet);
   }
-
-  fontFile = fontFS.open( "/" + fontName + ".vlw", "r");
-
-  if(!fontFile) return;
-
-  fontFile.seek(0, fs::SeekSet);
 #endif
 
   gFont.gArray   = (const uint8_t*)fontPtr;
@@ -145,7 +149,7 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
 void TFT_eSPI::loadMetrics(void)
 {
   uint32_t headerPtr = 24;
-  uint32_t bitmapPtr = 24 + gFont.gCount * 28;
+  uint32_t bitmapPtr = headerPtr + gFont.gCount * 28;
 
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
   if ( psramFound() )
@@ -175,8 +179,8 @@ void TFT_eSPI::loadMetrics(void)
   Serial.print("descent = "); Serial.println(gFont.descent);
 #endif
 
-#if defined (ESP32) || defined (ESP8266)
-  fontFile.seek(headerPtr, fs::SeekSet);
+#ifdef FONT_FS_AVAILABLE
+  if (fs_font) fontFile.seek(headerPtr, fs::SeekSet);
 #endif
 
   uint16_t gNum = 0;
@@ -227,8 +231,6 @@ void TFT_eSPI::loadMetrics(void)
     }
 
     gBitmap[gNum] = bitmapPtr;
-
-    //headerPtr += 28;
 
     bitmapPtr += gWidth[gNum] * gHeight[gNum];
 
@@ -292,8 +294,8 @@ void TFT_eSPI::unloadFont( void )
 
   gFont.gArray = nullptr;
 
-#if defined (ESP32) || defined (ESP8266)
-  if(fontFile) fontFile.close();
+#ifdef FONT_FS_AVAILABLE
+  if (fs_font && fontFile) fontFile.close();
 #endif
 
   fontLoaded = false;
@@ -308,17 +310,22 @@ uint32_t TFT_eSPI::readInt32(void)
 {
   uint32_t val = 0;
 
-#if defined (ESP32) || defined (ESP8266)
-  val |= fontFile.read() << 24;
-  val |= fontFile.read() << 16;
-  val |= fontFile.read() << 8;
-  val |= fontFile.read();
-#else
-  val |= (*fontPtr++) << 24;
-  val |= (*fontPtr++) << 16;
-  val |= (*fontPtr++) << 8;
-  val |= (*fontPtr++);
+#ifdef FONT_FS_AVAILABLE
+  if (fs_font) {
+    val |= fontFile.read() << 24;
+    val |= fontFile.read() << 16;
+    val |= fontFile.read() << 8;
+    val |= fontFile.read();
+  }
+  else
 #endif
+  {
+    val |= pgm_read_byte(fontPtr++) << 24;
+    val |= pgm_read_byte(fontPtr++) << 16;
+    val |= pgm_read_byte(fontPtr++) << 8;
+    val |= pgm_read_byte(fontPtr++);
+  }
+
   return val;
 }
 
@@ -380,15 +387,20 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     if (textwrapY && ((cursor_y + gFont.yAdvance) >= _height)) cursor_y = 0;
     if (cursor_x == 0) cursor_x -= gdX[gNum];
 
-#if defined (ESP32) || defined (ESP8266)
-    fontFile.seek(gBitmap[gNum], fs::SeekSet); // This is taking >30ms for a significant position shift
-    uint8_t pbuffer[gWidth[gNum]];
-#else
+    uint8_t* pbuffer = nullptr;
     const uint8_t* gPtr = (const uint8_t*) gFont.gArray;
+
+#ifdef FONT_FS_AVAILABLE
+    if (fs_font)
+    {
+      fontFile.seek(gBitmap[gNum], fs::SeekSet); // This is taking >30ms for a significant position shift
+      pbuffer =  (uint8_t*)malloc(gWidth[gNum]);
+    }
 #endif
 
     int16_t  xs = 0;
     uint32_t dl = 0;
+    uint8_t pixel;
 
     int16_t cy = cursor_y + gFont.maxAscent - gdY[gNum];
     int16_t cx = cursor_x + gdX[gNum];
@@ -397,27 +409,30 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
     for (int y = 0; y < gHeight[gNum]; y++)
     {
-#if defined (ESP32) || defined (ESP8266)
-      if (spiffs)
-      {
-        fontFile.read(pbuffer, gWidth[gNum]);
-        //Serial.println("SPIFFS");
-      }
-      else
-      {
-        endWrite();    // Release SPI for SD card transaction
-        fontFile.read(pbuffer, gWidth[gNum]);
-        startWrite();  // Re-start SPI for TFT transaction
-        //Serial.println("Not SPIFFS");
+#ifdef FONT_FS_AVAILABLE
+      if (fs_font) {
+        if (spiffs)
+        {
+          fontFile.read(pbuffer, gWidth[gNum]);
+          //Serial.println("SPIFFS");
+        }
+        else
+        {
+          endWrite();    // Release SPI for SD card transaction
+          fontFile.read(pbuffer, gWidth[gNum]);
+          startWrite();  // Re-start SPI for TFT transaction
+          //Serial.println("Not SPIFFS");
+        }
       }
 #endif
       for (int x = 0; x < gWidth[gNum]; x++)
       {
-#if defined (ESP32) || defined (ESP8266)
-        uint8_t pixel = pbuffer[x];
-#else
-        uint8_t pixel = gPtr[gBitmap[gNum] + x + gWidth[gNum] * y];
+#ifdef FONT_FS_AVAILABLE
+        if (fs_font) pixel = pbuffer[x];
+        else
 #endif
+        pixel = pgm_read_byte(gPtr + gBitmap[gNum] + x + gWidth[gNum] * y);
+
         if (pixel)
         {
           if (pixel != 0xFF)
@@ -444,6 +459,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       if (dl) { drawFastHLine( xs, y + cy, dl, fg); dl = 0; }
     }
 
+    if (pbuffer) free(pbuffer);
     cursor_x += gxAdvance[gNum];
     endWrite();
   }
@@ -462,14 +478,6 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 void TFT_eSPI::showFont(uint32_t td)
 {
   if(!fontLoaded) return;
-
-#if defined (ESP32) || defined (ESP8266)
-  if(!fontFile)
-  {
-    fontLoaded = false;
-    return;
-  }
-#endif
 
   int16_t cursorX = width(); // Force start of new page to initialise cursor
   int16_t cursorY = height();// for the first character

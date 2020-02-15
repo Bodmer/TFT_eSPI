@@ -194,9 +194,13 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   locked = true;        // Transaction mutex lock flags
   inTransaction = false;
 
-  _booted   = true;
+  _booted   = true;     // Default attributes
   _cp437    = true;
   _utf8     = true;
+
+#ifdef FONT_FS_AVAILABLE
+  fs_font  = true;     // Smooth font filing system or array (fs_font = false) flag
+#endif
 
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
   if (psramFound()) _psram_enable = true; // Enable the use of PSRAM (if available)
@@ -3734,10 +3738,6 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
 #ifdef SMOOTH_FONT
   if(fontLoaded) {
     if (textcolor!=textbgcolor) fillRect(poX, poY, cwidth, cheight, textbgcolor);
-    //drawLine(poX - 5, poY, poX + 5, poY, TFT_GREEN);
-    //drawLine(poX, poY - 5, poX, poY + 5, TFT_GREEN);
-    //fontFile = SPIFFS.open( _gFontFilename, "r");
-    if(!fontFile) return 0;
 
     setCursor(poX, poY);
 
