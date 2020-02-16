@@ -561,8 +561,8 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
   float sinraf = sin(radAngle);
   float cosraf = cos(radAngle);
 
-  int32_t sinra = sinraf * (1<<FP_SCALE);
-  int32_t cosra = cosraf * (1<<FP_SCALE);
+  int32_t sinra = round(sinraf * (1<<FP_SCALE));
+  int32_t cosra = round(cosraf * (1<<FP_SCALE));
 
   // Bounding box parameters
   int16_t min_x;
@@ -595,37 +595,46 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
   if (max_x > spr->width())  max_x = spr->width();
   if (max_y > spr->height()) max_y = spr->height();
 
+  uint16_t sline_buffer[max_x - min_x + 1];
+
+  int32_t xt = min_x - spr->_xpivot;
+  int32_t yt = min_y - spr->_ypivot;
+  uint32_t xe = _iwidth << FP_SCALE;
+  uint32_t ye = _iheight << FP_SCALE;
+  uint32_t tpcolor = transp;  // convert to unsigned
+
+  bool oldSwapBytes = spr->getSwapBytes();
+  spr->setSwapBytes(false);
+
   // Scan destination bounding box and fetch transformed pixels from source Sprite
-  for (int32_t x = min_x; x <= max_x; x++)
-  {
-    int32_t xt = x - spr->_xpivot;
-    float cxt = cosra * xt + (_xpivot<<FP_SCALE);
-    float sxt = sinra * xt + (_ypivot<<FP_SCALE);
-    bool column_drawn = false;
-    for (int32_t y = min_y; y <= max_y; y++)
-    {
-      int32_t yt = y - spr->_ypivot;
-      int32_t xs = cxt - sinra * yt;
-      // Do not calculate yp unless xp is in bounds
-      int32_t xp = truncateFP(xs, FP_SCALE);
-      if (xp >= 0 && xp < _iwidth)
-      {
-        int32_t ys = sxt + cosra * yt;
-        // Check if ys is in bounds
-        int32_t yp = truncateFP(ys, FP_SCALE);
-        if (yp >= 0 && yp < _iheight)
-        {
-          uint32_t rp;
-          if (_bpp == 16) {rp = _img[xp + yp * _iwidth]; rp = rp>>8 | rp<<8; }
-          else rp = readPixel(xp, yp);
-          if (rp != transp) spr->drawPixel(x, y, rp);
-          column_drawn = true;
+  for (int32_t y = min_y; y <= max_y; y++, yt++) {
+    int32_t x = min_x;
+    uint32_t xs = (cosra * xt - (sinra * yt - (_xpivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
+    uint32_t ys = (sinra * xt + (cosra * yt + (_ypivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
+
+    while ((xs >= xe || ys >= ye) && x < max_x) { x++; xs += cosra; ys += sinra; }
+    if (x == max_x) continue;
+
+    uint32_t pixel_count = 0;
+    do {
+      uint32_t rp;
+      int32_t xp = xs >> FP_SCALE;
+      int32_t yp = ys >> FP_SCALE;
+      if (_bpp == 16) {rp = _img[xp + yp * _iwidth]; rp = rp>>8 | rp<<8; }
+      else rp = readPixel(xp, yp);
+      if (tpcolor == rp) {
+        if (pixel_count) {
+          spr->pushImage(x - pixel_count, y, pixel_count, 1, sline_buffer);
+          pixel_count = 0;
         }
       }
-      else if (column_drawn) y = max_y; // Skip the remaining pixels below the Sprite
-    }
+      else {
+        sline_buffer[pixel_count++] = rp;
+      }
+    } while (++x < max_x && (xs += cosra) < xe && (ys += sinra) < ye);
+    if (pixel_count) spr->pushImage(x - pixel_count, y, pixel_count, 1, sline_buffer);
   }
-
+  spr->setSwapBytes(oldSwapBytes);
   return true;
 }
 
