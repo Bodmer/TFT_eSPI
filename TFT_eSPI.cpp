@@ -650,7 +650,9 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 {
 #if defined(TFT_PARALLEL_8_BIT)
 
-  readAddrWindow(x0, y0, 1, 1); // Sets CS low
+  CS_L;
+
+  readAddrWindow(x0, y0, 1, 1);
 
   // Set masked pins D0- D7 to input
   busDir(dir_mask, INPUT);
@@ -663,28 +665,33 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   #if defined (ILI9341_DRIVER) | defined (ILI9488_DRIVER) // Read 3 bytes
 
-  // Read window pixel 24 bit RGB values and fill in LS bits
-  uint16_t rgb = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
+    // Read window pixel 24 bit RGB values and fill in LS bits
+    uint16_t rgb = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
 
-  CS_H;
+    CS_H;
 
-  // Set masked pins D0- D7 to output
-  busDir(dir_mask, OUTPUT);
+    // Set masked pins D0- D7 to output
+    busDir(dir_mask, OUTPUT);
 
-  return rgb;
+    return rgb;
 
-  #else // ILI9481 16 bit read
+  #else // ILI9481 or ILI9486 16 bit read
 
-  // Fetch the 16 bit BRG pixel
-  uint16_t bgr = (readByte() << 8) | readByte();
+    // Fetch the 16 bit BRG pixel
+    uint16_t bgr = (readByte() << 8) | readByte();
 
-  CS_H;
+    CS_H;
 
-  // Set masked pins D0- D7 to output
-  busDir(dir_mask, OUTPUT);
+    // Set masked pins D0- D7 to output
+    busDir(dir_mask, OUTPUT);
 
-  // Swap Red and Blue (could check MADCTL setting to see if this is needed)
-  return  (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
+    #ifdef ILI9486_DRIVER
+      return  bgr;
+    #else
+      // Swap Red and Blue (could check MADCTL setting to see if this is needed)
+      return  (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
+    #endif
+
   #endif
 
 #else // Not TFT_PARALLEL_8_BIT
@@ -755,7 +762,9 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 
 #if defined(TFT_PARALLEL_8_BIT)
 
-  readAddrWindow(x, y, w, h); // Sets CS low
+  CS_L;
+
+  readAddrWindow(x, y, w, h);
 
   // Set masked pins D0- D7 to input
   busDir(dir_mask, INPUT);
@@ -778,14 +787,17 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
   #else // ILI9481 reads as 16 bits
     // Fetch the 16 bit BRG pixels
     while (len--) {
-      // Read the BRG 16 bit colour
-      uint16_t bgr = (readByte() << 8) | readByte();
-
-      // Swap Red and Blue (could check MADCTL setting to see if this is needed)
-     uint16_t rgb = (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
-
-      // Swapped byte order for compatibility with pushRect()
-      *data++ = (rgb<<8) | (rgb>>8);
+      #ifdef ILI9486_DRIVER
+        // Read the RGB 16 bit colour
+        *data++ = readByte() | (readByte() << 8);
+      #else
+        // Read the BRG 16 bit colour
+        uint16_t bgr = (readByte() << 8) | readByte();
+        // Swap Red and Blue (could check MADCTL setting to see if this is needed)
+        uint16_t rgb = (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
+        // Swapped byte order for compatibility with pushRect()
+        *data++ = (rgb<<8) | (rgb>>8);
+      #endif
     }
   #endif
 
@@ -798,7 +810,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 
   begin_tft_read();
 
-  readAddrWindow(x, y, w, h); // Sets CS low
+  readAddrWindow(x, y, w, h);
 
   #ifdef TFT_SDA_READ
     begin_SDA_Read();
@@ -1508,7 +1520,20 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
 {
 #if defined(TFT_PARALLEL_8_BIT)
 
-  // Parallel bus not supported yet
+  uint32_t len = w * h;
+  uint8_t* buf565 = data + len;
+
+  readRect(x0, y0, w, h, (uint16_t*)buf565);
+  
+  while (len--) {
+    uint16_t pixel565 = (*buf565++)<<8 | (*buf565++);
+    uint8_t red   = (pixel565 & 0xF800) >> 8; red   |= red   >> 5;
+    uint8_t green = (pixel565 & 0x07E0) >> 3; green |= green >> 6;
+    uint8_t blue  = (pixel565 & 0x001F) << 3; blue  |= blue  >> 5;
+    *data++ = red;
+    *data++ = green;
+    *data++ = blue;
+  }
 
 #else  // Not TFT_PARALLEL_8_BIT
 
@@ -2618,9 +2643,10 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 ** Function name:           readAddrWindow
 ** Description:             define an area to read a stream of pixels
 ***************************************************************************************/
-// Chip select stays low
 void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 {
+  //begin_tft_write(); // Must be called before readAddrWindow or CS set low
+
   int32_t xe = xs + w - 1;
   int32_t ye = ys + h - 1;
 
@@ -2646,6 +2672,8 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   DC_C; tft_Write_8(TFT_RAMRD);
 
   DC_D;
+
+  //end_tft_write(); // Must be called after readAddrWindow or CS set high
 }
 
 
