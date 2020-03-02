@@ -1,7 +1,6 @@
         ////////////////////////////////////////////////////
         // Setup for Nucleo 64 or 144 and ILI9341 display //
         ////////////////////////////////////////////////////
-
         
 // See SetupX_Template.h for all options available
 
@@ -13,12 +12,12 @@
 #define NUCLEO_64_TFT
 //#define NUCLEO_144_TFT
 
-// Tell the library to use 8 bit parallel mode(otherwise SPI is assumed)
+// Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
 #define TFT_PARALLEL_8_BIT
 
 // Define the display driver chip type
-#define ST7796_DRIVER
-//#define ILI9481_DRIVER
+//#define ILI9341_DRIVER
+#define ILI9481_DRIVER
 
 // Define the Nucleo 64/144 pins used for the parallel interface TFT
 // The pins can be changed here but these are the ones used by the

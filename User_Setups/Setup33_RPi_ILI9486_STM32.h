@@ -50,11 +50,10 @@
 #define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
 #define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
 
-// At the moment SMOOTH fonts must be disabled for STM32 processors (due to lack of SPIFFS)
-// Support for smooth fonts via SD cards is planned.
-//#define SMOOTH_FONT // Must be commented out for STM32
+// STM32 support for smooth fonts via program memory (FLASH) arrays
+#define SMOOTH_FONT
 
-       
+
 // Nucleo-F767ZI has a ~216MHZ CPU clock, this is divided by 4, 8, 16 etc
 
 #define SPI_FREQUENCY  20000000   // 27MHz SPI clock

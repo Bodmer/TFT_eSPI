@@ -221,17 +221,38 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 ** Function name:           pushBlock - for STM32 and 3 byte RGB display
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
+#define BUF_SIZE 240*3
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
 {
-  // Split out the colours
-  spiBuffer[0] = (color & 0xF800)>>8; // Red
-  spiBuffer[1] = (color & 0x07E0)>>3; // Green
-  spiBuffer[2] = (color & 0x001F)<<3; // Blue
+  uint8_t col[BUF_SIZE];
+  // Always using swapped bytes is a peculiarity of this function...
+  //color = color>>8 | color<<8;
+  uint8_t r = (color & 0xF800)>>8; // Red
+  uint8_t g = (color & 0x07E0)>>3; // Green
+  uint8_t b = (color & 0x001F)<<3; // Blue
 
-  while (len--) HAL_SPI_Transmit(&spiHal, spiBuffer, 3, HAL_MAX_DELAY);
+  if  (len<BUF_SIZE/3) {
+    for (uint32_t i = 0; i < len*3; i++) {
+      col[i]   = r;
+      col[++i] = g;
+      col[++i] = b;
+    }
+    HAL_SPI_Transmit(&spiHal, col, len*3, HAL_MAX_DELAY);
+    return;
+  }
+
+  for (uint32_t i = 0; i < BUF_SIZE; i++) {
+      col[i]   = r;
+      col[++i] = g;
+      col[++i] = b;
+  }
+  do {
+    HAL_SPI_Transmit(&spiHal, col, BUF_SIZE, HAL_MAX_DELAY);
+    len -= BUF_SIZE/3;
+  } while ( len>=BUF_SIZE/3 ) ;
+  // Send remaining pixels
+  if (len) HAL_SPI_Transmit(&spiHal, col, len*3, HAL_MAX_DELAY); //*/
 }
-
-
 /***************************************************************************************
 ** Function name:           pushPixels - for STM32 and 3 byte RGB display
 ** Description:             Write a sequence of pixels
