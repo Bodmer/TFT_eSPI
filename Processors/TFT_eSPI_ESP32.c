@@ -412,24 +412,26 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
 }
 
 /***************************************************************************************
-** Function name:           pushSwapBytePixels - for ESP32 and 3 byte RGB display
-** Description:             Write a sequence of pixels with swapped bytes
-***************************************************************************************/
-void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
-
-  uint16_t *data = (uint16_t*)data_in;
-  while ( len-- ) {tft_Write_16(*data); data++;}
-}
-
-/***************************************************************************************
 ** Function name:           pushPixels - for ESP32 and 3 byte RGB display
 ** Description:             Write a sequence of pixels
 ***************************************************************************************/
 void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
   uint16_t *data = (uint16_t*)data_in;
-  if(_swapBytes) { while ( len-- ) {tft_Write_16(*data); data++;} }
-  else { while ( len-- ) {tft_Write_16S(*data); data++;} }
+  // ILI9488 write macro is not endianess dependant, hence !_swapBytes
+  if(!_swapBytes) { while ( len-- ) {tft_Write_16S(*data); data++;} }
+  else { while ( len-- ) {tft_Write_16(*data); data++;} }
+}
+
+/***************************************************************************************
+** Function name:           pushSwapBytePixels - for ESP32 and 3 byte RGB display
+** Description:             Write a sequence of pixels with swapped bytes
+***************************************************************************************/
+void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
+
+  uint16_t *data = (uint16_t*)data_in;
+  // ILI9488 write macro is not endianess dependant, so swap byte macro not used here
+  while ( len-- ) {tft_Write_16(*data); data++;}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

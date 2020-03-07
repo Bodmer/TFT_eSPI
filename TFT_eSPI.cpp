@@ -899,12 +899,12 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
   data += dx + dy * w;
 
   // Check if whole image can be pushed
-  if (dw == w) pushColors(data, dw * dh, _swapBytes);
+  if (dw == w) pushPixels(data, dw * dh);
   else {
     // Push line segments to crop image
     while (dh--)
     {
-      pushColors(data, dw, _swapBytes);
+      pushPixels(data, dw);
       data += w;
     }
   }
@@ -967,14 +967,14 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
         move = true;
         if (np)
         {
-           pushColors((uint16_t*)lineBuf, np, _swapBytes);
+           pushPixels((uint16_t*)lineBuf, np);
            np = 0;
         }
       }
       px++;
       ptr++;
     }
-    if (np) pushColors((uint16_t*)lineBuf, np, _swapBytes);
+    if (np) pushPixels((uint16_t*)lineBuf, np);
 
     y++;
     data += w;
@@ -1026,7 +1026,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
     for (int32_t j = 0; j < PI_BUF_SIZE; j++) {
       pix_buffer[j] = pgm_read_word(&data[i * PI_BUF_SIZE + j]);
     }
-    pushColors(pix_buffer, PI_BUF_SIZE, _swapBytes);
+    pushPixels(pix_buffer, PI_BUF_SIZE);
   }
 
   // Work out number of pixels not yet sent
@@ -1038,7 +1038,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
     {
       pix_buffer[i] = pgm_read_word(&data[nb * PI_BUF_SIZE + i]);
     }
-    pushColors(pix_buffer, np, _swapBytes);
+    pushPixels(pix_buffer, np);
   }
 
   inTransaction = false;
@@ -1097,14 +1097,14 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
       else {
         move = true;
         if (np) {
-           pushColors(lineBuf, np, _swapBytes);
+           pushPixels(lineBuf, np);
            np = 0;
         }
       }
       px++;
       ptr++;
     }
-    if (np) pushColors(lineBuf, np, _swapBytes);
+    if (np) pushPixels(lineBuf, np);
 
     y++;
     data += w;
@@ -2275,6 +2275,14 @@ void TFT_eSPI::setTextPadding(uint16_t x_width)
   padX = x_width;
 }
 
+/***************************************************************************************
+** Function name:           setTextPadding
+** Description:             Define padding width (aids erasing old text and numbers)
+***************************************************************************************/
+uint16_t TFT_eSPI::getTextPadding(void)
+{
+  return padX;
+}
 
 /***************************************************************************************
 ** Function name:           getRotation

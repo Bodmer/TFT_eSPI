@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.1.5"
+#define TFT_ESPI_VERSION "2.1.6"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -510,6 +510,7 @@ class TFT_eSPI : public Print {
   uint8_t  getTextDatum(void);
 
   void     setTextPadding(uint16_t x_width);                // Set text padding (background blanking/over-write) width in pixels
+  uint16_t getTextPadding(void);                            // Get text padding
 
 #ifdef LOAD_GFXFF
   void     setFreeFont(const GFXfont *f = NULL),            // Select the GFX Free Font
