@@ -2349,12 +2349,12 @@ void TFT_eSprite::drawGlyph(uint16_t code)
     }
     else
     {
-      if( this->textwrapX && ((this->cursor_x + this->gWidth[gNum] + this->gdX[gNum]) >= _iwidth)) {
+      if( this->textwrapX && ((this->cursor_x + this->gWidth[gNum] + this->gdX[gNum]) > _iwidth)) {
         this->cursor_y += this->gFont.yAdvance;
         this->cursor_x = 0;
       }
 
-      if( this->textwrapY && ((this->cursor_y + this->gFont.yAdvance) >= _iheight)) this->cursor_y = 0;
+      if( this->textwrapY && ((this->cursor_y + this->gFont.yAdvance) > _iheight)) this->cursor_y = 0;
 
       if ( this->cursor_x == 0) this->cursor_x -= this->gdX[gNum];
 
