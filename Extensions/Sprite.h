@@ -5,10 +5,6 @@
 // graphics are written to the Sprite rather than the TFT.
 ***************************************************************************************/
 
-// pushRotated support - Bitwise truncation of fixed point integer value V scaled by S
-//#define truncateFP(V,S) ((V + (V < 0 ? -1<<(S-1) : 0))>>S)
-#define truncateFP(V,S) ((V + (V < 0 ? -1<<(S-1) : 1<<(S-1)))>>S)
-
 class TFT_eSprite : public TFT_eSPI {
 
  public:
@@ -94,18 +90,22 @@ class TFT_eSprite : public TFT_eSPI {
 
            // Push a rotated copy of Sprite to TFT with optional transparent colour
   bool     pushRotated(int16_t angle, int32_t transp = -1);   // Using fixed point maths
-  bool     pushRotatedHP(int16_t angle, int32_t transp = -1); // Using higher precision floating point maths
            // Push a rotated copy of Sprite to another different Sprite with optional transparent colour
   bool     pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp = -1);   // Using fixed point maths
-  bool     pushRotatedHP(TFT_eSprite *spr, int16_t angle, int32_t transp = -1); // Using  higher precision floating point maths
-           // Set and get the pivot point for this Sprite
+
+          // Set and get the pivot point for this Sprite
   void     setPivot(int16_t x, int16_t y);
   int16_t  getPivotX(void),
            getPivotY(void);
 
-           // Get the bounding box for a rotated copy of this Sprite
-  void     getRotatedBounds(float sina, float cosa, int16_t w, int16_t h, int16_t xp, int16_t yp,
-                                int16_t *min_x, int16_t *min_y, int16_t *max_x, int16_t *max_y);
+           // Get the TFT bounding box for a rotated copy of this Sprite
+  bool     getRotatedBounds(int16_t angle, int16_t *min_x, int16_t *min_y, int16_t *max_x, int16_t *max_y);
+           // Get the destination Sprite bounding box for a rotated copy of this Sprite
+  bool     getRotatedBounds(TFT_eSprite *spr, int16_t angle, int16_t *min_x, int16_t *min_y,
+                                                             int16_t *max_x, int16_t *max_y);
+           // Bounding box support function
+  void     getRotatedBounds(int16_t angle, int16_t w, int16_t h, int16_t xp, int16_t yp,
+                            int16_t *min_x, int16_t *min_y, int16_t *max_x, int16_t *max_y);
 
            // Read the colour of a pixel at x,y and return value in 565 format 
   uint16_t readPixel(int32_t x0, int32_t y0);
@@ -162,6 +162,8 @@ class TFT_eSprite : public TFT_eSPI {
 
   int16_t  _xpivot;   // x pivot point coordinate
   int16_t  _ypivot;   // y pivot point coordinate
+  int32_t  _sinra;
+  int32_t  _cosra;
 
   bool     _created;    // A Sprite has been created and memory reserved
   bool     _gFont = false; 

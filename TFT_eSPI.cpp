@@ -1,6 +1,6 @@
 /***************************************************
-  Arduino TFT graphics library targeted at ESP8266
-  and ESP32 based boards.
+  Arduino TFT graphics library targeted at 32 bit
+  processors such as ESP32, ESP8266 and STM32.
 
   This is a standalone library that contains the
   hardware driver, the graphics functions and the
@@ -10,7 +10,7 @@
   size.
 
   Created by Bodmer 2/12/16
-  Last update by Bodmer 27/12/19
+  Last update by Bodmer 20/03/20
  ****************************************************/
 
 
@@ -20,7 +20,7 @@
   #include "Processors/TFT_eSPI_ESP32.c"
 #elif defined (ESP8266)
   #include "Processors/TFT_eSPI_ESP8266.c"
-#elif defined (STM32) //(STM32F7xx) //(_VARIANT_ARDUINO_STM32_) stm32_def.h
+#elif defined (STM32) // (_VARIANT_ARDUINO_STM32_) stm32_def.h
   #include "Processors/TFT_eSPI_STM32.c"
 #else
   #include "Processors/TFT_eSPI_Generic.c"
