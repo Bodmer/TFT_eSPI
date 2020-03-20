@@ -12,7 +12,7 @@ You can take this one step further and have your own setup select file and then 
 To select a new setup you then edit your own my_setup_select.h file (which will not get over-written during an upgrade).
 
 # News
-1. Anew "Animated_dial" example has been added to show how dials can be created using a rotated Sprite for the needle. To run this example the TFT must support reading from the screen RAM. The dial rim and scale is a jpeg image, created using a paint program.
+1. A new "Animated_dial" example has been added to show how dials can be created using a rotated Sprite for the needle. To run this example the TFT must support reading from the screen RAM. The dial rim and scale is a jpeg image, created using a paint program.
 
       ![Animated_dial](https://i.imgur.com/S736Rg6.png)
 
