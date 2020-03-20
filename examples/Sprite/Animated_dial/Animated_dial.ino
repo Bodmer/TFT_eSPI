@@ -95,7 +95,7 @@ void setup()   {
   // Plot the label text
   tft.setTextColor(TFT_WHITE, bg_color);
   tft.setTextDatum(MC_DATUM);
-  tft.drawString("(degrees)", DIAL_CENTRE_X, DIAL_CENTRE_Y + 46, 2);
+  tft.drawString("(degrees)", DIAL_CENTRE_X, DIAL_CENTRE_Y + 48, 2);
 
   // Define where the needle pivot point is on the TFT before
   // creating the needle so boundary calculation is correct
