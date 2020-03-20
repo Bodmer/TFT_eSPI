@@ -2317,7 +2317,7 @@ void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
   
   if (newSprite)
   {
-    int16_t sWidth = 0;
+    int16_t sWidth = 1;
     uint16_t index = 0;
 
     while (n < len)
