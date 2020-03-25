@@ -384,6 +384,12 @@
                              GPIOB->BSRR = D11_BSR_MASK(C) | D12_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
                              WR_STB
 
+    #define tft_Write_32(C)    tft_Write_16((uint16_t)((C)>>16)); tft_Write_16((uint16_t)(C))
+
+    #define tft_Write_32C(C,D) tft_Write_16((uint16_t)(C)); tft_Write_16((uint16_t)(D))
+
+    #define tft_Write_32D(C)   tft_Write_16((uint16_t)(C)); tft_Write_16((uint16_t)(C))
+
     // Read a data bit
     #define RD_TFT_D0 (((GPIOA->IDR)&(D0_PIN_MASK))>>( 9-0)) // Read pin PA9
     #define RD_TFT_D1 (((GPIOC->IDR)&(D1_PIN_MASK))>>( 7-1)) // Read pin PC7
@@ -480,6 +486,12 @@
                              GPIOD->BSRR = D9_BSR_MASK(C); \
                              GPIOE->BSRR = D11_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
                              WR_STB
+
+    #define tft_Write_32(C)    tft_Write_16((uint16_t)((C)>>16)); tft_Write_16((uint16_t)(C))
+
+    #define tft_Write_32C(C,D) tft_Write_16((uint16_t)(C)); tft_Write_16((uint16_t)(D))
+
+    #define tft_Write_32D(C)   tft_Write_16((uint16_t)(C)); tft_Write_16((uint16_t)(C))
 
     // Read a data bit
     #define RD_TFT_D0 (((GPIOF->IDR)&(D0_PIN_MASK))>>(12-0)) // Read pin PF12
@@ -581,6 +593,12 @@
                              GPIOE->BSRR = D11_BSR_MASK(C) | D12_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
                              WR_STB
 
+    #define tft_Write_32(C)    tft_Write_16((uint16_t)((C)>>16)); tft_Write_16((uint16_t)(C))
+
+    #define tft_Write_32C(C,D) tft_Write_16((uint16_t)(C)); tft_Write_16((uint16_t)(D))
+
+    #define tft_Write_32D(C)   tft_Write_16((uint16_t)(C)); tft_Write_16((uint16_t)(C))
+
     // Read a data bit
     #define RD_TFT_D0 (((GPIOF->IDR)&(D0_PIN_MASK))>>( 3-0)) // Read pin PF3
     #define RD_TFT_D1 (((GPIOD->IDR)&(D1_PIN_MASK))>>(15-1)) // Read pin PD15
@@ -590,6 +608,7 @@
     #define RD_TFT_D5 (((GPIOE->IDR)&(D5_PIN_MASK))>>(11-5)) // Read pin PE11
     #define RD_TFT_D6 (((GPIOE->IDR)&(D6_PIN_MASK))>>( 9-6)) // Read pin PE9
     #define RD_TFT_D7 (((GPIOG->IDR)&(D7_PIN_MASK))>>(12-7)) // Read pin PG12
+
     #endif
 ////////////////////////////////////////////////////////////////////////////////////////
 // Support for other STM32 boards (not optimised!)
@@ -600,101 +619,134 @@
 
     // Convert Arduino pin reference Dx or STM pin reference PXn to hardware port and mask
     #define D0_PIN_NAME  digitalPinToPinName(TFT_D0)
-    #ifndef D0_PORT
-      #define D0_PORT    get_GPIO_Port(STM_PORT(D0_PIN_NAME))
-    #endif
-    #define D0_PIN_MASK  (const uint16_t)STM_LL_GPIO_PIN(D0_PIN_NAME)<<16
-    // Use bit set reset register
-    #define D0_BSR(B) D0_PORT->BSRR = (D0_PIN_MASK)>>(B)
-
-    // Convert Arduino pin reference Dx or STM pin reference PXn to hardware port and mask
     #define D1_PIN_NAME  digitalPinToPinName(TFT_D1)
-    #ifndef D1_PORT
-      #define D1_PORT    get_GPIO_Port(STM_PORT(D1_PIN_NAME))
-    #endif
-    #define D1_PIN_MASK  STM_LL_GPIO_PIN(D1_PIN_NAME)<<16
-    // Use bit set reset register
-    #define D1_BSR(B) D1_PORT->BSRR = D1_PIN_MASK>>(B)
-
-    // Convert Arduino pin reference Dx or STM pin reference PXn to hardware port and mask
     #define D2_PIN_NAME  digitalPinToPinName(TFT_D2)
-    #ifndef D2_PORT
-      #define D2_PORT      get_GPIO_Port(STM_PORT(D2_PIN_NAME))
-    #endif
-    #define D2_PIN_MASK  (const uint16_t)STM_LL_GPIO_PIN(D2_PIN_NAME)<<16
-    // Use bit set reset register
-    #define D2_BSR(B) D2_PORT->BSRR = D2_PIN_MASK>>(B)
-
-    // Convert Arduino pin reference Dx or STM pin reference PXn to hardware port and mask
     #define D3_PIN_NAME  digitalPinToPinName(TFT_D3)
-    #ifndef D3_PORT
-      #define D3_PORT      get_GPIO_Port(STM_PORT(D3_PIN_NAME))
-    #endif
-    #define D3_PIN_MASK  (const uint16_t)STM_LL_GPIO_PIN(D3_PIN_NAME)<<16
-    // Use bit set reset register
-    #define D3_BSR(B) D3_PORT->BSRR = D3_PIN_MASK>>(B)
-
-    // Convert Arduino pin reference Dx or STM pin reference PXn to hardware port and mask
     #define D4_PIN_NAME  digitalPinToPinName(TFT_D4)
-    #ifndef D4_PORT
-      #define D4_PORT      get_GPIO_Port(STM_PORT(D4_PIN_NAME))
-    #endif
-    #define D4_PIN_MASK  (const uint16_t)STM_LL_GPIO_PIN(D4_PIN_NAME)<<16
-    // Use bit set reset register
-    #define D4_BSR(B) D4_PORT->BSRR = D4_PIN_MASK>>(B)
-
-    // Convert Arduino pin reference Dx or STM pin reference PXn to hardware port and mask
     #define D5_PIN_NAME  digitalPinToPinName(TFT_D5)
-    #ifndef D5_PORT
-      #define D5_PORT      get_GPIO_Port(STM_PORT(D5_PIN_NAME))
-    #endif
-    #define D5_PIN_MASK  (const uint16_t)STM_LL_GPIO_PIN(D5_PIN_NAME)<<16
-    // Use bit set reset register
-    #define D5_BSR(B) D5_PORT->BSRR = D5_PIN_MASK>>(B)
-
-    // Convert Arduino pin reference Dx or STM pin reference PXn to hardware port and mask
     #define D6_PIN_NAME  digitalPinToPinName(TFT_D6)
-    #ifndef D6_PORT
-      #define D6_PORT      get_GPIO_Port(STM_PORT(D6_PIN_NAME))
-    #endif
-    #define D6_PIN_MASK  (const uint16_t)STM_LL_GPIO_PIN(D6_PIN_NAME)<<16
-    // Use bit set reset register
-    #define D6_BSR(B) D6_PORT->BSRR = D6_PIN_MASK>>(B)
-
-    // Convert Arduino pin reference Dx or STM pin reference PXn to hardware port and mask
     #define D7_PIN_NAME  digitalPinToPinName(TFT_D7)
-    #ifndef D7_PORT
-      #define D7_PORT      get_GPIO_Port(STM_PORT(D7_PIN_NAME))
-    #endif
-    #define D7_PIN_MASK  (const uint16_t)STM_LL_GPIO_PIN(D7_PIN_NAME)<<16
-    // Use bit set reset register
-    #define D7_BSR(B) D7_PORT->BSRR = D7_PIN_MASK>>(B)
 
-    // Write 8 bits to TFT for any Nucleo
-    #define tft_Write_8(C) D7_BSR(((C)>>3)&0x10); D6_BSR(((C)>>2)&0x10); \
-                           D5_BSR(((C)>>1)&0x10); D4_BSR(((C)>>0)&0x10); \
-                           WR_L; \
-                           D3_BSR(((C)<<1)&0x10); D2_BSR(((C)<<2)&0x10); \
-                           D1_BSR(((C)<<3)&0x10); D0_BSR(((C)<<4)&0x10); \
-                           WR_H
+    #define D0_PIN_BIT   STM_LL_GPIO_PIN(D0_PIN_NAME)
+    #define D1_PIN_BIT   STM_LL_GPIO_PIN(D1_PIN_NAME)
+    #define D2_PIN_BIT   STM_LL_GPIO_PIN(D2_PIN_NAME)
+    #define D3_PIN_BIT   STM_LL_GPIO_PIN(D3_PIN_NAME)
+    #define D4_PIN_BIT   STM_LL_GPIO_PIN(D4_PIN_NAME)
+    #define D5_PIN_BIT   STM_LL_GPIO_PIN(D5_PIN_NAME)
+    #define D6_PIN_BIT   STM_LL_GPIO_PIN(D6_PIN_NAME)
+    #define D7_PIN_BIT   STM_LL_GPIO_PIN(D7_PIN_NAME)
+
+    #define D0_PIN_PORT  get_GPIO_Port(STM_PORT(D0_PIN_NAME))
+    #define D1_PIN_PORT  get_GPIO_Port(STM_PORT(D1_PIN_NAME))
+    #define D2_PIN_PORT  get_GPIO_Port(STM_PORT(D2_PIN_NAME))
+    #define D3_PIN_PORT  get_GPIO_Port(STM_PORT(D3_PIN_NAME))
+    #define D4_PIN_PORT  get_GPIO_Port(STM_PORT(D4_PIN_NAME))
+    #define D5_PIN_PORT  get_GPIO_Port(STM_PORT(D5_PIN_NAME))
+    #define D6_PIN_PORT  get_GPIO_Port(STM_PORT(D6_PIN_NAME))
+    #define D7_PIN_PORT  get_GPIO_Port(STM_PORT(D7_PIN_NAME))
+    
+    #define D0_PIN_MASK  (const uint16_t)(1UL<<D0_PIN_BIT)
+    #define D1_PIN_MASK  (const uint16_t)(1UL<<D1_PIN_BIT)
+    #define D2_PIN_MASK  (const uint16_t)(1UL<<D2_PIN_BIT)
+    #define D3_PIN_MASK  (const uint16_t)(1UL<<D3_PIN_BIT)
+    #define D4_PIN_MASK  (const uint16_t)(1UL<<D4_PIN_BIT)
+    #define D5_PIN_MASK  (const uint16_t)(1UL<<D5_PIN_BIT)
+    #define D6_PIN_MASK  (const uint16_t)(1UL<<D6_PIN_BIT)
+    #define D7_PIN_MASK  (const uint16_t)(1UL<<D7_PIN_BIT)
+
+    // Create bit set/reset mask based on LS byte of value B
+    #define  D0_BSR_MASK(B) ((D0_PIN_MASK<<16)>>(((B)<< 4)&0x10))
+    #define  D1_BSR_MASK(B) ((D1_PIN_MASK<<16)>>(((B)<< 3)&0x10))
+    #define  D2_BSR_MASK(B) ((D2_PIN_MASK<<16)>>(((B)<< 2)&0x10))
+    #define  D3_BSR_MASK(B) ((D3_PIN_MASK<<16)>>(((B)<< 1)&0x10))
+    #define  D4_BSR_MASK(B) ((D4_PIN_MASK<<16)>>(((B)<< 0)&0x10))
+    #define  D5_BSR_MASK(B) ((D5_PIN_MASK<<16)>>(((B)>> 1)&0x10))
+    #define  D6_BSR_MASK(B) ((D6_PIN_MASK<<16)>>(((B)>> 2)&0x10))
+    #define  D7_BSR_MASK(B) ((D7_PIN_MASK<<16)>>(((B)>> 3)&0x10))
+    // Create bit set/reset mask for top byte of 16 bit value B
+    #define  D8_BSR_MASK(B) ((D0_PIN_MASK<<16)>>(((B)>> 4)&0x10))
+    #define  D9_BSR_MASK(B) ((D1_PIN_MASK<<16)>>(((B)>> 5)&0x10))
+    #define D10_BSR_MASK(B) ((D2_PIN_MASK<<16)>>(((B)>> 6)&0x10))
+    #define D11_BSR_MASK(B) ((D3_PIN_MASK<<16)>>(((B)>> 7)&0x10))
+    #define D12_BSR_MASK(B) ((D4_PIN_MASK<<16)>>(((B)>> 8)&0x10))
+    #define D13_BSR_MASK(B) ((D5_PIN_MASK<<16)>>(((B)>> 9)&0x10))
+    #define D14_BSR_MASK(B) ((D6_PIN_MASK<<16)>>(((B)>>10)&0x10))
+    #define D15_BSR_MASK(B) ((D7_PIN_MASK<<16)>>(((B)>>11)&0x10))
+
+
+    // Write 8 bits to TFT
+    #define tft_Write_8(C)   D0_PIN_PORT->BSRR = D0_BSR_MASK(C); \
+                             D1_PIN_PORT->BSRR = D1_BSR_MASK(C); \
+                             D2_PIN_PORT->BSRR = D2_BSR_MASK(C); \
+                             D3_PIN_PORT->BSRR = D3_BSR_MASK(C); \
+                             WR_L; \
+                             D4_PIN_PORT->BSRR = D4_BSR_MASK(C); \
+                             D5_PIN_PORT->BSRR = D5_BSR_MASK(C); \
+                             D6_PIN_PORT->BSRR = D6_BSR_MASK(C); \
+                             D7_PIN_PORT->BSRR = D7_BSR_MASK(C); \
+                             WR_STB
 
     // Write 16 bits to TFT
-    #define tft_Write_16(C) tft_Write_8((C)>>8); tft_Write_8(C)
+    #define tft_Write_16(C)  D0_PIN_PORT->BSRR = D8_BSR_MASK(C);  \
+                             D1_PIN_PORT->BSRR = D9_BSR_MASK(C);  \
+                             D2_PIN_PORT->BSRR = D10_BSR_MASK(C); \
+                             D3_PIN_PORT->BSRR = D11_BSR_MASK(C); \
+                             WR_L; \
+                             D4_PIN_PORT->BSRR = D12_BSR_MASK(C); \
+                             D5_PIN_PORT->BSRR = D13_BSR_MASK(C); \
+                             D6_PIN_PORT->BSRR = D14_BSR_MASK(C); \
+                             D7_PIN_PORT->BSRR = D15_BSR_MASK(C); \
+                             WR_STB;\
+                             D0_PIN_PORT->BSRR = D0_BSR_MASK(C); \
+                             D1_PIN_PORT->BSRR = D1_BSR_MASK(C); \
+                             D2_PIN_PORT->BSRR = D2_BSR_MASK(C); \
+                             D3_PIN_PORT->BSRR = D3_BSR_MASK(C); \
+                             WR_L; \
+                             D4_PIN_PORT->BSRR = D4_BSR_MASK(C); \
+                             D5_PIN_PORT->BSRR = D5_BSR_MASK(C); \
+                             D6_PIN_PORT->BSRR = D6_BSR_MASK(C); \
+                             D7_PIN_PORT->BSRR = D7_BSR_MASK(C); \
+                             WR_STB
 
     // 16 bit write with swapped bytes
-    #define tft_Write_16S(C) tft_Write_8(C); tft_Write_8((C)>>8)
+    #define tft_Write_16S(C) D0_PIN_PORT->BSRR = D0_BSR_MASK(C); \
+                             D1_PIN_PORT->BSRR = D1_BSR_MASK(C); \
+                             D2_PIN_PORT->BSRR = D2_BSR_MASK(C); \
+                             D3_PIN_PORT->BSRR = D3_BSR_MASK(C); \
+                             WR_L; \
+                             D4_PIN_PORT->BSRR = D4_BSR_MASK(C); \
+                             D5_PIN_PORT->BSRR = D5_BSR_MASK(C); \
+                             D6_PIN_PORT->BSRR = D6_BSR_MASK(C); \
+                             D7_PIN_PORT->BSRR = D7_BSR_MASK(C); \
+                             WR_STB; \
+                             D0_PIN_PORT->BSRR = D8_BSR_MASK(C);  \
+                             D1_PIN_PORT->BSRR = D9_BSR_MASK(C);  \
+                             D2_PIN_PORT->BSRR = D10_BSR_MASK(C); \
+                             D3_PIN_PORT->BSRR = D11_BSR_MASK(C); \
+                             WR_L; \
+                             D4_PIN_PORT->BSRR = D12_BSR_MASK(C); \
+                             D5_PIN_PORT->BSRR = D13_BSR_MASK(C); \
+                             D6_PIN_PORT->BSRR = D14_BSR_MASK(C); \
+                             D7_PIN_PORT->BSRR = D15_BSR_MASK(C); \
+                             WR_STB
 
-  #endif // End of parallel/Nucleo 64/144 selections
+    #define tft_Write_32(C)    tft_Write_16((uint16_t)((C)>>16)); tft_Write_16((uint16_t)(C))
 
-    // Write 32 bits to TFT
-    #define tft_Write_32(C) tft_Write_16((C)>>16); tft_Write_16(C)
+    #define tft_Write_32C(C,D) tft_Write_16((uint16_t)(C)); tft_Write_16((uint16_t)(D))
 
-    // Write two concatenated 16 bit values to TFT
-    #define tft_Write_32C(C,D) tft_Write_16(C); tft_Write_16(D)
+    #define tft_Write_32D(C)   tft_Write_16((uint16_t)(C)); tft_Write_16((uint16_t)(C))
 
-    // Write 16 bit value twice to TFT
-    #define tft_Write_32D(C) tft_Write_16(C); tft_Write_16(C)
+    // Read a data bit
+    #define RD_TFT_D0 ((((D0_PIN_PORT->IDR)&(D0_PIN_MASK))>> D0_PIN_BIT)<<0) // Read pin TFT_D0
+    #define RD_TFT_D1 ((((D1_PIN_PORT->IDR)&(D1_PIN_MASK))>> D1_PIN_BIT)<<1) // Read pin TFT_D1
+    #define RD_TFT_D2 ((((D2_PIN_PORT->IDR)&(D2_PIN_MASK))>> D2_PIN_BIT)<<2) // Read pin TFT_D2
+    #define RD_TFT_D3 ((((D3_PIN_PORT->IDR)&(D3_PIN_MASK))>> D3_PIN_BIT)<<3) // Read pin TFT_D3
+    #define RD_TFT_D4 ((((D4_PIN_PORT->IDR)&(D4_PIN_MASK))>> D4_PIN_BIT)<<4) // Read pin TFT_D4
+    #define RD_TFT_D5 ((((D5_PIN_PORT->IDR)&(D5_PIN_MASK))>> D5_PIN_BIT)<<5) // Read pin TFT_D5
+    #define RD_TFT_D6 ((((D6_PIN_PORT->IDR)&(D6_PIN_MASK))>> D6_PIN_BIT)<<6) // Read pin TFT_D6
+    #define RD_TFT_D7 ((((D7_PIN_PORT->IDR)&(D7_PIN_MASK))>> D7_PIN_BIT)<<7) // Read pin TFT_D7
 
+  #endif
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to a SPI ILI9488 TFT
 ////////////////////////////////////////////////////////////////////////////////////////

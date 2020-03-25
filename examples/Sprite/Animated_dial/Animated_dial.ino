@@ -82,7 +82,7 @@ void setup()   {
 
   // Load the font and create the Sprite for reporting the value
   spr.loadFont(AA_FONT_LARGE);
-  spr_width = spr.textWidth("188");
+  spr_width = spr.textWidth("277");
   spr.createSprite(spr_width, spr.fontHeight());
   uint16_t bg_color = tft.readPixel(120, 120); // Get colour from dial centre
   spr.fillSprite(bg_color);
@@ -162,10 +162,6 @@ void createNeedle(void)
 void plotNeedle(int16_t angle, uint16_t ms_delay)
 {
   static int16_t old_angle = -120; // Starts at -120 degrees
-
-  // Trig values for the rotation
-  int32_t sinra;
-  int32_t cosra;
 
   // Bounding box parameters
   static int16_t min_x;

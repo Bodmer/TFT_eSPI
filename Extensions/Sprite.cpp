@@ -376,7 +376,7 @@ int16_t TFT_eSprite::getPivotY(void)
 #define FP_SCALE 10
 bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
 {
-  if ( !_created ) return false;
+  if ( !_created || _bpp == 4) return false;
 
   // Bounding box parameters
   int16_t min_x;
@@ -444,8 +444,8 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
 *************************************************************************************x*/
 bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
 {
-  if ( !_created ) return false;       // Check this Sprite is created
-  if ( !spr->_created ) return false;  // Ckeck destination Sprite is created
+  if ( !_created  || _bpp == 4) return false;       // Check this Sprite is created
+  if ( !spr->_created  || spr->_bpp == 4) return false;  // Ckeck destination Sprite is created
 
   // Bounding box parameters
   int16_t min_x;
@@ -688,9 +688,9 @@ uint8_t TFT_eSprite::readPixelValue(int32_t x, int32_t y)
   if (_bpp == 4)
   {
     if ((x & 0x01) == 0)
-      return ((_img4[((x+y*_iwidth)>>1)] & 0xF0) >> 4) & 0x0F; // even index = bits 7 .. 4
+      return _img4[((x+y*_iwidth)>>1)] >> 4;   // even index = bits 7 .. 4
     else
-      return _img4[((x-1+y*_iwidth)>>1)] & 0x0F;  // odd index = bits 3 .. 0.
+      return _img4[((x+y*_iwidth)>>1)] & 0x0F; // odd index = bits 3 .. 0.
   }
   return readPixel(x, y);
 }
@@ -726,9 +726,9 @@ uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
   {
     uint16_t color;
     if ((x & 0x01) == 0)
-      color = _colorMap[((_img4[((x+y*_iwidth)>>1)] & 0xF0) >> 4) & 0x0F ]; // even index = bits 7 .. 4
+      color = _colorMap[_img4[((x+y*_iwidth)>>1)] >> 4];   // even index = bits 7 .. 4
     else
-      color = _colorMap[_img4[((x-1+y*_iwidth)>>1)] & 0x0F];  // odd index = bits 3 .. 0.
+      color = _colorMap[_img4[((x+y*_iwidth)>>1)] & 0x0F]; // odd index = bits 3 .. 0.
     return color;
   }
 
@@ -752,8 +752,8 @@ uint16_t TFT_eSprite::readPixel(int32_t x, int32_t y)
 
   uint16_t color = (_img8[(x + y * _bitwidth)>>3] << (x & 0x7)) & 0x80;
 
-  if (color >> 7) return _tft->bitmap_fg;
-  else            return _tft->bitmap_bg;
+  if (color) return _tft->bitmap_fg;
+  else       return _tft->bitmap_bg;
 }
 
 
@@ -1038,10 +1038,10 @@ void TFT_eSprite::pushColor(uint32_t color)
   {
     uint8_t c = (uint8_t)color & 0x0F;
     if ((_xptr & 0x01) == 0) {
-      _img4[(_xptr + _yptr * _iwidth)>>1] = ((c << 4) & 0xF0) | (_img4[(_xptr + _yptr * _iwidth)>>1] & 0x0F);  // new color is in bits 7 .. 4
+      _img4[(_xptr + _yptr * _iwidth)>>1] = (c << 4) | (_img4[(_xptr + _yptr * _iwidth)>>1] & 0x0F);  // new color is in bits 7 .. 4
     }
     else {
-      _img4[(_xptr - 1 + _yptr * _iwidth)>>1] = (_img4[(_xptr - 1 + _yptr * _iwidth)>>1] & 0xF0) | c; // new color is the low bits
+      _img4[(_xptr + _yptr * _iwidth)>>1] = (_img4[(_xptr + _yptr * _iwidth)>>1] & 0xF0) | c; // new color is the low bits
     }
   }
   
@@ -1101,9 +1101,9 @@ void TFT_eSprite::writeColor(uint16_t color)
   {
     uint8_t c = (uint8_t)color & 0x0F;
     if ((_xptr & 0x01) == 0)
-      _img4[(_xptr + _yptr * _iwidth)>>1] = ((c << 4) & 0xF0) | (_img4[(_xptr + _yptr * _iwidth)>>1] & 0x0F);  // new color is in bits 7 .. 4
+      _img4[(_xptr + _yptr * _iwidth)>>1] = (c << 4) | (_img4[(_xptr + _yptr * _iwidth)>>1] & 0x0F);  // new color is in bits 7 .. 4
     else
-      _img4[(_xptr - 1 + _yptr * _iwidth)>>1] = (_img4[(_xptr - 1 + _yptr * _iwidth)>>1] & 0xF0) | c; // new color is the low bits (x is odd)
+      _img4[(_xptr + _yptr * _iwidth)>>1] = (_img4[(_xptr + _yptr * _iwidth)>>1] & 0xF0) | c; // new color is the low bits (x is odd)
   }
 
   else drawPixel(_xptr, _yptr, color);
@@ -1370,13 +1370,11 @@ void TFT_eSprite::drawPixel(int32_t x, int32_t y, uint32_t color)
   else if (_bpp == 4)
   {
     uint8_t c = color & 0x0F;
-    int index = 0;
+    int index = (x+y*_iwidth)>>1;;
     if ((x & 0x01) == 0) {
-      index = (x+y*_iwidth)>>1;
-      _img4[index] = (uint8_t)(((c << 4) & 0xF0) | (_img4[index] & 0x0F));
+      _img4[index] = (uint8_t)((c << 4) | (_img4[index] & 0x0F));
     }
     else {
-      index = (x-1+y*_iwidth)>>1;
       _img4[index] =  (uint8_t)(c | (_img4[index] & 0xF0));
     }
   }
@@ -1501,7 +1499,7 @@ void TFT_eSprite::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
     else {
       uint8_t c = (uint8_t)color & 0xF;
       while (h--) {
-        _img4[(x - 1 + _iwidth * y)>>1] = (uint8_t) (c | (_img4[(x - 1 + _iwidth * y)>>1] & 0xF0)); // x is odd; new color goes into the low bits.
+        _img4[(x + _iwidth * y)>>1] = (uint8_t) (c | (_img4[(x + _iwidth * y)>>1] & 0xF0)); // x is odd; new color goes into the low bits.
         y++;
       }
     }
