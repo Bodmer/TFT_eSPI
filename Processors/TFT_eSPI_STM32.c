@@ -128,14 +128,13 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 ***************************************************************************************/
 void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 {
-
 #ifdef STM_PORTA_DATA_BUS
-  if (mode == OUTPUT) GPIOA->CRL = 0x33333333;
-  else GPIOA->CRL = 0x88888888;
+  if (mode == OUTPUT) GPIOA->MODER = (GPIOA->MODER & 0xFFFF0000) | 0x00005555;
+  else GPIOA->MODER &= 0xFFFF0000;
 
 #elif STM_PORTB_DATA_BUS
-  if (mode == OUTPUT) GPIOB->CRL = 0x33333333;
-  else GPIOB->CRL = 0x88888888;
+  if (mode == OUTPUT) GPIOB->MODER = (GPIOB->MODER & 0xFFFF0000) | 0x00005555;
+  else GPIOB->MODER &= 0xFFFF0000;
 
 #else
   if (mode == OUTPUT) {
@@ -184,12 +183,22 @@ uint8_t TFT_eSPI::readByte(void)
   uint8_t b = 0;
 
   RD_L;
-
+#ifdef STM_PORTA_DATA_BUS
+  b = GPIOA->IDR;
+  b = GPIOA->IDR;
+  b = GPIOA->IDR;
+  b = (GPIOA->IDR) & 0xFF;
+#elif STM_PORTB_DATA_BUS
+  b = GPIOB->IDR;
+  b = GPIOB->IDR;
+  b = GPIOB->IDR;
+  b = (GPIOB->IDR) & 0xFF;
+#else
   b  = RD_TFT_D0 | RD_TFT_D0 | RD_TFT_D0 | RD_TFT_D0; //Delay for bits to settle
 
   b  = RD_TFT_D0 | RD_TFT_D1 | RD_TFT_D2 | RD_TFT_D3;
   b |= RD_TFT_D4 | RD_TFT_D5 | RD_TFT_D6 | RD_TFT_D7;
-
+#endif
   RD_H;
 
   return b;

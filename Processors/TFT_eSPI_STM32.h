@@ -118,23 +118,27 @@
     #endif
 
   #else // Default display slow settings
+    #if defined (STM32F1xx)
+      // STM32F1xx series can run at full speed (unless overclocked)
+      #define WR_TWRL_0
+      #define WR_TWRH_0
+    #else
+      // Extra write pulse low time (delay for data setup)
+      //#define WR_TWRL_0
+      //#define WR_TWRL_1
+      //#define WR_TWRL_2
+      #define WR_TWRL_3
+      //#define WR_TWRL_4
+      //#define WR_TWRL_5
 
-    // Extra write pulse low time (delay for data setup)
-    //#define WR_TWRL_0
-    //#define WR_TWRL_1
-    //#define WR_TWRL_2
-    //#define WR_TWRL_3
-    //#define WR_TWRL_4
-    #define WR_TWRL_5
-
-    // Extra write pulse high time (data hold time, delays next write cycle start)
-    //#define WR_TWRH_0
-    //#define WR_TWRH_1
-    //#define WR_TWRH_2
-    //#define WR_TWRH_3
-    //#define WR_TWRH_4
-    #define WR_TWRH_5
-
+      // Extra write pulse high time (data hold time, delays next write cycle start)
+      //#define WR_TWRH_0
+      //#define WR_TWRH_1
+      //#define WR_TWRH_2
+      //#define WR_TWRH_3
+      //#define WR_TWRH_4
+      #define WR_TWRH_5
+    #endif
   #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -184,11 +188,11 @@
   #define DC_C // No macro allocated so it generates no code
   #define DC_D // No macro allocated so it generates no code
 #else
-  // Convert Arduino pin reference Dn or STM pin reference PXn to pin lookup reference number
+  // Convert Arduino pin reference Dn or STM pin reference PXn to port and mask
   #define DC_PORT     digitalPinToPort(TFT_DC)
   #define DC_PIN_MASK digitalPinToBitMask(TFT_DC)
   // Use bit set reset register
-  #define DC_C DC_PORT->BRR  = DC_PIN_MASK
+  #define DC_C DC_PORT->BSRR = DC_PIN_MASK<<16
   #define DC_D DC_PORT->BSRR = DC_PIN_MASK
 #endif
 
@@ -199,11 +203,11 @@
   #define CS_L // No macro allocated so it generates no code
   #define CS_H // No macro allocated so it generates no code
 #else
-  // Convert Arduino pin reference Dx or STM pin reference PXn to pin lookup reference number
+  // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
   #define CS_PORT      digitalPinToPort(TFT_CS)
   #define CS_PIN_MASK  digitalPinToBitMask(TFT_CS)
   // Use bit set reset register
-  #define CS_L CS_PORT->BRR =  CS_PIN_MASK
+  #define CS_L CS_PORT->BSRR = CS_PIN_MASK<<16
   #define CS_H CS_PORT->BSRR = CS_PIN_MASK
 #endif
 
@@ -211,11 +215,11 @@
 // Define the RD (TFT Read) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifdef TFT_RD
-  // Convert Arduino pin reference Dx or STM pin reference PXn to pin lookup reference number
+  // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
   #define RD_PORT      digitalPinToPort(TFT_RD)
   #define RD_PIN_MASK  digitalPinToBitMask(TFT_RD)
   // Use bit set reset register
-  #define RD_L RD_PORT->BRR  = RD_PIN_MASK
+  #define RD_L RD_PORT->BSRR = RD_PIN_MASK<<16
   #define RD_H RD_PORT->BSRR = RD_PIN_MASK
 #endif
 
@@ -223,11 +227,11 @@
 // Define the WR (TFT Write) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifdef TFT_WR
-  // Convert Arduino pin reference Dx or STM pin reference PXn to pin lookup reference number
+  // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
   #define WR_PORT      digitalPinToPort(TFT_WR)
   #define WR_PIN_MASK  digitalPinToBitMask(TFT_WR)
   // Use bit set reset register
-  #define WR_L WR_PORT->BRR  = WR_PIN_MASK
+  #define WR_L WR_PORT->BSRR = WR_PIN_MASK<<16
   #define WR_H WR_PORT->BSRR = WR_PIN_MASK
 #endif
 
@@ -304,7 +308,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
   #ifdef NUCLEO_64_TFT
 
-    // Convert Arduino pin reference Dx or STM pin reference PXn to pin lookup reference number
+    // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
     #define D0_PIN_NAME  digitalPinToPinName(TFT_D0)
     #define D1_PIN_NAME  digitalPinToPinName(TFT_D1)
     #define D2_PIN_NAME  digitalPinToPinName(TFT_D2)
@@ -415,7 +419,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
   #elif defined (NUCLEO_144_TFT)
 
-    // Convert Arduino pin reference Dx or STM pin reference PXn to pin lookup reference number
+    // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
     // (diagnostic only - not used for Nucleo)
     #define D0_PIN_NAME  digitalPinToPinName(TFT_D0)
     #define D1_PIN_NAME  digitalPinToPinName(TFT_D1)
@@ -630,15 +634,15 @@
     #if defined (STM_PORTA_DATA_BUS)
       
       // Write 8 bits to TFT
-      #define tft_Write_8(C)   GPIOA->BSRR = (0xFF0000 | (uint8_t)(C)); WR_L; WR_STB
+      #define tft_Write_8(C)   GPIOA->BSRR = (0x00FF0000 | (uint8_t)(C)); WR_L; WR_STB
       
       // Write 16 bits to TFT
-      #define tft_Write_16(C)  GPIOA->BSRR = (0xFF0000 | (uint8_t)(C>>8)); WR_L; WR_STB; \
-                               GPIOA->BSRR = (0xFF0000 | (uint8_t)(C>>0)); WR_L; WR_STB
+      #define tft_Write_16(C)  GPIOA->BSRR = (0x00FF0000 | (uint8_t)(C>>8)); WR_L; WR_STB; \
+                               GPIOA->BSRR = (0x00FF0000 | (uint8_t)(C>>0)); WR_L; WR_STB
 
       // 16 bit write with swapped bytes
-      #define tft_Write_16S(C) GPIOA->BSRR = (0xFF0000 | (uint8_t)(C>>0)); WR_L; WR_STB; \
-                               GPIOA->BSRR = (0xFF0000 | (uint8_t)(C>>8)); WR_L; WR_STB
+      #define tft_Write_16S(C) GPIOA->BSRR = (0x00FF0000 | (uint8_t)(C>>0)); WR_L; WR_STB; \
+                               GPIOA->BSRR = (0x00FF0000 | (uint8_t)(C>>8)); WR_L; WR_STB
 
       #define tft_Write_32(C)    tft_Write_16((uint16_t)((C)>>16)); tft_Write_16((uint16_t)(C))
 
@@ -659,15 +663,15 @@
     #elif defined (STM_PORTB_DATA_BUS)
       
       // Write 8 bits to TFT
-      #define tft_Write_8(C)   GPIOB->BSRR = (0xFF0000 | (uint8_t)(C)); WR_L; WR_STB
+      #define tft_Write_8(C)   GPIOB->BSRR = (0x00FF0000 | (uint8_t)(C)); WR_L; WR_STB
       
       // Write 16 bits to TFT
-      #define tft_Write_16(C)  GPIOB->BSRR = (0xFF0000 | (uint8_t)(C>>8)); WR_L; WR_STB; \
-                               GPIOB->BSRR = (0xFF0000 | (uint8_t)(C>>0)); WR_L; WR_STB
+      #define tft_Write_16(C)  GPIOB->BSRR = (0x00FF0000 | (uint8_t)(C>>8)); WR_L; WR_STB; \
+                               GPIOB->BSRR = (0x00FF0000 | (uint8_t)(C>>0)); WR_L; WR_STB
 
       // 16 bit write with swapped bytes
-      #define tft_Write_16S(C) GPIOB->BSRR = (0xFF0000 | (uint8_t)(C>>0)); WR_L; WR_STB; \
-                               GPIOB->BSRR = (0xFF0000 | (uint8_t)(C>>8)); WR_L; WR_STB
+      #define tft_Write_16S(C) GPIOB->BSRR = (0x00FF0000 | (uint8_t)(C>>0)); WR_L; WR_STB; \
+                               GPIOB->BSRR = (0x00FF0000 | (uint8_t)(C>>8)); WR_L; WR_STB
 
       #define tft_Write_32(C)    tft_Write_16((uint16_t)((C)>>16)); tft_Write_16((uint16_t)(C))
 
@@ -688,7 +692,7 @@
     #else
       // This will work with any STM32 to parallel TFT pin mapping but will be slower
 
-      // Convert Arduino pin reference Dx or STM pin reference PXn to pin lookup reference number
+      // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
       #define D0_PIN_NAME  digitalPinToPinName(TFT_D0)
       #define D1_PIN_NAME  digitalPinToPinName(TFT_D1)
       #define D2_PIN_NAME  digitalPinToPinName(TFT_D2)
