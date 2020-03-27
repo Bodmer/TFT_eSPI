@@ -647,14 +647,14 @@
       #define tft_Write_32D(C)   tft_Write_16((uint16_t)(C)); tft_Write_16((uint16_t)(C))
 
       // Read a data bit
-      #define RD_TFT_D0 ((GPIOA->IDR) & 0x80) // Read pin TFT_D0
-      #define RD_TFT_D1 ((GPIOA->IDR) & 0x40) // Read pin TFT_D1
-      #define RD_TFT_D2 ((GPIOA->IDR) & 0x20) // Read pin TFT_D2
-      #define RD_TFT_D3 ((GPIOA->IDR) & 0x10) // Read pin TFT_D3
-      #define RD_TFT_D4 ((GPIOA->IDR) & 0x08) // Read pin TFT_D4
-      #define RD_TFT_D5 ((GPIOA->IDR) & 0x04) // Read pin TFT_D5
-      #define RD_TFT_D6 ((GPIOA->IDR) & 0x02) // Read pin TFT_D6
-      #define RD_TFT_D7 ((GPIOA->IDR) & 0x01) // Read pin TFT_D7
+      #define RD_TFT_D0 ((GPIOA->IDR) & 0x01) // Read pin TFT_D0
+      #define RD_TFT_D1 ((GPIOA->IDR) & 0x02) // Read pin TFT_D1
+      #define RD_TFT_D2 ((GPIOA->IDR) & 0x04) // Read pin TFT_D2
+      #define RD_TFT_D3 ((GPIOA->IDR) & 0x08) // Read pin TFT_D3
+      #define RD_TFT_D4 ((GPIOA->IDR) & 0x10) // Read pin TFT_D4
+      #define RD_TFT_D5 ((GPIOA->IDR) & 0x20) // Read pin TFT_D5
+      #define RD_TFT_D6 ((GPIOA->IDR) & 0x40) // Read pin TFT_D6
+      #define RD_TFT_D7 ((GPIOA->IDR) & 0x80) // Read pin TFT_D7
 
     #elif defined (STM_PORTB_DATA_BUS)
       

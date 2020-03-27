@@ -128,26 +128,16 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 ***************************************************************************************/
 void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 {
-  // Use pinMode() for each pin at least one first to enable clocks etc
 
 #ifdef STM_PORTA_DATA_BUS
-  if (mode == OUTPUT) {
-    LL_GPIO_SetPinMode(GPIOA, 0xFF, LL_GPIO_MODE_OUTPUT);
-  }
-  else {
-    LL_GPIO_SetPinMode(GPIOA, 0xFF, LL_GPIO_MODE_INPUT);
-  }
+  if (mode == OUTPUT) GPIOA->CRL = 0x33333333;
+  else GPIOA->CRL = 0x88888888;
 
 #elif STM_PORTB_DATA_BUS
-  if (mode == OUTPUT) {
-    LL_GPIO_SetPinMode(GPIOB, 0xFF, LL_GPIO_MODE_OUTPUT);
-  }
-  else {
-    LL_GPIO_SetPinMode(GPIOB, 0xFF, LL_GPIO_MODE_INPUT);
-  }
+  if (mode == OUTPUT) GPIOB->CRL = 0x33333333;
+  else GPIOB->CRL = 0x88888888;
 
 #else
-  // Now we can use a minimal set of register changes
   if (mode == OUTPUT) {
     LL_GPIO_SetPinMode(D0_PIN_PORT, D0_PIN_MASK, LL_GPIO_MODE_OUTPUT);
     LL_GPIO_SetPinMode(D1_PIN_PORT, D1_PIN_MASK, LL_GPIO_MODE_OUTPUT);
