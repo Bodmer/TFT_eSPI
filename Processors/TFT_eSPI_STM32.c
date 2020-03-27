@@ -16,6 +16,14 @@
   SPI_HandleTypeDef spiHal;
 #endif
 
+#ifdef TOUCH_CS
+  #if defined (SPI2_for_TOUCH_PORT)
+    SPIClass spi_touch(PB15, PB14, PB13);
+  #else
+	SPIClass& spi_touch = SPI;
+  #endif
+#endif
+
 #ifdef STM32_DMA
   // DMA HAL handle
   DMA_HandleTypeDef dmaHal;
@@ -137,6 +145,10 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
   if (mode == OUTPUT) GPIOB->CRL = 0x33333333;
   else GPIOB->CRL = 0x88888888;
 
+#elif STM_PORTC_DATA_BUS
+  if (mode == OUTPUT) GPIOC->CRL = 0x33333333;
+  else GPIOC->CRL = 0x88888888;
+  
 #else
   if (mode == OUTPUT) {
     LL_GPIO_SetPinMode(D0_PIN_PORT, D0_PIN_MASK, LL_GPIO_MODE_OUTPUT);
