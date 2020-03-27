@@ -295,3 +295,9 @@
 // so changing it here has no effect
 
 // #define SUPPORT_TRANSACTIONS
+
+// The STM32 and have more than one SPI port.
+// so uncomment the following line if you want to use second SPI for Touch:
+// On STM32F1: SPITwo (PB15, PB14, PB13); (MOSI, MISO, CLK)
+// On ESP32 : HSPI (13, 12, 14); (MOSI, MISO, CLK)
+#define SPI2_for_TOUCH_PORT
