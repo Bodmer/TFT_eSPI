@@ -130,6 +130,23 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 {
   // Use pinMode() for each pin at least one first to enable clocks etc
 
+#ifdef STM_PORTA_DATA_BUS
+  if (mode == OUTPUT) {
+    LL_GPIO_SetPinMode(GPIOA, 0xFF, LL_GPIO_MODE_OUTPUT);
+  }
+  else {
+    LL_GPIO_SetPinMode(GPIOA, 0xFF, LL_GPIO_MODE_INPUT);
+  }
+
+#elif STM_PORTB_DATA_BUS
+  if (mode == OUTPUT) {
+    LL_GPIO_SetPinMode(GPIOB, 0xFF, LL_GPIO_MODE_OUTPUT);
+  }
+  else {
+    LL_GPIO_SetPinMode(GPIOB, 0xFF, LL_GPIO_MODE_INPUT);
+  }
+
+#else
   // Now we can use a minimal set of register changes
   if (mode == OUTPUT) {
     LL_GPIO_SetPinMode(D0_PIN_PORT, D0_PIN_MASK, LL_GPIO_MODE_OUTPUT);
@@ -151,6 +168,7 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
     LL_GPIO_SetPinMode(D6_PIN_PORT, D6_PIN_MASK, LL_GPIO_MODE_INPUT);
     LL_GPIO_SetPinMode(D7_PIN_PORT, D7_PIN_MASK, LL_GPIO_MODE_INPUT);
   }
+#endif
 }
 
 
