@@ -7,6 +7,14 @@
 // ESP8266 default (FLASH port also available via overlap mode)
   SPIClass& spi = SPI;
 
+#ifdef TOUCH_CS
+  #if defined (SPI2_for_TOUCH_PORT)
+    #error ESP8266 has only one SPI
+  #else
+	SPIClass& spi_touch = SPI;
+  #endif
+#endif
+
 // Buffer for SPI transmit byte padding and byte order manipulation
 uint8_t   spiBuffer[8] = {0,0,0,0,0,0,0,0};
 
