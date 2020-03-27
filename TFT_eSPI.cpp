@@ -306,6 +306,12 @@ void TFT_eSPI::init(uint8_t tc)
     #endif
   #endif
 #endif
+    
+  #if defined (TOUCH_CS) && defined(SPI2_for_TOUCH_PORT)
+	//spi_touch.setFrequency(SPI_TOUCH_FREQUENCY);
+    spi_touch.begin();
+	spi_touch.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));
+  #endif
 
     inTransaction = false;
     locked = true;
