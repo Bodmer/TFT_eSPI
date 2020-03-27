@@ -6,8 +6,20 @@
 // Global variables
 ////////////////////////////////////////////////////////////////////////////////////////
 
-// Select the SPI port to use
-SPIClass& spi = SPI;
+#if defined (TFT_PARALLEL_8_BIT)
+  // No globals
+#else
+  // Select the SPI port to use
+  SPIClass& spi = SPI;
+#endif
+
+#ifdef TOUCH_CS
+  #if defined (SPI2_for_TOUCH_PORT)
+    #error define your board for second SPI configuration
+  #else
+	SPIClass& spi_touch = SPI;
+  #endif
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 #if defined (TFT_SDA_READ) && !defined (TFT_PARALLEL_8_BIT)
