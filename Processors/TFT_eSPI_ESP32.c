@@ -17,9 +17,9 @@
 
 #ifdef TOUCH_CS
   #if defined (SPI2_for_TOUCH_PORT)
-    SPIClass spi = SPIClass(HSPI);
+    SPIClass spi_touch = SPIClass(HSPI);
   #else
-	SPIClass& spi = SPI;
+	SPIClass& spi_touch = SPI;
   #endif
 #endif
 
