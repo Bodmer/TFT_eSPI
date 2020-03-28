@@ -63,7 +63,7 @@ If an ESP32 board has SPIRAM (i.e. PSRAM) fitted then Sprites will use the PSRAM
 
 # Touch controller support
 
-The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed. This support will eventually be deprecated when a suitable touch screen library is avaiable.
+The XPT2046 touch screen controller is supported for SPI based displays only. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed. This support will eventually be deprecated when a suitable touch screen library is avaiable.
 
 The Button class from Adafruit_GFX is incorporated, with the enhancement that the button labels can be in any font.
 
