@@ -37,17 +37,19 @@ To select a new setup you then edit your own my_setup_select.h file (which will 
 
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with drivers for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9486, ILI9488, HX8357D, ST7789 and ST7796 based TFT displays that support SPI. The library can be loaded using the Arduino IDE's Library Manager.
+An Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targetted at 32 bit processors, it  has been performance optimised for STM32, ESP8266 and ESP32 types.  The library includes drivers for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9486, ILI9488, HX8357D, ST7789 and ST7796 based TFT displays that support SPI or 8 bit parallel (parallel not supported on ESP8266). The library can be loaded using the Arduino IDE's Library Manager.
 
-8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with an ESP32.
+8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
 
-The library supports TFT displays designed for the Raspberry Pi (RPi) that are based on a ILI9486 or ST7796 driver chip with a 480 x 320 pixel screen. The ILI9486 RPi display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. A modification to these displays is possible (see mod image in Tools folder) to make many graphics functions much faster (e.g. 23ms to clear the screen, 1.2ms to draw a 72 pixel high numeral). The RPi ST7796 display is superior to the Waveshare design, it must be of the MHS-4.0 inch Display-B type.
+The library supports TFT displays designed for the Raspberry Pi (RPi) that are based on a ILI9486 or ST7796 driver chip with a 480 x 320 pixel screen. The ILI9486 RPi display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. A modification to these displays is possible (see mod image in Tools folder) to make many graphics functions much faster (e.g. 23ms to clear the screen, 1.2ms to draw a 72 pixel high numeral). The RPi ST7796 display is supported and is superior to the Waveshare design, it must be of the MHS-4.0 inch Display-B type.
 
-Some displays permit the internal TFT screen RAM to be read. The library supports reading from ILI9341, ST7789 and ILI9488 SPI displays for the ESP32 and ESP8266. The 8 bit parallel displays used with the ESP32 can usually can be read too. The TFT_Screen_Capture example allows full screens to be captured and sent to a PC, this is handy to create program documentation.
+Some displays permit the internal TFT screen RAM to be read. The library supports reading from ILI9341, ST7789 and ILI9488 SPI and other supported 8 bit parallel displays. The TFT_Screen_Capture example allows full screens to be captured and sent to a PC, this is handy to create program documentation.
 
-Support has been added recently for Waveshare 2 and 3 colour ePaper displays using full frame buffers. This addition is currently relatively immature and thus only one example has been provided. Further examples will be added soon.
+Support has been added recently for Waveshare 2 and 3 colour ePaper displays using full frame buffers. This addition is currently relatively immature and thus only one example has been provided.
 
 The library includes a "Sprite" class, this enables flicker free updates of complex graphics. Direct writes to the TFT with graphics functions are still available, so existing sketches do not need to be changed.
+
+# Sprites
 
 A Sprite is notionally an invisible graphics screen that is kept in the processors RAM. Graphics can be drawn into the Sprite just as they can be drawn directly to the screen. Once the Sprite is completed it can be plotted onto the screen in any position. If there is sufficient RAM then the Sprite can be the same size as the screen and used as a frame buffer. Sprites by default use 16 bit colours, the bit depth can be set to 8 bits (256 colours) , or 1 bit (any 2 colours) to reduce the RAM needed. On an ESP8266 the largest 16 bit colour Sprite that can be created is about 160x128 pixels, this consumes 40Kbytes of RAM. On an ESP32 the workspace RAM is more limited than the datsheet implies so a 16 bit colour Sprite is limited to about 200x200 pixels (~80Kbytes), an 8 bit sprite to 320x240 pixels (~76kbytes). A 1 bit per pixel Sprite requires only 9600 bytes for a full 320 x 240 screen buffer, this is ideal for supporting use with 2 colour bitmap fonts.
 
@@ -59,11 +61,18 @@ Sprites can be plotted to the TFT with one colour being specified as "transparen
 
 If an ESP32 board has SPIRAM (i.e. PSRAM) fitted then Sprites will use the PSRAM memory and large full screen buffer Sprites can be created. Full screen Sprites take longer to render (~45ms for a 320 x 240 16 bit Sprite), so bear that in mind.
 
-The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed.
+# Touch controller support
+
+The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed. This support will eventually be deprecated when a suitable touch screen library is avaiable.
 
 The Button class from Adafruit_GFX is incorporated, with the enhancement that the button labels can be in any font.
 
+# ESP8266 overlay mode
+
 The library supports SPI overlap on the ESP8266 so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH, this frees up GPIO pins for other uses.
+
+
+# Fonts
 
 The library contains proportional fonts, different sizes can be enabled/disabled at compile time to optimise the use of FLASH memory. Anti-alased (smooth) font files in vlw format stored in SPIFFS are supported. Any 16 bit Unicode character can be included and rendered, this means many language specific characters can be rendered to the screen.
 
@@ -92,7 +101,9 @@ Here is an example screenshot showing the anti-aliased Hiragana character Unicod
 
 Antialiased fonts can also be drawn over a gradient background with a callback to fetch the background colour of each pixel. This pixel colour can be set by the gradient algorithm or by reading back the TFT screen memory (if reading the display is supported).
 
-# ESP32 with 8 bit Mcufriend UNO shields
+# 8 bit parallel support
+
+The common 8 bit "Mcufriend" shields are supported for the STM Nucleo 64/144 boards and ESP32 UNO style board. The STM32 "Blue/Black Pill" boards can also be used with 8 bit parallel displays.
 
 The ESP32 board I have been using for testing has the following pinout:
 
