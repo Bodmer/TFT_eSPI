@@ -23,6 +23,12 @@
 //#define NUCLEO_64_TFT
 //#define NUCLEO_144_TFT
 
+// STM32 8 bit parallel only:
+// If STN32 Port A or B pins 0-7 are used for 8 bit parallel data bus bits 0-7
+// then this will improve rendering performance by a factor of ~8x
+//#define STM_PORTA_DATA_BUS
+//#define STM_PORTA_DATA_BUS
+
 // Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
 
@@ -93,19 +99,23 @@
 // #define TFT_INVERSION_ON
 // #define TFT_INVERSION_OFF
 
-// If a backlight control signal is available then define the TFT_BL pin in Section 2
-// below. The backlight will be turned ON when tft.begin() is called, but the library
-// needs to know if the LEDs are ON with the pin HIGH or LOW. If the LEDs are to be
-// driven with a PWM signal or turned OFF/ON then this must be handled by the user
-// sketch. e.g. with digitalWrite(TFT_BL, LOW);
-
-// #define TFT_BACKLIGHT_ON HIGH  // HIGH or LOW are options
 
 // ##################################################################################
 //
 // Section 2. Define the pins that are used to interface with the display here
 //
 // ##################################################################################
+
+// If a backlight control signal is available then define the TFT_BL pin in Section 2
+// below. The backlight will be turned ON when tft.begin() is called, but the library
+// needs to know if the LEDs are ON with the pin HIGH or LOW. If the LEDs are to be
+// driven with a PWM signal or turned OFF/ON then this must be handled by the user
+// sketch. e.g. with digitalWrite(TFT_BL, LOW);
+
+// #define TFT_BL   32            // LED back-light control pin
+// #define TFT_BACKLIGHT_ON HIGH  // Level to turn ON back-light (HIGH or LOW)
+
+
 
 // We must use hardware SPI, a minimum of 3 GPIO pins is needed.
 // Typical setup for ESP8266 NodeMCU ESP-12 is :
@@ -183,8 +193,6 @@
 //#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
-//#define TFT_BL   32  // LED back-light (only for ST7789 with backlight control pin)
-
 //#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
 
 //#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
@@ -205,10 +213,11 @@
 // Wemos D32 boards need to be modified, see diagram in Tools folder.
 // Only ILI9481 and ILI9341 based displays have been tested!
 
-// Parallel bus is only supported on ESP32
-// Uncomment line below to use ESP32 Parallel interface instead of SPI
+// Parallel bus is only supported for the STM32 and ESP32
+// Example below is for ESP32 Parallel interface with UNO displays
 
-//#define ESP32_PARALLEL
+// Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
+//#define TFT_PARALLEL_8_BIT
 
 // The ESP32 and TFT the pins used for testing are:
 //#define TFT_CS   33  // Chip select control pin (library pulls permanently low
