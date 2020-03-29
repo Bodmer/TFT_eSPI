@@ -129,13 +129,21 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 {
 #ifdef STM_PORTA_DATA_BUS
-  if (mode == OUTPUT) GPIOA->MODER = (GPIOA->MODER & 0xFFFF0000) | 0x00005555;
-  else GPIOA->MODER &= 0xFFFF0000;
-
+  #if defined (STM32F1xx)
+    if (mode == OUTPUT) GPIOA->CRL = 0x33333333;
+    else GPIOA->CRL = 0x88888888;
+  #else
+    if (mode == OUTPUT) GPIOA->MODER = (GPIOA->MODER & 0xFFFF0000) | 0x00005555;
+    else GPIOA->MODER &= 0xFFFF0000;
+  #endif
 #elif STM_PORTB_DATA_BUS
-  if (mode == OUTPUT) GPIOB->MODER = (GPIOB->MODER & 0xFFFF0000) | 0x00005555;
-  else GPIOB->MODER &= 0xFFFF0000;
-
+  #if defined (STM32F1xx)
+    if (mode == OUTPUT) GPIOB->CRL = 0x33333333;
+    else GPIOB->CRL = 0x88888888;
+  #else
+    if (mode == OUTPUT) GPIOB->MODER = (GPIOB->MODER & 0xFFFF0000) | 0x00005555;
+    else GPIOB->MODER &= 0xFFFF0000;
+  #endif
 #else
   if (mode == OUTPUT) {
     LL_GPIO_SetPinMode(D0_PIN_PORT, D0_PIN_MASK, LL_GPIO_MODE_OUTPUT);
