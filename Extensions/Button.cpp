@@ -68,11 +68,16 @@ void TFT_eSPI_Button::drawButton(bool inverted, String long_name) {
 
   uint8_t tempdatum = _gfx->getTextDatum();
   _gfx->setTextDatum(_textdatum);
+  uint16_t tempPadding = _gfx->padX;
+  _gfx->setTextPadding(0);
+
   if (long_name == "")
     _gfx->drawString(_label, _x1 + (_w/2) + _xd, _y1 + (_h/2) - 4 + _yd);
   else
     _gfx->drawString(long_name, _x1 + (_w/2) + _xd, _y1 + (_h/2) - 4 + _yd);
+
   _gfx->setTextDatum(tempdatum);
+  _gfx->setTextPadding(tempPadding);
 }
 
 bool TFT_eSPI_Button::contains(int16_t x, int16_t y) {
