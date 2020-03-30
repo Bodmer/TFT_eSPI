@@ -681,9 +681,21 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y, uint16_t transp)
 ** Function name:           readPixelValue
 ** Description:             Read the color map index of a pixel at defined coordinates
 *************************************************************************************x*/
-uint8_t TFT_eSprite::readPixelValue(int32_t x, int32_t y)
+uint16_t TFT_eSprite::readPixelValue(int32_t x, int32_t y)
 {
   if ((x < 0) || (x >= _iwidth) || (y < 0) || (y >= _iheight) || !_created) return 0xFF;
+
+  if (_bpp == 16)
+  {
+    // Return the pixel colour
+    return readPixel(x, y);
+  }
+
+  if (_bpp == 8)
+  {
+    // Return the pixel byte value
+    return _img8[x + y * _iwidth];
+  }
 
   if (_bpp == 4)
   {
@@ -692,7 +704,31 @@ uint8_t TFT_eSprite::readPixelValue(int32_t x, int32_t y)
     else
       return _img4[((x+y*_iwidth)>>1)] & 0x0F; // odd index = bits 3 .. 0.
   }
-  return readPixel(x, y);
+
+  if (_bpp == 1)
+  {
+    if (_rotation == 1)
+    {
+      uint16_t tx = x;
+      x = _dwidth - y - 1;
+      y = tx;
+    }
+    else if (_rotation == 2)
+    {
+      x = _dwidth - x - 1;
+      y = _dheight - y - 1;
+    }
+    else if (_rotation == 3)
+    {
+      uint16_t tx = x;
+      x = y;
+      y = _dheight - tx - 1;
+    }
+    // Return 1 or 0
+    return (_img8[(x + y * _bitwidth)>>3] >> (7-(x & 0x7))) & 0x01;
+  }
+
+  return 0;
 }
 
 /***************************************************************************************
@@ -1227,8 +1263,8 @@ void TFT_eSprite::scroll(int16_t dx, int16_t dy)
     { // move pixels one by one
       for (uint16_t xp = 0; xp < w; xp++)
       {
-        if (dx <= 0) drawPixel(tx + xp, ty, readPixel(fx + xp, fy));
-        if (dx >  0) drawPixel(tx - xp, ty, readPixel(fx - xp, fy));
+        if (dx <= 0) drawPixel(tx + xp, ty, readPixelValue(fx + xp, fy));
+        if (dx >  0) drawPixel(tx - xp, ty, readPixelValue(fx - xp, fy));
       }
       if (dy <= 0)  { ty++; fy++; }
       else  { ty--; fy--; }

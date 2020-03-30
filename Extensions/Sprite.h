@@ -110,8 +110,9 @@ class TFT_eSprite : public TFT_eSPI {
            // Read the colour of a pixel at x,y and return value in 565 format 
   uint16_t readPixel(int32_t x0, int32_t y0);
 
-           // return the color map index of the pixel at x,y (used when scrolling)
-  uint8_t  readPixelValue(int32_t x, int32_t y);
+           // return the numerical value of the pixel at x,y (used when scrolling)
+           // 16bpp = colour, 8bpp = byte, 4bpp = colour index, 1bpp = 1 or 0
+  uint16_t readPixelValue(int32_t x, int32_t y);
 
            // Write an image (colour bitmap) to the sprite.  Not implemented for _bpp == 4.
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data);

@@ -1591,7 +1591,7 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
 // Optimised midpoint circle algorithm
 void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 {
-  int32_t  x  = 0;
+  int32_t  x  = 1;
   int32_t  dx = 1;
   int32_t  dy = r+r;
   int32_t  p  = -(r>>1);
@@ -1617,19 +1617,19 @@ void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
     dx+=2;
     p+=dx;
 
-    x++;
-
     // These are ordered to minimise coordinate changes in x or y
     // drawPixel can then send fewer bounding box commands
     drawPixel(x0 + x, y0 + r, color);
     drawPixel(x0 - x, y0 + r, color);
     drawPixel(x0 - x, y0 - r, color);
     drawPixel(x0 + x, y0 - r, color);
-
-    drawPixel(x0 + r, y0 + x, color);
-    drawPixel(x0 - r, y0 + x, color);
-    drawPixel(x0 - r, y0 - x, color);
-    drawPixel(x0 + r, y0 - x, color);
+    if (r != x) {
+      drawPixel(x0 + r, y0 + x, color);
+      drawPixel(x0 - r, y0 + x, color);
+      drawPixel(x0 - r, y0 - x, color);
+      drawPixel(x0 + r, y0 - x, color);
+    }
+    x++;
   }
 
   inTransaction = false;
@@ -1639,7 +1639,7 @@ void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 
 /***************************************************************************************
 ** Function name:           drawCircleHelper
-** Description:             Support function for circle drawing
+** Description:             Support function for drawRoundRect()
 ***************************************************************************************/
 void TFT_eSPI::drawCircleHelper( int32_t x0, int32_t y0, int32_t r, uint8_t cornername, uint32_t color)
 {
@@ -1682,21 +1682,26 @@ void TFT_eSPI::drawCircleHelper( int32_t x0, int32_t y0, int32_t r, uint8_t corn
 ** Description:             draw a filled circle
 ***************************************************************************************/
 // Optimised midpoint circle algorithm, changed to horizontal lines (faster in sprites)
+// Improved algorithm avoids repetition of lines
 void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 {
-  int32_t  x  = 0;
+  int32_t  x  = 1;
   int32_t  dx = 1;
   int32_t  dy = r+r;
+  int32_t  ly = y0;
   int32_t  p  = -(r>>1);
+  int32_t  xo = 0;
 
   //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   drawFastHLine(x0 - r, y0, dy+1, color);
 
-  while(x<r){
+  while(xo<r){
 
     if(p>=0) {
+      drawFastHLine(x0 - xo, y0 + r, 2 * xo+1, color);
+      drawFastHLine(x0 - xo, y0 - r, 2 * xo+1, color);
       dy-=2;
       p-=dy;
       r--;
@@ -1704,13 +1709,11 @@ void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 
     dx+=2;
     p+=dx;
-
-    x++;
+    xo = x;
 
     drawFastHLine(x0 - r, y0 + x, 2 * r+1, color);
     drawFastHLine(x0 - r, y0 - x, 2 * r+1, color);
-    drawFastHLine(x0 - x, y0 + r, 2 * x+1, color);
-    drawFastHLine(x0 - x, y0 - r, 2 * x+1, color);
+    x++;
   }
 
   inTransaction = false;
@@ -1720,7 +1723,7 @@ void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 
 /***************************************************************************************
 ** Function name:           fillCircleHelper
-** Description:             Support function for filled circle drawing
+** Description:             Support function for fillRoundRect()
 ***************************************************************************************/
 // Support drawing roundrects, changed to horizontal lines (faster in sprites)
 void TFT_eSPI::fillCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t cornername, int32_t delta, uint32_t color)
@@ -1734,6 +1737,8 @@ void TFT_eSPI::fillCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t corne
 
   while (y < r) {
     if (f >= 0) {
+      if (cornername & 0x1) drawFastHLine(x0 - y, y0 + r, y + y + delta, color);
+      if (cornername & 0x2) drawFastHLine(x0 - y, y0 - r, y + y + delta, color);
       r--;
       ddF_y += 2;
       f     += ddF_y;
@@ -1743,14 +1748,8 @@ void TFT_eSPI::fillCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t corne
     ddF_x += 2;
     f     += ddF_x;
 
-    if (cornername & 0x1) {
-      drawFastHLine(x0 - r, y0 + y, r + r + delta, color);
-      drawFastHLine(x0 - y, y0 + r, y + y + delta, color);
-    }
-    if (cornername & 0x2) {
-      drawFastHLine(x0 - r, y0 - y, r + r + delta, color); // 11995, 1090
-      drawFastHLine(x0 - y, y0 - r, y + y + delta, color);
-    }
+    if (cornername & 0x1) drawFastHLine(x0 - r, y0 + y, r + r + delta, color);
+    if (cornername & 0x2) drawFastHLine(x0 - r, y0 - y, r + r + delta, color);
   }
 }
 
