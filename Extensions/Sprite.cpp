@@ -104,6 +104,7 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
 *************************************************************************************x*/
 TFT_eSprite::~TFT_eSprite(void)
 {
+  unloadFont();
   deleteSprite();
 }
 
