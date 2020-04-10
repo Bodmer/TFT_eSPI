@@ -1688,7 +1688,6 @@ void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
   int32_t  x  = 1;
   int32_t  dx = 1;
   int32_t  dy = r+r;
-  int32_t  ly = y0;
   int32_t  p  = -(r>>1);
   int32_t  xo = 0;
 
