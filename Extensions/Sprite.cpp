@@ -14,7 +14,7 @@
 ** Function name:           TFT_eSprite
 ** Description:             Class constructor
 *************************************************************************************x*/
-TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
+TFT_eSprite::TFT_eSprite(TFT_eSPI *tft) : TFT_eSPI()
 {
   _tft = tft;     // Pointer to tft class so we can call member functions
 
@@ -104,7 +104,6 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
 *************************************************************************************x*/
 TFT_eSprite::~TFT_eSprite(void)
 {
-  unloadFont();
   deleteSprite();
 }
 
@@ -2198,8 +2197,8 @@ void TFT_eSprite::drawGlyph(uint16_t code)
   if (code < 0x21)
   {
     if (code == 0x20) {
-      if (_created) this->cursor_x += this->gFont.spaceWidth;
-      else this->cursor_x += this->gFont.spaceWidth;
+      if (_created) this->cursor_x += sf->gFont.spaceWidth;
+      else this->cursor_x += sf->gFont.spaceWidth;
       return;
     }
 
@@ -2207,14 +2206,14 @@ void TFT_eSprite::drawGlyph(uint16_t code)
       if (_created)
       {
         this->cursor_x = 0;
-        this->cursor_y += this->gFont.yAdvance;
+        this->cursor_y += sf->gFont.yAdvance;
         if (this->cursor_y >= _height) this->cursor_y = 0;
         return;
       }
       else
       {
         cursor_x = 0;
-        cursor_y += gFont.yAdvance;
+        cursor_y += sf->gFont.yAdvance;
         if (cursor_y >= _height) cursor_y = 0;
         return;
       }
@@ -2222,7 +2221,7 @@ void TFT_eSprite::drawGlyph(uint16_t code)
   }
 
   uint16_t gNum = 0;
-  bool found = this->getUnicodeIndex(code, &gNum);
+  bool found = sf->getUnicodeIndex(code, &gNum);
   
   uint16_t fg = this->textcolor;
   uint16_t bg = this->textbgcolor;
@@ -2234,31 +2233,31 @@ void TFT_eSprite::drawGlyph(uint16_t code)
   
     if (newSprite)
     {
-      createSprite(this->gWidth[gNum], this->gFont.yAdvance);
+      createSprite(sf->gWidth[gNum], sf->gFont.yAdvance);
       if(bg) fillSprite(bg);
-      this->cursor_x = -this->gdX[gNum];
+      this->cursor_x = -sf->gdX[gNum];
       this->cursor_y = 0;
     }
     else
     {
-      if( this->textwrapX && ((this->cursor_x + this->gWidth[gNum] + this->gdX[gNum]) > _iwidth)) {
-        this->cursor_y += this->gFont.yAdvance;
+      if( this->textwrapX && ((this->cursor_x + sf->gWidth[gNum] + sf->gdX[gNum]) > _iwidth)) {
+        this->cursor_y += sf->gFont.yAdvance;
         this->cursor_x = 0;
       }
 
-      if( this->textwrapY && ((this->cursor_y + this->gFont.yAdvance) > _iheight)) this->cursor_y = 0;
+      if( this->textwrapY && ((this->cursor_y + sf->gFont.yAdvance) > _iheight)) this->cursor_y = 0;
 
-      if ( this->cursor_x == 0) this->cursor_x -= this->gdX[gNum];
+      if ( this->cursor_x == 0) this->cursor_x -= sf->gdX[gNum];
 
     }
 
     uint8_t* pbuffer = nullptr;
-    const uint8_t* gPtr = (const uint8_t*) this->gFont.gArray;
+    const uint8_t* gPtr = (const uint8_t*) sf->gFont.gArray;
 
 #ifdef FONT_FS_AVAILABLE
-    if (this->fs_font) {
-      this->fontFile.seek(this->gBitmap[gNum], fs::SeekSet); // This is slow for a significant position shift!
-      pbuffer =  (uint8_t*)malloc(this->gWidth[gNum]);
+    if (sf->fs_font) {
+      sf->fontFile.seek(sf->gBitmap[gNum], fs::SeekSet); // This is slow for a significant position shift!
+      pbuffer =  (uint8_t*)malloc(sf->gWidth[gNum]);
     }
 #endif
 
@@ -2266,60 +2265,60 @@ void TFT_eSprite::drawGlyph(uint16_t code)
     uint16_t dl = 0;
     uint8_t pixel = 0;
 
-    for (int32_t y = 0; y < this->gHeight[gNum]; y++)
+    for (int32_t y = 0; y < sf->gHeight[gNum]; y++)
     {
 #ifdef FONT_FS_AVAILABLE
-      if (this->fs_font) {
-        this->fontFile.read(pbuffer, this->gWidth[gNum]);
+      if (sf->fs_font) {
+        sf->fontFile.read(pbuffer, sf->gWidth[gNum]);
       }
 #endif
-      for (int32_t x = 0; x < this->gWidth[gNum]; x++)
+      for (int32_t x = 0; x < sf->gWidth[gNum]; x++)
       {
 #ifdef FONT_FS_AVAILABLE
-        if (this->fs_font) {
+        if (sf->fs_font) {
           pixel = pbuffer[x];
         }
         else
 #endif
-        pixel = pgm_read_byte(gPtr + this->gBitmap[gNum] + x + this->gWidth[gNum] * y);
+        pixel = pgm_read_byte(gPtr + sf->gBitmap[gNum] + x + sf->gWidth[gNum] * y);
 
         if (pixel)
         {
           if (pixel != 0xFF)
           {
-            if (dl) { drawFastHLine( xs, y + this->cursor_y + this->gFont.maxAscent - this->gdY[gNum], dl, fg); dl = 0; }
-            if (_bpp != 1) drawPixel(x + this->cursor_x + this->gdX[gNum], y + this->cursor_y + this->gFont.maxAscent - this->gdY[gNum], alphaBlend(pixel, fg, bg));
-            else if (pixel>127) drawPixel(x + this->cursor_x + this->gdX[gNum], y + this->cursor_y + this->gFont.maxAscent - this->gdY[gNum], fg);
+            if (dl) { drawFastHLine( xs, y + this->cursor_y + sf->gFont.maxAscent - sf->gdY[gNum], dl, fg); dl = 0; }
+            if (_bpp != 1) drawPixel(x + this->cursor_x + sf->gdX[gNum], y + this->cursor_y + sf->gFont.maxAscent - sf->gdY[gNum], alphaBlend(pixel, fg, bg));
+            else if (pixel>127) drawPixel(x + this->cursor_x + sf->gdX[gNum], y + this->cursor_y + sf->gFont.maxAscent - sf->gdY[gNum], fg);
           }
           else
           {
-            if (dl==0) xs = x + this->cursor_x + this->gdX[gNum];
+            if (dl==0) xs = x + this->cursor_x + sf->gdX[gNum];
             dl++;
           }
         }
         else
         {
-          if (dl) { drawFastHLine( xs, y + this->cursor_y + this->gFont.maxAscent - this->gdY[gNum], dl, fg); dl = 0; }
+          if (dl) { drawFastHLine( xs, y + this->cursor_y + sf->gFont.maxAscent - sf->gdY[gNum], dl, fg); dl = 0; }
         }
       }
-      if (dl) { drawFastHLine( xs, y + this->cursor_y + this->gFont.maxAscent - this->gdY[gNum], dl, fg); dl = 0; }
+      if (dl) { drawFastHLine( xs, y + this->cursor_y + sf->gFont.maxAscent - sf->gdY[gNum], dl, fg); dl = 0; }
     }
 
     if (pbuffer) free(pbuffer);
 
     if (newSprite)
     {
-      pushSprite(this->cursor_x + this->gdX[gNum], this->cursor_y, bg);
+      pushSprite(this->cursor_x + sf->gdX[gNum], this->cursor_y, bg);
       deleteSprite();
-      this->cursor_x += this->gxAdvance[gNum];
+      this->cursor_x += sf->gxAdvance[gNum];
     }
-    else this->cursor_x += this->gxAdvance[gNum];
+    else this->cursor_x += sf->gxAdvance[gNum];
   }
   else
   {
     // Not a Unicode in font so draw a rectangle and move on cursor
-    drawRect(this->cursor_x, this->cursor_y + this->gFont.maxAscent - this->gFont.ascent, this->gFont.spaceWidth, this->gFont.ascent, fg);
-    this->cursor_x += this->gFont.spaceWidth + 1;
+    drawRect(this->cursor_x, this->cursor_y + sf->gFont.maxAscent - sf->gFont.ascent, sf->gFont.spaceWidth, sf->gFont.ascent, fg);
+    this->cursor_x += sf->gFont.spaceWidth + 1;
   }
 }
 
@@ -2358,16 +2357,16 @@ void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
     while (n < len)
     {
       uint16_t unicode = decodeUTF8((uint8_t*)cbuffer, &n, len - n);
-      if (this->getUnicodeIndex(unicode, &index))
+      if (sf->getUnicodeIndex(unicode, &index))
       {
-        if (n == 0) sWidth -= this->gdX[index];
-        if (n == len-1) sWidth += ( this->gWidth[index] + this->gdX[index]);
-        else sWidth += this->gxAdvance[index];
+        if (n == 0) sWidth -= sf->gdX[index];
+        if (n == len-1) sWidth += ( sf->gWidth[index] + sf->gdX[index]);
+        else sWidth += sf->gxAdvance[index];
       }
-      else sWidth += this->gFont.spaceWidth + 1;
+      else sWidth += sf->gFont.spaceWidth + 1;
     }
 
-    createSprite(sWidth, this->gFont.yAdvance);
+    createSprite(sWidth, sf->gFont.yAdvance);
 
     if (this->textbgcolor != TFT_BLACK) fillSprite(this->textbgcolor);
   }
@@ -2397,22 +2396,22 @@ void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
 int16_t TFT_eSprite::printToSprite(int16_t x, int16_t y, uint16_t index)
 {
   bool newSprite = !_created;
-  int16_t sWidth = this->gWidth[index];
+  int16_t sWidth = sf->gWidth[index];
 
   if (newSprite)
   {
-    createSprite(sWidth, this->gFont.yAdvance);
+    createSprite(sWidth, sf->gFont.yAdvance);
 
     if (this->textbgcolor != TFT_BLACK) fillSprite(this->textbgcolor);
 
-    drawGlyph(this->gUnicode[index]);
+    drawGlyph(sf->gUnicode[index]);
 
-    pushSprite(x + this->gdX[index], y, this->textbgcolor);
+    pushSprite(x + sf->gdX[index], y, this->textbgcolor);
     deleteSprite();
   }
 
-  else drawGlyph(this->gUnicode[index]);
+  else drawGlyph(sf->gUnicode[index]);
 
-  return this->gxAdvance[index];
+  return sf->gxAdvance[index];
 }
 #endif

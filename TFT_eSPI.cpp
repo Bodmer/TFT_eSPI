@@ -26,7 +26,9 @@
   #include "Processors/TFT_eSPI_Generic.c"
 #endif
 
-
+#ifdef SMOOTH_FONT
+  #include "Extensions/SmoothFont.cpp"
+#endif
 /***************************************************************************************
 ** Function name:           begin_tft_write (was called spi_begin)
 ** Description:             Start SPI transaction for writes and select TFT
@@ -198,9 +200,6 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   _cp437    = true;
   _utf8     = true;
 
-#ifdef FONT_FS_AVAILABLE
-  fs_font  = true;     // Smooth font filing system or array (fs_font = false) flag
-#endif
 
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
   if (psramFound()) _psram_enable = true; // Enable the use of PSRAM (if available)
@@ -2358,16 +2357,16 @@ int16_t TFT_eSPI::textWidth(const char *string, uint8_t font)
     while (*string) {
       uniCode = decodeUTF8(*string++);
       if (uniCode) {
-        if (uniCode == 0x20) str_width += gFont.spaceWidth;
+        if (uniCode == 0x20) str_width += sf->gFont.spaceWidth;
         else {
           uint16_t gNum = 0;
-          bool found = getUnicodeIndex(uniCode, &gNum);
+          bool found = sf->getUnicodeIndex(uniCode, &gNum);
           if (found) {
-            if(str_width == 0 && gdX[gNum] < 0) str_width -= gdX[gNum];
-            if (*string || isDigits) str_width += gxAdvance[gNum];
-            else str_width += (gdX[gNum] + gWidth[gNum]);
+            if(str_width == 0 && sf->gdX[gNum] < 0) str_width -= sf->gdX[gNum];
+            if (*string || isDigits) str_width += sf->gxAdvance[gNum];
+            else str_width += (sf->gdX[gNum] + sf->gWidth[gNum]);
           }
-          else str_width += gFont.spaceWidth + 1;
+          else str_width += sf->gFont.spaceWidth + 1;
         }
       }
     }
@@ -2435,7 +2434,7 @@ uint16_t TFT_eSPI::fontsLoaded(void)
 int16_t TFT_eSPI::fontHeight(int16_t font)
 {
 #ifdef SMOOTH_FONT
-  if(fontLoaded) return gFont.yAdvance;
+  if(fontLoaded) return sf->gFont.yAdvance;
 #endif
 
 #ifdef LOAD_GFXFF
@@ -3668,7 +3667,7 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
   // If it is not font 1 (GLCD or free font) get the baseline and pixel height of the font
 #ifdef SMOOTH_FONT
   if(fontLoaded) {
-    baseline = gFont.maxAscent;
+    baseline = sf->gFont.maxAscent;
     cheight  = fontHeight();
   }
   else
