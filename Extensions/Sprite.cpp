@@ -105,6 +105,10 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
 TFT_eSprite::~TFT_eSprite(void)
 {
   deleteSprite();
+
+#ifdef SMOOTH_FONT
+  if(this->fontLoaded) this->unloadFont();
+#endif
 }
 
 

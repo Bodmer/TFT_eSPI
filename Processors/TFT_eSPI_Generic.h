@@ -2,6 +2,9 @@
         //       TFT_eSPI generic driver functions        //
         ////////////////////////////////////////////////////
 
+// This is a generic driver for Arduino boards, it supports SPI interface displays
+// 8 bit parallel interface to TFT is not supported for generic processors
+
 #ifndef _TFT_eSPI_GENERICH_
 #define _TFT_eSPI_GENERICH_
 

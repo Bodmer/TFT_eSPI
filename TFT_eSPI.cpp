@@ -1526,7 +1526,8 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
   readRect(x0, y0, w, h, (uint16_t*)buf565);
   
   while (len--) {
-    uint16_t pixel565 = (*buf565++)<<8 | (*buf565++);
+    uint16_t pixel565 = (*buf565++)<<8;
+    pixel565 |= *buf565++;
     uint8_t red   = (pixel565 & 0xF800) >> 8; red   |= red   >> 5;
     uint8_t green = (pixel565 & 0x07E0) >> 3; green |= green >> 6;
     uint8_t blue  = (pixel565 & 0x001F) << 3; blue  |= blue  >> 5;
@@ -1685,23 +1686,21 @@ void TFT_eSPI::drawCircleHelper( int32_t x0, int32_t y0, int32_t r, uint8_t corn
 // Improved algorithm avoids repetition of lines
 void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 {
-  int32_t  x  = 1;
+  int32_t  x  = 0;
   int32_t  dx = 1;
   int32_t  dy = r+r;
-  int32_t  ly = y0;
   int32_t  p  = -(r>>1);
-  int32_t  xo = 0;
 
   //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
   drawFastHLine(x0 - r, y0, dy+1, color);
 
-  while(xo<r){
+  while(x<r){
 
     if(p>=0) {
-      drawFastHLine(x0 - xo, y0 + r, 2 * xo+1, color);
-      drawFastHLine(x0 - xo, y0 - r, 2 * xo+1, color);
+      drawFastHLine(x0 - x + 1, y0 + r, dx-1, color);
+      drawFastHLine(x0 - x + 1, y0 - r, dx-1, color);
       dy-=2;
       p-=dy;
       r--;
@@ -1709,11 +1708,11 @@ void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 
     dx+=2;
     p+=dx;
-    xo = x;
-
-    drawFastHLine(x0 - r, y0 + x, 2 * r+1, color);
-    drawFastHLine(x0 - r, y0 - x, 2 * r+1, color);
     x++;
+
+    drawFastHLine(x0 - r, y0 + x, dy+1, color);
+    drawFastHLine(x0 - r, y0 - x, dy+1, color);
+
   }
 
   inTransaction = false;

@@ -117,6 +117,10 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
 
     fontFile.seek(0, fs::SeekSet);
   }
+#else
+  // Avoid unused varaible warning
+  fontName = fontName;
+  flash = flash;
 #endif
 
   gFont.gArray   = (const uint8_t*)fontPtr;

@@ -45,7 +45,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Write strobe timing setup
 ////////////////////////////////////////////////////////////////////////////////////////
-  #if defined (ILI9341_DRIVER) || defined (ST7796_DRIVER) // WRX twc spec is 66ns = 15.15MHz
+  #if defined (ILI9341_DRIVER) || defined (ST7796_DRIVER)   || defined (ILI9486_DRIVER) // WRX twc spec is <=66ns = 15.15MHz
 
     // Extra write pulse low time (delay for data setup)
     #if defined (STM32F1xx)
@@ -63,7 +63,7 @@
     #if defined (STM32F1xx)
       #define WR_TWRH_0
     #elif defined (STM32F2xx) || defined (STM32F4xx)
-      #define WR_TWRH_1       // Tested with STM32F446
+      #define WR_TWRH_0       // Tested with STM32F446
       //#define WR_TWRL_3
     #elif defined (STM32F7xx)
       #define WR_TWRH_1       //Tested with STM32F767
