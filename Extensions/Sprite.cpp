@@ -829,7 +829,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_
       for (int32_t xp = xo; xp < xo + ws; xp++)
       {
         uint16_t color =  data[xp + yp * w];
-        if(!_iswapBytes) color = color<<8 | color>>8;
+        if(_iswapBytes) color = color<<8 | color>>8;
         _img[x + ys * _iwidth] = color;
         x++;
       }
@@ -934,7 +934,7 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const u
       for (int32_t xp = xo; xp < xo + ws; xp++)
       {
         uint16_t color = pgm_read_word(data + xp + yp * w);
-        if(!_iswapBytes) color = color<<8 | color>>8;
+        if(_iswapBytes) color = color<<8 | color>>8;
         _img[x + ys * _iwidth] = color;
         x++;
       }

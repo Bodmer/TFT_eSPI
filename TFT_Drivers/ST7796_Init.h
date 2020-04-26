@@ -25,7 +25,7 @@
 	writedata(0x48);    //X-Mirror, Top-Left to right-Buttom, RGB  
 	
 	writecommand(0x3A); //Interface Pixel Format                                    
-	writedata(0x05);    //Control interface color format set to 16
+	writedata(0x55);    //Control interface color format set to 16
 	
 	
 	writecommand(0xB4); //Column inversion 

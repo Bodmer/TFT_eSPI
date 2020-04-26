@@ -989,7 +989,6 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 ** Function name:           pushImage - for FLASH (PROGMEM) stored images
 ** Description:             plot 16 bit image
 ***************************************************************************************/
-#define PI_BUF_SIZE 128
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint16_t *data)
 {
   // Requires 32 bit aligned access, so use PROGMEM 16 bit word functions
@@ -1013,32 +1012,16 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 
   data += dx + dy * w;
 
-  uint16_t  buffer[PI_BUF_SIZE];
-  uint16_t* pix_buffer = buffer;
+  uint16_t  buffer[dw];
 
   setWindow(x, y, x + dw - 1, y + dh - 1);
 
-  // Work out the number whole buffers to send
-  uint16_t nb = (dw * dh) / PI_BUF_SIZE;
-
-  // Fill and send "nb" buffers to TFT
-  for (int32_t i = 0; i < nb; i++) {
-    for (int32_t j = 0; j < PI_BUF_SIZE; j++) {
-      pix_buffer[j] = pgm_read_word(&data[i * PI_BUF_SIZE + j]);
+  // Fill and send line buffers to TFT
+  for (int32_t i = 0; i < dh; i++) {
+    for (int32_t j = 0; j < dw; j++) {
+      buffer[j] = pgm_read_word(&data[i * w + j]);
     }
-    pushPixels(pix_buffer, PI_BUF_SIZE);
-  }
-
-  // Work out number of pixels not yet sent
-  uint16_t np = (dw * dh) % PI_BUF_SIZE;
-
-  // Send any partial buffer left over
-  if (np) {
-    for (int32_t i = 0; i < np; i++)
-    {
-      pix_buffer[i] = pgm_read_word(&data[nb * PI_BUF_SIZE + i]);
-    }
-    pushPixels(pix_buffer, np);
+    pushPixels(buffer, dw);
   }
 
   inTransaction = false;
