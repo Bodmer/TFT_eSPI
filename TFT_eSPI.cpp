@@ -1132,6 +1132,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
   if (bpp8)
   {
+    bool swap = _swapBytes; _swapBytes = false;
+
     uint8_t  blue[] = {0, 11, 21, 31}; // blue 2 to 5 bit colour lookup table
 
     _lastColor = -1; // Set to illegal value
@@ -1166,8 +1168,9 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
       data += w;
     }
+    _swapBytes = swap; // Restore old value
   }
-  else if (cmap != nullptr)
+  else if (cmap != nullptr) // Must be 4bpp
   {
     bool swap = _swapBytes; _swapBytes = true;
 
@@ -1218,8 +1221,9 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
     }
     _swapBytes = swap; // Restore old value
   }
-  else
+  else // Must be 1bpp
   {
+    bool swap = _swapBytes; _swapBytes = false;
     while (dh--) {
       w =  (w+7) & 0xFFF8;
 
@@ -1246,6 +1250,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
       dy++;
     }
+    _swapBytes = swap; // Restore old value
   }
 
   inTransaction = false;
@@ -1283,6 +1288,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
   uint16_t  lineBuf[dw];
 
   if (bpp8) { // 8 bits per pixel
+    bool swap = _swapBytes; _swapBytes = false;
+
     data += dx + dy * w;
 
     uint8_t  blue[] = {0, 11, 21, 31}; // blue 2 to 5 bit colour lookup table
@@ -1337,6 +1344,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
       y++;
       data += w;
     }
+    _swapBytes = swap; // Restore old value
   }
   else if (cmap != nullptr) // 4bpp with color map
   {
@@ -1430,6 +1438,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
     _swapBytes = swap; // Restore old value
   }
   else { // 1 bit per pixel
+    bool swap = _swapBytes; _swapBytes = false;
     w =  (w+7) & 0xFFF8;
     while (dh--) {
       int32_t px = x;
@@ -1469,6 +1478,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
       y++;
       dy++;
     }
+    _swapBytes = swap; // Restore old value
   }
 
   inTransaction = false;
