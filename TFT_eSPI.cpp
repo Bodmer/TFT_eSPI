@@ -526,7 +526,9 @@ void TFT_eSPI::commandList (const uint8_t *addr)
 ***************************************************************************************/
 void TFT_eSPI::spiwrite(uint8_t c)
 {
+  begin_tft_write();
   tft_Write_8(c);
+  end_tft_write();
 }
 
 

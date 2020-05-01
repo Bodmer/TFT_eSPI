@@ -187,6 +187,7 @@
 #if !defined (TFT_DC) || (TFT_DC < 0)
   #define DC_C // No macro allocated so it generates no code
   #define DC_D // No macro allocated so it generates no code
+  #undef  TFT_DC
 #else
   // Convert Arduino pin reference Dn or STM pin reference PXn to port and mask
   #define DC_PORT     digitalPinToPort(TFT_DC)
@@ -202,6 +203,7 @@
 #if !defined (TFT_CS) || (TFT_CS < 0)
   #define CS_L // No macro allocated so it generates no code
   #define CS_H // No macro allocated so it generates no code
+  #undef  TFT_CS
 #else
   // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
   #define CS_PORT      digitalPinToPort(TFT_CS)
@@ -892,11 +894,17 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros for all other SPI displays
 ////////////////////////////////////////////////////////////////////////////////////////
+
 #else
 
-  #define tft_Write_8(C) \
-  { spiBuffer[0] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 1, 10); }
+  #if defined(ST7789_DRIVER) || defined(ST7789_2_DRIVER)
+    // Temporary workaround for issue #510 part 2
+    #define tft_Write_8(C)   spi.transfer(C)
+  #else
+    #define tft_Write_8(C) \
+    { spiBuffer[0] = C; \
+    HAL_SPI_Transmit(&spiHal, spiBuffer, 1, 10); delayMicroseconds(1);}
+  #endif
 
   #define tft_Write_16(C) \
   { spiBuffer[0] = (C)>>8; spiBuffer[1] = C; \

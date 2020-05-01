@@ -440,15 +440,15 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   // If image is clipped, copy pixels into a contiguous block
   if ( (dw != w) || (dh != h) ) {
     if(_swapBytes) {
-      for (uint32_t yb = 0; yb < dh; yb++) {
-        for (uint32_t xb = 0; xb < dw; xb++) {
+      for (int32_t yb = 0; yb < dh; yb++) {
+        for (int32_t xb = 0; xb < dw; xb++) {
           uint32_t src = xb + dx + w * (yb + dy);
           (buffer[xb + yb * dw] = image[src] << 8 | image[src] >> 8);
         }
       }
     }
     else {
-      for (uint32_t yb = 0; yb < dh; yb++) {
+      for (int32_t yb = 0; yb < dh; yb++) {
         memcpy((uint8_t*) (buffer + yb * dw), (uint8_t*) (image + dx + w * (yb + dy)), dw << 1);
       }
     }
