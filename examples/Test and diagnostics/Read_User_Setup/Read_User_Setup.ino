@@ -73,9 +73,15 @@ if (user.r2_y_offset  != 0)  { Serial.print("R2 y offset = "); Serial.println(us
 if (user.r3_x_offset  != 0)  { Serial.print("R3 x offset = "); Serial.println(user.r3_x_offset); }
 if (user.r3_y_offset  != 0)  { Serial.print("R3 y offset = "); Serial.println(user.r3_y_offset); }
 
-if (user.pin_tft_mosi != -1) { Serial.print("MOSI    = "); Serial.print("GPIO "); Serial.print(getPinName(user.pin_tft_mosi)); Serial.println(user.pin_tft_mosi); }
-if (user.pin_tft_miso != -1) { Serial.print("MISO    = "); Serial.print("GPIO "); Serial.print(getPinName(user.pin_tft_miso)); Serial.println(user.pin_tft_miso); }
-if (user.pin_tft_clk  != -1) { Serial.print("SCK     = "); Serial.print("GPIO "); Serial.print(getPinName(user.pin_tft_clk)); Serial.println(user.pin_tft_clk); }
+#ifdef ESP32
+  if (user.pin_tft_mosi != -1) { Serial.print("MOSI    = "); Serial.print("GPIO "); Serial.println(user.pin_tft_mosi); }
+  if (user.pin_tft_miso != -1) { Serial.print("MISO    = "); Serial.print("GPIO "); Serial.println(user.pin_tft_miso); }
+  if (user.pin_tft_clk  != -1) { Serial.print("SCK     = "); Serial.print("GPIO "); Serial.println(user.pin_tft_clk); }
+#else
+  if (user.pin_tft_mosi != -1) { Serial.print("MOSI    = "); Serial.print("GPIO "); Serial.print(getPinName(user.pin_tft_mosi)); Serial.println(user.pin_tft_mosi); }
+  if (user.pin_tft_miso != -1) { Serial.print("MISO    = "); Serial.print("GPIO "); Serial.print(getPinName(user.pin_tft_miso)); Serial.println(user.pin_tft_miso); }
+  if (user.pin_tft_clk  != -1) { Serial.print("SCK     = "); Serial.print("GPIO "); Serial.print(getPinName(user.pin_tft_clk)); Serial.println(user.pin_tft_clk); }
+#endif
 
 #ifdef ESP8266
 if (user.overlap == true)
@@ -104,7 +110,7 @@ if (user.pin_tch_cs != -1) { Serial.print("TOUCH_CS = " + pinNameRef); Serial.pr
 if (user.pin_tft_wr != -1) { Serial.print("TFT_WR   = " + pinNameRef); Serial.println(getPinName(user.pin_tft_wr)); }
 if (user.pin_tft_rd != -1) { Serial.print("TFT_RD   = " + pinNameRef); Serial.println(getPinName(user.pin_tft_rd)); }
 
-if (user.pin_tft_d0 != -1) { Serial.print("\nTFT_D0 = " + pinNameRef); Serial.println(getPinName(user.pin_tft_d0)); }
+if (user.pin_tft_d0 != -1) { Serial.print("\nTFT_D0   = " + pinNameRef); Serial.println(getPinName(user.pin_tft_d0)); }
 if (user.pin_tft_d1 != -1) { Serial.print("TFT_D1   = " + pinNameRef); Serial.println(getPinName(user.pin_tft_d1)); }
 if (user.pin_tft_d2 != -1) { Serial.print("TFT_D2   = " + pinNameRef); Serial.println(getPinName(user.pin_tft_d2)); }
 if (user.pin_tft_d3 != -1) { Serial.print("TFT_D3   = " + pinNameRef); Serial.println(getPinName(user.pin_tft_d3)); }
