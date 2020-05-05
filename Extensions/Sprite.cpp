@@ -96,7 +96,7 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
 
   // This is to make it clear what pointer size is expected to be used
   // but casting in the user sketch is needed due to the use of void*
-  if (_(bpp == 1) && (frames > 1) )
+  if ( (_bpp == 1) && (frames > 1) )
   {
     w = (w+7) & 0xFFF8;
     _img8_2 = _img8 + ( (w>>3) * h + 1 );
