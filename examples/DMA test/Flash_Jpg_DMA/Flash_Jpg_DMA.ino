@@ -42,7 +42,7 @@ bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
   // bitmap can then be updated by the jpeg decoder while DMA is in progress
   if (dmaBufferSel) dmaBufferPtr = dmaBuffer2;
   else dmaBufferPtr = dmaBuffer1;
-  dmaBufferSel != dmaBufferSel; // Toggle buffer selection
+  dmaBufferSel = !dmaBufferSel; // Toggle buffer selection
   //  pushImageDMA() will clip the image block at screen boundaries before initiating DMA
   tft.pushImageDMA(x, y, w, h, bitmap, dmaBufferPtr); // Initiate DMA - blocking only if last DMA is not complete
   // The DMA transfer of image block to the TFT is now in progress...

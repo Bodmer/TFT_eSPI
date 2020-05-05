@@ -1,6 +1,5 @@
 // 'Boing' ball demo
 
-// ESP32     110 fps (no DMA)
 // STM32F767 55MHz SPI 170 fps without DMA
 // STM32F767 55MHz SPI 227 fps with DMA
 // STM32F446 55MHz SPI 110 fps without DMA
@@ -20,6 +19,10 @@
 // Blue Pill overclocked to 128MHz *no* DMA - 32MHz SPI  64 fps
 // Blue Pill overclocked to 128MHz with DMA - 32MHz SPI 116 fps
 
+// ESP32     - 8 bit parallel     110 fps (no DMA)
+// ESP32     - 40MHz SPI *no* DMA  93 fps
+// ESP32     - 40MHz SPI with DMA 112 fps
+
 #define SCREENWIDTH 320
 #define SCREENHEIGHT 240
 
@@ -36,8 +39,8 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 #define RED        0xF800
 #define WHITE      0xFFFF
 
-#define YBOTTOM   123  // Ball Y coord at bottom
- #define YBOUNCE -3.5  // Upward velocity on ball bounce
+#define YBOTTOM  123  // Ball Y coord at bottom
+#define YBOUNCE -3.5  // Upward velocity on ball bounce
 
 // Ball coordinates are stored floating-point because screen refresh
 // is so quick, whole-pixel movements are just too fast!
@@ -58,9 +61,6 @@ void setup() {
   Serial.begin(115200);
 //  while(!Serial);
 
-  // Turn on backlight (required on PyPortal)
-
-
   tft.begin();
   tft.setRotation(3); // Landscape orientation, USB at bottom right
   tft.setSwapBytes(false);
@@ -70,8 +70,6 @@ void setup() {
 
   tft.initDMA();
 
-  delay(2000);
-  
   tft.drawBitmap(0, 0, (const uint8_t *)background, SCREENWIDTH, SCREENHEIGHT, GRIDCOLOR);
 
   startTime = millis();

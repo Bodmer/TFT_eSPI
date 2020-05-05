@@ -80,9 +80,23 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
   _img    = (uint16_t*) _img8;
   _img4   = _img8;
 
+  if ( (_bpp == 16) && (frames > 1) ) {
+    _img8_2 = _img8 + (w * h * 2 + 1);
+  }
+
+  // ESP32 only 16bpp check
+  //if (esp_ptr_dma_capable(_img8_1)) Serial.println("DMA capable Sprite pointer _img8_1");
+  //else Serial.println("Not a DMA capable Sprite pointer _img8_1");
+  //if (esp_ptr_dma_capable(_img8_2)) Serial.println("DMA capable Sprite pointer _img8_2");
+  //else Serial.println("Not a DMA capable Sprite pointer _img8_2");
+
+  if ( (_bpp == 8) && (frames > 1) ) {
+    _img8_2 = _img8 + (w * h + 1);
+  }
+
   // This is to make it clear what pointer size is expected to be used
   // but casting in the user sketch is needed due to the use of void*
-  if (_bpp == 1)
+  if (_(bpp == 1) && (frames > 1) )
   {
     w = (w+7) & 0xFFF8;
     _img8_2 = _img8 + ( (w>>3) * h + 1 );
@@ -124,22 +138,25 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
   // hence will run faster in normal circumstances.
   uint8_t* ptr8 = NULL;
 
+  if (frames > 2) frames = 2; // Currently restricted to 2 frame buffers
+  if (frames < 1) frames = 1;
+
   if (_bpp == 16)
   {
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint16_t));
+    if ( psramFound() && this->_psram_enable && !_tft->DMA_Enabled) ptr8 = ( uint8_t*) ps_calloc(frames * w * h + frames, sizeof(uint16_t));
     else
 #endif
-    ptr8 = ( uint8_t*) calloc(w * h + 1, sizeof(uint16_t));
+    ptr8 = ( uint8_t*) calloc(frames * w * h + frames, sizeof(uint16_t));
   }
 
   else if (_bpp == 8)
   {
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(w * h + 1, sizeof(uint8_t));
+    if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(frames * w * h + frames, sizeof(uint8_t));
     else
 #endif
-    ptr8 = ( uint8_t*) calloc(w * h + 1, sizeof(uint8_t));
+    ptr8 = ( uint8_t*) calloc(frames * w * h + frames, sizeof(uint8_t));
   }
 
   else if (_bpp == 4)
@@ -147,10 +164,10 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
     w = (w+1) & 0xFFFE; // width needs to be multiple of 2, with an extra "off screen" pixel
     _iwidth = w;
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-    if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(((w * h) >> 1) + 1, sizeof(uint8_t));
+    if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(((frames * w * h) >> 1) + frames, sizeof(uint8_t));
     else
 #endif
-    ptr8 = ( uint8_t*) calloc(((w * h) >> 1) + 1, sizeof(uint8_t));
+    ptr8 = ( uint8_t*) calloc(((frames * w * h) >> 1) + frames, sizeof(uint8_t));
   }
 
   else // Must be 1 bpp
@@ -163,8 +180,6 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
     _iwidth = w;         // _iwidth is rounded up to be multiple of 8, so might not be = _dwidth
     _bitwidth = w;
 
-    if (frames > 2) frames = 2; // Currently restricted to 2 frame buffers
-    if (frames < 1) frames = 1;
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
     if ( psramFound() && this->_psram_enable ) ptr8 = ( uint8_t*) ps_calloc(frames * (w>>3) * h + frames, sizeof(uint8_t));
     else
@@ -238,14 +253,14 @@ void* TFT_eSprite::frameBuffer(int8_t f)
 {
   if (!_created) return NULL;
 
-  if (_bpp == 16) return _img;
-
-  if (_bpp == 8) return _img8;
-
-  if (_bpp == 4) return _img4;
-
   if ( f == 2 ) _img8 = _img8_2;
   else          _img8 = _img8_1;
+
+  if (_bpp == 16) _img = (uint16_t*)_img8;
+
+  //if (_bpp == 8) _img8 = _img8;
+
+  if (_bpp == 4) _img4 = _img8;
 
   return _img8;
 }

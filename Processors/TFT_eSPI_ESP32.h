@@ -10,13 +10,11 @@
 
 // Include processor specific header
 #include "soc/spi_reg.h"
+#include "driver/spi_master.h"
 
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
 #define SET_BUS_WRITE_MODE // Not used
 #define SET_BUS_READ_MODE  // Not used
-
-// Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
-#define DMA_BUSY_CHECK // DMA not implemented for this processor (yet)
 
 // SUPPORT_TRANSACTIONS is mandatory for ESP32 so the hal mutex is toggled
 #if !defined (SUPPORT_TRANSACTIONS)
@@ -303,6 +301,16 @@
 // Macros for all other SPI displays
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
+
+  #define ESP32_DMA // DMA is available for SPI
+
+  // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
+  #ifdef ESP32_DMA
+    // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
+    #define DMA_BUSY_CHECK  { if (DMA_Enabled) dmaWait(); }
+  #else
+    #define DMA_BUSY_CHECK
+  #endif
 
   // ESP32 low level SPI writes for 8, 16 and 32 bit values
   // to avoid the function call overhead

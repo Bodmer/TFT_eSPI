@@ -86,6 +86,7 @@ pushImageDMA	KEYWORD2
 pushBlockDMA	KEYWORD2
 pushPixelsDMA	KEYWORD2
 dmaBusy	KEYWORD2
+dmaWait	KEYWORD2
 
 getTouchRaw	KEYWORD2
 convertRawXY	KEYWORD2

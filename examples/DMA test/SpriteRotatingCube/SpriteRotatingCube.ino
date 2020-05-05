@@ -1,7 +1,7 @@
 // TFT_eSPI library demo, principally for STM32F processors with DMA:
 // https://en.wikipedia.org/wiki/Direct_memory_access
 
-// Tested with Nucleo 64 STM32F446RE and Nucleo 144 STM32F767ZI
+// Tested with ESP32, Nucleo 64 STM32F446RE and Nucleo 144 STM32F767ZI
 // TFT's with SPI can use DMA, the sketch also works with 8 bit
 // parallel TFT's (tested with ILI9341 and ILI9481)
 
@@ -22,6 +22,9 @@
 // (Tested with Nucleo 64 STM32F446RE and Nucleo 144 STM32F767ZI)
 // STM32F767 27MHz SPI 50% processor load: Non DMA  52 fps, with DMA 101 fps
 // STM32F767 27MHz SPI  0% processor load: Non DMA  97 fps, with DMA 102 fps
+
+// ESP32     27MHz SPI  0% processor load: Non DMA  90 fps, with DMA 101 fps
+// ESP32     40MHz SPI  0% processor load: Non DMA 127 fps, with DMA 145 fps
 // NOTE: FOR SPI DISPLAYS ONLY
 #define USE_DMA_TO_TFT
 
@@ -158,7 +161,7 @@ void setup() {
   spr[1].setTextDatum(MC_DATUM);
 
 #ifdef USE_DMA_TO_TFT
-  // DMA - should work with STM32F2xx/F4xx/F7xx processors
+  // DMA - should work with ESP32, STM32F2xx/F4xx/F7xx processors
   // NOTE: >>>>>> DMA IS FOR SPI DISPLAYS ONLY <<<<<<
   tft.initDMA(); // Initialise the DMA engine (tested with STM32F446 and STM32F767)
 #endif
