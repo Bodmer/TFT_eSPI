@@ -307,7 +307,7 @@
   // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
   #ifdef ESP32_DMA
     // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
-    #define DMA_BUSY_CHECK  { if (DMA_Enabled) dmaWait(); }
+    #define DMA_BUSY_CHECK  { if (spiBusyCheck) dmaWait(); }
   #else
     #define DMA_BUSY_CHECK
   #endif
