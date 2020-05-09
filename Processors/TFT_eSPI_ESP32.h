@@ -164,6 +164,12 @@
   #ifndef TFT_MISO
     #define TFT_MISO -1
   #endif
+  #ifndef TFT_MOSI
+    #define TFT_MOSI -1
+  #endif
+  #ifndef TFT_SCLK
+    #define TFT_SCLK -1
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
