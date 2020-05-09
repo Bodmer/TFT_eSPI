@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.2.5"
+#define TFT_ESPI_VERSION "2.2.6"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -615,9 +615,8 @@ class TFT_eSPI : public Print {
   void     pushPixelsDMA(uint16_t* image, uint32_t len);
 
            // Check if the DMA is complete - use while(tft.dmaBusy); for a blocking wait
-           // Note: for ESP32 the dmaBusy() function is blocking at the moment - to be updated
-  bool     dmaBusy(void);
-  void     dmaWait(void);
+  bool     dmaBusy(void); // returns true if DMA is still in progress
+  void     dmaWait(void); // wait until DMA is complete
 
   bool     DMA_Enabled = false;   // Flag for DMA enabled state
   uint8_t  spiBusyCheck = 0;      // Number of ESP32 transfer buffers to check
