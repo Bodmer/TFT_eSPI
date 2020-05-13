@@ -860,14 +860,14 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 
 
 /***************************************************************************************
-** Function name:           push rectangle (for SPI Interface II i.e. IM [3:0] = "1101")
+** Function name:           push rectangle
 ** Description:             push 565 pixel colours into a defined area
 ***************************************************************************************/
 void TFT_eSPI::pushRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data)
 {
-  // Function deprecated, remains for backwards compatibility
-  // New pushImage() is better as it will crop partly off-screen image blocks
+  bool swap = _swapBytes; _swapBytes = false;
   pushImage(x, y, w, h, data);
+  _swapBytes = swap;
 }
 
 

@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.2.6"
+#define TFT_ESPI_VERSION "2.2.7"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -450,7 +450,7 @@ class TFT_eSPI : public Print {
            // The next functions can be used as a pair to copy screen blocks (or horizontal/vertical lines) to another location
            // Read a block of pixels to a data buffer, buffer is 16 bit and the size must be at least w * h
   void     readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data);
-           // Write a block of pixels to the screen - this is a deprecated alternative to pushImage()
+           // Write a block of pixels to the screen which have been read by readRect()
   void     pushRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data);
 
            // These are used to render images or sprites stored in RAM arrays (used by Sprite class for 16bpp Sprites)
