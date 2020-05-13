@@ -166,12 +166,64 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Make sure TFT_MISO is defined if not used to avoid an error message
+// Make sure SPI default pins are assigned if not specified by user or set to -1
 ////////////////////////////////////////////////////////////////////////////////////////
 #if !defined (TFT_PARALLEL_8_BIT)
-  #ifndef TFT_MISO
-    #define TFT_MISO -1
+
+  #ifdef USE_HSPI_PORT
+
+    #ifndef TFT_MISO
+      #define TFT_MISO 12
+    #endif
+    #if (TFT_MISO == -1)
+      #undef TFT_MISO
+      #define TFT_MISO 12
+    #endif
+
+    #ifndef TFT_MOSI
+      #define TFT_MOSI 13
+    #endif
+    #if (TFT_MOSI == -1)
+      #undef TFT_MOSI
+      #define TFT_MOSI 13
+    #endif
+
+    #ifndef TFT_SCLK 14
+      #define TFT_SCLK
+    #endif
+    #if (TFT_SCLK == -1)
+      #undef TFT_SCLK
+      #define TFT_SCLK 14
+    #endif
+
+  #else // VSPI port
+
+    #ifndef TFT_MISO
+      #define TFT_MISO 19
+    #endif
+    #if (TFT_MISO == -1)
+      #undef TFT_MISO
+      #define TFT_MISO 19
+    #endif
+
+    #ifndef TFT_MOSI
+      #define TFT_MOSI 23
+    #endif
+    #if (TFT_MOSI == -1)
+      #undef TFT_MOSI
+      #define TFT_MOSI 23
+    #endif
+
+    #ifndef TFT_SCLK
+      #define TFT_SCLK 18
+    #endif
+    #if (TFT_SCLK == -1)
+      #undef TFT_SCLK
+      #define TFT_SCLK 18
+    #endif
+
   #endif
+
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////

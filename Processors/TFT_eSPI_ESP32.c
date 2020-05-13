@@ -705,7 +705,7 @@ bool TFT_eSPI::initDMA(void)
 void TFT_eSPI::deInitDMA(void)
 {
   if (!DMA_Enabled) return;
-
+  spi_bus_remove_device(dmaHAL);
   spi_bus_free(spi_host);
   DMA_Enabled = false;
 }
