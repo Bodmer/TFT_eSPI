@@ -188,8 +188,8 @@
       #define TFT_MOSI 13
     #endif
 
-    #ifndef TFT_SCLK 14
-      #define TFT_SCLK
+    #ifndef TFT_SCLK
+      #define TFT_SCLK 14
     #endif
     #if (TFT_SCLK == -1)
       #undef TFT_SCLK
