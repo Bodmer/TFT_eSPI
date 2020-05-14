@@ -39,17 +39,26 @@
 
 // Define a generic flag for 8 bit parallel
 #if defined (ESP32_PARALLEL) // Specific to ESP32 for backwards compatibility
-  #define TFT_PARALLEL_8_BIT // Generic parallel flag
+  #if !defined (TFT_PARALLEL_8_BIT)
+    #define TFT_PARALLEL_8_BIT // Generic parallel flag
+  #endif
 #endif
 
-  // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
-  #if !defined(TFT_PARALLEL_8_BIT) && !defined(ILI9488_DRIVER) && !defined (RPI_DISPLAY_TYPE)
-    #define ESP32_DMA
-    // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
-    #define DMA_BUSY_CHECK  { if (spiBusyCheck) dmaWait(); }
-  #else
-    #define DMA_BUSY_CHECK
+// Ensure ESP32 specific flag is defined for 8 bit parallel
+#if defined (TFT_PARALLEL_8_BIT)
+  #if !defined (ESP32_PARALLEL)
+    #define ESP32_PARALLEL
   #endif
+#endif
+
+// Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
+#if !defined(TFT_PARALLEL_8_BIT) && !defined(ILI9488_DRIVER) && !defined (RPI_DISPLAY_TYPE)
+  #define ESP32_DMA
+  // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
+  #define DMA_BUSY_CHECK  dmaWait()
+#else
+  #define DMA_BUSY_CHECK
+#endif
 
 // If smooth font is used then it is likely SPIFFS will be needed
 #ifdef SMOOTH_FONT
