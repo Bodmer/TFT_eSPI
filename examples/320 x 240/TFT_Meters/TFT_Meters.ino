@@ -31,50 +31,62 @@ int value[6] = {0, 0, 0, 0, 0, 0};
 int old_value[6] = { -1, -1, -1, -1, -1, -1};
 int d = 0;
 
-void setup(void) {
-  tft.init();
-  tft.setRotation(0);
-  Serial.begin(57600); // For debug
-  tft.fillScreen(TFT_BLACK);
+// #########################################################################
+// Update needle position
+// This function is blocking while needle moves, time depends on ms_delay
+// 10ms minimises needle flicker if text is drawn within needle sweep area
+// Smaller values OK if text not in sweep area, zero for instant movement but
+// does not look realistic... (note: 100 increments for full scale deflection)
+// #########################################################################
+void plotNeedle(int value, byte ms_delay)
+{
+  tft.setTextColor(TFT_BLACK, TFT_WHITE);
+  char buf[8]; dtostrf(value, 4, 0, buf);
+  tft.drawRightString(buf, 40, 119 - 20, 2);
 
-  analogMeter(); // Draw analogue meter
+  if (value < -10) value = -10; // Limit value to emulate needle end stops
+  if (value > 110) value = 110;
 
-  // Draw 6 linear meters
-  byte d = 40;
-  plotLinear("A0", 0, 160);
-  plotLinear("A1", 1 * d, 160);
-  plotLinear("A2", 2 * d, 160);
-  plotLinear("A3", 3 * d, 160);
-  plotLinear("A4", 4 * d, 160);
-  plotLinear("A5", 5 * d, 160);
+  // Move the needle util new value reached
+  while (!(value == old_analog)) {
+    if (old_analog < value) old_analog++;
+    else old_analog--;
 
-  updateTime = millis(); // Next update time
-}
+    if (ms_delay == 0) old_analog = value; // Update immediately id delay is 0
 
+    float sdeg = map(old_analog, -10, 110, -150, -30); // Map value to angle
+    // Calcualte tip of needle coords
+    float sx = cos(sdeg * 0.0174532925);
+    float sy = sin(sdeg * 0.0174532925);
 
-void loop() {
-  if (updateTime <= millis()) {
-    updateTime = millis() + LOOP_PERIOD;
+    // Calculate x delta of needle start (does not start at pivot point)
+    float tx = tan((sdeg + 90) * 0.0174532925);
 
-    d += 4; if (d >= 360) d = 0;
+    // Erase old needle image
+    tft.drawLine(120 + 20 * ltx - 1, 140 - 20, osx - 1, osy, TFT_WHITE);
+    tft.drawLine(120 + 20 * ltx, 140 - 20, osx, osy, TFT_WHITE);
+    tft.drawLine(120 + 20 * ltx + 1, 140 - 20, osx + 1, osy, TFT_WHITE);
 
-    //value[0] = map(analogRead(A0), 0, 1023, 0, 100); // Test with value form Analogue 0
+    // Re-plot text under needle
+    tft.setTextColor(TFT_BLACK);
+    tft.drawCentreString("%RH", 120, 70, 4); // // Comment out to avoid font 4
 
-    // Create a Sine wave for testing
-    value[0] = 50 + 50 * sin((d + 0) * 0.0174532925);
-    value[1] = 50 + 50 * sin((d + 60) * 0.0174532925);
-    value[2] = 50 + 50 * sin((d + 120) * 0.0174532925);
-    value[3] = 50 + 50 * sin((d + 180) * 0.0174532925);
-    value[4] = 50 + 50 * sin((d + 240) * 0.0174532925);
-    value[5] = 50 + 50 * sin((d + 300) * 0.0174532925);
+    // Store new needle end coords for next erase
+    ltx = tx;
+    osx = sx * 98 + 120;
+    osy = sy * 98 + 140;
 
-    //unsigned long t = millis();
+    // Draw the needle in the new postion, magenta makes needle a bit bolder
+    // draws 3 lines to thicken needle
+    tft.drawLine(120 + 20 * ltx - 1, 140 - 20, osx - 1, osy, TFT_RED);
+    tft.drawLine(120 + 20 * ltx, 140 - 20, osx, osy, TFT_MAGENTA);
+    tft.drawLine(120 + 20 * ltx + 1, 140 - 20, osx + 1, osy, TFT_RED);
 
-    plotPointer();
+    // Slow needle down slightly as it approaches new postion
+    if (abs(old_analog - value) < 10) ms_delay += ms_delay / 5;
 
-    plotNeedle(value[0], 0);
-
-    //Serial.println(millis()-t); // Print time taken for meter update
+    // Wait before next update
+    delay(ms_delay);
   }
 }
 
@@ -171,64 +183,6 @@ void analogMeter()
   plotNeedle(0, 0); // Put meter needle at 0
 }
 
-// #########################################################################
-// Update needle position
-// This function is blocking while needle moves, time depends on ms_delay
-// 10ms minimises needle flicker if text is drawn within needle sweep area
-// Smaller values OK if text not in sweep area, zero for instant movement but
-// does not look realistic... (note: 100 increments for full scale deflection)
-// #########################################################################
-void plotNeedle(int value, byte ms_delay)
-{
-  tft.setTextColor(TFT_BLACK, TFT_WHITE);
-  char buf[8]; dtostrf(value, 4, 0, buf);
-  tft.drawRightString(buf, 40, 119 - 20, 2);
-
-  if (value < -10) value = -10; // Limit value to emulate needle end stops
-  if (value > 110) value = 110;
-
-  // Move the needle util new value reached
-  while (!(value == old_analog)) {
-    if (old_analog < value) old_analog++;
-    else old_analog--;
-
-    if (ms_delay == 0) old_analog = value; // Update immediately id delay is 0
-
-    float sdeg = map(old_analog, -10, 110, -150, -30); // Map value to angle
-    // Calcualte tip of needle coords
-    float sx = cos(sdeg * 0.0174532925);
-    float sy = sin(sdeg * 0.0174532925);
-
-    // Calculate x delta of needle start (does not start at pivot point)
-    float tx = tan((sdeg + 90) * 0.0174532925);
-
-    // Erase old needle image
-    tft.drawLine(120 + 20 * ltx - 1, 140 - 20, osx - 1, osy, TFT_WHITE);
-    tft.drawLine(120 + 20 * ltx, 140 - 20, osx, osy, TFT_WHITE);
-    tft.drawLine(120 + 20 * ltx + 1, 140 - 20, osx + 1, osy, TFT_WHITE);
-
-    // Re-plot text under needle
-    tft.setTextColor(TFT_BLACK);
-    tft.drawCentreString("%RH", 120, 70, 4); // // Comment out to avoid font 4
-
-    // Store new needle end coords for next erase
-    ltx = tx;
-    osx = sx * 98 + 120;
-    osy = sy * 98 + 140;
-
-    // Draw the needle in the new postion, magenta makes needle a bit bolder
-    // draws 3 lines to thicken needle
-    tft.drawLine(120 + 20 * ltx - 1, 140 - 20, osx - 1, osy, TFT_RED);
-    tft.drawLine(120 + 20 * ltx, 140 - 20, osx, osy, TFT_MAGENTA);
-    tft.drawLine(120 + 20 * ltx + 1, 140 - 20, osx + 1, osy, TFT_RED);
-
-    // Slow needle down slightly as it approaches new postion
-    if (abs(old_analog - value) < 10) ms_delay += ms_delay / 5;
-
-    // Wait before next update
-    delay(ms_delay);
-  }
-}
 
 // #########################################################################
 //  Draw a linear meter on the screen
@@ -292,6 +246,53 @@ void plotPointer(void)
         tft.drawLine(dx, dy - 6, dx + pw, dy - 1, TFT_RED);
       }
     }
+  }
+}
+
+void setup(void) {
+  tft.init();
+  tft.setRotation(0);
+  Serial.begin(57600); // For debug
+  tft.fillScreen(TFT_BLACK);
+
+  analogMeter(); // Draw analogue meter
+
+  // Draw 6 linear meters
+  byte d = 40;
+  plotLinear("A0", 0, 160);
+  plotLinear("A1", 1 * d, 160);
+  plotLinear("A2", 2 * d, 160);
+  plotLinear("A3", 3 * d, 160);
+  plotLinear("A4", 4 * d, 160);
+  plotLinear("A5", 5 * d, 160);
+
+  updateTime = millis(); // Next update time
+}
+
+
+void loop() {
+  if (updateTime <= millis()) {
+    updateTime = millis() + LOOP_PERIOD;
+
+    d += 4; if (d >= 360) d = 0;
+
+    //value[0] = map(analogRead(A0), 0, 1023, 0, 100); // Test with value form Analogue 0
+
+    // Create a Sine wave for testing
+    value[0] = 50 + 50 * sin((d + 0) * 0.0174532925);
+    value[1] = 50 + 50 * sin((d + 60) * 0.0174532925);
+    value[2] = 50 + 50 * sin((d + 120) * 0.0174532925);
+    value[3] = 50 + 50 * sin((d + 180) * 0.0174532925);
+    value[4] = 50 + 50 * sin((d + 240) * 0.0174532925);
+    value[5] = 50 + 50 * sin((d + 300) * 0.0174532925);
+
+    //unsigned long t = millis();
+
+    plotPointer();
+
+    plotNeedle(value[0], 0);
+
+    //Serial.println(millis()-t); // Print time taken for meter update
   }
 }
 
