@@ -114,7 +114,7 @@ class TFT_eSprite : public TFT_eSPI {
            // 16bpp = colour, 8bpp = byte, 4bpp = colour index, 1bpp = 1 or 0
   uint16_t readPixelValue(int32_t x, int32_t y);
 
-           // Write an image (colour bitmap) to the sprite.  Not implemented for _bpp == 4.
+           // Write an image (colour bitmap) to the sprite.
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data);
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, const uint16_t *data);
 

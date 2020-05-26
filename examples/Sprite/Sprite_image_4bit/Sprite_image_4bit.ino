@@ -39,10 +39,6 @@ TFT_eSPI    tft = TFT_eSPI();         // Declare object "tft"
 
 TFT_eSprite spr = TFT_eSprite(&tft);  // Declare Sprite object "spr" with pointer to "tft" object
 
-const int freq = 5000;
-int screenBrightnessChannel = 0;
-int resolution = 8;
-
 byte red = 31; // Red is the top 5 bits of a 16 bit colour value
 byte green = 0;// Green is the middle 6 bits
 byte blue = 0; // Blue is the bottom 5 bits
@@ -55,11 +51,6 @@ uint16_t cmap[16];
 
 void setup()
 {
-  pinMode(21, OUTPUT);
-  ledcSetup(screenBrightnessChannel, freq, resolution);
-  ledcAttachPin(21, screenBrightnessChannel);
-  ledcWrite(screenBrightnessChannel, 127);
-
   Serial.begin(9600);
   Serial.println();
 
@@ -94,13 +85,12 @@ void loop(void)
     cmap[i] = cmap[i + 1];
   }
   if (incr == 2) {
-    (void)rainbow();  // skip alternate steps
+    (void)rainbow();  // skip alternate steps to go faster
   }
   cmap[15] = rainbow();
   rloop += incr;
   if (rloop > 0xc0) {
     incr = incr == 2 ? 1 : 2;
-    Serial.printf("incr %d, rloop %d\r\n", incr, rloop);
     rloop = 0;
     
   }

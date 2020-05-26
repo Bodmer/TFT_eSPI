@@ -868,12 +868,46 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_
   }
   else if (_bpp == 4)
   {
-    // not supported.  The image is unlikely to have the correct colors for the color map.
-    // we could implement a way to push a 4-bit image using the color map?
-    #ifdef TFT_eSPI_DEBUG
-    Serial.println("pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data) not implemented");
-    #endif
-    return;
+    // the image is assumed to be 4 bit, where each byte corresponds to two pixels.
+    // much faster when aligned to a byte boundary, because the alternative is slower, requiring
+    // tedious bit operations.
+
+    const uint8_t *dataBuf = (uint8_t *)data;
+    int sWidth = (_iwidth >> 1);
+    
+    if ((xs & 0x01) == 0 && (xo & 0x01) == 0 && (ws & 0x01) == 0)
+    {
+      if ((ws & 0x01) == 0) // use memcpy for better perf.
+      {
+        xs = (xs >> 1) + ys * sWidth;
+        ws = (ws >> 1);
+        xo = (xo >> 1) + yo * (w>>1);
+        while (hs--)
+        {
+          memcpy(_img4 + xs, dataBuf + xo, ws);
+          xo += (w >> 1);
+          xs += sWidth;
+        }
+      }
+    }
+    else  // not optimized
+    {
+      for (int32_t yp = yo; yp < yo + hs; yp++)
+      {
+        x = xs;
+        for (int32_t xp = xo; xp < xo + ws; xp++)
+        {
+          uint32_t color;
+          if ((xp & 0x01) == 0)
+            color = (dataBuf[((xp+yp*w)>>1)] & 0xF0) >> 4; // even index = bits 7 .. 4
+          else
+            color = dataBuf[((xp-1+yp*w)>>1)] & 0x0F;  // odd index = bits 3 .. 0.
+          drawPixel(x, ys, color);
+          x++; 
+        }
+        ys++;
+      }
+    }
   }
 
   else // 1bpp
