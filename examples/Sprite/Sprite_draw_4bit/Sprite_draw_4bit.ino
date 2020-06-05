@@ -88,7 +88,7 @@ void loop(void)
   // Pass the palette to the Sprite class
   spr.createPalette(cmap);
 
-  // Push Sprite parially off-screen to test cropping
+  // Push Sprite partially off-screen to test cropping
   spr.pushSprite(-40, -40);
   spr.pushSprite(tft.width() / 2 - WIDTH / 2, tft.height() / 2 - HEIGHT / 2, 10);
   spr.pushSprite(tft.width() - WIDTH + 40, tft.height() - HEIGHT + 40);

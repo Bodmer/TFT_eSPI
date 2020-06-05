@@ -10,7 +10,7 @@
 // screen very simple. The rotation is clockwise with increasing angle. The angle is in
 // degrees, an angle of 0 means no Sprite rotation.
 
-// The pushRotated() function works with 1, 8 and 16 bit per pixel (bpp) Sprites.
+// The pushRotated() function works with 1, 4, 8 and 16 bit per pixel (bpp) Sprites.
 
 // The original Sprite is unchanged so can be plotted again at a different angle.
 
@@ -19,6 +19,10 @@
 
 // For 1 bpp Sprites the foreground and background colours are defined with the
 // function spr.setBitmapColor(foregroundColor, backgroundColor).
+
+// For 4 bpp Sprites the colour map index is used instead of the 16 bit colour
+// e.g. spr.setTextColor(5); // Green text in default colour map
+// See "Transparent_Sprite_Demo_4bit" example for default colour map details
 
 // Created by Bodmer 6/1/19 as an example to the TFT_eSPI library:
 // https://github.com/Bodmer/TFT_eSPI
@@ -46,7 +50,7 @@ void setup()   {
 
 void loop() {
   
-  int xw = tft.width()/2;   // xw, yh is midle of screen
+  int xw = tft.width()/2;   // xw, yh is middle of screen
   int yh = tft.height()/2;
 
 

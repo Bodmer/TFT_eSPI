@@ -15,6 +15,7 @@ class TFT_eSprite : public TFT_eSPI {
            // Sketch can cast returned value to (uint16_t*) for 16 bit depth if needed
            // RAM required is:
            //  - 1 bit per pixel for 1 bit colour depth
+           //  - 1 nibble per pixel for 4 bit colour
            //  - 1 byte per pixel for 8 bit colour
            //  - 2 bytes per pixel for 16 bit color depth
   ~TFT_eSprite(void);
@@ -34,8 +35,8 @@ class TFT_eSprite : public TFT_eSPI {
   int8_t   getColorDepth(void);
 
            // Set the palette for a 4 bit depth sprite.  Only the first 16 colours in the map are used.
-  void     createPalette(uint16_t *palette, int colors = 16);       // Palette in RAM
-  void     createPalette(const uint16_t *palette, int colors = 16); // Palette in FLASH
+  void     createPalette(uint16_t *palette = nullptr, uint8_t colors = 16);       // Palette in RAM
+  void     createPalette(const uint16_t *palette = nullptr, uint8_t colors = 16); // Palette in FLASH
 
            // Set a single palette index to the given color
   void     setPaletteColor(uint8_t index, uint16_t color);
