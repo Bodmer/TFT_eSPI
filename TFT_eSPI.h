@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.2.9"
+#define TFT_ESPI_VERSION "2.2.10"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -334,6 +334,9 @@ int8_t pin_tft_d4;
 int8_t pin_tft_d5;
 int8_t pin_tft_d6;
 int8_t pin_tft_d7;
+
+int8_t pin_tft_led;
+int8_t pin_tft_led_on;
 
 int8_t pin_tch_cs;   // Touch chip select pin
 

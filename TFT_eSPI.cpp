@@ -2614,9 +2614,6 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
   //begin_tft_write(); // Must be called before setWindow
 
-  addr_col = 0xFFFF;
-  addr_row = 0xFFFF;
-
 #ifdef CGRAM_OFFSET
   x0+=colstart;
   x1+=colstart;
@@ -2624,16 +2621,21 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   y1+=rowstart;
 #endif
 
-  // Column addr set
-  DC_C; tft_Write_8(TFT_CASET);
-  DC_D; tft_Write_32C(x0, x1);
+  // No need to send x if it has not changed (speeds things up)
+  if (addr_col != (x0<<16 | x1)) {
+    DC_C; tft_Write_8(TFT_CASET);
+    DC_D; tft_Write_32C(x0, x1);
+    addr_col = (x0<<16 | x1);
+  }
 
-  // Row addr set
-  DC_C; tft_Write_8(TFT_PASET);
-  DC_D; tft_Write_32C(y0, y1);
+  // No need to send y if it has not changed (speeds things up)
+  if (addr_row != (y0<<16 | y1)) {
+    DC_C; tft_Write_8(TFT_PASET);
+    DC_D; tft_Write_32C(y0, y1);
+    addr_row = (y0<<16 | y1);
+  }
 
   DC_C; tft_Write_8(TFT_RAMWR);
-
   DC_D;
 
   //end_tft_write(); // Must be called after setWindow
@@ -2695,17 +2697,17 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   begin_tft_write();
 
   // No need to send x if it has not changed (speeds things up)
-  if (addr_col != x) {
+  if (addr_col != (x<<16 | x)) {
     DC_C; tft_Write_8(TFT_CASET);
     DC_D; tft_Write_32D(x);
-    addr_col = x;
+    addr_col = (x<<16 | x);
   }
 
   // No need to send y if it has not changed (speeds things up)
-  if (addr_row != y) {
+  if (addr_row != (y<<16 | y)) {
     DC_C; tft_Write_8(TFT_PASET);
     DC_D; tft_Write_32D(y);
-    addr_row = y;
+    addr_row = (y<<16 | y);
   }
 
   DC_C; tft_Write_8(TFT_RAMWR);
@@ -4202,6 +4204,14 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
   tft_settings.pin_tft_d5 = -1;
   tft_settings.pin_tft_d6 = -1;
   tft_settings.pin_tft_d7 = -1;
+#endif
+
+#if defined (TFT_BL)
+  tft_settings.pin_tft_led = TFT_BL;
+#endif
+
+#if defined (TFT_BACKLIGHT_ON)
+  tft_settings.pin_tft_led_on = TFT_BACKLIGHT_ON;
 #endif
 
 #if defined (TOUCH_CS)
