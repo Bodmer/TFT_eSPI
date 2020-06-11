@@ -3578,21 +3578,55 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
         }
       }
     }
-    else { // Text colour != background && textsize = 1
-           // so use faster drawing of characters and background using block write
-      setWindow(x, y, x + width - 1, y + height - 1);
+    else {
+      // Text colour != background && textsize = 1 and character is within screen area
+      // so use faster drawing of characters and background using block write
+      if ((x >= 0) && (x + width <= _width) && (y >= 0) && (y + height <= _height))
+      {
+        setWindow(x, y, x + width - 1, y + height - 1);
 
-      // Maximum font size is equivalent to 180x180 pixels in area
-      while (w > 0) {
-        line = pgm_read_byte((uint8_t *)flash_address++); // 8 bytes smaller when incrementing here
-        if (line & 0x80) {
-          line &= 0x7F;
-          line++; w -= line;
-          pushBlock(textcolor,line);
+        // Maximum font size is equivalent to 180x180 pixels in area
+        while (w > 0) {
+          line = pgm_read_byte((uint8_t *)flash_address++); // 8 bytes smaller when incrementing here
+          if (line & 0x80) {
+            line &= 0x7F;
+            line++; w -= line;
+            pushBlock(textcolor,line);
+          }
+          else {
+            line++; w -= line;
+            pushBlock(textbgcolor,line);
+          }
         }
-        else {
-          line++; w -= line;
-          pushBlock(textbgcolor,line);
+      }
+      else
+      {
+        int32_t px = x, py = y;  // To hold character block start and end column and row values
+        int32_t pc = 0;          // Pixel count
+        int32_t pl = 0;          // Pixel line length
+        uint16_t pcol = 0;       // Pixel color
+
+        while (pc < w) {
+          line = pgm_read_byte((uint8_t *)flash_address);
+          flash_address++;
+          if (line & 0x80) { pcol = textcolor; line &= 0x7F; }
+          else pcol = textbgcolor;
+          line++;
+          px = x + pc % width;
+          py = y + pc / width;
+
+          pl = 0;
+          pc += line;
+          while (line--) { // In this case the while(line--) is faster
+            pl++;
+            if ((px+pl) >= (x + width)) {
+              drawFastHLine(px, py, pl, pcol);
+              pl = 0;
+              px = x;
+              py ++;
+            }
+          }
+          if (pl)drawFastHLine(px, py, pl, pcol);
         }
       }
     }
