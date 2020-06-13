@@ -146,23 +146,49 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
 
+  // Use SPI1 as default if not defined
+  #ifndef TFT_SPI_PORT
+    #define TFT_SPI_PORT 1
+  #endif
+
   // Global define is _VARIANT_ARDUINO_STM32_, see board package stm32_def.h for specific variants
   #if defined (STM32F2xx) || defined (STM32F4xx) || defined (STM32F7xx)
+
     #define STM32_DMA // DMA is available with these processors
-    // Initialise processor specific SPI and DMA instances - used by init()
-    #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1; \
-                              dmaHal.Instance = DMA2_Stream3
-    // The DMA hard-coding for SPI1 is in TFT_eSPI_STM32.c as follows:
-    //     DMA_CHANNEL_3 
-    //     DMA2_Stream3_IRQn and DMA2_Stream3_IRQHandler()
+
+    #if (TFT_SPI_PORT == 1)
+      // Initialise processor specific SPI and DMA instances - used by init()
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1; \
+                                dmaHal.Instance = DMA2_Stream3
+      // The DMA hard-coding for SPI1 is in TFT_eSPI_STM32.c as follows:
+      //     DMA_CHANNEL_3 
+      //     DMA2_Stream3_IRQn and DMA2_Stream3_IRQHandler()
+    #elif (TFT_SPI_PORT == 2)
+      // Initialise processor specific SPI and DMA instances - used by init()
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI2; \
+                                dmaHal.Instance = DMA1_Stream4
+      // The DMA hard-coding for SPI2 is in TFT_eSPI_STM32.c as follows:
+      //     DMA_CHANNEL_4 
+      //     DMA1_Stream4_IRQn and DMA1_Stream4_IRQHandler()
+    #endif
+
   #elif defined (STM32F1xx)
     // For Blue Pill and STM32F1xx processors with DMA support
     #define STM32_DMA // DMA is available with these processors
-    #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1; \
-                              dmaHal.Instance = DMA1_Channel3
+    #if (TFT_SPI_PORT == 1)
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1; \
+                                dmaHal.Instance = DMA1_Channel3
+    #elif (TFT_SPI_PORT == 2)
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI2; \
+                                dmaHal.Instance = DMA1_Channel5
+    #endif
   #else
     // For STM32 processor with no implemented DMA support (yet)
-    #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1
+    #if (TFT_SPI_PORT == 1)
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1
+    #elif (TFT_SPI_PORT == 2)
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI2
+    #endif
   #endif
 
 #endif

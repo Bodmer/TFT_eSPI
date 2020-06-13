@@ -236,6 +236,31 @@
 //#define TFT_D6   27
 //#define TFT_D7   14
 
+// ######       EDIT THE PINs BELOW TO SUIT YOUR STM32 SPI TFT SETUP        ######
+
+// The TFT can be connected to SPI port 1 or 2
+//#define TFT_SPI_PORT 1 // SPI port 1 maximum clock rate is 55MHz
+//#define TFT_MOSI PA7
+//#define TFT_MISO PA6
+//#define TFT_SCLK PA5
+
+//#define TFT_SPI_PORT 2 // SPI port 2 maximum clock rate is 27MHz
+//#define TFT_MOSI PB15
+//#define TFT_MISO PB14
+//#define TFT_SCLK PB13
+
+// Can use Ardiuno pin references, arbitrary allocation, TFT_eSPI controls chip select
+//#define TFT_CS   D5 // Chip select control pin to TFT CS
+//#define TFT_DC   D6 // Data Command control pin to TFT DC (may be labelled RS = Register Select)
+//#define TFT_RST  D7 // Reset pin to TFT RST (or RESET)
+// OR alternatively, we can use STM32 port reference names PXnn
+//#define TFT_CS   PE11 // Nucleo-F767ZI equivalent of D5
+//#define TFT_DC   PE9  // Nucleo-F767ZI equivalent of D6
+//#define TFT_RST  PF13 // Nucleo-F767ZI equivalent of D7
+
+//#define TFT_RST  -1   // Set TFT_RST to -1 if the display RESET is connected to processor reset
+                        // Use an Arduino pin for initial testing as connecting to processor reset
+                        // may not work (pulse too short at power up?)
 
 // ##################################################################################
 //
@@ -278,8 +303,9 @@
 // #define SPI_FREQUENCY   5000000
 // #define SPI_FREQUENCY  10000000
 // #define SPI_FREQUENCY  20000000
-#define SPI_FREQUENCY  27000000 // Actually sets it to 26.67MHz = 80/3
+#define SPI_FREQUENCY  27000000
 // #define SPI_FREQUENCY  40000000
+// #define SPI_FREQUENCY  55000000 // STM32 SPI1 only (SPI2 maximum is 27MHz)
 // #define SPI_FREQUENCY  80000000
 
 // Optional reduced SPI frequency for reading TFT

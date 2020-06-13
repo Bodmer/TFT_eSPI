@@ -22,7 +22,18 @@
 // MOSI and SCK do not need to be defined, connect:
 //  - Arduino SCK  to TFT SCK
 //  - Arduino MOSI to TFT SDI(may be marked SDA or MOSI)
-// Standard Arduino SPI pins are (SCK=D13, MOSI=D11) this is port pins PA5 and PA7 on Nucleo-F767ZI
+// Typical Arduino SPI port 1 pins are (SCK=D13, MISO=D12, MOSI=D11) this is port pins PA5, PA6 and PA7 on Nucleo-F767ZI
+//                 SPI port 2 pins are (SCK=D18, MISO=A7, MOSI=D17) this is typically port pins PB13, PB14 and PB15
+
+#define TFT_SPI_PORT 1 // SPI 1 maximum clock rate is 55MHz
+#define TFT_MOSI PA7
+#define TFT_MISO PA6
+#define TFT_SCLK PA5
+
+//#define TFT_SPI_PORT 2 // SPI 2 maximum clock rate is 27MHz
+//#define TFT_MOSI PB15
+//#define TFT_MISO PB14
+//#define TFT_SCLK PB13
 
 // Can use Ardiuno pin references, arbitrary allocation, TFT_eSPI controls chip select
 #define TFT_CS   D5 // Chip select control pin to TFT CS
