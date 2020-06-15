@@ -2621,6 +2621,13 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   y1+=rowstart;
 #endif
 
+#ifdef MULTI_TFT_SUPPORT
+  // No optimisation to permit multiple screens
+  DC_C; tft_Write_8(TFT_CASET);
+  DC_D; tft_Write_32C(x0, x1);
+  DC_C; tft_Write_8(TFT_PASET);
+  DC_D; tft_Write_32C(y0, y1);
+#else
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != (x0<<16 | x1)) {
     DC_C; tft_Write_8(TFT_CASET);
@@ -2634,6 +2641,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     DC_D; tft_Write_32C(y0, y1);
     addr_row = (y0<<16 | y1);
   }
+#endif
 
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D;
@@ -2696,6 +2704,13 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
   begin_tft_write();
 
+#ifdef MULTI_TFT_SUPPORT
+    No optimisation
+    DC_C; tft_Write_8(TFT_CASET);
+    DC_D; tft_Write_32D(x);
+    DC_C; tft_Write_8(TFT_PASET);
+    DC_D; tft_Write_32D(y);
+#else
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != (x<<16 | x)) {
     DC_C; tft_Write_8(TFT_CASET);
@@ -2709,6 +2724,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
     DC_D; tft_Write_32D(y);
     addr_row = (y<<16 | y);
   }
+#endif
 
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D; tft_Write_16(color);
