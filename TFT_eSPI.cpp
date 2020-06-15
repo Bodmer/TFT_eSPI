@@ -2705,11 +2705,11 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   begin_tft_write();
 
 #ifdef MULTI_TFT_SUPPORT
-    No optimisation
-    DC_C; tft_Write_8(TFT_CASET);
-    DC_D; tft_Write_32D(x);
-    DC_C; tft_Write_8(TFT_PASET);
-    DC_D; tft_Write_32D(y);
+  // No optimisation
+  DC_C; tft_Write_8(TFT_CASET);
+  DC_D; tft_Write_32D(x);
+  DC_C; tft_Write_8(TFT_PASET);
+  DC_D; tft_Write_32D(y);
 #else
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != (x<<16 | x)) {
