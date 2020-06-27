@@ -1,41 +1,22 @@
-# Tips
-If you load a new copy of TFT_eSPI then it will over-write your setups if they are kept within the TFT_eSPI folder. One way around this is to create a new folder in your Arduino library folder called "TFT_eSPI_Setups". You then place your custom setup.h files in there. After an upgrade simply edit the User_Setup_Select.h file to point to your custom setup file e.g.:
-```
-#include <../TFT_eSPI_Setups/my_custom_setup.h>
-```
-You must make sure only one setup file is called. In the the custom setup file I add the file path as a commented out first line that can be cut and pasted back into the upgraded User_Setup_Select.h file.  The ../ at the start of the path means go up one directory level. Clearly you could use different file paths or directory names as long as it does not clash with another library or folder name.
-
-You can take this one step further and have your own setup select file and then you only need to replace the Setup.h line reference in User_Setup_Select.h to, for example:
-```
-#include <../TFT_eSPI_Setups/my_setup_select.h>
-```
-To select a new setup you then edit your own my_setup_select.h file (which will not get over-written during an upgrade).
 
 # News
-1. The library now supports SPI DMA transfers for both ESP32 and STM32 processors. The DMA Test examples now work on the ESP32 for SPI displays (excluding RPi type and ILI9488).
+1. A companion library [U8g2_for_TFT_eSPI](https://github.com/Bodmer/U8g2_for_TFT_eSPI) has been created to allow U8g2 library fonts to be used with TFT_eSPI.
 
-2. A new option has been added for STM32 processors to optimise performance where Port A (or B) pins 0-7 are used for the 8 bit parallel interface data pins 0-7 to the TFT. This gives a dramatic 8 times better rendering performance for the lower clock rate STM32 processors such as the STM32F103 "Blue Pill" or STM411 "Black Pill" since no time consuming data bit manipulation is required. See setup file "User_Setups/Setup35_ILI9341_STM32_Port_Bus.h".
+2. The library now supports SPI DMA transfers for both ESP32 and STM32 processors. The DMA Test examples now work on the ESP32 for SPI displays (excluding RPi type and ILI9488).
 
-3. A new "Animated_dial" example has been added to show how dials can be created using a rotated Sprite for the needle. To run this example the TFT must support reading from the screen RAM. The dial rim and scale is a jpeg image, created using a paint program.
+3. A new option has been added for STM32 processors to optimise performance where Port A (or B) pins 0-7 are used for the 8 bit parallel interface data pins 0-7 to the TFT. This gives a dramatic 8 times better rendering performance for the lower clock rate STM32 processors such as the STM32F103 "Blue Pill" or STM411 "Black Pill" since no time consuming data bit manipulation is required. See setup file "User_Setups/Setup35_ILI9341_STM32_Port_Bus.h".
+
+4. A new "Animated_dial" example has been added to show how dials can be created using a rotated Sprite for the needle. To run this example the TFT must support reading from the screen RAM. The dial rim and scale is a jpeg image, created using a paint program.
 
       ![Animated_dial](https://i.imgur.com/S736Rg6.png)
 
-4. Anti-aliased (smooth) fonts can now be stored as arrays in FLASH (program) memory. This means that processors such as STM32 that do not have SPIFFS support can use the fonts. The processor must have sufficient FLASH memory to store the fonts used.
+5. Anti-aliased (smooth) fonts can now be stored as arrays in FLASH (program) memory. This means that processors such as STM32 that do not have SPIFFS support can use the fonts. The processor must have sufficient FLASH memory to store the fonts used.
 
-5. The Sprite class now supports 4 bits per pixel with a 16 color palette. Three new examples have been added.
+6. The Sprite class now supports 4 bits per pixel with a 16 color palette. Three new examples have been added.
 
-6. The library has been upgraded to support STM32 processors when used with SPI or 8 bit parallel displays. DMA capability for SPI displays has been added for STM32F103 (e.g. "Blue Pill") and STM32F2xx/4xx/7xx (e.g. 32/64/144 Nucleo boards). New DMA demo examples have been added (for STM32 only).
+7. The library has been upgraded to support STM32 processors when used with SPI or 8 bit parallel displays. DMA capability for SPI displays has been added for STM32F103 (e.g. "Blue Pill") and STM32F2xx/4xx/7xx (e.g. 32/64/144 Nucleo boards). New DMA demo examples have been added (for STM32 only).
 
-7. The ST7796 display controller has been added. The ST7796 RPi MHS-4.0 inch Display-B type display is supported (this is fast for a SPI display as an ESP32 can clock it at 80MHz (ESP8266 at 40MHz)), see setups 27 and 28.
-
-8. A callback function has been added, this allows antialiased fonts to be rendered over colour gradients or images. Two new examples have been added to illustrate this new capability:
-
-           "Smooth_font_reading_TFT"
-    
-           "Smooth_font_gradient"
-           
-      ![AA_gradien](https://i.imgur.com/YMBcPHp.png)
-
+8. The ST7796 display controller has been added. The ST7796 RPi MHS-4.0 inch Display-B type display is supported (this is fast for a SPI display as an ESP32 can clock it at 80MHz (ESP8266 at 40MHz)), see setups 27 and 28.
 
 # TFT_eSPI
 
@@ -125,6 +106,19 @@ IO32 wired to IO36
 
 If the display board is fitted with a resistance based touch screen then this can be used by performing the modifications described here and the fork of the Adafruit library:
 https://github.com/s60sc/Adafruit_TouchScreen
+
+# Tips
+If you load a new copy of TFT_eSPI then it will over-write your setups if they are kept within the TFT_eSPI folder. One way around this is to create a new folder in your Arduino library folder called "TFT_eSPI_Setups". You then place your custom setup.h files in there. After an upgrade simply edit the User_Setup_Select.h file to point to your custom setup file e.g.:
+```
+#include <../TFT_eSPI_Setups/my_custom_setup.h>
+```
+You must make sure only one setup file is called. In the the custom setup file I add the file path as a commented out first line that can be cut and pasted back into the upgraded User_Setup_Select.h file.  The ../ at the start of the path means go up one directory level. Clearly you could use different file paths or directory names as long as it does not clash with another library or folder name.
+
+You can take this one step further and have your own setup select file and then you only need to replace the Setup.h line reference in User_Setup_Select.h to, for example:
+```
+#include <../TFT_eSPI_Setups/my_setup_select.h>
+```
+To select a new setup you then edit your own my_setup_select.h file (which will not get over-written during an upgrade).
 
 # ePaper displays
 
