@@ -22,6 +22,9 @@ class TFT_eSprite : public TFT_eSPI {
 
   void*    createSprite(int16_t width, int16_t height, uint8_t frames = 1);  
 
+           // Returns true if sprite has been created
+  bool     created(void);
+
            // Delete the sprite to free up the RAM
   void     deleteSprite(void);
 

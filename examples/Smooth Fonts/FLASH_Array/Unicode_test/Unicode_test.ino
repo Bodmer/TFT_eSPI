@@ -31,7 +31,6 @@
 //====================================================================================
 //                                  Libraries
 //====================================================================================
-// Call up the SPIFFS FLASH filing system this is part of the ESP Core
 
 #include <TFT_eSPI.h>      // Hardware-specific library
 

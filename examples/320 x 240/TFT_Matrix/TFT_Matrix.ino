@@ -32,7 +32,7 @@ void setup() {
   Serial.begin(115200);
   randomSeed(analogRead(A0));
   tft.init();
-  tft.setRotation(2);
+  tft.setRotation(0);
   tft.fillScreen(ILI9341_BLACK);
   setupScrollArea(TOP_FIXED_AREA, BOT_FIXED_AREA);
 }

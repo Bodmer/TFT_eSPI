@@ -113,6 +113,16 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
 
 
 /***************************************************************************************
+** Function name:           created
+** Description:             Returns true is sprite has been created
+*************************************************************************************x*/
+bool TFT_eSprite::created(void)
+{
+  return _created;
+}
+
+
+/***************************************************************************************
 ** Function name:           ~TFT_eSprite
 ** Description:             Class destructor
 *************************************************************************************x*/
