@@ -154,6 +154,12 @@
 #elif defined (RM68140_DRIVER)
      #include "TFT_Drivers/RM68140_Defines.h"
      #define  TFT_DRIVER 0x6814
+#elif defined (OTM8009A_DRIVER)
+     #include "TFT_Drivers/OTM8009A_Defines.h"
+     #define  TFT_DRIVER 0x8009
+#elif defined (NT35510_DRIVER)
+     #include "TFT_Drivers/NT35510_Defines.h"
+     #define  TFT_DRIVER 0x3551	 
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
                               // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.c
 #elif defined (XYZZY_DRIVER)
