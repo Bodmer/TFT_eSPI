@@ -19,8 +19,8 @@
 #define TFT_DISPOFF 0x28
 #define TFT_DISPON  0x29
 
-#define TFT_CASET   0x2A
-#define TFT_PASET   0x2B
+#define TFT_CASET   0x2A00
+#define TFT_PASET   0x2B00
 #define TFT_RAMWR   0x2C
 
 #define TFT_RAMRD   0x2E

@@ -497,6 +497,17 @@ void TFT_eSPI::setRotation(uint8_t m)
   addr_col = 0xFFFF;
 }
 
+#ifndef TFT_CASET_CMD
+	#define TFT_CASET_CMD(x0, x1) \
+		DC_C; tft_Write_8(TFT_CASET); \
+		DC_D; tft_Write_32C(x0, x1)
+#endif
+
+#ifndef TFT_PASET_CMD
+	#define TFT_PASET_CMD(y0, y1) \
+		DC_C; tft_Write_8(TFT_PASET); \
+		DC_D; tft_Write_32C(y0, y1)
+#endif
 
 /***************************************************************************************
 ** Function name:           commandList, used for FLASH based lists only (e.g. ST7735)
@@ -2635,22 +2646,18 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 
 #ifdef MULTI_TFT_SUPPORT
   // No optimisation to permit multiple screens
-  DC_C; tft_Write_8(TFT_CASET);
-  DC_D; tft_Write_32C(x0, x1);
-  DC_C; tft_Write_8(TFT_PASET);
-  DC_D; tft_Write_32C(y0, y1);
+  TFT_CASET_CMD(x0, x1);
+  TFT_PASET_CMD(y0, y1);
 #else
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != (x0<<16 | x1)) {
-    DC_C; tft_Write_8(TFT_CASET);
-    DC_D; tft_Write_32C(x0, x1);
+    TFT_CASET_CMD(x0, x1);
     addr_col = (x0<<16 | x1);
   }
 
   // No need to send y if it has not changed (speeds things up)
   if (addr_row != (y0<<16 | y1)) {
-    DC_C; tft_Write_8(TFT_PASET);
-    DC_D; tft_Write_32C(y0, y1);
+    TFT_PASET_CMD(y0, y1);
     addr_row = (y0<<16 | y1);
   }
 #endif
@@ -2684,12 +2691,10 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 #endif
 
   // Column addr set
-  DC_C; tft_Write_8(TFT_CASET);
-  DC_D; tft_Write_32C(xs, xe);
+  TFT_CASET_CMD(xs, xe);
 
   // Row addr set
-  DC_C; tft_Write_8(TFT_PASET);
-  DC_D; tft_Write_32C(ys, ye);
+  TFT_PASET_CMD(ys, ye);
 
   // Read CGRAM command
   DC_C; tft_Write_8(TFT_RAMRD);
@@ -2718,22 +2723,18 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
 #ifdef MULTI_TFT_SUPPORT
   // No optimisation
-  DC_C; tft_Write_8(TFT_CASET);
-  DC_D; tft_Write_32D(x);
-  DC_C; tft_Write_8(TFT_PASET);
-  DC_D; tft_Write_32D(y);
+  TFT_CASET_CMD(x, x);
+  TFT_PASET_CMD(y, y);
 #else
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != (x<<16 | x)) {
-    DC_C; tft_Write_8(TFT_CASET);
-    DC_D; tft_Write_32D(x);
+    TFT_CASET_CMD(x, x);
     addr_col = (x<<16 | x);
   }
 
   // No need to send y if it has not changed (speeds things up)
   if (addr_row != (y<<16 | y)) {
-    DC_C; tft_Write_8(TFT_PASET);
-    DC_D; tft_Write_32D(y);
+    TFT_PASET_CMD(y, y);
     addr_row = (y<<16 | y);
   }
 #endif

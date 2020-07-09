@@ -5,16 +5,26 @@
 #define Byte8H(ByteH) ((uint8_t)(((uint16_t)(ByteH)&0xFF00)>>8))
 #define Byte8L(ByteL) ((uint8_t)( (uint16_t)(ByteL)&0x00FF))
 
-#ifndef TFT_CASET_CMD
-	#define TFT_CASET_CMD(x0, x1) \
-		DC_C; tft_Write_8(TFT_CASET); \
-		DC_D; tft_Write_32C(x0, x1)
+#define TFT_CASET_CMD(x0, x1) \
+  DC_C; tft_Write_16(TFT_CASET); \
+  DC_D; tft_Write_16(Byte8H(x0)); \
+  DC_C; tft_Write_16(TFT_CASET + 1); \
+  DC_D; tft_Write_16(Byte8L(x0)); \
+  DC_C; tft_Write_16(TFT_CASET + 2); \
+  DC_D; tft_Write_16(Byte8H(x1)); \
+  DC_C; tft_Write_16(TFT_CASET + 3); \
+  DC_D; tft_Write_16(Byte8L(x1))
 #endif
 
-#ifndef TFT_PASET_CMD
-	#define TFT_PASET_CMD(y0, y1) \
-		DC_C; tft_Write_8(TFT_PASET); \
-		DC_D; tft_Write_32C(y0, y1)
+#define TFT_PASET_CMD(y0, y1) \
+  DC_C; tft_Write_16(TFT_PASET); \
+  DC_D; tft_Write_16(Byte8H(y0)); \
+  DC_C; tft_Write_16(TFT_PASET + 1); \
+  DC_D; tft_Write_16(Byte8L(y0)); \
+  DC_C; tft_Write_16(TFT_PASET + 2); \
+  DC_D; tft_Write_16(Byte8H(y1)); \
+  DC_C; tft_Write_16(TFT_PASET + 3); \
+  DC_D; tft_Write_16(Byte8L(y1))
 #endif
 
 #define writecommand16(cmd) \
