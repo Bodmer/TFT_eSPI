@@ -399,6 +399,12 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Init.h"
 
+#elif defined (OTM8009A_DRIVER)
+    #include "TFT_Drivers/OTM8009A_Init.h"
+
+#elif defined (NT35510_DRIVER)
+    #include "TFT_Drivers/NT35510_Init.h"
+	
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -474,6 +480,12 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Rotation.h"
+
+#elif defined (OTM8009A_DRIVER)
+    #include "TFT_Drivers/OTM8009A_Rotation.h"
+
+#elif defined (NT35510_DRIVER)
+    #include "TFT_Drivers/NT35510_Rotation.h"
 
 #endif
 
