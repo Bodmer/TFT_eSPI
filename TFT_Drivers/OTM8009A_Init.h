@@ -14,7 +14,6 @@
   DC_D; tft_Write_16(Byte8H(x1)); \
   DC_C; tft_Write_16(TFT_CASET + 3); \
   DC_D; tft_Write_16(Byte8L(x1))
-#endif
 
 #define TFT_PASET_CMD(y0, y1) \
   DC_C; tft_Write_16(TFT_PASET); \
@@ -25,7 +24,6 @@
   DC_D; tft_Write_16(Byte8H(y1)); \
   DC_C; tft_Write_16(TFT_PASET + 3); \
   DC_D; tft_Write_16(Byte8L(y1))
-#endif
 
 #define writecommand16(cmd) \
 	writecommand(Byte8H(cmd)); writecommand(Byte8L(cmd))
