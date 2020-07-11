@@ -138,11 +138,11 @@ getUnicodeIndex	KEYWORD2
 decodeUTF8	KEYWORD2
 drawGlyph	KEYWORD2
 
-created KEYWORD2
-getTextPadding KEYWORD2
-color16to24 KEYWORD2
-alphaBlend24 KEYWORD2
-setPaletteColor KEYWORD2
-getPaletteColor KEYWORD2
-getRotatedBounds KEYWORD2
-readPixelValue KEYWORD2
+created   KEYWORD2
+getTextPadding    KEYWORD2
+color16to24   KEYWORD2
+alphaBlend24    KEYWORD2
+setPaletteColor   KEYWORD2
+getPaletteColor   KEYWORD2
+getRotatedBounds    KEYWORD2
+readPixelValue    KEYWORD2
