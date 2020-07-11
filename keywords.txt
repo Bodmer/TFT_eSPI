@@ -137,3 +137,12 @@ unloadFont	KEYWORD2
 getUnicodeIndex	KEYWORD2
 decodeUTF8	KEYWORD2
 drawGlyph	KEYWORD2
+
+created
+getTextPadding
+color16to24
+alphaBlend24
+setPaletteColor
+getPaletteColor
+getRotatedBounds
+readPixelValue
