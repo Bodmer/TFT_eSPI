@@ -367,21 +367,22 @@
 	writecommand16(0x3A00);//ccaa[7:0] : reg setting for signal35 selection with u2d mode 
 	writedata16(0x55);//0x55
 			
-	// /* Exit CMD2 - new! */
-	// writecommand16(MCS_CMD2_ENA1);
-	// writedata16(0xFF);
-	// writecommand16(MCS_CMD2_ENA1 + 1);
-	// writedata16(0xFF);
-	// writecommand16(MCS_CMD2_ENA1 + 2);
-	// writedata16(0xFF);
-	
+	/* Exit CMD2 - new! */
+	writecommand16(MCS_CMD2_ENA1);
+	writedata16(0xFF);
+	writecommand16(MCS_CMD2_ENA1 + 1);
+	writedata16(0xFF);
+	writecommand16(MCS_CMD2_ENA1 + 2);
+	writedata16(0xFF);
 	
 	/* Sleep out */
-	writecommand16(TFT_SLPOUT);
+	writecommand(TFT_SLPOUT);
+	writecommand(TFT_NOP);
 	delay(100);
 
 	/* Display on */
-	writecommand16(TFT_DISPON);
+	writecommand(TFT_DISPON);
+	writecommand(TFT_NOP);
 	delay(50);
 
 	/* Memory Write */
