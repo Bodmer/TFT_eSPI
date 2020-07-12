@@ -7,25 +7,25 @@
 #define TFT_INIT_DELAY 0x80 // Not used unless commandlist invoked
 
 // Generic commands used by TFT_eSPI.cpp
-#define TFT_NOP     0x00
-#define TFT_SWRST   0x01
+#define TFT_NOP     0x0000
+#define TFT_SWRST   0x0100
 
-#define TFT_SLPIN   0x10
-#define TFT_SLPOUT  0x11
+#define TFT_SLPIN   0x1000
+#define TFT_SLPOUT  0x1100
 
-#define TFT_INVOFF  0x20
-#define TFT_INVON   0x21
+#define TFT_INVOFF  0x2000
+#define TFT_INVON   0x2100
 
-#define TFT_DISPOFF 0x28
-#define TFT_DISPON  0x29
+#define TFT_DISPOFF 0x2800
+#define TFT_DISPON  0x2900
 
 #define TFT_CASET   0x2A00
 #define TFT_PASET   0x2B00
 
-#define TFT_RAMWR   0x2C
-#define TFT_RAMRD   0x2E
+#define TFT_RAMWR   0x2C00
+#define TFT_RAMRD   0x2E00
 
-#define TFT_MADCTL  0x36
+#define TFT_MADCTL  0x3600
 
 #define TFT_MAD_MY  0x80 /* Row Address Order */
 #define TFT_MAD_MX  0x40 /* Column Address Order */
@@ -100,6 +100,12 @@
   DC_D; tft_Write_16(Byte8H(y1)); \
   DC_C; tft_Write_16(TFT_PASET + 3); \
   DC_D; tft_Write_16(Byte8L(y1))
+
+#define TFT_RAMWR_CMD \
+  DC_C; tft_Write_16(TFT_RAMWR)
+
+#define TFT_RAMRD_CMD \
+  DC_C; tft_Write_16(TFT_RAMRD)
 
 #define writecommand16(cmd) \
 	writecommand(Byte8H(cmd)); writecommand(Byte8L(cmd))

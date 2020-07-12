@@ -1,5 +1,4 @@
 // This is the command sequence that initialises the OTM8009A driver
-// Configure OTM8009A display
 
 //3.97inch OTM8009 Init 20190116
 	/* Enter CMD2 */
@@ -367,7 +366,7 @@
 	writecommand16(0x3A00);//ccaa[7:0] : reg setting for signal35 selection with u2d mode 
 	writedata16(0x55);//0x55
 			
-	/* Exit CMD2 - new! */
+	/* Exit CMD2 */
 	writecommand16(MCS_CMD2_ENA1);
 	writedata16(0xFF);
 	writecommand16(MCS_CMD2_ENA1 + 1);
@@ -376,13 +375,11 @@
 	writedata16(0xFF);
 	
 	/* Sleep out */
-	writecommand(TFT_SLPOUT);
-	writecommand(TFT_NOP);
+	writecommand16(TFT_SLPOUT);
 	delay(100);
 
 	/* Display on */
-	writecommand(TFT_DISPON);
-	writecommand(TFT_NOP);
+	writecommand16(TFT_DISPON);
 	delay(50);
 
 	/* Memory Write */
