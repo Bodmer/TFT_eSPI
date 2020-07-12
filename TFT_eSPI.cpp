@@ -399,12 +399,6 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Init.h"
 
-#elif defined (OTM8009A_DRIVER)
-    #include "TFT_Drivers/OTM8009A_Init.h"
-
-#elif defined (NT35510_DRIVER)
-    #include "TFT_Drivers/NT35510_Init.h"
-	
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -481,12 +475,6 @@ void TFT_eSPI::setRotation(uint8_t m)
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Rotation.h"
 
-#elif defined (OTM8009A_DRIVER)
-    #include "TFT_Drivers/OTM8009A_Rotation.h"
-
-#elif defined (NT35510_DRIVER)
-    #include "TFT_Drivers/NT35510_Rotation.h"
-
 #endif
 
   delayMicroseconds(10);
@@ -497,17 +485,6 @@ void TFT_eSPI::setRotation(uint8_t m)
   addr_col = 0xFFFF;
 }
 
-#ifndef TFT_CASET_CMD
-	#define TFT_CASET_CMD(x0, x1) \
-		DC_C; tft_Write_8(TFT_CASET); \
-		DC_D; tft_Write_32C(x0, x1)
-#endif
-
-#ifndef TFT_PASET_CMD
-	#define TFT_PASET_CMD(y0, y1) \
-		DC_C; tft_Write_8(TFT_PASET); \
-		DC_D; tft_Write_32C(y0, y1)
-#endif
 
 /***************************************************************************************
 ** Function name:           commandList, used for FLASH based lists only (e.g. ST7735)
@@ -2646,18 +2623,22 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 
 #ifdef MULTI_TFT_SUPPORT
   // No optimisation to permit multiple screens
-  TFT_CASET_CMD(x0, x1);
-  TFT_PASET_CMD(y0, y1);
+  DC_C; tft_Write_8(TFT_CASET);
+  DC_D; tft_Write_32C(x0, x1);
+  DC_C; tft_Write_8(TFT_PASET);
+  DC_D; tft_Write_32C(y0, y1);
 #else
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != (x0<<16 | x1)) {
-    TFT_CASET_CMD(x0, x1);
+    DC_C; tft_Write_8(TFT_CASET);
+    DC_D; tft_Write_32C(x0, x1);
     addr_col = (x0<<16 | x1);
   }
 
   // No need to send y if it has not changed (speeds things up)
   if (addr_row != (y0<<16 | y1)) {
-    TFT_PASET_CMD(y0, y1);
+    DC_C; tft_Write_8(TFT_PASET);
+    DC_D; tft_Write_32C(y0, y1);
     addr_row = (y0<<16 | y1);
   }
 #endif
@@ -2691,10 +2672,12 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 #endif
 
   // Column addr set
-  TFT_CASET_CMD(xs, xe);
+  DC_C; tft_Write_8(TFT_CASET);
+  DC_D; tft_Write_32C(xs, xe);
 
   // Row addr set
-  TFT_PASET_CMD(ys, ye);
+  DC_C; tft_Write_8(TFT_PASET);
+  DC_D; tft_Write_32C(ys, ye);
 
   // Read CGRAM command
   DC_C; tft_Write_8(TFT_RAMRD);
@@ -2723,18 +2706,22 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
 #ifdef MULTI_TFT_SUPPORT
   // No optimisation
-  TFT_CASET_CMD(x, x);
-  TFT_PASET_CMD(y, y);
+  DC_C; tft_Write_8(TFT_CASET);
+  DC_D; tft_Write_32D(x);
+  DC_C; tft_Write_8(TFT_PASET);
+  DC_D; tft_Write_32D(y);
 #else
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != (x<<16 | x)) {
-    TFT_CASET_CMD(x, x);
+    DC_C; tft_Write_8(TFT_CASET);
+    DC_D; tft_Write_32D(x);
     addr_col = (x<<16 | x);
   }
 
   // No need to send y if it has not changed (speeds things up)
   if (addr_row != (y<<16 | y)) {
-    TFT_PASET_CMD(y, y);
+    DC_C; tft_Write_8(TFT_PASET);
+    DC_D; tft_Write_32D(y);
     addr_row = (y<<16 | y);
   }
 #endif
@@ -4300,4 +4287,3 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
-
