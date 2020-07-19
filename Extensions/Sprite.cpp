@@ -1746,9 +1746,9 @@ void TFT_eSprite::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t 
     {
       yp = (yp + 1) >> 1;
       while (h--) {
-        drawPixel(x, y+h-1, color & 0x0F);
+        drawPixel(x, y+h, color & 0x0F);
         if (w > 1)
-          memset(_img4 + (yp + ((x-1)>>1)), c2, (w-1)>>1);
+          memset(_img4 + yp, c2, (w-1)>>1);
         // same as above but you have a hangover on the left instead
         yp += (_iwidth >> 1);
       }
@@ -1757,10 +1757,10 @@ void TFT_eSprite::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t 
     {
       yp = (yp + 1) >> 1;
       while (h--) {
-        drawPixel(x, y+h-1, color & 0x0F);
-        drawPixel(x+w-1, y+h-1, color & 0x0F);
+        drawPixel(x, y+h, color & 0x0F);
+        if (w > 1) drawPixel(x+w-1, y+h, color & 0x0F);
         if (w > 2)
-          memset(_img4 + (yp + ((x-1)>>1)), c2, (w-2)>>1);
+          memset(_img4 + yp, c2, (w-2)>>1);
         // maximal hacking, single pixels on left and right.
         yp += (_iwidth >> 1);
       }
