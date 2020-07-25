@@ -156,10 +156,11 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 
 #if defined (TFT_PARALLEL_8_BIT)
 
+#ifdef TFT_RD
   // Make sure read is high before we set the bus to output
   pinMode(TFT_RD, OUTPUT);
   digitalWrite(TFT_RD, HIGH);
-
+#endif
   // Set TFT data bus lines to output
   pinMode(TFT_D0, OUTPUT); digitalWrite(TFT_D0, HIGH);
   pinMode(TFT_D1, OUTPUT); digitalWrite(TFT_D1, HIGH);

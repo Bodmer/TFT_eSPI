@@ -193,6 +193,7 @@ uint8_t TFT_eSPI::readByte(void)
 {
   uint8_t b = 0;
 
+#ifdef TFT_RD
   RD_L;
 #ifdef STM_PORTA_DATA_BUS
   b = GPIOA->IDR;
@@ -211,7 +212,7 @@ uint8_t TFT_eSPI::readByte(void)
   b |= RD_TFT_D4 | RD_TFT_D5 | RD_TFT_D6 | RD_TFT_D7;
 #endif
   RD_H;
-
+#endif // TFT_RD
   return b;
 }
 
