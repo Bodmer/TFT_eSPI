@@ -139,7 +139,7 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
     if (mode == OUTPUT) GPIOA->MODER = (GPIOA->MODER & 0xFFFF0000) | 0x00005555;
     else GPIOA->MODER &= 0xFFFF0000;
   #endif
-#elif STM_PORTB_DATA_BUS
+#elif defined STM_PORTB_DATA_BUS
   #if defined (STM32F1xx)
     if (mode == OUTPUT) GPIOB->CRL = 0x33333333;
     else GPIOB->CRL = 0x88888888;
@@ -199,7 +199,7 @@ uint8_t TFT_eSPI::readByte(void)
   b = GPIOA->IDR;
   b = GPIOA->IDR;
   b = (GPIOA->IDR) & 0xFF;
-#elif STM_PORTB_DATA_BUS
+#elif defined STM_PORTB_DATA_BUS
   b = GPIOB->IDR;
   b = GPIOB->IDR;
   b = GPIOB->IDR;
