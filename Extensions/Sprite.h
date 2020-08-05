@@ -9,7 +9,7 @@ class TFT_eSprite : public TFT_eSPI {
 
  public:
 
-  explicit TFT_eSprite(TFT_eSPI *tft);
+  TFT_eSprite(TFT_eSPI *tft);
   ~TFT_eSprite(void);
 
            // Create a sprite of width x height pixels, return a pointer to the RAM area
@@ -167,15 +167,15 @@ class TFT_eSprite : public TFT_eSPI {
 
   uint8_t  _bpp;     // bits per pixel (1, 8 or 16)
   uint16_t *_img;    // pointer to 16 bit sprite
-  uint8_t  *_img8;   // pointer to  8 bit sprite frame 1 or frame 2
-  uint8_t  *_img4;   // pointer to  4 bit sprite (uses color map)
-  uint8_t  *_img8_1; // pointer to frame 1
-  uint8_t  *_img8_2; // pointer to frame 2
+  uint8_t  *_img8;   // pointer to  8 bit sprite
+  uint8_t  *_img4;   // pointer to 4 bit sprite (uses color map)
+  uint8_t  *_img8_1; // pointer to  frame 1
+  uint8_t  *_img8_2; // pointer to  frame 2
 
   uint16_t *_colorMap; // color map: 16 entries, used with 4 bit color map.
 
-  int16_t  _xPivot;   // x pivot point coordinate
-  int16_t  _yPivot;   // y pivot point coordinate
+  int16_t  _xpivot;   // x pivot point coordinate
+  int16_t  _ypivot;   // y pivot point coordinate
   int32_t  _sinra;
   int32_t  _cosra;
 
