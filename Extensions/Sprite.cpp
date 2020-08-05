@@ -33,8 +33,8 @@ TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
   _xptr = 0; // pushColor coordinate
   _yptr = 0;
 
-  _xpivot = 0;
-  _ypivot = 0;
+  _xPivot = 0;
+  _yPivot = 0;
 
   _colorMap = nullptr;
 
@@ -69,8 +69,8 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
   _sh = h;
   _scolor = TFT_BLACK;
 
-  _xpivot = w/2;
-  _ypivot = h/2;
+  _xPivot = w/2;
+  _yPivot = h/2;
 
   _img8   = (uint8_t*) callocSprite(w, h, frames);
   _img8_1 = _img8;
@@ -397,8 +397,8 @@ void TFT_eSprite::deleteSprite(void)
 ***************************************************************************************/
 void TFT_eSprite::setPivot(int16_t x, int16_t y)
 {
-  _xpivot = x;
-  _ypivot = y;
+  _xPivot = x;
+  _yPivot = y;
 }
 
 
@@ -408,7 +408,7 @@ void TFT_eSprite::setPivot(int16_t x, int16_t y)
 ***************************************************************************************/
 int16_t TFT_eSprite::getPivotX(void)
 {
-  return _xpivot;
+  return _xPivot;
 }
 
 
@@ -418,7 +418,7 @@ int16_t TFT_eSprite::getPivotX(void)
 ***************************************************************************************/
 int16_t TFT_eSprite::getPivotY(void)
 {
-  return _ypivot;
+  return _yPivot;
 }
 
 
@@ -454,8 +454,8 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
   // Scan destination bounding box and fetch transformed pixels from source Sprite
   for (int32_t y = min_y; y <= max_y; y++, yt++) {
     int32_t x = min_x;
-    uint32_t xs = (_cosra * xt - (_sinra * yt - (_xpivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
-    uint32_t ys = (_sinra * xt + (_cosra * yt + (_ypivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
+    uint32_t xs = (_cosra * xt - (_sinra * yt - (_xPivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
+    uint32_t ys = (_sinra * xt + (_cosra * yt + (_yPivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
 
     while ((xs >= xe || ys >= ye) && x < max_x) { x++; xs += _cosra; ys += _sinra; }
     if (x == max_x) continue;
@@ -513,8 +513,8 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
 
   uint16_t sline_buffer[max_x - min_x + 1];
 
-  int32_t xt = min_x - spr->_xpivot;
-  int32_t yt = min_y - spr->_ypivot;
+  int32_t xt = min_x - spr->_xPivot;
+  int32_t yt = min_y - spr->_yPivot;
   uint32_t xe = _dwidth << FP_SCALE;
   uint32_t ye = _dheight << FP_SCALE;
   uint32_t tpcolor = transp>>8 | transp<<8;  // convert to unsigned swapped bytes
@@ -525,8 +525,8 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
   // Scan destination bounding box and fetch transformed pixels from source Sprite
   for (int32_t y = min_y; y <= max_y; y++, yt++) {
     int32_t x = min_x;
-    uint32_t xs = (_cosra * xt - (_sinra * yt - (_xpivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
-    uint32_t ys = (_sinra * xt + (_cosra * yt + (_ypivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
+    uint32_t xs = (_cosra * xt - (_sinra * yt - (_xPivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
+    uint32_t ys = (_sinra * xt + (_cosra * yt + (_yPivot << FP_SCALE)) + (1 << (FP_SCALE - 1)));
 
     while ((xs >= xe || ys >= ye) && x < max_x) { x++; xs += _cosra; ys += _sinra; }
     if (x == max_x) continue;
@@ -563,7 +563,7 @@ bool TFT_eSprite::getRotatedBounds(int16_t angle, int16_t *min_x, int16_t *min_y
                                                   int16_t *max_x, int16_t *max_y)
 {
   // Get the bounding box of this rotated source Sprite relative to Sprite pivot
-  getRotatedBounds(angle, width(), height(), _xpivot, _ypivot, min_x, min_y, max_x, max_y);
+  getRotatedBounds(angle, width(), height(), _xPivot, _yPivot, min_x, min_y, max_x, max_y);
 
   // Move bounding box so source Sprite pivot coincides with TFT pivot
   *min_x += _tft->_xpivot;
@@ -595,13 +595,13 @@ bool TFT_eSprite::getRotatedBounds(TFT_eSprite *spr, int16_t angle, int16_t *min
                                                                     int16_t *max_x, int16_t *max_y)
 {
   // Get the bounding box of this rotated source Sprite relative to Sprite pivot
-  getRotatedBounds(angle, width(), height(), _xpivot, _ypivot, min_x, min_y, max_x, max_y);
+  getRotatedBounds(angle, width(), height(), _xPivot, _yPivot, min_x, min_y, max_x, max_y);
 
   // Move bounding box so source Sprite pivot coincides with destination Sprite pivot
-  *min_x += spr->_xpivot;
-  *max_x += spr->_xpivot;
-  *min_y += spr->_ypivot;
-  *max_y += spr->_ypivot;
+  *min_x += spr->_xPivot;
+  *max_x += spr->_xPivot;
+  *min_y += spr->_yPivot;
+  *max_y += spr->_yPivot;
 
   // Test only to show bounding box
   // spr->fillSprite(TFT_BLACK);
