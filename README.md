@@ -1,5 +1,5 @@
 # Sprite class change
-The Sprite class has been updated to remove an inconsistency for the setSwapBytes() function. Although all the examples are unchanged, user sketches may be affected. If the colors of the sprite change when loading this new version 2.2.16 then it may be necessary to change the swap bytes setting, e.g. for a sprite instance "spr" use either: spr.setSwapBytes(true) or spr.setSwapBytes(true) to correct the colour.
+The Sprite class has been updated to remove an inconsistency for the setSwapBytes() function. Although all the examples are unchanged, user sketches may be affected. If the colors of the sprite change when loading this new version 2.2.16 then it may be necessary to change the swap bytes setting, e.g. for a sprite instance "spr" use either: spr.setSwapBytes(true) or spr.setSwapBytes(false) to correct the colour.
 
 # News
 1. A companion library [U8g2_for_TFT_eSPI](https://github.com/Bodmer/U8g2_for_TFT_eSPI) has been created to allow U8g2 library fonts to be used with TFT_eSPI.
