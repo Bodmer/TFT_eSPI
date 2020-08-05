@@ -243,12 +243,21 @@
 // Define the RD (TFT Read) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifdef TFT_RD
-  // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
-  #define RD_PORT      digitalPinToPort(TFT_RD)
-  #define RD_PIN_MASK  digitalPinToBitMask(TFT_RD)
-  // Use bit set reset register
-  #define RD_L RD_PORT->BSRR = RD_PIN_MASK<<16
-  #define RD_H RD_PORT->BSRR = RD_PIN_MASK
+  #if (TFT_RD >= 0)
+    // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
+    #define RD_PORT      digitalPinToPort(TFT_RD)
+    #define RD_PIN_MASK  digitalPinToBitMask(TFT_RD)
+    // Use bit set reset register
+    #define RD_L RD_PORT->BSRR = RD_PIN_MASK<<16
+    #define RD_H RD_PORT->BSRR = RD_PIN_MASK
+  #else
+    #define RD_L
+    #define RD_H
+  #endif
+#else
+  #define TFT_RD -1
+  #define RD_L
+  #define RD_H
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////

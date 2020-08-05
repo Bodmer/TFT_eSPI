@@ -335,8 +335,6 @@ void TFT_eSPI::init(uint8_t tc)
   } // end of: if just _booted
 
   // Toggle RST low to reset
-  begin_tft_write();
-
 #ifdef TFT_RST
   if (TFT_RST >= 0) {
     digitalWrite(TFT_RST, HIGH);
@@ -349,8 +347,6 @@ void TFT_eSPI::init(uint8_t tc)
 #else
   writecommand(TFT_SWRST); // Software reset
 #endif
-
-  end_tft_write();
 
   delay(150); // Wait for reset to complete
 
@@ -946,6 +942,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 
   uint16_t  lineBuf[dw]; // Use buffer to minimise setWindow call count
 
+  // The little endian transp color must be byte swapped if the image is big endian
   if (!_swapBytes) transp = transp >> 8 | transp << 8;
 
   while (dh--)
@@ -1062,6 +1059,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 
   uint16_t  lineBuf[dw];
 
+  // The little endian transp color must be byte swapped if the image is big endian
   if (!_swapBytes) transp = transp >> 8 | transp << 8;
 
   while (dh--) {
@@ -1247,7 +1245,6 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
       }
 
       pushPixels(lineBuf, dw);
-
       dy++;
     }
     _swapBytes = swap; // Restore old value

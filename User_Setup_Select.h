@@ -59,7 +59,7 @@
 //#include <User_Setups/Setup29_ILI9341_STM32.h>          // Setup for Nucleo board
 //#include <User_Setups/Setup30_ILI9341_Parallel_STM32.h> // Setup for Nucleo board and parallel display
 //#include <User_Setups/Setup31_ST7796_Parallel_STM32.h>  // Setup for Nucleo board and parallel display
-//#include <User_Setups/Setup32_ILI9341_STM32F103.h>        // Setup for "Blue Pill"
+//#include <User_Setups/Setup32_ILI9341_STM32F103.h>      // Setup for "Blue Pill"
 
 //#include <User_Setups/Setup33_RPi_ILI9486_STM32.h>      // Setup for Nucleo board
 
@@ -69,8 +69,8 @@
 //#include <User_Setups/Setup36_RPi_touch_ILI9341.h>      // Setup file configured for ESP32 and RPi TFT with touch
 
 //#include <User_Setups/Setup43_ST7735.h>            // Setup file configured for my ST7735S 80x160
-//#include <User_Setups/Setup44_TTGO_CameraPlus.h>  // Setup file for ESP32 and TTGO T-CameraPlus ST7789 SPI bus TFT    240x240
-//#include <User_Setups/Setup45_TTGO_T_Watch.h>     // Setup file for ESP32 and TTGO T-Watch ST7789 SPI bus TFT  240x240
+//#include <User_Setups/Setup44_TTGO_CameraPlus.h>   // Setup file for ESP32 and TTGO T-CameraPlus ST7789 SPI bus TFT    240x240
+//#include <User_Setups/Setup45_TTGO_T_Watch.h>      // Setup file for ESP32 and TTGO T-Watch ST7789 SPI bus TFT  240x240
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 
