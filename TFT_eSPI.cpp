@@ -2626,18 +2626,18 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   DC_D; tft_Write_32C(y0, y1);
 #else
   // No need to send x if it has not changed (speeds things up)
-  if (addr_col != (x0<<16 | x1)) {
+  //if (addr_col != (x0<<16 | x1)) {
     DC_C; tft_Write_8(TFT_CASET);
     DC_D; tft_Write_32C(x0, x1);
-    addr_col = (x0<<16 | x1);
-  }
+  //  addr_col = (x0<<16 | x1);
+  //}
 
   // No need to send y if it has not changed (speeds things up)
-  if (addr_row != (y0<<16 | y1)) {
+  //if (addr_row != (y0<<16 | y1)) {
     DC_C; tft_Write_8(TFT_PASET);
     DC_D; tft_Write_32C(y0, y1);
-    addr_row = (y0<<16 | y1);
-  }
+  //  addr_row = (y0<<16 | y1);
+  //}
 #endif
 
   DC_C; tft_Write_8(TFT_RAMWR);
