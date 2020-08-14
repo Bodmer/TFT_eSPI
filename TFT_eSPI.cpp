@@ -395,6 +395,15 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Init.h"
 
+#elif defined (SSD1963_480_DRIVER)
+    #include "TFT_Drivers/SSD1963_Init.h"
+
+#elif defined (SSD1963_800_DRIVER)
+    #include "TFT_Drivers/SSD1963_Init.h"
+
+#elif defined (SSD1963_800ALT_DRIVER)
+    #include "TFT_Drivers/SSD1963_Init.h"
+
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -2611,6 +2620,9 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
   //begin_tft_write(); // Must be called before setWindow
 
+  addr_row = 0xFFFF;
+  addr_col = 0xFFFF;
+
 #ifdef CGRAM_OFFSET
   x0+=colstart;
   x1+=colstart;
@@ -2618,28 +2630,10 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   y1+=rowstart;
 #endif
 
-#ifdef MULTI_TFT_SUPPORT
-  // No optimisation to permit multiple screens
   DC_C; tft_Write_8(TFT_CASET);
   DC_D; tft_Write_32C(x0, x1);
   DC_C; tft_Write_8(TFT_PASET);
   DC_D; tft_Write_32C(y0, y1);
-#else
-  // No need to send x if it has not changed (speeds things up)
-  //if (addr_col != (x0<<16 | x1)) {
-    DC_C; tft_Write_8(TFT_CASET);
-    DC_D; tft_Write_32C(x0, x1);
-  //  addr_col = (x0<<16 | x1);
-  //}
-
-  // No need to send y if it has not changed (speeds things up)
-  //if (addr_row != (y0<<16 | y1)) {
-    DC_C; tft_Write_8(TFT_PASET);
-    DC_D; tft_Write_32C(y0, y1);
-  //  addr_row = (y0<<16 | y1);
-  //}
-#endif
-
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D;
 

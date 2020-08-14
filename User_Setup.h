@@ -50,6 +50,9 @@
 //#define R61581_DRIVER
 //#define RM68140_DRIVER
 //#define ST7796_DRIVER
+//#define SSD1963_480_DRIVER    // Untested
+//#define SSD1963_800_DRIVER    // Untested
+//#define SSD1963_800ALT_DRIVER // Untested
 
 // Some displays support SPI reads via the MISO pin, other displays have a single
 // bi-directional SDA pin and the library will try to read this via the MOSI line.

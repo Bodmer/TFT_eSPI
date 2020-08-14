@@ -59,7 +59,7 @@
 //#include <User_Setups/Setup29_ILI9341_STM32.h>          // Setup for Nucleo board
 //#include <User_Setups/Setup30_ILI9341_Parallel_STM32.h> // Setup for Nucleo board and parallel display
 //#include <User_Setups/Setup31_ST7796_Parallel_STM32.h>  // Setup for Nucleo board and parallel display
-//#include <User_Setups/Setup32_ILI9341_STM32F103.h>      // Setup for "Blue Pill"
+//#include <User_Setups/Setup32_ILI9341_STM32F103.h>      // Setup for "Blue/Black Pill"
 
 //#include <User_Setups/Setup33_RPi_ILI9486_STM32.h>      // Setup for Nucleo board
 
@@ -154,8 +154,17 @@
 #elif defined (RM68140_DRIVER)
      #include "TFT_Drivers/RM68140_Defines.h"
      #define  TFT_DRIVER 0x6814
+#elif defined (SSD1963_480_DRIVER)
+     #include "TFT_Drivers/SSD1963_Defines.h"
+     #define  TFT_DRIVER 0x1963
+#elif defined (SSD1963_800_DRIVER)
+     #include "TFT_Drivers/SSD1963_Defines.h"
+     #define  TFT_DRIVER 0x1963
+#elif defined (SSD1963_800ALT_DRIVER)
+     #include "TFT_Drivers/SSD1963_Defines.h"
+     #define  TFT_DRIVER 0x1963
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
-                              // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.c
+                              // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp
 #elif defined (XYZZY_DRIVER)
      #include "TFT_Drivers/XYZZY_Defines.h"
      #define  TFT_DRIVER 0x0000
