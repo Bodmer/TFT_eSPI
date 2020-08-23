@@ -380,8 +380,8 @@ class TFT_eSPI : public Print {
                    height(void),
                    width(void);
 
-  void     setRotation(uint8_t r); // Set the display image orientation to 0, 1, 2 or 3
-  uint8_t  getRotation(void);      // Read the current rotation
+  virtual void     setRotation(uint8_t r); // Set the display image orientation to 0, 1, 2 or 3
+  virtual uint8_t  getRotation(void);      // Read the current rotation
 
   void     invertDisplay(bool i);  // Tell TFT to invert all displayed colours
 
@@ -403,7 +403,7 @@ class TFT_eSPI : public Print {
   void     pushPixels(const void * data_in, uint32_t len);
 
            // Read the colour of a pixel at x,y and return value in 565 format 
-  uint16_t readPixel(int32_t x, int32_t y);
+  virtual uint16_t readPixel(int32_t x, int32_t y);
 
            // Support for half duplex (bi-directional SDA) SPI bus where MOSI must be switched to input
            #ifdef TFT_SDA_READ
@@ -435,8 +435,8 @@ class TFT_eSPI : public Print {
 
   // Image rendering
            // Swap the byte order for pushImage() and pushPixels() - corrects endianness
-  void     setSwapBytes(bool swap);
-  bool     getSwapBytes(void);
+  virtual void     setSwapBytes(bool swap);
+  virtual bool     getSwapBytes(void);
 
            // Draw bitmap
   void     drawBitmap( int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t fgcolor),
@@ -446,9 +446,9 @@ class TFT_eSPI : public Print {
            setBitmapColor(uint16_t fgcolor, uint16_t bgcolor); // Define the 2 colours for 1bpp sprites
 
            // Set TFT pivot point (use when rendering rotated sprites)
-  void     setPivot(int16_t x, int16_t y);
-  int16_t  getPivotX(void), // Get pivot x
-           getPivotY(void); // Get pivot y
+  virtual void     setPivot(int16_t x, int16_t y);
+  virtual int16_t  getPivotX(void), // Get pivot x
+                   getPivotY(void); // Get pivot y
 
            // The next functions can be used as a pair to copy screen blocks (or horizontal/vertical lines) to another location
            // Read a block of pixels to a data buffer, buffer is 16 bit and the size must be at least w * h
@@ -457,8 +457,8 @@ class TFT_eSPI : public Print {
   void     pushRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data);
 
            // These are used to render images or sprites stored in RAM arrays (used by Sprite class for 16bpp Sprites)
-  void     pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data);
-  void     pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data, uint16_t transparent);
+  virtual void     pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data);
+  virtual void     pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data, uint16_t transparent);
 
            // These are used to render images stored in FLASH (PROGMEM)
   void     pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint16_t *data, uint16_t transparent);
