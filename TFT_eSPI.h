@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.2.18"
+#define TFT_ESPI_VERSION "2.2.19"
 
 /***************************************************************************************
 **                         Section 1: Load required header files

@@ -125,7 +125,7 @@ void* TFT_eSprite::getPointer(void)
 
 /***************************************************************************************
 ** Function name:           created
-** Description:             Returns true is sprite has been created
+** Description:             Returns true if sprite has been created
 ***************************************************************************************/
 bool TFT_eSprite::created(void)
 {
@@ -376,18 +376,18 @@ uint16_t TFT_eSprite::getPaletteColor(uint8_t index)
 ***************************************************************************************/
 void TFT_eSprite::deleteSprite(void)
 {
-  if (!_created ) return;
-
   if (_colorMap != nullptr)
   {
     free(_colorMap);
+	_colorMap = nullptr;
   }
 
-  free(_img8_1);
-
-  _img8 = nullptr;
-
-  _created = false;
+  if (_created)
+  {
+    free(_img8_1);
+    _img8 = nullptr;
+	_created = false;
+  }
 }
 
 
