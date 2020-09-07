@@ -729,7 +729,7 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y, uint16_t transp)
 
 
 /***************************************************************************************
-** Function name:           pushSprite
+** Function name:           pushToSprite
 ** Description:             Push the sprite to another sprite at x, y
 ***************************************************************************************/
 // Note: The following sprite to sprite colour depths are currently supported:
@@ -739,33 +739,33 @@ void TFT_eSprite::pushSprite(int32_t x, int32_t y, uint16_t transp)
 //     4bpp  ->  4bpp (note: color translation depends on the 2 sprites pallet colors)
 //     1bpp  ->  1bpp (note: color translation depends on the 2 sprites bitmap colors)
 
-bool TFT_eSprite::pushSprite(TFT_eSprite *spr, int32_t x, int32_t y)
+bool TFT_eSprite::pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y)
 {
   if (!_created) return false;
-  if (!spr->created()) return false;
+  if (!dspr->created()) return false;
 
   // Check destination sprite compatibility
-  int8_t ds_bpp = spr->getColorDepth();
+  int8_t ds_bpp = dspr->getColorDepth();
   if (_bpp == 16 && ds_bpp != 16 && ds_bpp !=  8) return false;
   if (_bpp ==  8) return false;
   if (_bpp ==  4 && ds_bpp !=  4) return false;
   if (_bpp ==  1 && ds_bpp !=  1) return false;
 
-  bool oldSwapBytes = spr->getSwapBytes();
-  spr->setSwapBytes(false);
-  spr->pushImage(x, y, _dwidth, _dheight, _img );
-  spr->setSwapBytes(oldSwapBytes);
+  bool oldSwapBytes = dspr->getSwapBytes();
+  dspr->setSwapBytes(false);
+  dspr->pushImage(x, y, _dwidth, _dheight, _img );
+  dspr->setSwapBytes(oldSwapBytes);
 
   return true;
 }
 
 
 /***************************************************************************************
-** Function name:           pushSprite
+** Function name:           pushToSprite
 ** Description:             Push the sprite to another sprite at x, y with transparent colour
 ***************************************************************************************/
 /* >>>>>>  Using a transparent color is not supported at the moment  <<<<<<
-void TFT_eSprite::pushSprite(TFT_eSprite *spr, int32_t x, int32_t y, uint16_t transp)
+void TFT_eSprite::pushToSprite(TFT_eSprite *spr, int32_t x, int32_t y, uint16_t transp)
 {
   if (!_created) return;
 

@@ -11,6 +11,11 @@
   #define TFT_HEIGHT 800
 #endif
 
+//Set driver type common to all initialisation options
+#ifndef SSD1963_DRIVER
+  #define SSD1963_DRIVER
+#endif
+
 // Delay between some initialisation commands
 #define TFT_INIT_DELAY 0x80 // Not used unless commandlist invoked
 

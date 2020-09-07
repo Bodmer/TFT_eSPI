@@ -133,12 +133,13 @@ class TFT_eSprite : public TFT_eSPI {
   void     pushSprite(int32_t x, int32_t y);
   void     pushSprite(int32_t x, int32_t y, uint16_t transparent);
 
-           // Push the sprite to another sprite, this fn calls pushImage() in the destination sprite class.
-           // >>>>>>  Using a transparent color is not supported at the moment  <<<<<<
-  bool     pushSprite(TFT_eSprite *spr, int32_t x, int32_t y);
-
            // Push a windowed area of the sprite to the TFT at tx, ty
   bool     pushSprite(int32_t tx, int32_t ty, int32_t sx, int32_t sy, int32_t sw, int32_t sh);
+
+           // Push the sprite to another sprite at x,y. This fn calls pushImage() in the destination sprite (dspr) class.
+           // >>>>>>  Using a transparent color is not supported at the moment  <<<<<<
+  bool     pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y);
+  bool     pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y, uint16_t transparent);
 
   int16_t  drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font),
            drawChar(uint16_t uniCode, int32_t x, int32_t y);

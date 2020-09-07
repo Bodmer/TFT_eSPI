@@ -62,7 +62,7 @@
   writedata(0x2A);
 
   writecommand(0xF0);   //pixel data interface
-  writedata(0x03);
+  writedata(0x00);      //8 bit bus
 
   delay(1);
 
@@ -166,7 +166,7 @@
   writedata(0x2A);
 
   writecommand(0xF0);   //pixel data interface
-  writedata(0x03);
+  writedata(0x00);      //8 bit bus
 
   delay(1);
 
@@ -270,7 +270,7 @@
   writedata(0x22);    // -- Set to 0x21 to rotate 180 degrees
 
   writecommand(0xF0);   //pixel data interface
-  writedata(0x03);
+  writedata(0x00);      //8 bit bus
 
   delay(10);
 
