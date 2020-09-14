@@ -446,7 +446,7 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
   int32_t yt = min_y - _tft->_ypivot;
   uint32_t xe = _dwidth << FP_SCALE;
   uint32_t ye = _dheight << FP_SCALE;
-  uint32_t tpcolor = transp;  // convert to unsigned
+  uint16_t tpcolor = transp;  // convert to unsigned
   if (_bpp == 4) tpcolor = _colorMap[transp & 0x0F];
   tpcolor = tpcolor>>8 | tpcolor<<8; // Working with swapped color bytes
   _tft->startWrite(); // Avoid transaction overhead for every tft pixel
@@ -462,7 +462,7 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
 
     uint32_t pixel_count = 0;
     do {
-      uint32_t rp;
+      uint16_t rp;
       int32_t xp = xs >> FP_SCALE;
       int32_t yp = ys >> FP_SCALE;
       if (_bpp == 16) {rp = _img[xp + yp * _iwidth]; }
@@ -517,7 +517,7 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
   int32_t yt = min_y - spr->_yPivot;
   uint32_t xe = _dwidth << FP_SCALE;
   uint32_t ye = _dheight << FP_SCALE;
-  uint32_t tpcolor = transp>>8 | transp<<8;  // convert to unsigned swapped bytes
+  uint16_t tpcolor = transp>>8 | transp<<8;  // convert to unsigned swapped bytes
 
   bool oldSwapBytes = spr->getSwapBytes();
   spr->setSwapBytes(false);
@@ -533,7 +533,7 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
 
     uint32_t pixel_count = 0;
     do {
-      uint32_t rp;
+      uint16_t rp;
       int32_t xp = xs >> FP_SCALE;
       int32_t yp = ys >> FP_SCALE;
       if (_bpp == 16) rp = _img[xp + yp * _iwidth];
