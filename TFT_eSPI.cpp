@@ -3570,8 +3570,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
     inTransaction = true;
 
     w *= height; // Now w is total number of pixels in the character
-    if ((textsize != 1) || (textcolor == textbgcolor)) {
-      if (textcolor != textbgcolor) fillRect(x, pY, width * textsize, textsize * height, textbgcolor);
+    if (textcolor == textbgcolor) {
       int32_t px = 0, py = pY; // To hold character block start and end column and row values
       int32_t pc = 0; // Pixel count
       uint8_t np = textsize * textsize; // Number of pixels in a drawn pixel
@@ -3618,9 +3617,9 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
       }
     }
     else {
-      // Text colour != background && textsize = 1 and character is within screen area
+      // Text colour != background and textsize = 1 and character is within screen area
       // so use faster drawing of characters and background using block write
-      if ((x >= 0) && (x + width <= _width) && (y >= 0) && (y + height <= _height))
+      if ((textsize == 1) && (x >= 0) && (x + width <= _width) && (y >= 0) && (y + height <= _height))
       {
         setWindow(x, y, x + width - 1, y + height - 1);
 
@@ -3640,7 +3639,8 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
       }
       else
       {
-        int32_t px = x, py = y;  // To hold character block start and end column and row values
+        int32_t px = 0, py = 0;  // To hold character pixel coords
+        int32_t tx = 0, ty = 0;  // To hold character TFT pixel coords
         int32_t pc = 0;          // Pixel count
         int32_t pl = 0;          // Pixel line length
         uint16_t pcol = 0;       // Pixel color
@@ -3651,21 +3651,25 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
           if (line & 0x80) { pcol = textcolor; line &= 0x7F; }
           else pcol = textbgcolor;
           line++;
-          px = x + pc % width;
-          py = y + pc / width;
+          px = pc % width;
+          tx = x + textsize * px;
+          py = pc / width;
+          ty = y + textsize * py;
 
           pl = 0;
           pc += line;
-          while (line--) { // In this case the while(line--) is faster
+          while (line--) {
             pl++;
-            if ((px+pl) >= (x + width)) {
-              drawFastHLine(px, py, pl, pcol);
+            if ((px+pl) >= width) {
+              fillRect(tx, ty, pl * textsize, textsize, pcol);
               pl = 0;
-              px = x;
+              px = 0;
+              tx = x;
               py ++;
+              ty += textsize;
             }
           }
-          if (pl)drawFastHLine(px, py, pl, pcol);
+          if (pl) fillRect(tx, ty, pl * textsize, textsize, pcol);
         }
       }
     }
