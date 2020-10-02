@@ -84,24 +84,42 @@ void TFT_eSPI::end_SDA_Read(void)
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
-  // Loop unrolling improves speed dramtically graphics test  0.634s => 0.374s
-  while (len>31) {
-    // 32D macro writes 16 bits twice
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    len-=32;
-  }
-  while (len>7) {
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    len-=8;
-  }
+    // Loop unrolling improves speed dramtically graphics test  0.634s => 0.374s
+    while (len>31) {
+    #if !defined (SSD1963_DRIVER)
+      // 32D macro writes 16 bits twice
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+    #else
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+    #endif
+      len-=32;
+    }
+
+    while (len>7) {
+    #if !defined (SSD1963_DRIVER)
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+    #else
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+    #endif
+      len-=8;
+    }
+
   while (len--) {tft_Write_16(color);}
 }
 

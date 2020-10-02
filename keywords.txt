@@ -157,6 +157,7 @@ getPivotX	KEYWORD2
 getPivotY	KEYWORD2
 getRotatedBounds	KEYWORD2
 readPixelValue	KEYWORD2
+pushToSprite	KEYWORD2
 drawGlyph	KEYWORD2
 printToSprite	KEYWORD2
 pushSprite	KEYWORD2

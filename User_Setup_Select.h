@@ -72,6 +72,8 @@
 //#include <User_Setups/Setup44_TTGO_CameraPlus.h>   // Setup file for ESP32 and TTGO T-CameraPlus ST7789 SPI bus TFT    240x240
 //#include <User_Setups/Setup45_TTGO_T_Watch.h>      // Setup file for ESP32 and TTGO T-Watch ST7789 SPI bus TFT  240x240
 
+//#include <User_Setups/Setup50_SSD1963_Parallel.h>  // Setup file for ESP32 and SSD1963 TFT display
+
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 
 //#include <User_Setups/SetupX_Template.h>
@@ -161,6 +163,9 @@
      #include "TFT_Drivers/SSD1963_Defines.h"
      #define  TFT_DRIVER 0x1963
 #elif defined (SSD1963_800ALT_DRIVER)
+     #include "TFT_Drivers/SSD1963_Defines.h"
+     #define  TFT_DRIVER 0x1963
+#elif defined (SSD1963_800BD_DRIVER)
      #include "TFT_Drivers/SSD1963_Defines.h"
      #define  TFT_DRIVER 0x1963
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE

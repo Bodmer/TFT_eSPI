@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.2.20"
+#define TFT_ESPI_VERSION "2.2.21"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -578,7 +578,7 @@ class TFT_eSPI : public Print {
   uint32_t alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8_t dither = 0);
 
 
-  // DMA support functions - these are currently just for SPI writes whe using the STM32 processors
+  // DMA support functions - these are currently just for SPI writes when using the ESP32 or STM32 processors
            // Bear in mind DMA will only be of benefit in particular circumstances and can be tricky
            // to manage by noobs. The functions have however been designed to be noob friendly and
            // avoid a few DMA behaviour "gotchas".
@@ -593,7 +593,7 @@ class TFT_eSPI : public Print {
            // processor leaves a function or its content being changed while the DMA engine is reading it.
            //
            // The compiler MAY change the implied scope of a buffer which has been set aside by creating
-           // and an array. For example a buffer defined before a "for-next" loop may get de-allocated when
+           // an array. For example a buffer defined before a "for-next" loop may get de-allocated when
            // the loop ends. To avoid this use, for example, malloc() and free() to take control of when
            // the buffer space is available and ensure it is not released until DMA is complete.
            //
@@ -608,7 +608,7 @@ class TFT_eSPI : public Print {
   
            // Push an image to the TFT using DMA, buffer is optional and grabs (double buffers) a copy of the image
            // Use the buffer if the image data will get over-written or destroyed while DMA is in progress
-           // If swapping colour bytes is defined, and the double buffer option is NOT used then the bytes
+           // If swapping colour bytes is defined, and the double buffer option is NOT used, then the bytes
            // in the original data image will be swapped by the function before DMA is initiated.
            // The function will wait for the last DMA to complete if it is called while a previous DMA is still
            // in progress, this simplifies the sketch and helps avoid "gotchas".
