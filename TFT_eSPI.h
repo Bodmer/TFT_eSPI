@@ -390,6 +390,9 @@ class TFT_eSPI : public Print {
   void     setAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h), // Note: start coordinates + width and height
            setWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);   // Note: start + end coordinates
 
+  // Define a clipping region
+  void     setClipRect(int32_t x, int32_t y, int32_t w, int32_t h);
+
   // Push (aka write pixel) colours to the TFT (use setAddrWindow() first)
   void     pushColor(uint16_t color),
            pushColor(uint16_t color, uint32_t len),  // Deprecated, use pushBlock()
@@ -727,6 +730,9 @@ class TFT_eSPI : public Print {
   int32_t  _init_width, _init_height; // Display w/h as input, used by setRotation()
   int32_t  _width, _height;           // Display w/h as modified by current rotation
   int32_t  addr_row, addr_col;        // Window position - used to minimise window commands
+  
+  int32_t  _clipX0, _clipY0;          // Top left corner of clipping region
+  int32_t  _clipX1, _clipY1;          // Bottom right corner of clipping region
 
   uint32_t fontsloaded;               // Bit field of fonts loaded
 

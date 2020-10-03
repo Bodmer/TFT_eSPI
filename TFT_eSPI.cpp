@@ -224,6 +224,9 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   wrpinmask = 0;
   sclkpinmask = 0;
 
+  // Reset clipping region to the entire display
+  setClipRect(0, 0, _width, _height);
+
 #ifdef LOAD_GLCD
   fontsloaded  = 0x0002; // Bit 1 set
 #endif
@@ -490,6 +493,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
+
+  // Reset the clipping region
+  setClipRect(0, 0, _width, _height); 
 }
 
 
@@ -903,18 +909,18 @@ void TFT_eSPI::pushRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data)
 {
 
-  if ((x >= _width) || (y >= _height)) return;
+  if ((x >= _clipX1) || (y >= _clipY1)) return;
 
   int32_t dx = 0;
   int32_t dy = 0;
   int32_t dw = w;
   int32_t dh = h;
 
-  if (x < 0) { dw += x; dx = -x; x = 0; }
-  if (y < 0) { dh += y; dy = -y; y = 0; }
+  if (x < _clipX0) { dw += (x - _clipX0); dx = (_clipX0 - x); x = _clipX0; }
+  if (y < _clipY0) { dh += (y - _clipY0); dy = (_clipY0 - y); y = _clipY0; }
 
-  if ((x + dw) > _width ) dw = _width  - x;
-  if ((y + dh) > _height) dh = _height - y;
+  if ((x + dw) > _clipX1) dw = _clipX1 - x;
+  if ((y + dh) > _clipY1) dh = _clipY1 - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -947,18 +953,18 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data, uint16_t transp)
 {
 
-  if ((x >= _width) || (y >= _height)) return;
+  if ((x >= _clipX1) || (y >= _clipY1)) return;
 
   int32_t dx = 0;
   int32_t dy = 0;
   int32_t dw = w;
   int32_t dh = h;
 
-  if (x < 0) { dw += x; dx = -x; x = 0; }
-  if (y < 0) { dh += y; dy = -y; y = 0; }
+  if (x < _clipX0) { dw += (x - _clipX0); dx = (_clipX0 - x); x = _clipX0; }
+  if (y < _clipY0) { dh += (y - _clipY0); dy = (_clipY0 - y); y = _clipY0; }
 
-  if ((x + dw) > _width ) dw = _width  - x;
-  if ((y + dh) > _height) dh = _height - y;
+  if ((x + dw) > _clipX1) dw = _clipX1 - x;
+  if ((y + dh) > _clipY1) dh = _clipY1 - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -1020,18 +1026,18 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint16_t *data)
 {
   // Requires 32 bit aligned access, so use PROGMEM 16 bit word functions
-  if ((x >= _width) || (y >= _height)) return;
+  if ((x >= _clipX1) || (y >= _clipY1)) return;
 
   int32_t dx = 0;
   int32_t dy = 0;
   int32_t dw = w;
   int32_t dh = h;
 
-  if (x < 0) { dw += x; dx = -x; x = 0; }
-  if (y < 0) { dh += y; dy = -y; y = 0; }
+  if (x < _clipX0) { dw += (x - _clipX0); dx = (_clipX0 - x); x = _clipX0; }
+  if (y < _clipY0) { dh += (y - _clipY0); dy = (_clipY0 - y); y = _clipY0; }
 
-  if ((x + dw) > _width ) dw = _width  - x;
-  if ((y + dh) > _height) dh = _height - y;
+  if ((x + dw) > _clipX1) dw = _clipX1 - x;
+  if ((y + dh) > _clipY1) dh = _clipY1 - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -1064,18 +1070,18 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint16_t *data, uint16_t transp)
 {
   // Requires 32 bit aligned access, so use PROGMEM 16 bit word functions
-  if ((x >= _width) || (y >= (int32_t)_height)) return;
+  if ((x >= _clipX1) || (y >= _clipY1)) return;
 
   int32_t dx = 0;
   int32_t dy = 0;
   int32_t dw = w;
   int32_t dh = h;
 
-  if (x < 0) { dw += x; dx = -x; x = 0; }
-  if (y < 0) { dh += y; dy = -y; y = 0; }
+  if (x < _clipX0) { dw += (x - _clipX0); dx = (_clipX0 - x); x = _clipX0; }
+  if (y < _clipY0) { dh += (y - _clipY0); dy = (_clipY0 - y); y = _clipY0; }
 
-  if ((x + dw) > _width ) dw = _width  - x;
-  if ((y + dh) > _height) dh = _height - y;
+  if ((x + dw) > _clipX1) dw = _clipX1 - x;
+  if ((y + dh) > _clipY1) dh = _clipY1 - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -1134,18 +1140,18 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data, bool bpp8,  uint16_t *cmap)
 {
 
-  if ((x >= _width) || (y >= (int32_t)_height)) return;
+  if ((x >= _clipX1) || (y >= _clipY1)) return;
 
   int32_t dx = 0;
   int32_t dy = 0;
   int32_t dw = w;
   int32_t dh = h;
 
-  if (x < 0) { dw += x; dx = -x; x = 0; }
-  if (y < 0) { dh += y; dy = -y; y = 0; }
+  if (x < _clipX0) { dw += (x - _clipX0); dx = (_clipX0 - x); x = _clipX0; }
+  if (y < _clipY0) { dh += (y - _clipY0); dy = (_clipY0 - y); y = _clipY0; }
 
-  if ((x + dw) > _width ) dw = _width  - x;
-  if ((y + dh) > _height) dh = _height - y;
+  if ((x + dw) > _clipX1) dw = _clipX1 - x;
+  if ((y + dh) > _clipY1) dh = _clipY1 - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -1290,18 +1296,18 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 ***************************************************************************************/
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data, uint8_t transp, bool bpp8, uint16_t *cmap)
 {
-  if ((x >= _width) || (y >= _height)) return;
+  if ((x >= _clipX1) || (y >= _clipY1)) return;
 
   int32_t dx = 0;
   int32_t dy = 0;
   int32_t dw = w;
   int32_t dh = h;
 
-  if (x < 0) { dw += x; dx = -x; x = 0; }
-  if (y < 0) { dh += y; dy = -y; y = 0; }
+  if (x < _clipX0) { dw += (x - _clipX0); dx = (_clipX0 - x); x = _clipX0; }
+  if (y < _clipY0) { dh += (y - _clipY0); dy = (_clipY0 - y); y = _clipY0; }
 
-  if ((x + dw) > _width ) dw = _width  - x;
-  if ((y + dh) > _height) dh = _height - y;
+  if ((x + dw) > _clipX1) dw = _clipX1 - x;
+  if ((y + dh) > _clipY1) dh = _clipY1 - y;
 
   if (dw < 1 || dh < 1) return;
 
@@ -2479,6 +2485,7 @@ int16_t TFT_eSPI::fontHeight(void)
 ***************************************************************************************/
 void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32_t bg, uint8_t size)
 {
+  // TODO: Revise to use _clip* region
   if ((x >= _width)            || // Clip right
       (y >= _height)           || // Clip bottom
       ((x + 6 * size - 1) < 0) || // Clip left
@@ -2708,12 +2715,28 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 
 
 /***************************************************************************************
+** Function name:           setClipRect
+** Description:             define the clipping region to constrain
+**                          further drawing commands. Set to the entire
+**                          TFT dimensions at startup.
+***************************************************************************************/
+void TFT_eSPI::setClipRect(int32_t x, int32_t y, int32_t w, int32_t h)
+{
+  _clipX0 = x;
+  _clipY0 = y;
+  _clipX1 = x + w - 1;
+  _clipY1 = y + h - 1;
+}
+
+
+/***************************************************************************************
 ** Function name:           drawPixel
 ** Description:             push a single pixel at an arbitrary position
 ***************************************************************************************/
 void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 {
   // Range checking
+  // TODO: Revise to use _clip* region
   if ((x < 0) || (y < 0) ||(x >= _width) || (y >= _height)) return;
 
 #ifdef CGRAM_OFFSET
@@ -2915,6 +2938,7 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 {
   // Clipping
+  // TODO: Revise to use _clip* region
   if ((x < 0) || (x >= _width) || (y >= _height)) return;
 
   if (y < 0) { h += y; y = 0; }
@@ -2940,6 +2964,7 @@ void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 {
   // Clipping
+  // TODO: Revise to use _clip* region
   if ((y < 0) || (x >= _width) || (y >= _height)) return;
 
   if (x < 0) { w += x; x = 0; }
@@ -2965,6 +2990,7 @@ void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
   // Clipping
+  // TODO: Revise to use _clip* region
   if ((x >= _width) || (y >= _height)) return;
 
   if (x < 0) { w += x; x = 0; }
@@ -3271,6 +3297,7 @@ uint32_t TFT_eSPI::alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8
 ***************************************************************************************/
 size_t TFT_eSPI::write(uint8_t utf8)
 {
+  // TODO: Revise to use _clip* region
   if (utf8 == '\r') return 1;
 
   uint16_t uniCode = utf8;
@@ -3418,6 +3445,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y)
   // Any UTF-8 decoding must be done before calling drawChar()
 int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 {
+  // TODO: Revise to use _clip* region
   if (!uniCode) return 0;
 
   if (font==1) {
