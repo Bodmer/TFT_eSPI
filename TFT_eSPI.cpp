@@ -2485,11 +2485,10 @@ int16_t TFT_eSPI::fontHeight(void)
 ***************************************************************************************/
 void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32_t bg, uint8_t size)
 {
-  // TODO: Revise to use _clip* region
-  if ((x >= _width)            || // Clip right
-      (y >= _height)           || // Clip bottom
-      ((x + 6 * size - 1) < 0) || // Clip left
-      ((y + 8 * size - 1) < 0))   // Clip top
+  if ((x >= _clipX1)                 || // Clip right
+      (y >= _clipY1)                 || // Clip bottom
+      ((x + 6 * size - 1) < _clipX0) || // Clip left
+      ((y + 8 * size - 1) < _clipY0))   // Clip top
     return;
 
   if (c < 32) return;
@@ -2736,8 +2735,7 @@ void TFT_eSPI::setClipRect(int32_t x, int32_t y, int32_t w, int32_t h)
 void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 {
   // Range checking
-  // TODO: Revise to use _clip* region
-  if ((x < 0) || (y < 0) ||(x >= _width) || (y >= _height)) return;
+  if ((x < _clipX0) || (y < _clipY0) ||(x >= _clipX1) || (y >= _clipY1)) return;
 
 #ifdef CGRAM_OFFSET
   x+=colstart;
@@ -2938,12 +2936,11 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 {
   // Clipping
-  // TODO: Revise to use _clip* region
-  if ((x < 0) || (x >= _width) || (y >= _height)) return;
+  if ((x < _clipX0) || (x >= _clipX1) || (y >= _clipY1)) return;
 
-  if (y < 0) { h += y; y = 0; }
+  if (y < _clipY0) { h += (y - _clipY0); y = _clipY0; }
 
-  if ((y + h) > _height) h = _height - y;
+  if ((y + h) > _clipY1) h = _clipY1 - y;
 
   if (h < 1) return;
 
@@ -2964,12 +2961,11 @@ void TFT_eSPI::drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color)
 void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 {
   // Clipping
-  // TODO: Revise to use _clip* region
-  if ((y < 0) || (x >= _width) || (y >= _height)) return;
+  if ((y < _clipY0) || (x >= _clipX1) || (y >= _clipY1)) return;
 
-  if (x < 0) { w += x; x = 0; }
+  if (x < _clipX0) { w += (x - _clipX0); x = _clipX0; }
 
-  if ((x + w) > _width)  w = _width  - x;
+  if ((x + w) > _clipX1)  w = _clipX1 - x;
 
   if (w < 1) return;
 
@@ -2990,14 +2986,13 @@ void TFT_eSPI::drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color)
 void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
   // Clipping
-  // TODO: Revise to use _clip* region
-  if ((x >= _width) || (y >= _height)) return;
+  if ((x >= _clipX1) || (y >= _clipY1)) return;
 
-  if (x < 0) { w += x; x = 0; }
-  if (y < 0) { h += y; y = 0; }
+  if (x < _clipX0) { w += (x - _clipX0); x = _clipX0; }
+  if (y < _clipY0) { h += (y - _clipY0); y = _clipY0; }
 
-  if ((x + w) > _width)  w = _width  - x;
-  if ((y + h) > _height) h = _height - y;
+  if ((x + w) > _clipX1) w = _clipX1 - x;
+  if ((y + h) > _clipY1) h = _clipY1 - y;
 
   if ((w < 1) || (h < 1)) return;
 
@@ -3297,7 +3292,6 @@ uint32_t TFT_eSPI::alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8
 ***************************************************************************************/
 size_t TFT_eSPI::write(uint8_t utf8)
 {
-  // TODO: Revise to use _clip* region
   if (utf8 == '\r') return 1;
 
   uint16_t uniCode = utf8;
@@ -3445,7 +3439,6 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y)
   // Any UTF-8 decoding must be done before calling drawChar()
 int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 {
-  // TODO: Revise to use _clip* region
   if (!uniCode) return 0;
 
   if (font==1) {
