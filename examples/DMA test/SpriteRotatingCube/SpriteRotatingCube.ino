@@ -6,7 +6,7 @@
 // parallel TFT's (tested with ILI9341 and ILI9481)
 
 // The sketch will run on processors without DMA and also parallel
-// interface TFT's. Comment out line 25 for no DMA.
+// interface TFT's. Comment out line 29 for no DMA.
 
 // Library here:
 // https://github.com/Bodmer/TFT_eSPI

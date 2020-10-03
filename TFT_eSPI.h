@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.2.4"
+#define TFT_ESPI_VERSION "2.2.23"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -335,6 +335,9 @@ int8_t pin_tft_d5;
 int8_t pin_tft_d6;
 int8_t pin_tft_d7;
 
+int8_t pin_tft_led;
+int8_t pin_tft_led_on;
+
 int8_t pin_tch_cs;   // Touch chip select pin
 
 int16_t tft_spi_freq;// TFT write SPI frequency
@@ -450,7 +453,7 @@ class TFT_eSPI : public Print {
            // The next functions can be used as a pair to copy screen blocks (or horizontal/vertical lines) to another location
            // Read a block of pixels to a data buffer, buffer is 16 bit and the size must be at least w * h
   void     readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data);
-           // Write a block of pixels to the screen - this is a deprecated alternative to pushImage()
+           // Write a block of pixels to the screen which have been read by readRect()
   void     pushRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data);
 
            // These are used to render images or sprites stored in RAM arrays (used by Sprite class for 16bpp Sprites)
@@ -575,7 +578,7 @@ class TFT_eSPI : public Print {
   uint32_t alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8_t dither = 0);
 
 
-  // DMA support functions - these are currently just for SPI writes whe using the STM32 processors
+  // DMA support functions - these are currently just for SPI writes when using the ESP32 or STM32 processors
            // Bear in mind DMA will only be of benefit in particular circumstances and can be tricky
            // to manage by noobs. The functions have however been designed to be noob friendly and
            // avoid a few DMA behaviour "gotchas".
@@ -590,7 +593,7 @@ class TFT_eSPI : public Print {
            // processor leaves a function or its content being changed while the DMA engine is reading it.
            //
            // The compiler MAY change the implied scope of a buffer which has been set aside by creating
-           // and an array. For example a buffer defined before a "for-next" loop may get de-allocated when
+           // an array. For example a buffer defined before a "for-next" loop may get de-allocated when
            // the loop ends. To avoid this use, for example, malloc() and free() to take control of when
            // the buffer space is available and ensure it is not released until DMA is complete.
            //
@@ -605,7 +608,7 @@ class TFT_eSPI : public Print {
   
            // Push an image to the TFT using DMA, buffer is optional and grabs (double buffers) a copy of the image
            // Use the buffer if the image data will get over-written or destroyed while DMA is in progress
-           // If swapping colour bytes is defined, and the double buffer option is NOT used then the bytes
+           // If swapping colour bytes is defined, and the double buffer option is NOT used, then the bytes
            // in the original data image will be swapped by the function before DMA is initiated.
            // The function will wait for the last DMA to complete if it is called while a previous DMA is still
            // in progress, this simplifies the sketch and helps avoid "gotchas".
@@ -615,9 +618,8 @@ class TFT_eSPI : public Print {
   void     pushPixelsDMA(uint16_t* image, uint32_t len);
 
            // Check if the DMA is complete - use while(tft.dmaBusy); for a blocking wait
-           // Note: for ESP32 the dmaBusy() function is blocking at the moment - to be updated
-  bool     dmaBusy(void);
-  void     dmaWait(void);
+  bool     dmaBusy(void); // returns true if DMA is still in progress
+  void     dmaWait(void); // wait until DMA is complete
 
   bool     DMA_Enabled = false;   // Flag for DMA enabled state
   uint8_t  spiBusyCheck = 0;      // Number of ESP32 transfer buffers to check

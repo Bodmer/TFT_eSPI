@@ -10,8 +10,11 @@
   // No globals
 #else
   // Use STM32 default SPI port
-  SPIClass& spi = SPI;
-
+  #if !defined (TFT_MOSI) || !defined (TFT_MISO) || !defined (TFT_SCLK)
+    SPIClass& spi = SPI;
+  #else
+    SPIClass spi(TFT_MOSI, TFT_MISO, TFT_SCLK);
+  #endif
   // SPI HAL peripheral handle
   SPI_HandleTypeDef spiHal;
 #endif
@@ -81,24 +84,42 @@ void TFT_eSPI::end_SDA_Read(void)
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
-  // Loop unrolling improves speed dramtically graphics test  0.634s => 0.374s
-  while (len>31) {
-    // 32D macro writes 16 bits twice
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    len-=32;
-  }
-  while (len>7) {
-    tft_Write_32D(color); tft_Write_32D(color);
-    tft_Write_32D(color); tft_Write_32D(color);
-    len-=8;
-  }
+    // Loop unrolling improves speed dramtically graphics test  0.634s => 0.374s
+    while (len>31) {
+    #if !defined (SSD1963_DRIVER)
+      // 32D macro writes 16 bits twice
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+    #else
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+    #endif
+      len-=32;
+    }
+
+    while (len>7) {
+    #if !defined (SSD1963_DRIVER)
+      tft_Write_32D(color); tft_Write_32D(color);
+      tft_Write_32D(color); tft_Write_32D(color);
+    #else
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+      tft_Write_16(color); tft_Write_16(color); tft_Write_16(color); tft_Write_16(color);
+    #endif
+      len-=8;
+    }
+
   while (len--) {tft_Write_16(color);}
 }
 
@@ -128,7 +149,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 ***************************************************************************************/
 void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 {
-#ifdef STM_PORTA_DATA_BUS
+#if defined (STM_PORTA_DATA_BUS)
   #if defined (STM32F1xx)
     if (mode == OUTPUT) GPIOA->CRL = 0x33333333;
     else GPIOA->CRL = 0x88888888;
@@ -136,7 +157,7 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
     if (mode == OUTPUT) GPIOA->MODER = (GPIOA->MODER & 0xFFFF0000) | 0x00005555;
     else GPIOA->MODER &= 0xFFFF0000;
   #endif
-#elif STM_PORTB_DATA_BUS
+#elif defined (STM_PORTB_DATA_BUS)
   #if defined (STM32F1xx)
     if (mode == OUTPUT) GPIOB->CRL = 0x33333333;
     else GPIOB->CRL = 0x88888888;
@@ -191,12 +212,12 @@ uint8_t TFT_eSPI::readByte(void)
   uint8_t b = 0;
 
   RD_L;
-#ifdef STM_PORTA_DATA_BUS
+#if defined (STM_PORTA_DATA_BUS)
   b = GPIOA->IDR;
   b = GPIOA->IDR;
   b = GPIOA->IDR;
   b = (GPIOA->IDR) & 0xFF;
-#elif STM_PORTB_DATA_BUS
+#elif defined (STM_PORTB_DATA_BUS)
   b = GPIOB->IDR;
   b = GPIOB->IDR;
   b = GPIOB->IDR;
@@ -484,15 +505,20 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 // The DMA functions here work with SPI only (not parallel)
 #if defined (STM32F2xx) || defined (STM32F4xx) || defined (STM32F7xx)
 /***************************************************************************************
-** Function name:           DMA2_StreamX_IRQHandler
-** Description:             Override the default HAL stream 3 interrupt handler
+** Function name:           DMAX_StreamX_IRQHandler
+** Description:             Override the default HAL stream X interrupt handler
 ***************************************************************************************/
-extern "C" void DMA2_Stream3_IRQHandler();
-void DMA2_Stream3_IRQHandler(void)
-{
-  // Call the default end of buffer handler
-  HAL_DMA_IRQHandler(&dmaHal);
-}
+  #if (TFT_SPI_PORT == 1)
+    extern "C" void DMA2_Stream3_IRQHandler();
+    void DMA2_Stream3_IRQHandler(void)
+  #elif (TFT_SPI_PORT == 2)
+    extern "C" void DMA1_Stream4_IRQHandler();
+    void DMA1_Stream4_IRQHandler(void)
+  #endif
+  {
+    // Call the default end of buffer handler
+    HAL_DMA_IRQHandler(&dmaHal);
+  }
 
 /***************************************************************************************
 ** Function name:           initDMA
@@ -503,9 +529,14 @@ void DMA2_Stream3_IRQHandler(void)
 // https://electronics.stackexchange.com/questions/379813/configuring-the-dma-request-multiplexer-on-a-stm32h7-mcu
 bool TFT_eSPI::initDMA(void)
 {
-  __HAL_RCC_DMA2_CLK_ENABLE();                           // Enable DMA2 clock
+  #if (TFT_SPI_PORT == 1)
+    __HAL_RCC_DMA2_CLK_ENABLE();                           // Enable DMA2 clock
+    dmaHal.Init.Channel = DMA_CHANNEL_3;                   // DMA channel 3 is for SPI1 TX
+  #elif (TFT_SPI_PORT == 2)
+    __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA2 clock
+    dmaHal.Init.Channel = DMA_CHANNEL_0;                   // DMA channel 0 is for SPI2 TX
+  #endif
 
-  dmaHal.Init.Channel = DMA_CHANNEL_3;                   // DMA channel 3 is for SPI1 TX
   dmaHal.Init.Mode =  DMA_NORMAL; //DMA_CIRCULAR;   //   // Normal = send buffer once
   dmaHal.Init.Direction = DMA_MEMORY_TO_PERIPH;          // Copy memory to the peripheral
   dmaHal.Init.PeriphInc = DMA_PINC_DISABLE;              // Don't increment peripheral address
@@ -517,10 +548,13 @@ bool TFT_eSPI::initDMA(void)
     // Insert error message here?
     return DMA_Enabled = false;
   };
+  #if (TFT_SPI_PORT == 1)
+    HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);  // Enable DMA end interrupt handler
+  #elif (TFT_SPI_PORT == 2)
+    HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);  // Enable DMA end interrupt handler
+  #endif
 
-  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);  // Enable DMA end interrupt handler
-
-  __HAL_LINKDMA(&spiHal, hdmatx, dmaHal); // Attach DMA engine to SPI peripheral
+  __HAL_LINKDMA(&spiHal, hdmatx, dmaHal);   // Attach DMA engine to SPI peripheral
 
   return DMA_Enabled = true;
 }
@@ -530,13 +564,18 @@ bool TFT_eSPI::initDMA(void)
 ** Function name:           DMA1_ChannelX_IRQHandler
 ** Description:             Override the default HAL stream 3 interrupt handler
 ***************************************************************************************/
-extern "C" void DMA1_Channel3_IRQHandler();
+  #if (TFT_SPI_PORT == 1)
+    extern "C" void DMA1_Channel3_IRQHandler();
+    void DMA1_Channel3_IRQHandler(void)
+  #elif (TFT_SPI_PORT == 2)
+    extern "C" void DMA1_Channel5_IRQHandler();
+    void DMA1_Channel5_IRQHandler(void)
+  #endif
+  {
+    // Call the default end of buffer handler
+    HAL_DMA_IRQHandler(&dmaHal);
+  }
 
-void DMA1_Channel3_IRQHandler(void)
-{
-  // Call the default end of buffer handler
-  HAL_DMA_IRQHandler(&dmaHal);
-}
 //*/
 /***************************************************************************************
 ** Function name:           initDMA
@@ -544,7 +583,7 @@ void DMA1_Channel3_IRQHandler(void)
 ***************************************************************************************/
 bool TFT_eSPI::initDMA(void)
 {
-  __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA2 clock
+  __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA1 clock
 
   dmaHal.Init.Mode =  DMA_NORMAL; //DMA_CIRCULAR;   //   // Normal = send buffer once
   dmaHal.Init.Direction = DMA_MEMORY_TO_PERIPH;          // Copy memory to the peripheral
@@ -561,9 +600,13 @@ bool TFT_eSPI::initDMA(void)
     return DMA_Enabled = false;
   };
 
-  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 1, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);  // Enable DMA end interrupt handler
-
+  #if (TFT_SPI_PORT == 1)
+    HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);  // Enable DMA end interrupt handler
+  #elif (TFT_SPI_PORT == 2)
+    HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);  // Enable DMA end interrupt handler
+  #endif
 
   return DMA_Enabled = true;
 }

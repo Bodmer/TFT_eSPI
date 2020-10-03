@@ -61,6 +61,7 @@ if (user.tft_driver != 0xE9D) // For ePaper displays the size is defined in the 
   Serial.print("Display driver = "); Serial.println(user.tft_driver, HEX); // Hexadecimal code
   Serial.print("Display width  = "); Serial.println(user.tft_width);  // Rotation 0 width and height
   Serial.print("Display height = "); Serial.println(user.tft_height);
+  Serial.println();
 }
 else if (user.tft_driver == 0xE9D) Serial.println("Display driver = ePaper\n");
 
@@ -97,6 +98,10 @@ if (user.overlap == true)
 }
 #endif
 String pinNameRef = "GPIO ";
+#ifdef ESP8266
+  pinNameRef = "PIN_D";
+#endif
+
 if (user.esp == 0x32F) {
   Serial.println("\n>>>>> Note: STM32 pin references above D15 may not reflect board markings <<<<<");
   pinNameRef = "D";
@@ -118,6 +123,15 @@ if (user.pin_tft_d4 != -1) { Serial.print("TFT_D4   = " + pinNameRef); Serial.pr
 if (user.pin_tft_d5 != -1) { Serial.print("TFT_D5   = " + pinNameRef); Serial.println(getPinName(user.pin_tft_d5)); }
 if (user.pin_tft_d6 != -1) { Serial.print("TFT_D6   = " + pinNameRef); Serial.println(getPinName(user.pin_tft_d6)); }
 if (user.pin_tft_d7 != -1) { Serial.print("TFT_D7   = " + pinNameRef); Serial.println(getPinName(user.pin_tft_d7)); }
+
+#if defined (TFT_BL)
+  Serial.print("\nTFT_BL           = " + pinNameRef); Serial.println(getPinName(user.pin_tft_led));
+  #if defined (TFT_BACKLIGHT_ON)
+    Serial.print("TFT_BACKLIGHT_ON = "); Serial.println(user.pin_tft_led_on == HIGH ? "HIGH" : "LOW");
+  #endif
+#endif
+
+Serial.println();
 
 uint16_t fonts = tft.fontsLoaded();
 if (fonts & (1 << 1))        Serial.print("Font GLCD   loaded\n");

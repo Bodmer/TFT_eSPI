@@ -9,17 +9,23 @@ class TFT_eSprite : public TFT_eSPI {
 
  public:
 
-  TFT_eSprite(TFT_eSPI *tft);
+  explicit TFT_eSprite(TFT_eSPI *tft);
+  ~TFT_eSprite(void);
 
            // Create a sprite of width x height pixels, return a pointer to the RAM area
            // Sketch can cast returned value to (uint16_t*) for 16 bit depth if needed
            // RAM required is:
            //  - 1 bit per pixel for 1 bit colour depth
+           //  - 1 nibble per pixel for 4 bit colour
            //  - 1 byte per pixel for 8 bit colour
            //  - 2 bytes per pixel for 16 bit color depth
-  ~TFT_eSprite(void);
+  void*    createSprite(int16_t width, int16_t height, uint8_t frames = 1);
 
-  void*    createSprite(int16_t width, int16_t height, uint8_t frames = 1);  
+           // Returns a pointer to the sprite or nullptr if not created, user must cast to pointer type
+  void*    getPointer(void);
+
+           // Returns true if sprite has been created
+  bool     created(void);
 
            // Delete the sprite to free up the RAM
   void     deleteSprite(void);
@@ -34,8 +40,8 @@ class TFT_eSprite : public TFT_eSPI {
   int8_t   getColorDepth(void);
 
            // Set the palette for a 4 bit depth sprite.  Only the first 16 colours in the map are used.
-  void     createPalette(uint16_t *palette, int colors = 16);       // Palette in RAM
-  void     createPalette(const uint16_t *palette, int colors = 16); // Palette in FLASH
+  void     createPalette(uint16_t *palette = nullptr, uint8_t colors = 16);       // Palette in RAM
+  void     createPalette(const uint16_t *palette = nullptr, uint8_t colors = 16); // Palette in FLASH
 
            // Set a single palette index to the given color
   void     setPaletteColor(uint8_t index, uint16_t color);
@@ -114,7 +120,7 @@ class TFT_eSprite : public TFT_eSPI {
            // 16bpp = colour, 8bpp = byte, 4bpp = colour index, 1bpp = 1 or 0
   uint16_t readPixelValue(int32_t x, int32_t y);
 
-           // Write an image (colour bitmap) to the sprite.  Not implemented for _bpp == 4.
+           // Write an image (colour bitmap) to the sprite.
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data);
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, const uint16_t *data);
 
@@ -126,6 +132,14 @@ class TFT_eSprite : public TFT_eSPI {
            // Optionally a "transparent" colour can be defined, pixels of that colour will not be rendered
   void     pushSprite(int32_t x, int32_t y);
   void     pushSprite(int32_t x, int32_t y, uint16_t transparent);
+
+           // Push a windowed area of the sprite to the TFT at tx, ty
+  bool     pushSprite(int32_t tx, int32_t ty, int32_t sx, int32_t sy, int32_t sw, int32_t sh);
+
+           // Push the sprite to another sprite at x,y. This fn calls pushImage() in the destination sprite (dspr) class.
+           // >>>>>>  Using a transparent color is not supported at the moment  <<<<<<
+  bool     pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y);
+  bool     pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y, uint16_t transparent);
 
   int16_t  drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font),
            drawChar(uint16_t uniCode, int32_t x, int32_t y);
@@ -154,15 +168,15 @@ class TFT_eSprite : public TFT_eSPI {
 
   uint8_t  _bpp;     // bits per pixel (1, 8 or 16)
   uint16_t *_img;    // pointer to 16 bit sprite
-  uint8_t  *_img8;   // pointer to  8 bit sprite
-  uint8_t  *_img4;   // pointer to 4 bit sprite (uses color map)
-  uint8_t  *_img8_1; // pointer to  frame 1
-  uint8_t  *_img8_2; // pointer to  frame 2
+  uint8_t  *_img8;   // pointer to  8 bit sprite frame 1 or frame 2
+  uint8_t  *_img4;   // pointer to  4 bit sprite (uses color map)
+  uint8_t  *_img8_1; // pointer to frame 1
+  uint8_t  *_img8_2; // pointer to frame 2
 
   uint16_t *_colorMap; // color map: 16 entries, used with 4 bit color map.
 
-  int16_t  _xpivot;   // x pivot point coordinate
-  int16_t  _ypivot;   // y pivot point coordinate
+  int16_t  _xPivot;   // x pivot point coordinate
+  int16_t  _yPivot;   // y pivot point coordinate
   int32_t  _sinra;
   int32_t  _cosra;
 

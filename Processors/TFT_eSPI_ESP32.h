@@ -39,9 +39,26 @@
 
 // Define a generic flag for 8 bit parallel
 #if defined (ESP32_PARALLEL) // Specific to ESP32 for backwards compatibility
-  #define TFT_PARALLEL_8_BIT // Generic parallel flag
+  #if !defined (TFT_PARALLEL_8_BIT)
+    #define TFT_PARALLEL_8_BIT // Generic parallel flag
+  #endif
 #endif
 
+// Ensure ESP32 specific flag is defined for 8 bit parallel
+#if defined (TFT_PARALLEL_8_BIT)
+  #if !defined (ESP32_PARALLEL)
+    #define ESP32_PARALLEL
+  #endif
+#endif
+
+// Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
+#if !defined(TFT_PARALLEL_8_BIT) && !defined(ILI9488_DRIVER) && !defined (RPI_DISPLAY_TYPE)
+  #define ESP32_DMA
+  // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
+  #define DMA_BUSY_CHECK  dmaWait()
+#else
+  #define DMA_BUSY_CHECK
+#endif
 
 // If smooth font is used then it is likely SPIFFS will be needed
 #ifdef SMOOTH_FONT
@@ -60,10 +77,16 @@
   #define DC_D // No macro allocated so it generates no code
 #else
   #if defined (TFT_PARALLEL_8_BIT)
-    #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
-    #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
+    // TFT_DC, by design, must be in range 0-31 for single register parallel write
+    #if (TFT_DC >= 0) &&  (TFT_DC < 32)
+      #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
+      #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
+    #else
+      #define DC_C
+      #define DC_D
+    #endif
   #else
-    #if TFT_DC >= 32
+    #if (TFT_DC >= 32)
       #ifdef RPI_DISPLAY_TYPE  // RPi displays need a slower DC change
         #define DC_C GPIO.out1_w1ts.val = (1 << (TFT_DC - 32)); \
                      GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
@@ -73,16 +96,20 @@
         #define DC_C GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))//;GPIO.out1_w1tc.val = (1 << (TFT_DC - 32))
         #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))//;GPIO.out1_w1ts.val = (1 << (TFT_DC - 32))
       #endif
-    #elif TFT_DC >= 0
-      #ifdef RPI_DISPLAY_TYPE  // RPi ILI9486 display needs a slower DC change
-        #define DC_C GPIO.out_w1tc = (1 << TFT_DC); \
-                     GPIO.out_w1tc = (1 << TFT_DC)
-        #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
-                     GPIO.out_w1ts = (1 << TFT_DC)
-      #elif defined (RPI_DISPLAY_TYPE)  // Other RPi displays need a slower C->D change
-        #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
-        #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
-                     GPIO.out_w1ts = (1 << TFT_DC)
+    #elif (TFT_DC >= 0)
+      #if defined (RPI_DISPLAY_TYPE)
+        #if defined (ILI9486_DRIVER)
+          // RPi ILI9486 display needs a slower DC change
+          #define DC_C GPIO.out_w1tc = (1 << TFT_DC); \
+                       GPIO.out_w1tc = (1 << TFT_DC)
+          #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
+                       GPIO.out_w1ts = (1 << TFT_DC)
+        #else
+          // Other RPi displays need a slower C->D change
+          #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
+          #define DC_D GPIO.out_w1tc = (1 << TFT_DC); \
+                       GPIO.out_w1ts = (1 << TFT_DC)
+        #endif
       #else
         #define DC_C GPIO.out_w1tc = (1 << TFT_DC)//;GPIO.out_w1tc = (1 << TFT_DC)
         #define DC_D GPIO.out_w1ts = (1 << TFT_DC)//;GPIO.out_w1ts = (1 << TFT_DC)
@@ -98,8 +125,9 @@
 // Define the CS (TFT chip select) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TFT_CS
-  #define CS_L // No macro allocated so it generates no code
-  #define CS_H // No macro allocated so it generates no code
+  #define TFT_CS -1  // Keep DMA code happy
+  #define CS_L       // No macro allocated so it generates no code
+  #define CS_H       // No macro allocated so it generates no code
 #else
   #if defined (TFT_PARALLEL_8_BIT)
     #if TFT_CS >= 32
@@ -113,8 +141,8 @@
       #define CS_H
     #endif
   #else
-    #if TFT_CS >= 32
-      #ifdef RPI_DISPLAY_TYPE  // RPi ILI9486 display needs a slower CS change
+    #if (TFT_CS >= 32)
+      #ifdef RPI_DISPLAY_TYPE  // RPi display needs a slower CS change
         #define CS_L GPIO.out1_w1ts.val = (1 << (TFT_CS - 32)); \
                      GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
         #define CS_H GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); \
@@ -123,12 +151,12 @@
         #define CS_L GPIO.out1_w1tc.val = (1 << (TFT_CS - 32)); GPIO.out1_w1tc.val = (1 << (TFT_CS - 32))
         #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))//;GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
       #endif
-    #elif TFT_CS >= 0
-      #ifdef RPI_DISPLAY_TYPE  // RPi ILI9486 display needs a slower CS change
+    #elif (TFT_CS >= 0)
+      #ifdef RPI_DISPLAY_TYPE  // RPi display needs a slower CS change
         #define CS_L GPIO.out_w1ts = (1 << TFT_CS); GPIO.out_w1tc = (1 << TFT_CS)
         #define CS_H GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1ts = (1 << TFT_CS)
       #else
-        #define CS_L GPIO.out_w1tc = (1 << TFT_CS);GPIO.out_w1tc = (1 << TFT_CS)
+        #define CS_L GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1tc = (1 << TFT_CS)
         #define CS_H GPIO.out_w1ts = (1 << TFT_CS)//;GPIO.out_w1ts = (1 << TFT_CS)
       #endif
     #else
@@ -141,9 +169,18 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the WR (TFT Write) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
-#ifdef TFT_WR
-  #define WR_L GPIO.out_w1tc = (1 << TFT_WR)
-  #define WR_H GPIO.out_w1ts = (1 << TFT_WR)
+#if defined (TFT_WR)
+  #if (TFT_WR >= 0)
+    // TFT_WR, by design, must be in range 0-31 for single register parallel write
+    #define WR_L GPIO.out_w1tc = (1 << TFT_WR)
+    #define WR_H GPIO.out_w1ts = (1 << TFT_WR)
+  #else
+    #define WR_L
+    #define WR_H
+  #endif
+#else
+  #define WR_L
+  #define WR_H
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -158,12 +195,64 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Make sure TFT_MISO is defined if not used to avoid an error message
+// Make sure SPI default pins are assigned if not specified by user or set to -1
 ////////////////////////////////////////////////////////////////////////////////////////
 #if !defined (TFT_PARALLEL_8_BIT)
-  #ifndef TFT_MISO
-    #define TFT_MISO -1
+
+  #ifdef USE_HSPI_PORT
+
+    #ifndef TFT_MISO
+      #define TFT_MISO 12
+    #endif
+    #if (TFT_MISO == -1)
+      #undef TFT_MISO
+      #define TFT_MISO 12
+    #endif
+
+    #ifndef TFT_MOSI
+      #define TFT_MOSI 13
+    #endif
+    #if (TFT_MOSI == -1)
+      #undef TFT_MOSI
+      #define TFT_MOSI 13
+    #endif
+
+    #ifndef TFT_SCLK
+      #define TFT_SCLK 14
+    #endif
+    #if (TFT_SCLK == -1)
+      #undef TFT_SCLK
+      #define TFT_SCLK 14
+    #endif
+
+  #else // VSPI port
+
+    #ifndef TFT_MISO
+      #define TFT_MISO 19
+    #endif
+    #if (TFT_MISO == -1)
+      #undef TFT_MISO
+      #define TFT_MISO 19
+    #endif
+
+    #ifndef TFT_MOSI
+      #define TFT_MOSI 23
+    #endif
+    #if (TFT_MOSI == -1)
+      #undef TFT_MOSI
+      #define TFT_MOSI 23
+    #endif
+
+    #ifndef TFT_SCLK
+      #define TFT_SCLK 18
+    #endif
+    #if (TFT_SCLK == -1)
+      #undef TFT_SCLK
+      #define TFT_SCLK 18
+    #endif
+
   #endif
+
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -204,13 +293,26 @@
   // Write 8 bits to TFT
   #define tft_Write_8(C)  GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)(C)); WR_H
 
-  // Write 16 bits to TFT
-  #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)((C) >> 8)); WR_H; \
-                          GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t)((C) >> 0)); WR_H
+  #if defined (SSD1963_DRIVER)
 
-  // 16 bit write with swapped bytes
-  #define tft_Write_16S(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) ((C) >> 0)); WR_H; \
-                           GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) ((C) >> 8)); WR_H
+    // Write 18 bit color to TFT
+    #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (((C) & 0xF800)>> 8)); WR_H; \
+                            GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (((C) & 0x07E0)>> 3)); WR_H; \
+                            GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (((C) & 0x001F)<< 3)); WR_H
+
+    // 18 bit color write with swapped bytes
+    #define tft_Write_16S(C) uint16_t Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
+
+  #else
+
+    // Write 16 bits to TFT
+    #define tft_Write_16(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) ((C) >> 8)); WR_H; \
+                            GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) ((C) >> 0)); WR_H
+
+    // 16 bit write with swapped bytes
+    #define tft_Write_16S(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) ((C) >> 0)); WR_H; \
+                             GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) ((C) >> 8)); WR_H
+  #endif
 
   // Write 32 bits to TFT
   #define tft_Write_32(C) GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) ((C) >> 24)); WR_H; \
@@ -232,10 +334,18 @@
 
    // Read pin
   #ifdef TFT_RD
-    #define RD_L GPIO.out_w1tc = (1 << TFT_RD)
-    //#define RD_L digitalWrite(TFT_WR, LOW)
-    #define RD_H GPIO.out_w1ts = (1 << TFT_RD)
-    //#define RD_H digitalWrite(TFT_WR, HIGH)
+    #if (TFT_RD >= 32)
+      #define RD_L GPIO.out1_w1tc.val =  = (1 << (TFT_RD - 32))
+      #define RD_H GPIO.out1_w1ts.val =  = (1 << (TFT_RD - 32))
+    #elif (TFT_RD >= 0)
+      #define RD_L GPIO.out_w1tc = (1 << TFT_RD)
+      //#define RD_L digitalWrite(TFT_WR, LOW)
+      #define RD_H GPIO.out_w1ts = (1 << TFT_RD)
+      //#define RD_H digitalWrite(TFT_WR, HIGH)
+    #else
+      #define RD_L
+      #define RD_H
+    #endif
   #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -301,16 +411,6 @@
 // Macros for all other SPI displays
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
-
-  #define ESP32_DMA // DMA is available for SPI
-
-  // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
-  #ifdef ESP32_DMA
-    // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
-    #define DMA_BUSY_CHECK  { if (DMA_Enabled) dmaWait(); }
-  #else
-    #define DMA_BUSY_CHECK
-  #endif
 
   // ESP32 low level SPI writes for 8, 16 and 32 bit values
   // to avoid the function call overhead

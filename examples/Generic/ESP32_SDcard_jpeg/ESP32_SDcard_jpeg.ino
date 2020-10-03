@@ -153,8 +153,8 @@ void jpegRender(int xpos, int ypos) {
   // Jpeg images are draw as a set of image block (tiles) called Minimum Coding Units (MCUs)
   // Typically these MCUs are 16x16 pixel blocks
   // Determine the width and height of the right and bottom edge image blocks
-  uint32_t min_w = min(mcu_w, max_x % mcu_w);
-  uint32_t min_h = min(mcu_h, max_y % mcu_h);
+  uint32_t min_w = jpg_min(mcu_w, max_x % mcu_w);
+  uint32_t min_h = jpg_min(mcu_h, max_y % mcu_h);
 
   // save the current image block size
   uint32_t win_w = mcu_w;
