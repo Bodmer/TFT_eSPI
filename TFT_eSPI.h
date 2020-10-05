@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.2.23"
+#define TFT_ESPI_VERSION "2.3.0"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -390,6 +390,13 @@ class TFT_eSPI : public Print {
   void     setAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h), // Note: start coordinates + width and height
            setWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);   // Note: start + end coordinates
 
+  // Viewport commands, see "Viewport_Demo" sketch
+  void     setViewport(int32_t x, int32_t y, int32_t w, int32_t h, bool vpDatum = true);
+  int32_t  getViewportWidth(void);
+  int32_t  getViewportHeight(void);
+  void     frameViewport(uint16_t color, int32_t w);
+  void     resetViewport(void);
+
   // Push (aka write pixel) colours to the TFT (use setAddrWindow() first)
   void     pushColor(uint16_t color),
            pushColor(uint16_t color, uint32_t len),  // Deprecated, use pushBlock()
@@ -727,6 +734,12 @@ class TFT_eSPI : public Print {
   int32_t  _init_width, _init_height; // Display w/h as input, used by setRotation()
   int32_t  _width, _height;           // Display w/h as modified by current rotation
   int32_t  addr_row, addr_col;        // Window position - used to minimise window commands
+
+  // Viewport variables
+  int32_t  _vpX, _vpY, _vpW, _vpH;
+  int32_t  _xDatum;
+  int32_t  _yDatum;
+  bool     _vpDatum;
 
   uint32_t fontsloaded;               // Bit field of fonts loaded
 
