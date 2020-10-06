@@ -18,7 +18,7 @@
 // A viewport can have the coordinate datum (position 0,0) either at the top left corner of
 // the viewport or at the normal top left corner of the TFT.
 // Putting the coordinate datum at the viewport corner means that functions that draw graphics
-// in a fixed position can be relocated anywhere on the screen. (see plotShapes() below). This
+// in a fixed position can be relocated anywhere on the screen. (see plotBox() below). This
 // makes it easier to reposition groupd of graphical ojects (for example GUI buttons) that have
 // fixed relative positions.
 
