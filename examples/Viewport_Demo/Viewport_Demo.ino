@@ -110,6 +110,8 @@ void loop()
     tft.setViewport(x, y, w, h);
 
     plotBox();
+
+    delay(0);
   }
 }
 
