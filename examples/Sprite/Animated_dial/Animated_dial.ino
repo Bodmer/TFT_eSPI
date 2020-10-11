@@ -89,7 +89,7 @@ void setup()   {
   spr.setTextColor(TFT_WHITE, bg_color);
   spr.setTextDatum(MC_DATUM);
   spr.setTextPadding(spr_width);
-  spr.drawNumber(0, spr_width/2, 0);
+  spr.drawNumber(0, spr_width/2, spr.fontHeight()/2);
   spr.pushSprite(DIAL_CENTRE_X - spr_width / 2, DIAL_CENTRE_Y - spr.fontHeight() / 2);
 
   // Plot the label text
@@ -203,7 +203,7 @@ void plotNeedle(int16_t angle, uint16_t ms_delay)
     }
 
     // Update the number at the centre of the dial
-    spr.drawNumber(old_angle+120, spr_width/2, 0);
+    spr.drawNumber(old_angle+120, spr_width/2, spr.fontHeight()/2);
     spr.pushSprite(120 - spr_width / 2, 120 - spr.fontHeight() / 2);
 
     // Slow needle down slightly as it approaches the new position

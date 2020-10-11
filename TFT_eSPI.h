@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.3.0"
+#define TFT_ESPI_VERSION "2.3.1"
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -736,10 +736,13 @@ class TFT_eSPI : public Print {
   int32_t  addr_row, addr_col;        // Window position - used to minimise window commands
 
   // Viewport variables
-  int32_t  _vpX, _vpY, _vpW, _vpH;
+  int32_t  _vpX, _vpY, _vpW, _vpH;    // Note: x start, y start, x end + 1, y end + 1
   int32_t  _xDatum;
   int32_t  _yDatum;
+  int32_t  _xWidth;
+  int32_t  _yHeight;
   bool     _vpDatum;
+  bool     _vpOoB;
 
   uint32_t fontsloaded;               // Bit field of fonts loaded
 
