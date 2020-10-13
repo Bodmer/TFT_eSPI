@@ -16,7 +16,11 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.3.1"
+#define TFT_ESPI_VERSION "2.3.2"
+
+// Bit level feature flags
+// Bit 0 set: viewport capability
+#define TFT_ESPI_FEATURES 1
 
 /***************************************************************************************
 **                         Section 1: Load required header files
@@ -392,8 +396,12 @@ class TFT_eSPI : public Print {
 
   // Viewport commands, see "Viewport_Demo" sketch
   void     setViewport(int32_t x, int32_t y, int32_t w, int32_t h, bool vpDatum = true);
+  bool     checkViewport(int32_t x, int32_t y, int32_t w, int32_t h);
+  int32_t  getViewportX(void);
+  int32_t  getViewportY(void);
   int32_t  getViewportWidth(void);
   int32_t  getViewportHeight(void);
+  bool     getViewportDatum(void);
   void     frameViewport(uint16_t color, int32_t w);
   void     resetViewport(void);
 

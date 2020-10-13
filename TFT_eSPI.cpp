@@ -171,6 +171,35 @@ void TFT_eSPI::setViewport(int32_t x, int32_t y, int32_t w, int32_t h, bool vpDa
 }
 
 /***************************************************************************************
+** Function name:           checkViewport
+** Description:             Check if any part of specified area is visible in viewport
+***************************************************************************************/
+// Note: Setting w and h to 1 will check if coordinate x,y is in area
+bool TFT_eSPI::checkViewport(int32_t x, int32_t y, int32_t w, int32_t h)
+{
+  if (_vpOoB) return false;
+  x+= _xDatum;
+  y+= _yDatum;
+
+  if ((x >= _vpW) || (y >= _vpH)) return false; 
+
+  int32_t dx = 0;
+  int32_t dy = 0;
+  int32_t dw = w;
+  int32_t dh = h;
+
+  if (x < _vpX) { dx = _vpX - x; dw -= dx; x = _vpX; }
+  if (y < _vpY) { dy = _vpY - y; dh -= dy; y = _vpY; }
+
+  if ((x + dw) > _vpW ) dw = _vpW - x;
+  if ((y + dh) > _vpH ) dh = _vpH - y;
+
+  if (dw < 1 || dh < 1) return false;
+
+  return true;
+}
+
+/***************************************************************************************
 ** Function name:           resetViewport
 ** Description:             Reset viewport to whle TFT screen, datum at 0,0
 ***************************************************************************************/
@@ -191,6 +220,24 @@ void TFT_eSPI::resetViewport(void)
 }
 
 /***************************************************************************************
+** Function name:           getViewportX
+** Description:             Get x position of the viewport
+***************************************************************************************/
+int32_t  TFT_eSPI::getViewportX(void)
+{
+  return _xDatum;
+}
+
+/***************************************************************************************
+** Function name:           getViewportY
+** Description:             Get y position of the viewport
+***************************************************************************************/
+int32_t  TFT_eSPI::getViewportY(void)
+{
+  return _yDatum;
+}
+
+/***************************************************************************************
 ** Function name:           getViewportWidth
 ** Description:             Get width of the viewport
 ***************************************************************************************/
@@ -206,6 +253,15 @@ int32_t TFT_eSPI::getViewportWidth(void)
 int32_t TFT_eSPI::getViewportHeight(void)
 {
   return _vpH - _vpY;
+}
+
+/***************************************************************************************
+** Function name:           getViewportDatum
+** Description:             Get datum of the viewport (true = viewport corner)
+***************************************************************************************/
+bool  TFT_eSPI::getViewportDatum(void)
+{
+  return _vpDatum;
 }
 
 /***************************************************************************************

@@ -1,6 +1,6 @@
 // Viewport Demo
 
-// See viewport_commands tab
+// See viewport_commands tab for details of functions available
 
 // This example uses the viewport commands to create a "virtual TFT" within the
 // normal TFT display area. This allows a sketch written for a smaller screen to
@@ -36,34 +36,6 @@ void setup() {
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
-
-
-/*
-  tft.setViewport(VP_X, VP_Y, VP_W, VP_H); // By default the 0,0 coordinate datum is 
-                                           // moved to top left corner of viewport
-                                           // Note: tft.width() and tft.height() now return viewport size
-  // Other command options:
-  //tft.setViewport(VP_X, VP_Y, VP_W, VP_H, true); // Explicitly set datum to viewport corner
-
-  //tft.setViewport(VP_X, VP_Y, VP_W, VP_H, false); // Create viewport but datum stays at TFT corner
-                                                    // Note: tft.width() and tft.height() now return TFT size
-
-  w = tft.getViewportWidth();  // Always returns width of viewport
-  h = tft.getViewportHeight(); // Always returns height of viewport
-
-  tft.frameViewport(TFT_GREEN, -2); // Draw a rectangle of width 2 outside (negative width) viewport
-  tft.frameViewport(TFT_RED,   10); // Draw a rectangle of width 10 inside (positive width) viewport
-
-  // tft.resetViewport(); // Command to reset viewport to "normal" full TFT screen
-                          // Graphics will not be drawn to the TFT outside a viewport until
-                          // this command is used!
-
-  // tft.setRotation(2);  // Using setRotation rotates the whole TFT screen it does not just
-                          // rotate the viewport (this is a possible future enhancement).
-                          // Redraw all graphics after a rotation since some TFT's do not
-                          // re-map the TFT graphics RAM to the screen pixels as expected.
-  delay(1000);
-  */
 }
 
 void loop()
@@ -140,5 +112,5 @@ void plotBox(void)
   tft.drawRect(0,0, 40,40, TFT_BLUE);
   tft.setTextDatum(MC_DATUM);
   tft.setTextColor(TFT_WHITE);
-  tft.drawNumber( random(100), 20, 23, 4);
+  tft.drawNumber( random(100), 20, 23, 4); // Number in font 4
 }

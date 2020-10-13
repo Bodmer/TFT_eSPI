@@ -1,7 +1,7 @@
 /*
  This sketch demonstrates the Adafruit graphicstest sketch running in a
  viewport (aka window) within the TFT screen area. To do this line 37 has
- been added. Line 38 outlines the viewport.
+ been added. Line 39 draws a frame outside the viewport.
 
  This sketch uses the GLCD font (font 1) only.
 
@@ -35,6 +35,7 @@ void setup() {
 
   // Create a viewport 220 x 300 pixels
   tft.setViewport(10,10,220,300);
+
   tft.frameViewport(TFT_RED, -1); // 1 pixel wide frame around viewport
 
   yield(); Serial.println(F("Benchmark                Time (microseconds)"));

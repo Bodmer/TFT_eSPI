@@ -17,11 +17,16 @@ getRotation	KEYWORD2
 invertDisplay	KEYWORD2
 setAddrWindow	KEYWORD2
 setWindow	KEYWORD2
+
 setViewport	KEYWORD2
 resetViewport	KEYWORD2
+getViewportX	KEYWORD2
+getViewportY	KEYWORD2
 getViewportWidth	KEYWORD2
 getViewportHeight	KEYWORD2
+getViewportDatum	KEYWORD2
 frameViewport	KEYWORD2
+
 pushColor	KEYWORD2
 pushColors	KEYWORD2
 pushBlock	KEYWORD2
