@@ -2,7 +2,7 @@
 The Sprite class has been updated to remove an inconsistency for the setSwapBytes() function. Although all the examples are unchanged, user sketches may be affected. If the colors of the sprite change when loading this new version 2.2.16 then it may be necessary to change the swap bytes setting, e.g. for a sprite instance "spr" use either: spr.setSwapBytes(true) or spr.setSwapBytes(false) to correct the colour.
 
 # News
-1. The library now provides a "viewport" capability. See "Viewport_Demo" and "Viewport_graphicstest" examples. When a viewport is defined grpahics will only appear within that window.  The coordinate datum by default moves to the top left corner of the viewport, but can optionally remain at top left corner of TFT. The GUIslice library will make use of this feature to speed up the rendering of GUI objects (see #769).
+1. The library now provides a "viewport" capability. See "Viewport_Demo" and "Viewport_graphicstest" examples. When a viewport is defined graphics will only appear within that window.  The coordinate datum by default moves to the top left corner of the viewport, but can optionally remain at top left corner of TFT. The GUIslice library will make use of this feature to speed up the rendering of GUI objects ([see #769](https://github.com/Bodmer/TFT_eSPI/issues/769)).
 
 2. The library now supports SSD1963 based screen, this has been tested on a [480x800 screen](https://www.buydisplay.com/7-tft-screen-touch-lcd-display-module-w-ssd1963-controller-board-mcu) with an ESP32. The interface is 8 bit parallel only as that controller does not support a SPI interface.
 
