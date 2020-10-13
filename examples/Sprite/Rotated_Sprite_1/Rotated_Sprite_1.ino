@@ -132,7 +132,7 @@ void loop() {
   for (int16_t angle = 30; angle <= 360; angle += 30)
   {
     spr.fillSprite(TFT_BLACK);         // Clear the Sprite
-    spr.drawNumber(num, 20, 15, 4);    // Plot number, in Sprite at 15,15 and with font 4
+    spr.drawNumber(num, 20, 15, 4);    // Plot number, in Sprite at 20,15 and with font 4
     spr.pushRotated(angle, TFT_BLACK); // Plot rotated Sprite, black being transparent
     num++;
   }
@@ -143,7 +143,7 @@ void loop() {
   for (int16_t angle = -90; angle < 270; angle += 30)
   {
     spr.fillSprite(TFT_BLACK);           // Clear the Sprite
-    spr.drawNumber(angle+90, 15, 15, 4); // Plot number, in Sprite at 15,15 and with font 4
+    spr.drawNumber(angle+90, 20, 15, 4); // Plot number, in Sprite at 20,15 and with font 4
     spr.pushRotated(angle, TFT_BLACK);   // Plot rotated Sprite, black being transparent
     num++;
   }
