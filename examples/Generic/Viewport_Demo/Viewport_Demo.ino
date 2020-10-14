@@ -22,9 +22,6 @@
 // makes it easier to reposition groups of graphical objects (for example GUI buttons) that have
 // fixed relative positions.
 
-// The viewport position x, and y coordinates and viewport bounds must be constrained by the
-// user sketch to be within the screen boundaries.
-
 #include <SPI.h>
 #include <TFT_eSPI.h>
 
