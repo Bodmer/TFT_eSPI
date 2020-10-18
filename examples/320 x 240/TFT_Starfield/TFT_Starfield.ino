@@ -20,7 +20,7 @@ uint8_t __attribute__((always_inline)) rng()
   zx++;
   za = (za^zc^zx);
   zb = (zb+za);
-  zc = (zc+(zb>>1)^za);
+  zc = ((zc+(zb>>1))^za);
   return zc;
 }
 

@@ -843,9 +843,9 @@ bool TFT_eSprite::pushSprite(int32_t tx, int32_t ty, int32_t sx, int32_t sy, int
       _tft->pushImage(tx, ty, sw, sh, _img4 + (_iwidth>>1) * _ys, false, _colorMap );
     else // Render line by line
     {
-      uint32_t ds = _xs&1; // Odd x start pixel
+      int32_t ds = _xs&1; // Odd x start pixel
 
-      uint32_t de = 0;     // Odd x end pixel
+      int32_t de = 0;     // Odd x end pixel
       if ((sw > ds) && (_xe&1)) de = 1;
 
       uint32_t dm = 0;     // Midsection pixel count
@@ -877,7 +877,7 @@ bool TFT_eSprite::pushSprite(int32_t tx, int32_t ty, int32_t sx, int32_t sy, int
       _tft->setWindow(tx, ty, tx+sw-1, ty+sh-1);
       while (sh--)
       {
-        for (uint32_t dx = _xs; dx < _xs + sw; dx++) _tft->pushColor(readPixel(dx, _ys));
+        for (int32_t dx = _xs; dx < _xs + sw; dx++) _tft->pushColor(readPixel(dx, _ys));
         ty++;
         _ys++;
       }

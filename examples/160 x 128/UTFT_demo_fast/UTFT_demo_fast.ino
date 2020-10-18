@@ -311,7 +311,7 @@ void loop()
   // It takes 30ms to calculate the 30,000 random numbers so this is not a true drawPixel speed test
   for (int i=0; i<10000; i++)
   {
-    myGLCD.drawPixel(2+random(316), 16+random(209),random(0xFFFF));
+    myGLCD.drawPixel(2+random(TFT_W - 3), 16+random(TFT_H - 31),random(0xFFFF));
   }
 #else
   // Draw 10,000 pixels to fill a 100x100 pixel box, better drawPixel speed test

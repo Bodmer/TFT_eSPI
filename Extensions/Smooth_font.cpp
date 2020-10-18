@@ -359,9 +359,13 @@ bool TFT_eSPI::getUnicodeIndex(uint16_t unicode, uint16_t *index)
 // Expects file to be open
 void TFT_eSPI::drawGlyph(uint16_t code)
 {
+  uint16_t fg = textcolor;
+  uint16_t bg = textbgcolor;
+
   if (code < 0x21)
   {
     if (code == 0x20) {
+      //if (fg!=bg) fillRect(cursor_x, cursor_y, gFont.spaceWidth, gFont.yAdvance, bg);
       cursor_x += gFont.spaceWidth;
       return;
     }
@@ -377,18 +381,15 @@ void TFT_eSPI::drawGlyph(uint16_t code)
   uint16_t gNum = 0;
   bool found = getUnicodeIndex(code, &gNum);
   
-  uint16_t fg = textcolor;
-  uint16_t bg = textbgcolor;
-
   if (found)
   {
 
-    if (textwrapX && (cursor_x + gWidth[gNum] + gdX[gNum] > _width))
+    if (textwrapX && (cursor_x + gWidth[gNum] + gdX[gNum] > width()))
     {
       cursor_y += gFont.yAdvance;
       cursor_x = 0;
     }
-    if (textwrapY && ((cursor_y + gFont.yAdvance) >= _height)) cursor_y = 0;
+    if (textwrapY && ((cursor_y + gFont.yAdvance) >= height())) cursor_y = 0;
     if (cursor_x == 0) cursor_x -= gdX[gNum];
 
     uint8_t* pbuffer = nullptr;
@@ -402,14 +403,16 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     }
 #endif
 
-    int16_t  xs = 0;
-    uint32_t dl = 0;
-    uint8_t pixel;
-
     int16_t cy = cursor_y + gFont.maxAscent - gdY[gNum];
     int16_t cx = cursor_x + gdX[gNum];
 
+    int16_t  xs = cx;
+    uint32_t dl = 0;
+    uint8_t pixel;
+
     startWrite(); // Avoid slow ESP32 transaction overhead for every pixel
+
+    //if (fg!=bg) fillRect(cursor_x, cursor_y, gxAdvance[gNum], gFont.yAdvance, bg);
 
     for (int y = 0; y < gHeight[gNum]; y++)
     {
