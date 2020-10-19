@@ -1908,8 +1908,8 @@ void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
   while(x<r){
 
     if(p>=0) {
-      drawFastHLine(x0 - x + 1, y0 + r, dx-1, color);
-      drawFastHLine(x0 - x + 1, y0 - r, dx-1, color);
+      drawFastHLine(x0 - x, y0 + r, dx, color);
+      drawFastHLine(x0 - x, y0 - r, dx, color);
       dy-=2;
       p-=dy;
       r--;
@@ -1927,7 +1927,6 @@ void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
   inTransaction = false;
   end_tft_write();              // Does nothing if Sprite class uses this function
 }
-
 
 /***************************************************************************************
 ** Function name:           fillCircleHelper
