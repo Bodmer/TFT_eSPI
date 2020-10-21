@@ -99,7 +99,7 @@ void loop() {
       // Font 7 is to show a pseudo 7 segment display.
       // Font 7 only contains characters [space] 0 1 2 3 4 5 6 7 8 9 0 : .
       tft.drawString("88:88",xpos,ypos,7); // Overwrite the text to clear it
-      tft.setTextColor(0xFBE0, TFT_BLACK); // Orange
+      tft.setTextColor(0xFBE0); // Orange
       omm = mm;
 
       if (hh<10) xpos+= tft.drawChar('0',xpos,ypos,7);
