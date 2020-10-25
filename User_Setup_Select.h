@@ -168,6 +168,9 @@
 #elif defined (SSD1963_800BD_DRIVER)
      #include "TFT_Drivers/SSD1963_Defines.h"
      #define  TFT_DRIVER 0x1963
+#elif defined (GC9A01_DRIVER)
+     #include "TFT_Drivers/GC9A01_Defines.h"
+     #define  TFT_DRIVER 0x9A01
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
                               // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp
 #elif defined (XYZZY_DRIVER)
