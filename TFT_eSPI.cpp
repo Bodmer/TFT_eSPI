@@ -1023,57 +1023,52 @@ void TFT_eSPI::setCallback(getColorCallback getCol)
 ***************************************************************************************/
 void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data)
 {
-  if (_vpOoB) return;
-
-  x+= _xDatum;
-  y+= _yDatum;
-
-  // Clipping
-  if ((x >= _vpW) || (y >= _vpH)) return;
-
-  if (x < _vpX) { w += x - _vpX; x = _vpX; }
-  if (y < _vpY) { h += y - _vpY; y = _vpY; }
-
-  if ((x + w) > _vpW) w = _vpW - x;
-  if ((y + h) > _vpH) h = _vpH - y;
-
-  if ((w < 1) || (h < 1)) return;
+  PI_CLIP ;
 
 #if defined(TFT_PARALLEL_8_BIT)
 
   CS_L;
 
-  readAddrWindow(x, y, w, h);
+  readAddrWindow(x, y, dw, dh);
+
+  data += dx + dy * w;
 
   // Set masked pins D0- D7 to input
   busDir(dir_mask, INPUT);
-
-  // Total pixel count
-  uint32_t len = w * h;
 
   #if defined (ILI9341_DRIVER) | defined (ILI9488_DRIVER) // Read 3 bytes
     // Dummy read to throw away don't care value
     readByte();
 
     // Fetch the 24 bit RGB value
-    while (len--) {
-      // Assemble the RGB 16 bit colour
-      uint16_t rgb = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
+    while (dh--) {
+      int32_t lw = dw;
+      uint16_t* line = data;
+      while (lw--) {
+        // Assemble the RGB 16 bit colour
+        uint16_t rgb = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
 
-      // Swapped byte order for compatibility with pushRect()
-      *data++ = (rgb<<8) | (rgb>>8);
+        // Swapped byte order for compatibility with pushRect()
+        *line++ = (rgb<<8) | (rgb>>8);
+      }
+      data += w;
     }
 
   #elif  defined (SSD1963_DRIVER)
     // Fetch the 18 bit BRG pixels
-    while (len--) {
-      uint16_t bgr = ((readByte() & 0xF8) >> 3);; // CS_L adds a small delay
-      bgr |= ((readByte() & 0xFC) << 3);
-      bgr |= (readByte() << 8);
-      // Swap Red and Blue (could check MADCTL setting to see if this is needed)
-      uint16_t rgb = (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
-      // Swapped byte order for compatibility with pushRect()
-      *data++ = (rgb<<8) | (rgb>>8);
+    while (dh--) {
+      int32_t lw = dw;
+      uint16_t* line = data;
+      while (lw--) {
+        uint16_t bgr = ((readByte() & 0xF8) >> 3);; // CS_L adds a small delay
+        bgr |= ((readByte() & 0xFC) << 3);
+        bgr |= (readByte() << 8);
+        // Swap Red and Blue (could check MADCTL setting to see if this is needed)
+        uint16_t rgb = (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
+        // Swapped byte order for compatibility with pushRect()
+        *line++ = (rgb<<8) | (rgb>>8);
+      }
+      data += w;
     }
 
   #else // ILI9481 reads as 16 bits
@@ -1081,18 +1076,23 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
     readByte();
 
     // Fetch the 16 bit BRG pixels
-    while (len--) {
+    while (dh--) {
+      int32_t lw = dw;
+      uint16_t* line = data;
+      while (lw--) {
       #ifdef ILI9486_DRIVER
         // Read the RGB 16 bit colour
-        *data++ = readByte() | (readByte() << 8);
+        *line++ = readByte() | (readByte() << 8);
       #else
         // Read the BRG 16 bit colour
         uint16_t bgr = (readByte() << 8) | readByte();
         // Swap Red and Blue (could check MADCTL setting to see if this is needed)
         uint16_t rgb = (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
         // Swapped byte order for compatibility with pushRect()
-        *data++ = (rgb<<8) | (rgb>>8);
+        *line++ = (rgb<<8) | (rgb>>8);
       #endif
+      }
+      data += w;
     }
   #endif
 
@@ -1107,7 +1107,9 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 
   begin_tft_read();
 
-  readAddrWindow(x, y, w, h);
+  readAddrWindow(x, y, dw, dh);
+
+  data += dx + dy * w;
 
   #ifdef TFT_SDA_READ
     begin_SDA_Read();
@@ -1117,8 +1119,10 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
   tft_Read_8();
 
   // Read window pixel 24 bit RGB values
-  uint32_t len = w * h;
-  while (len--) {
+  while (dh--) {
+    int32_t lw = dw;
+    uint16_t* line = data;
+    while (lw--) {
 
   #if !defined (ILI9488_DRIVER)
 
@@ -1136,16 +1140,18 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 
   #else
 
-    // The 6 colour bits are in MS 6 bits of each byte but we do not include the extra clock pulse
-    // so we use a trick and mask the middle 6 bits of the byte, then only shift 1 place left
-    uint8_t r = (tft_Read_8()&0x7E)<<1;
-    uint8_t g = (tft_Read_8()&0x7E)<<1;
-    uint8_t b = (tft_Read_8()&0x7E)<<1;
-    color = color565(r, g, b);
+      // The 6 colour bits are in MS 6 bits of each byte but we do not include the extra clock pulse
+      // so we use a trick and mask the middle 6 bits of the byte, then only shift 1 place left
+      uint8_t r = (tft_Read_8()&0x7E)<<1;
+      uint8_t g = (tft_Read_8()&0x7E)<<1;
+      uint8_t b = (tft_Read_8()&0x7E)<<1;
+      color = color565(r, g, b);
   #endif
 
-    // Swapped colour byte order for compatibility with pushRect()
-    *data++ = color << 8 | color >> 8;
+      // Swapped colour byte order for compatibility with pushRect()
+      *line++ = color << 8 | color >> 8;
+    }
+    data += w;
   }
 
   //CS_H;
