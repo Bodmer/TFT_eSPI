@@ -76,6 +76,8 @@
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 
+//#include <User_Setups/Setup210_Maixduino.h>        // Setup file for all K210 with 1- or 8-wire SPI TFT
+
 //#include <User_Setups/SetupX_Template.h>
 
 
