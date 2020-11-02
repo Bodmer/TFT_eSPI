@@ -20,6 +20,8 @@
   #include "Processors/TFT_eSPI_ESP32.c"
 #elif defined (ESP8266)
   #include "Processors/TFT_eSPI_ESP8266.c"
+#elif defined (K210)
+  #include "Processors/TFT_eSPI_K210.cpp"
 #elif defined (STM32) // (_VARIANT_ARDUINO_STM32_) stm32_def.h
   #include "Processors/TFT_eSPI_STM32.c"
 #else
@@ -98,7 +100,11 @@ inline void TFT_eSPI::begin_tft_read(void){
   }
 #else
   #if !defined(TFT_PARALLEL_8_BIT)
-    spi.setFrequency(SPI_READ_FREQUENCY);
+    #if defined(K210)
+      spi_.setFrequency(SPI_READ_FREQUENCY);
+    #else
+      spi.setFrequency(SPI_READ_FREQUENCY);
+    #endif
   #endif
    CS_L;
 #endif
@@ -318,7 +324,11 @@ inline void TFT_eSPI::end_tft_read(void){
   }
 #else
   #if !defined(TFT_PARALLEL_8_BIT)
-    spi.setFrequency(SPI_FREQUENCY);
+    #if defined (K210)
+      spi_.setFrequency(SPI_FREQUENCY);
+    #else
+      spi.setFrequency(SPI_FREQUENCY);
+    #endif
   #endif
    if(!inTransaction) {CS_H;}
 #endif
@@ -522,7 +532,15 @@ void TFT_eSPI::init(uint8_t tc)
     spi.pins(6, 7, 8, 0);
   #endif
 
-  spi.begin(); // This will set HMISO to input
+  #if defined (K210)
+    #if defined(TFT_PARALLEL_8_BIT)
+      spi_.begin(); // This will set HMISO to input
+    #else
+      spi_.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1); //M5StickV
+    #endif
+  #else
+    spi.begin(); // This will set HMISO to input
+  #endif
 
 #else
   #if !defined(TFT_PARALLEL_8_BIT)
@@ -562,6 +580,12 @@ void TFT_eSPI::init(uint8_t tc)
   } // end of: if just _booted
 
   // Toggle RST low to reset
+  begin_tft_write();
+
+#if defined (K210)
+  tft_io_init();
+#endif
+
 #ifdef TFT_RST
   if (TFT_RST >= 0) {
     digitalWrite(TFT_RST, HIGH);
@@ -645,6 +669,7 @@ void TFT_eSPI::init(uint8_t tc)
 #if defined (TFT_BL) && defined (TFT_BACKLIGHT_ON)
   pinMode(TFT_BL, OUTPUT);
   digitalWrite(TFT_BL, TFT_BACKLIGHT_ON);
+//TODO K210
 #else
   #if defined (TFT_BL) && defined (M5STACK)
     // Turn on the back-light LED
@@ -1036,6 +1061,9 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
   // Set masked pins D0- D7 to input
   busDir(dir_mask, INPUT);
 
+  // Total pixel count
+  uint32_t len = w * h;
+
   #if defined (ILI9341_DRIVER) | defined (ILI9488_DRIVER) // Read 3 bytes
     // Dummy read to throw away don't care value
     readByte();
@@ -1140,15 +1168,15 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 
   #else
 
-      // The 6 colour bits are in MS 6 bits of each byte but we do not include the extra clock pulse
-      // so we use a trick and mask the middle 6 bits of the byte, then only shift 1 place left
-      uint8_t r = (tft_Read_8()&0x7E)<<1;
-      uint8_t g = (tft_Read_8()&0x7E)<<1;
-      uint8_t b = (tft_Read_8()&0x7E)<<1;
-      color = color565(r, g, b);
+    // The 6 colour bits are in MS 6 bits of each byte but we do not include the extra clock pulse
+    // so we use a trick and mask the middle 6 bits of the byte, then only shift 1 place left
+    uint8_t r = (tft_Read_8()&0x7E)<<1;
+    uint8_t g = (tft_Read_8()&0x7E)<<1;
+    uint8_t b = (tft_Read_8()&0x7E)<<1;
+    color = color565(r, g, b);
   #endif
 
-      // Swapped colour byte order for compatibility with pushRect()
+    // Swapped colour byte order for compatibility with pushRect()
       *line++ = color << 8 | color >> 8;
     }
     data += w;
@@ -2705,6 +2733,19 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
     uint8_t mask = 0x1;
     begin_tft_write();
 
+#ifdef K210
+    for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(font + (c * 5) + i);
+    column[5] = 0;
+
+    for (int8_t j = 0; j < 8; j++) {
+      for (int8_t k = 0; k < 5; k++ ) {
+        if (column[k] & mask) {drawPixel(xd + k, yd + j, color);}
+        else {drawPixel(xd + k, yd + j, bg);}
+      }
+      mask <<= 1;
+      drawPixel(xd + 5, yd + j, bg);
+    }
+#else
     setWindow(xd, yd, xd+5, yd+8);
 
     for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(font + (c * 5) + i);
@@ -2718,6 +2759,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
       mask <<= 1;
       tft_Write_16(bg);
     }
+#endif
 
     end_tft_write();
   }
@@ -3777,6 +3819,25 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 
       begin_tft_write();
 
+#ifdef K210
+      setWindow(xd, yd, xd + width - 1, yd + height - 1);
+
+      uint8_t mask;
+      for (int32_t i = 0; i < height; i++) {
+        pX = width;
+        for (int32_t k = 0; k < w; k++) {
+          line = pgm_read_byte((uint8_t *) (flash_address + w * i + k) );
+          mask = 0x80;
+          while (mask && pX) {
+            if (line & mask) {drawPixel(xd + k, yd + i, textcolor);}
+            else {drawPixel(xd + k, yd + i, textbgcolor);}
+            pX--;
+            mask = mask >> 1;
+          }
+        }
+        if (pX) {drawPixel(xd + width, yd + i, textbgcolor);}
+      }
+#else
       setWindow(xd, yd, xd + width - 1, yd + height - 1);
 
       uint8_t mask;
@@ -3794,6 +3855,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
         }
         if (pX) {tft_Write_16(textbgcolor);}
       }
+#endif
 
       end_tft_write();
     }
@@ -4232,7 +4294,11 @@ int16_t TFT_eSPI::drawNumber(long long_num, int32_t poX, int32_t poY)
 {
   isDigits = true; // Eliminate jiggle in monospaced fonts
   char str[12];
+#ifdef K210
+  __utoa(long_num, str, 10);
+#else
   ltoa(long_num, str, 10);
+#endif
   return drawString(str, poX, poY, textfont);
 }
 
@@ -4240,7 +4306,11 @@ int16_t TFT_eSPI::drawNumber(long long_num, int32_t poX, int32_t poY, uint8_t fo
 {
   isDigits = true; // Eliminate jiggle in monospaced fonts
   char str[12];
+#ifdef K210
+  __utoa(long_num, str, 10);
+#else
   ltoa(long_num, str, 10);
+#endif
   return drawString(str, poX, poY, font);
 }
 
@@ -4289,7 +4359,11 @@ int16_t TFT_eSPI::drawFloat(float floatNumber, uint8_t dp, int32_t poX, int32_t 
   uint32_t temp = (uint32_t)floatNumber;
 
   // Put integer part into array
+#ifdef K210
+  __utoa(temp, str + ptr, 10);
+#else
   ltoa(temp, str + ptr, 10);
+#endif
 
   // Find out where the null is to get the digit count loaded
   while ((uint8_t)str[ptr] != 0) ptr++; // Move the pointer along
@@ -4309,7 +4383,11 @@ int16_t TFT_eSPI::drawFloat(float floatNumber, uint8_t dp, int32_t poX, int32_t 
     i++;
     floatNumber *= 10;       // for the next decimal
     temp = floatNumber;      // get the decimal
+#ifdef K210
+    __utoa(temp, str + ptr, 10);
+#else
     ltoa(temp, str + ptr, 10);
+#endif
     ptr++; digits++;         // Increment pointer and digits count
     floatNumber -= temp;     // Remove that digit
   }
@@ -4394,7 +4472,11 @@ void TFT_eSPI::setTextFont(uint8_t f)
 #if !defined (TFT_PARALLEL_8_BIT)
 SPIClass& TFT_eSPI::getSPIinstance(void)
 {
-  return spi;
+  #if defined (K210)
+    return spi_;
+  #else
+    return spi;
+  #endif
 }
 #endif
 
