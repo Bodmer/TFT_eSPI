@@ -95,8 +95,8 @@
     ePaper.DisplayFrame(blackFrame);            // Update 2 color display
 
   #elif defined (EPD1IN54_H) || defined(EPD2IN13_H) || defined(EPD2IN9_H)
-    ePaper.SetFrameMemory(blackFrame);          // Update 2 colour display
-
+    ePaper.SetFrameMemory(blackFrame);
+    ePaper.DisplayFrame(blackFrame);            // Update 2 color display
   #else
     # error "Selected ePaper library is not supported"
   #endif
