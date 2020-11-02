@@ -106,6 +106,20 @@
 #define TFT_MAD_MH  0x04
 #define TFT_MAD_RGB 0x00
 
+#ifndef TFT_RGB_ORDER
+  #if defined(INITR_BLACKTAB) || defined(INITR_GREENTAB2) || defined(INITB)
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_RGB
+  #else
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_BGR
+  #endif
+#else
+  #if (TFT_RGB_ORDER == 1)
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_RGB
+  #else
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_BGR
+  #endif
+#endif
+
 #define TFT_INVOFF  0x20
 #define TFT_INVON   0x21
 
