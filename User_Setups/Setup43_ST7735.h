@@ -11,6 +11,12 @@
 
 #define ST7735_GREENTAB160x80
 
+// For ST7735, ST7789 and ILI9341 ONLY, define the colour order IF the blue and red are swapped on your display
+// Try ONE option at a time to find the correct colour order for your display
+
+//  #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
+//  #define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+
 #ifdef ESP32
 #define TFT_MISO 19
 #define TFT_MOSI 23

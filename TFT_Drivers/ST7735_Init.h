@@ -24,7 +24,7 @@
       0x03,                   //     3 lines back porch
       10,                     //     10 ms delay
     ST7735_MADCTL , 1      ,  //  5: Memory access ctrl (directions), 1 arg:
-      0x40,                   //     Row addr/col addr, bottom to top refresh
+      0x40 | TFT_MAD_COLOR_ORDER, //     Row addr/col addr, bottom to top refresh
     ST7735_DISSET5, 2      ,  //  6: Display settings #5, 2 args, no delay:
       0x15,                   //     1 clk cycle nonoverlap, 2 cycle gate
                               //     rise, 3 cycle osc equalize
@@ -101,7 +101,7 @@
       0x0E,
     ST7735_INVOFF , 0      ,  // 13: Don't invert display, no args, no delay
     ST7735_MADCTL , 1      ,  // 14: Memory access control (directions), 1 arg:
-      0xC8,                   //     row addr/col addr, bottom to top refresh
+      0xC0 | TFT_MAD_COLOR_ORDER, //     row addr/col addr, bottom to top refresh
     ST7735_COLMOD , 1      ,  // 15: set color mode, 1 arg, no delay:
       0x05 },                 //     16-bit color
 
@@ -146,7 +146,8 @@
      }
      else 
      {
-	  commandList(Rcmd1);
+	     commandList(Rcmd1);
+
        if (tabcolor == INITR_GREENTAB)
        {
          commandList(Rcmd2green);
@@ -157,7 +158,7 @@
        {
          commandList(Rcmd2green);
          writecommand(ST7735_MADCTL);
-         writedata(0xC0);
+         writedata(0xC0 | TFT_MAD_COLOR_ORDER);
          colstart = 2;
          rowstart = 1;
        }
@@ -193,8 +194,9 @@
        else if (tabcolor == INITR_BLACKTAB)
        {
          writecommand(ST7735_MADCTL);
-         writedata(0xC0);
+         writedata(0xC0 | TFT_MAD_COLOR_ORDER);
        }
+
        commandList(Rcmd3);
      }
 }
