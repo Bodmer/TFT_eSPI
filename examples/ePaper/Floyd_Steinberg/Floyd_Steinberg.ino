@@ -37,8 +37,8 @@
 
 // The following is for the Waveshare 2.7" colour ePaper display
 // include <epd?in?.h>  where ?.?? is screen size in inches
-//#include   <epd2in7.h>                  // Screen specific library
-#include <epd2in13.h>
+#include   <epd2in7.h>                  // Screen specific library
+//#include <epd2in13.h>
 
 Epd ePaper;                             // Create an instance ePaper
 
