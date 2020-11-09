@@ -3,15 +3,6 @@
 // one (240x320 minimum) TFT display, showing 2 eyes. See example
 // Animated_Eyes_2 for a dual 128x128 TFT display configued sketch.
 
-// The number of displays and chip selects used are defined in the
-// config.h tab. The display count can be set to 1. If using one
-// TFT and the chip select for that display is already defined in
-// the TFT_eSPI library then change the chip select pins to -1 in the
-// "config.h" tab.
-
-// The wiring for 2 TFT displays to an ESP32 is described in the
-// "wiring" tab of this sketch.
-
 // Configuration settings for the eye, eye style, display count,
 // chip selects and x offsets can be defined in the sketch "config.h" tab.
 
@@ -33,7 +24,7 @@
 
 // DMA can be used with STM32 and ESP32 processors when the interface
 // is SPI, uncomment the next line:
-#define USE_DMA
+//#define USE_DMA
 
 // Load TFT driver library
 #include <SPI.h>
@@ -44,9 +35,9 @@ TFT_eSPI tft;           // A single instance is used for 1 or 2 displays
 #define BUFFER_SIZE 1024 // 128 to 1024 seems optimum
 
 #ifdef USE_DMA
-#define BUFFERS 2      // 2 toggle buffers with DMA
+  #define BUFFERS 2      // 2 toggle buffers with DMA
 #else
-#define BUFFERS 1      // 1 buffer for no DMA
+  #define BUFFERS 1      // 1 buffer for no DMA
 #endif
 
 uint16_t pbuffer[BUFFERS][BUFFER_SIZE]; // Pixel rendering buffer
