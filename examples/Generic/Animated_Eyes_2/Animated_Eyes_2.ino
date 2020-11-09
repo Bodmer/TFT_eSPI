@@ -32,7 +32,7 @@
 
 // DMA can be used with STM32 and ESP32 processors when the interface
 // is SPI, uncomment the next line:
-#define USE_DMA
+//#define USE_DMA
 
 // Load TFT driver library
 #include <SPI.h>
@@ -43,9 +43,9 @@ TFT_eSPI tft;           // A single instance is used for 1 or 2 displays
 #define BUFFER_SIZE 1024 // 128 to 1024 seems optimum
 
 #ifdef USE_DMA
-#define BUFFERS 2      // 2 toggle buffers with DMA
+  #define BUFFERS 2      // 2 toggle buffers with DMA
 #else
-#define BUFFERS 1      // 1 buffer for no DMA
+  #define BUFFERS 1      // 1 buffer for no DMA
 #endif
 
 uint16_t pbuffer[BUFFERS][BUFFER_SIZE]; // Pixel rendering buffer
