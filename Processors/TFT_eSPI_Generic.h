@@ -122,7 +122,26 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
   #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
-    #define tft_Write_8(C)     spi.transfer(0); spi.transfer(C)
+    #define tft_Write_8(C)   spi.transfer(C); spi.transfer(C)
+    #define tft_Write_16(C)  spi.transfer((uint8_t)((C)>>8));spi.transfer((uint8_t)((C)>>0))
+    #define tft_Write_16S(C) spi.transfer((uint8_t)((C)>>0));spi.transfer((uint8_t)((C)>>8))
+
+    #define tft_Write_32(C) \
+      tft_Write_16((uint16_t) ((C)>>16)); \
+      tft_Write_16((uint16_t) ((C)>>0))
+
+    #define tft_Write_32C(C,D) \
+      spi.transfer(0); spi.transfer((C)>>8); \
+      spi.transfer(0); spi.transfer((C)>>0); \
+      spi.transfer(0); spi.transfer((D)>>8); \
+      spi.transfer(0); spi.transfer((D)>>0)
+
+    #define tft_Write_32D(C) \
+      spi.transfer(0); spi.transfer((C)>>8); \
+      spi.transfer(0); spi.transfer((C)>>0); \
+      spi.transfer(0); spi.transfer((C)>>8); \
+      spi.transfer(0); spi.transfer((C)>>0)
+
   #else
     #ifdef __AVR__ // AVR processors do not have 16 bit transfer
       #define tft_Write_8(C)   {SPDR=(C); while (!(SPSR&_BV(SPIF)));}
@@ -133,19 +152,19 @@
       #define tft_Write_16(C)  spi.transfer16(C)
       #define tft_Write_16S(C) spi.transfer16(((C)>>8) | ((C)<<8))
     #endif // AVR    
+
+    #define tft_Write_32(C) \
+    tft_Write_16((uint16_t) ((C)>>16)); \
+    tft_Write_16((uint16_t) ((C)>>0))
+
+    #define tft_Write_32C(C,D) \
+    tft_Write_16((uint16_t) (C)); \
+    tft_Write_16((uint16_t) (D))
+
+    #define tft_Write_32D(C) \
+    tft_Write_16((uint16_t) (C)); \
+    tft_Write_16((uint16_t) (C))
   #endif // RPI_DISPLAY_TYPE
-
-  #define tft_Write_32(C) \
-  tft_Write_16((uint16_t) ((C)>>16)); \
-  tft_Write_16((uint16_t) ((C)>>0))
-
-  #define tft_Write_32C(C,D) \
-  tft_Write_16((uint16_t) (C)); \
-  tft_Write_16((uint16_t) (D))
-
-  #define tft_Write_32D(C) \
-  tft_Write_16((uint16_t) (C)); \
-  tft_Write_16((uint16_t) (C))
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
