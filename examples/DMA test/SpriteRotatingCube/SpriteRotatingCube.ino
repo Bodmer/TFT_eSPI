@@ -353,7 +353,7 @@ void drawCube()
 uint32_t computePrimeNumbers(int32_t n) {
   if (n<2) return 1;
 
-  int32_t i, fact, j, p;
+  int32_t i, fact, j, p = 0;
 
   //Serial.print("\nPrime Numbers are: \n");
   for (i = 1; i <= n; i++)
