@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 // Select the SPI port to use
-#if defined (ARDUINO_M5STICK_V)
+#if defined (M5STICK_V)
   SPIClass spi_(SPI0, TFT_SCLK, TFT_MISO, TFT_MOSI, -1, SPI_FREQUENCY);
 #else
   SPIClass spi_(SPI0);
