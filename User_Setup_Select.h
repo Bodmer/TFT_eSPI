@@ -72,7 +72,7 @@
 //#include <User_Setups/Setup44_TTGO_CameraPlus.h>   // Setup file for ESP32 and TTGO T-CameraPlus ST7789 SPI bus TFT    240x240
 //#include <User_Setups/Setup45_TTGO_T_Watch.h>      // Setup file for ESP32 and TTGO T-Watch ST7789 SPI bus TFT  240x240
 
-//#include <User_Setups/Setup47_ST7735.h>              // Setup file configured for ST7735 128 x 160
+//#include <User_Setups/Setup47_ST7735.h>            // Setup file configured for ST7735 128 x 128 animated eyes
 
 //#include <User_Setups/Setup50_SSD1963_Parallel.h>  // Setup file for ESP32 and SSD1963 TFT display
 
