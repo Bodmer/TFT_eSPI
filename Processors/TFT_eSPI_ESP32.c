@@ -686,10 +686,10 @@ bool TFT_eSPI::initDMA(void)
     .cs_ena_posttrans = 0,
     .clock_speed_hz = SPI_FREQUENCY,
     .input_delay_ns = 0,
-    .spics_io_num = TFT_CS,
-    .flags = 0,
-    .queue_size = 7,
-    .pre_cb = dc_callback, //Callback to handle D/C line
+    .spics_io_num = -1, //TFT_CS,
+    .flags = SPI_DEVICE_NO_DUMMY, //0,
+    .queue_size = 1,
+    .pre_cb = 0, //dc_callback, //Callback to handle D/C line
     .post_cb = 0
   };
   ret = spi_bus_initialize(spi_host, &buscfg, 1);
