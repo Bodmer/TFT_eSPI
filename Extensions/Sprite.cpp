@@ -831,10 +831,10 @@ bool TFT_eSprite::pushSprite(int32_t tx, int32_t ty, int32_t sx, int32_t sy, int
   {
     // Check if a faster block copy to screen is possible
     if ( sx == 0 && sw == _dwidth)
-      _tft->pushImage(tx, ty, sw, sh, _img8 + _iwidth * _ys, true );
+      _tft->pushImage(tx, ty, sw, sh, _img8 + _iwidth * _ys, (bool)true );
     else // Render line by line
     while (sh--)
-      _tft->pushImage(tx, ty++, sw, 1, _img8 + _xs + _iwidth * _ys++, true );
+      _tft->pushImage(tx, ty++, sw, 1, _img8 + _xs + _iwidth * _ys++, (bool)true );
   }
   else if (_bpp == 4)
   {
@@ -870,7 +870,7 @@ bool TFT_eSprite::pushSprite(int32_t tx, int32_t ty, int32_t sx, int32_t sy, int
   {
         // Check if a faster block copy to screen is possible
     if ( sx == 0 && sw == _dwidth)
-      _tft->pushImage(tx, ty, sw, sh, _img8 + (_iwidth>>3) * _ys, false );
+      _tft->pushImage(tx, ty, sw, sh, _img8 + (_iwidth>>3) * _ys, (bool)false );
     else // Render line by line
     {
       _tft->startWrite();
