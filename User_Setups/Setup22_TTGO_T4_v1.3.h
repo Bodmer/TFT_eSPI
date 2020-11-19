@@ -1,5 +1,7 @@
 // Setup for the TTGO T4 v1.3 ESP32 board with 2.2" ILI9341 display
 
+// See SetupX_Template.h for all options available
+
 #define ILI9341_DRIVER
 
 #define TFT_BACKLIGHT_ON HIGH
@@ -10,7 +12,7 @@
 #define TFT_SCLK 18
 
 #define TFT_CS   27
-#define TFT_DC   32
+#define TFT_DC   32 // pin 26 for TTGO T4 v1.3 <<<<<<<<<<< Note
 #define TFT_RST   5
 
 #define LOAD_GLCD
