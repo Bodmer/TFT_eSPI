@@ -421,7 +421,7 @@ void TFT_eSPI::dmaWait(void)
 
 
 /***************************************************************************************
-** Function name:           pushImageDMA
+** Function name:           pushPixelsDMA
 ** Description:             Push pixels to TFT (len must be less than 32767)
 ***************************************************************************************/
 // This will byte swap the original image if setSwapBytes(true) was called by sketch.
@@ -462,11 +462,12 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   if (dw < 1 || dh < 1) return;
 
-  if (buffer == nullptr) buffer = image;
-
   uint32_t len = dw*dh;
 
-  while (spiHal.State == HAL_SPI_STATE_BUSY_TX); // Check if SPI Tx is busy
+  if (buffer == nullptr) {
+    buffer = image;
+    while (spiHal.State == HAL_SPI_STATE_BUSY_TX); // Check if SPI Tx is busy
+  }
 
   // If image is clipped, copy pixels into a contiguous block
   if ( (dw != w) || (dh != h) ) {
