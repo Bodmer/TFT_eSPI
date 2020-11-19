@@ -401,12 +401,22 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 ** Function name:           dmaBusy
 ** Description:             Check if DMA is busy (usefully non-blocking!)
 ***************************************************************************************/
-// Use "while(tft.dmaBusy());" in sketch for a blocking wait for DMA to complete
-// or  "while( tft.dmaBusy() ) {Do-something-useful;}"
+// Use while( tft.dmaBusy() ) {Do-something-useful;}"
 bool TFT_eSPI::dmaBusy(void)
 {
   //return (dmaHal.State == HAL_DMA_STATE_BUSY);  // Do not use, SPI may still be busy
   return (spiHal.State == HAL_SPI_STATE_BUSY_TX); // Check if SPI Tx is busy
+}
+
+
+/***************************************************************************************
+** Function name:           dmaWait
+** Description:             Wait until DMA is over (blocking!)
+***************************************************************************************/
+void TFT_eSPI::dmaWait(void)
+{
+  //return (dmaHal.State == HAL_DMA_STATE_BUSY);  // Do not use, SPI may still be busy
+  while (spiHal.State == HAL_SPI_STATE_BUSY_TX); // Check if SPI Tx is busy
 }
 
 
