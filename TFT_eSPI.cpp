@@ -628,6 +628,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (GC9A01_DRIVER)
      #include "TFT_Drivers/GC9A01_Init.h"
 
+#elif defined (ILI9225_DRIVER)
+     #include "TFT_Drivers/ILI9225_Init.h"
+
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -709,6 +712,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (GC9A01_DRIVER)
      #include "TFT_Drivers/GC9A01_Rotation.h"
+
+#elif defined (ILI9225_DRIVER)
+     #include "TFT_Drivers/ILI9225_Rotation.h"
 
 #endif
 
