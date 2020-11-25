@@ -53,7 +53,15 @@
     writedata(0x0A);
 
     writecommand(0x3A);
-    writedata(0x55);
+    #ifdef TFT_PARALLEL_8_BIT
+      writedata(0x55);           // 16 bit colour interface
+    #else
+      writedata(0x66);           // 18 bit colour interface
+    #endif
+    
+    #ifndef TFT_PARALLEL_8_BIT
+      writecommand(TFT_INVON);
+    #endif
 
     writecommand(TFT_CASET);
     writedata(0x00);

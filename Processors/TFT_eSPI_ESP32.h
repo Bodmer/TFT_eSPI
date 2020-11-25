@@ -52,7 +52,7 @@
 #endif
 
 // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
-#if !defined(TFT_PARALLEL_8_BIT) && !defined(ILI9488_DRIVER) && !defined (RPI_DISPLAY_TYPE)
+#if !defined(TFT_PARALLEL_8_BIT) && !defined(ILI9481_DRIVER)  && !defined(ILI9488_DRIVER) && !defined (RPI_DISPLAY_TYPE) || (defined (RPI_DISPLAY_TYPE) && defined (ST7796_DRIVER))
   #define ESP32_DMA
   // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
   #define DMA_BUSY_CHECK  dmaWait()
@@ -351,7 +351,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to an ILI9488 TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif  defined (ILI9488_DRIVER) // 16 bit colour converted to 3 bytes for 18 bit RGB
+#elif  defined (ILI9481_DRIVER) || defined (ILI9488_DRIVER)// 16 bit colour converted to 3 bytes for 18 bit RGB
 
   // Write 8 bits to TFT
   #define tft_Write_8(C)   spi.transfer(C)

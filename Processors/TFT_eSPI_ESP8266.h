@@ -117,7 +117,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to an ILI9488 TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#if  defined (ILI9488_DRIVER) // 16 bit colour converted to 3 bytes for 18 bit RGB
+#if  defined (ILI9481_DRIVER) || defined (ILI9488_DRIVER) // 16 bit colour converted to 3 bytes for 18 bit RGB
 
   // Write 8 bits to TFT
   #define tft_Write_8(C)   spi.transfer(C)

@@ -173,7 +173,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif !defined (ILI9488_DRIVER) && !defined (TFT_PARALLEL_8_BIT) // Most displays
+#elif !defined (ILI9481_DRIVER) && !defined (ILI9488_DRIVER) && !defined (TFT_PARALLEL_8_BIT) // Most displays
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -349,7 +349,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif defined (ILI9488_DRIVER) && !defined (TFT_PARALLEL_8_BIT)// Now code for ILI9488
+#elif (defined (ILI9481_DRIVER) || defined (ILI9488_DRIVER)) && !defined (TFT_PARALLEL_8_BIT)// Now code for ILI9481/8
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
