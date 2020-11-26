@@ -115,6 +115,11 @@
   #endif
 #endif
 
+// Invoke 18 bit colour for selected displays
+#if (defined (ILI9481_DRIVER) || defined (ILI9486_DRIVER) || defined (ILI9488_DRIVER)) && !defined (TFT_PARALLEL_8_BIT)
+  #define SPI_18BIT_DRIVER
+#endif
+
 // Load the right driver definition - do not tinker here !
 #if   defined (ILI9341_DRIVER)
      #include <TFT_Drivers/ILI9341_Defines.h>
@@ -184,7 +189,6 @@
 #else
      #define  TFT_DRIVER 0x0000
 #endif
-
 
 // These are the pins for ESP8266 boards
 //      Name   GPIO    NodeMCU      Function
