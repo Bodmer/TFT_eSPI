@@ -902,11 +902,6 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   // Range checking
   if ((x0 < _vpX) || (y0 < _vpY) ||(x0 >= _vpW) || (y0 >= _vpH)) return 0;
 
-#ifdef CGRAM_OFFSET
-  x0+=colstart;
-  y0+=rowstart;
-#endif
-
 #if defined(TFT_PARALLEL_8_BIT)
 
   CS_L;
