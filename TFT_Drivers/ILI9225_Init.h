@@ -1,65 +1,56 @@
-
 // This is the command sequence that initialises the ILI9225 driver
 
 {
-	/* Start Initial Sequence */
-
-	//LCD Init For 2.2inch LCD Panel with ILI9225.
 	writecommand(ILI9225_POWER_CTRL1);
-	writedata(0x00);writedata(0x00); // Set SAP,DSTB,STB
+	writedata(0x00);writedata(0x00);
 	writecommand(ILI9225_POWER_CTRL2);
-	writedata(0x00);writedata(0x00); // Set APON,PON,AON,VCI1EN,VC
+	writedata(0x00);writedata(0x00);
 	writecommand(ILI9225_POWER_CTRL3);
-	writedata(0x00);writedata(0x00); // Set BT,DC1,DC2,DC3
+	writedata(0x00);writedata(0x00);
 	writecommand(ILI9225_POWER_CTRL4);
-	writedata(0x00);writedata(0x00); // Set GVDD
+	writedata(0x00);writedata(0x00);
 	writecommand(ILI9225_POWER_CTRL5);
-	writedata(0x00);writedata(0x00); // Set VCOMH/VCOML voltage
-	spi_end();
+	writedata(0x00);writedata(0x00);
+
 	delay(40);
-	spi_begin();
 
-	// Power-on sequence
 	writecommand(ILI9225_POWER_CTRL2);
-	writedata(0x00);writedata(0x18); // Set APON,PON,AON,VCI1EN,VC
+	writedata(0x00);writedata(0x18);
 	writecommand(ILI9225_POWER_CTRL3);
-	writedata(0x61);writedata(0x21); // Set BT,DC1,DC2,DC3
+	writedata(0x61);writedata(0x21);
 	writecommand(ILI9225_POWER_CTRL4);
-	writedata(0x00);writedata(0x6F); // Set GVDD   /*007F 0088 */
+	writedata(0x00);writedata(0x6F);
 	writecommand(ILI9225_POWER_CTRL5);
-	writedata(0x49);writedata(0x5F); // Set VCOMH/VCOML voltage
+	writedata(0x49);writedata(0x5F);
 	writecommand(ILI9225_POWER_CTRL1);
-	writedata(0x08);writedata(0x00); // Set SAP,DSTB,STB
-	spi_end();
+	writedata(0x08);writedata(0x00);
+
 	delay(10);
-	spi_begin();
 
 	writecommand(ILI9225_POWER_CTRL2);
-	writedata(0x10);writedata(0x3B); // Set APON,PON,AON,VCI1EN,VC
-	spi_end();
+	writedata(0x10);writedata(0x3B);
+
 	delay(50);
-	spi_begin();
 
 	writecommand(ILI9225_LCD_AC_DRIVING_CTRL);
-	writedata(0x01);writedata(0x00); // set 1 line inversion
+	writedata(0x01);writedata(0x00);
 	writecommand(ILI9225_DISP_CTRL1);
-	writedata(0x00);writedata(0x00); // Display off
+	writedata(0x00);writedata(0x00);
 	writecommand(ILI9225_BLANK_PERIOD_CTRL1);
-	writedata(0x08);writedata(0x08); // set the back porch and front porch
+	writedata(0x08);writedata(0x08);
 	writecommand(ILI9225_FRAME_CYCLE_CTRL);
-	writedata(0x11);writedata(0x00); // set the clocks number per line
+	writedata(0x11);writedata(0x00);
 	writecommand(ILI9225_INTERFACE_CTRL);
-	writedata(0x00);writedata(0x00); // CPU interface
+	writedata(0x00);writedata(0x00);
 	writecommand(ILI9225_OSC_CTRL);
-	writedata(0x0D);writedata(0x01); // Set Osc  /*0e01*/
+	writedata(0x0D);writedata(0x01);
 	writecommand(ILI9225_VCI_RECYCLING);
-	writedata(0x00);writedata(0x20); // Set VCI recycling
+	writedata(0x00);writedata(0x20);
 	writecommand(ILI9225_RAM_ADDR_SET1);
-	writedata(0x00);writedata(0x00); // RAM Address
+	writedata(0x00);writedata(0x00);
 	writecommand(ILI9225_RAM_ADDR_SET2);
-	writedata(0x00);writedata(0x00); // RAM Address
+	writedata(0x00);writedata(0x00);
 
-	/* Set GRAM area */
 	writecommand(ILI9225_GATE_SCAN_CTRL);
 	writedata(0x00);writedata(0x00);
 	writecommand(ILI9225_VERTICAL_SCROLL_CTRL1);
@@ -106,9 +97,9 @@
 	writecommand(ILI9225_DISP_CTRL1);
 	writedata(0x00);writedata(0x12);
 
-	spi_end();
 	delay(50);
-	spi_begin();
+
 	writecommand(ILI9225_DISP_CTRL1);
 	writedata(0x10);writedata(0x17);
+
 }

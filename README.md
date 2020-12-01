@@ -1,37 +1,53 @@
-# Sprite class change
-The Sprite class has been updated to remove an inconsistency for the setSwapBytes() function. Although all the examples are unchanged, user sketches may be affected. If the colors of the sprite change when loading this new version 2.2.16 then it may be necessary to change the swap bytes setting, e.g. for a sprite instance "spr" use either: spr.setSwapBytes(true) or spr.setSwapBytes(false) to correct the colour.
-
 # News
-1. The library now provides a "viewport" capability. See "Viewport_Demo" and "Viewport_graphicstest" examples. When a viewport is defined graphics will only appear within that window.  The coordinate datum by default moves to the top left corner of the viewport, but can optionally remain at top left corner of TFT. The GUIslice library will make use of this feature to speed up the rendering of GUI objects ([see #769](https://github.com/Bodmer/TFT_eSPI/issues/769)).
+1. Viewports can now be applied to sprites e.g. spr.setViewport(5, 5, 20, 20); so graphics can be restricted to a particular area of the sprite. This operates in the same way as the TFT viewports, see 2. below.
 
-2. The library now supports SSD1963 based screen, this has been tested on a [480x800 screen](https://www.buydisplay.com/7-tft-screen-touch-lcd-display-module-w-ssd1963-controller-board-mcu) with an ESP32. The interface is 8 bit parallel only as that controller does not support a SPI interface.
+2. The library now provides a "viewport" capability. See "Viewport_Demo" and "Viewport_graphicstest" examples. When a viewport is defined graphics will only appear within that window.  The coordinate datum by default moves to the top left corner of the viewport, but can optionally remain at top left corner of TFT. The GUIslice library will make use of this feature to speed up the rendering of GUI objects ([see #769](https://github.com/Bodmer/TFT_eSPI/issues/769)).
 
-3. A companion library [U8g2_for_TFT_eSPI](https://github.com/Bodmer/U8g2_for_TFT_eSPI) has been created to allow U8g2 library fonts to be used with TFT_eSPI.
+3. The library now supports SSD1963 based screen, this has been tested on a [480x800 screen](https://www.buydisplay.com/7-tft-screen-touch-lcd-display-module-w-ssd1963-controller-board-mcu) with an ESP32. The interface is 8 bit parallel only as that controller does not support a SPI interface.
 
-4. The library now supports SPI DMA transfers for both ESP32 and STM32 processors. The DMA Test examples now work on the ESP32 for SPI displays (excluding RPi type and ILI9488).
+4. A companion library [U8g2_for_TFT_eSPI](https://github.com/Bodmer/U8g2_for_TFT_eSPI) has been created to allow U8g2 library fonts to be used with TFT_eSPI.
 
-5. A new option has been added for STM32 processors to optimise performance where Port A (or B) pins 0-7 are used for the 8 bit parallel interface data pins 0-7 to the TFT. This gives a dramatic 8 times better rendering performance for the lower clock rate STM32 processors such as the STM32F103 "Blue Pill" or STM411 "Black Pill" since no time consuming data bit manipulation is required. See setup file "User_Setups/Setup35_ILI9341_STM32_Port_Bus.h".
+5. The library now supports SPI DMA transfers for both ESP32 and STM32 processors. The DMA Test examples now work on the ESP32 for SPI displays (excluding RPi type and ILI9488).
 
-6. A new "Animated_dial" example has been added to show how dials can be created using a rotated Sprite for the needle. To run this example the TFT must support reading from the screen RAM. The dial rim and scale is a jpeg image, created using a paint program.
+6. A new option has been added for STM32 processors to optimise performance where Port A (or B) pins 0-7 are used for the 8 bit parallel interface data pins 0-7 to the TFT. This gives a dramatic 8 times better rendering performance for the lower clock rate STM32 processors such as the STM32F103 "Blue Pill" or STM411 "Black Pill" since no time consuming data bit manipulation is required. See setup file "User_Setups/Setup35_ILI9341_STM32_Port_Bus.h".
+
+7. A new "Animated_dial" example has been added to show how dials can be created using a rotated Sprite for the needle. To run this example the TFT must support reading from the screen RAM. The dial rim and scale is a jpeg image, created using a paint program.
 
       ![Animated_dial](https://i.imgur.com/S736Rg6.png)
 
-7. Anti-aliased (smooth) fonts can now be stored as arrays in FLASH (program) memory. This means that processors such as STM32 that do not have SPIFFS support can use the fonts. The processor must have sufficient FLASH memory to store the fonts used.
-
-8. The Sprite class now supports 4 bits per pixel with a 16 color palette. Three new examples have been added.
+8. Anti-aliased (smooth) fonts can now be stored as arrays in FLASH (program) memory. This means that processors such as STM32 that do not have SPIFFS support can use the fonts. The processor must have sufficient FLASH memory to store the fonts used.
 
 
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targetted at 32 bit processors, it  has been performance optimised for STM32, ESP8266 and ESP32 types.  The library includes drivers for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9486, ILI9488, HX8357D, ST7789 and ST7796 based TFT displays that support SPI or 8 bit parallel (parallel not supported on ESP8266). The library can be loaded using the Arduino IDE's Library Manager.
+An Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targetted at 32 bit processors, it  has been performance optimised for STM32, ESP8266 and ESP32 types. The library can be loaded using the Arduino IDE's Library Manager. Direct Memory Access (DMA) can be used with the ESP32 and STM32 processors to improve rendering performance.
 
-8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
+"Four wire" SPI and 8 bit parallel interfaces are supported. Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
 
-The library supports TFT displays designed for the Raspberry Pi (RPi) that are based on a ILI9486 or ST7796 driver chip with a 480 x 320 pixel screen. The ILI9486 RPi display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. A modification to these displays is possible (see mod image in Tools folder) to make many graphics functions much faster (e.g. 23ms to clear the screen, 1.2ms to draw a 72 pixel high numeral). The RPi ST7796 display is supported and is superior to the Waveshare design, it must be of the MHS-4.0 inch Display-B type.
+Displays using the following controllers are supported:
 
-Some displays permit the internal TFT screen RAM to be read. The library supports reading from ILI9341, ST7789 and ILI9488 SPI and other supported 8 bit parallel displays. The TFT_Screen_Capture example allows full screens to be captured and sent to a PC, this is handy to create program documentation.
+* ILI9163
+* ILI9225
+* ILI9341
+* ILI9481
+* ILI9486
+* ILI9488
+* HX8357D
+* S6D02A1
+* SSD1963
+* ST7735
+* ST7789
+* ST7796
 
-Support has been added recently for Waveshare 2 and 3 colour ePaper displays using full frame buffers. This addition is currently relatively immature and thus only one example has been provided.
+ILI9341 and ST7796 SPI based displays are recommended as starting point for experimenting with this library.
+
+The library supports some TFT displays designed for the Raspberry Pi (RPi) that are based on a ILI9486 or ST7796 driver chip with a 480 x 320 pixel screen. The ILI9486 RPi display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. Note that due to design variations between these displays not all RPi displays will work with this library, so purchaing a RPi display of these types soley for use with this library is not recommended.
+
+The "good" RPi displays are the [MHS-4.0 inch Display-B type ST7796](http://www.lcdwiki.com/MHS-4.0inch_Display-B) and [Waveshare 3.5 inch ILI9486 Type C](https://www.waveshare.com/wiki/3.5inch_RPi_LCD_(C)) displays are supported and provides good performance. These have a dedicated controller and can be clocked at up to 80MHz with the ESP32 (55MHz with STM32 and 40MHz with ESP8266).
+
+Some displays permit the internal TFT screen RAM to be read, some of the examples use this feature. The TFT_Screen_Capture example allows full screens to be captured and sent to a PC, this is handy to create program documentation.
+
+The library supports Waveshare 2 and 3 colour ePaper displays using full frame buffers. This addition is relatively immature and thus only one example has been provided.
 
 The library includes a "Sprite" class, this enables flicker free updates of complex graphics. Direct writes to the TFT with graphics functions are still available, so existing sketches do not need to be changed.
 

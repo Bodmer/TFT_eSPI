@@ -373,7 +373,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     if (code == '\n') {
       cursor_x = 0;
       cursor_y += gFont.yAdvance;
-      if (cursor_y >= _height) cursor_y = 0;
+      if (textwrapY && (cursor_y >= height())) cursor_y = 0;
       return;
     }
   }

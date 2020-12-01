@@ -1,6 +1,7 @@
+// For ESP32
 // See SetupX_Template.h for all options available
 #define RPI_DISPLAY_TYPE
-#define ILI9486_DRIVER // 20MHz maximum SPI
+#define ILI9486_DRIVER
 
 #define TFT_MISO 19
 #define TFT_MOSI 23
@@ -24,6 +25,6 @@
 #define SMOOTH_FONT
 
 
-#define SPI_FREQUENCY  20000000
+#define SPI_FREQUENCY  20000000 // Some displays will operate at higher frequencies
 
 #define SPI_TOUCH_FREQUENCY  2500000

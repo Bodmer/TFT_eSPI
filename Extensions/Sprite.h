@@ -85,9 +85,6 @@ class TFT_eSprite : public TFT_eSPI {
            // Fill a rectangular area with a color (aka draw a filled rectangle)
            fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
 
-           // Set the sprite text cursor position for print class (does not change the TFT screen cursor)
-           //setCursor(int16_t x, int16_t y); // Not needed, so uses TFT class function
-
            // Set the coordinate rotation of the Sprite (for 1bpp Sprites only)
            // Note: this uses coordinate rotation and is primarily for ePaper which does not support
            // CGRAM rotation (like TFT drivers do) within the displays internal hardware
@@ -98,11 +95,6 @@ class TFT_eSprite : public TFT_eSPI {
   bool     pushRotated(int16_t angle, int32_t transp = -1);   // Using fixed point maths
            // Push a rotated copy of Sprite to another different Sprite with optional transparent colour
   bool     pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp = -1);   // Using fixed point maths
-
-          // Set and get the pivot point for this Sprite
-  void     setPivot(int16_t x, int16_t y);
-  int16_t  getPivotX(void),
-           getPivotY(void);
 
            // Get the TFT bounding box for a rotated copy of this Sprite
   bool     getRotatedBounds(int16_t angle, int16_t *min_x, int16_t *min_y, int16_t *max_x, int16_t *max_y);
@@ -121,12 +113,8 @@ class TFT_eSprite : public TFT_eSPI {
   uint16_t readPixelValue(int32_t x, int32_t y);
 
            // Write an image (colour bitmap) to the sprite.
-  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data, uint8_t sbpp = 0);
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, const uint16_t *data);
-
-           // Swap the byte order for pushImage() - corrects different image endianness
-  void     setSwapBytes(bool swap);
-  bool     getSwapBytes(void);
 
            // Push the sprite to the TFT screen, this fn calls pushImage() in the TFT class.
            // Optionally a "transparent" colour can be defined, pixels of that colour will not be rendered
@@ -147,9 +135,6 @@ class TFT_eSprite : public TFT_eSPI {
            // Return the width and height of the sprite
   int16_t  width(void),
            height(void);
-
-           // Used by print class to print text to cursor position
-  size_t   write(uint8_t);
 
            // Functions associated with anti-aliased fonts
   void     drawGlyph(uint16_t code);
@@ -175,22 +160,16 @@ class TFT_eSprite : public TFT_eSPI {
 
   uint16_t *_colorMap; // color map: 16 entries, used with 4 bit color map.
 
-  int16_t  _xPivot;   // x pivot point coordinate
-  int16_t  _yPivot;   // y pivot point coordinate
   int32_t  _sinra;
   int32_t  _cosra;
 
   bool     _created;    // A Sprite has been created and memory reserved
   bool     _gFont = false; 
 
-//  int32_t  _icursor_x, _icursor_y;
-  uint8_t  _rotation = 0;
   int32_t  _xs, _ys, _xe, _ye, _xptr, _yptr; // for setWindow
   int32_t  _sx, _sy; // x,y for scroll zone
   uint32_t _sw, _sh; // w,h for scroll zone
   uint32_t _scolor;  // gap fill colour for scroll zone
-
-  bool     _iswapBytes; // Swap the byte order for Sprite pushImage()
 
   int32_t  _iwidth, _iheight; // Sprite memory image bit width and height (swapped during rotations)
   int32_t  _dwidth, _dheight; // Real display width and height (for <8bpp Sprites)

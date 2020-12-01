@@ -6,21 +6,6 @@
   In a 1 bit Sprite any colour except TFT_BLACK turns a pixel "ON"
   TFT_BLACK turns a pixel "OFF".
 
-  The 1 bpp Sprite has a unique property that other bit depth Sprites
-  do not have, you can set the rotation of the coordinate frame e.g.:
-  spr.setRotation(1);
-
-  This is similar to screen rotations, so for example text can
-  be drawn rotated:
-    Rotation 0: Normal orientation
-    Rotation 1: Coordinate frame rotated clockwise 90 degrees
-    Rotation 2: Coordinate frame rotated clockwise 180 degrees (upside down)
-    Rotation 3: Coordinate frame rotated clockwise 270 degrees
-
-  When pushSprite is used the sprite is drawn with the width and height
-  staying as created, so the created Sprite itself is not rotated during
-  rendering. See stext2 sprite example below at line 83.
-
   ON and OFF pixels can be set to any two colours before
   rendering to the screen with pushSprite, for example:
   tft.setBitmapColor(ON_COLOR, OFF_COLOR);
@@ -83,8 +68,7 @@ void setup() {
 
   // Create a sprite for Hello World
   stext2.setColorDepth(1);
-  stext2.createSprite(16, 80); // Narrow and tall
-  stext2.setRotation(1);       // Plot with 90 deg. clockwise rotation
+  stext2.createSprite(80, 16);
   stext2.fillSprite(TFT_BLACK);
   stext2.setScrollRect(0, 0, 40, 16, TFT_BLACK); // Scroll the "Hello" in the first 40 pixels
   stext2.setTextColor(TFT_WHITE); // White text, no background
