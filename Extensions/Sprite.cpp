@@ -734,30 +734,59 @@ bool TFT_eSprite::pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y)
 ** Function name:           pushToSprite
 ** Description:             Push the sprite to another sprite at x, y with transparent colour
 ***************************************************************************************/
-/* >>>>>>  Using a transparent color is not supported at the moment  <<<<<<
-void TFT_eSprite::pushToSprite(TFT_eSprite *spr, int32_t x, int32_t y, uint16_t transp)
-{
-  if (!_created) return;
+// Note: The following sprite to sprite colour depths are currently supported:
+//    Source    Destination
+//    16bpp  -> 16bpp
+//    16bpp  ->  8bpp
+//     8bpp  ->  8bpp
+//     1bpp  ->  1bpp
 
-  if (_bpp == 16)
-  {
-    bool oldSwapBytes = spr->getSwapBytes();
-    spr->setSwapBytes(false);
-    spr->pushImage(x, y, _dwidth, _dheight, _img, transp );
-    spr->setSwapBytes(oldSwapBytes);
+bool TFT_eSprite::pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y, uint16_t transp)
+{
+  if ( !_created  || !dspr->_created) return false; // Check Sprites exist
+
+  // Check destination sprite compatibility
+  int8_t ds_bpp = dspr->getColorDepth();
+  if (_bpp == 16 && ds_bpp != 16 && ds_bpp !=  8) return false;
+  if (_bpp ==  8 && ds_bpp !=  8) return false;
+  if (_bpp ==  4 || ds_bpp ==  4) return false;
+  if (_bpp ==  1 && ds_bpp !=  1) return false;
+
+  bool oldSwapBytes = dspr->getSwapBytes();
+  uint16_t sline_buffer[width()];
+
+  transp = transp>>8 | transp<<8;
+
+  // Scan destination bounding box and fetch transformed pixels from source Sprite
+  for (int32_t ys = 0; ys < height(); ys++) {
+    int32_t ox = x;
+    uint32_t pixel_count = 0;
+
+    for (int32_t xs = 0; xs < width(); xs++) {
+      uint16_t rp = 0;
+      if (_bpp == 16) rp = _img[xs + ys * width()];
+      else { rp = readPixel(xs, ys); rp = rp>>8 | rp<<8; }
+      //dspr->drawPixel(xs, ys, rp);
+
+      if (transp == rp) {
+        if (pixel_count) {
+          dspr->pushImage(ox, y, pixel_count, 1, sline_buffer, _bpp);
+          ox += pixel_count;
+          pixel_count = 0;
+        }
+        else ox++;
+      }
+      else {
+        sline_buffer[pixel_count++] = rp;
+      }
+    }
+    if (pixel_count) dspr->pushImage(ox, y, pixel_count, 1, sline_buffer);
+    y++;
   }
-  else if (_bpp == 8)
-  {
-    transp = (uint8_t)((transp & 0xE000)>>8 | (transp & 0x0700)>>6 | (transp & 0x0018)>>3);
-    spr->pushImage(x, y, _dwidth, _dheight, _img8, (uint8_t)transp, (bool)true);
-  }
-  else if (_bpp == 4)
-  {
-    spr->pushImage(x, y, _dwidth, _dheight, _img4, (uint8_t)(transp & 0x0F), false, _colorMap);
-  }
-  else spr->pushImage(x, y, _dwidth, _dheight, _img8, 0, (bool)false);
+  dspr->setSwapBytes(oldSwapBytes);
+  return true;
 }
-*/
+
 
 /***************************************************************************************
 ** Function name:           pushSprite
