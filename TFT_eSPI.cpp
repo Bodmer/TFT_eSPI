@@ -57,7 +57,7 @@ inline void TFT_eSPI::begin_tft_write(void){
     locked = false;
     spi.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, TFT_SPI_MODE));
     CS_L;
-    SET_BUS_WRITE_MODE
+    SET_BUS_WRITE_MODE;
   }
 #else
   CS_L;
