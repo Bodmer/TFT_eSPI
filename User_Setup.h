@@ -36,7 +36,7 @@
 //#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
 
 // Only define one driver, the other ones must be commented out
-#define ILI9341_DRIVER
+//define ILI9341_DRIVER
 //#define ST7735_DRIVER      // Define additional parameters below for this display
 //#define ILI9163_DRIVER     // Define additional parameters below for this display
 //#define S6D02A1_DRIVER
@@ -44,7 +44,7 @@
 //#define HX8357D_DRIVER
 //#define ILI9481_DRIVER
 //#define ILI9486_DRIVER
-//#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
+#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
 //#define ST7789_DRIVER      // Full configuration option, define additional parameters below for this display
 //#define ST7789_2_DRIVER    // Minimal configuration option, define additional parameters below for this display
 //#define R61581_DRIVER
@@ -189,15 +189,15 @@
 // For ESP32 Dev board (only tested with ILI9341 display)
 // The hardware SPI can be mapped to any pins
 
-//#define TFT_MISO 19
-//#define TFT_MOSI 23
-//#define TFT_SCLK 18
-//#define TFT_CS   15  // Chip select control pin
-//#define TFT_DC    2  // Data Command control pin
-//#define TFT_RST   4  // Reset pin (could connect to RST pin)
+#define TFT_MISO 19
+#define TFT_MOSI 23
+#define TFT_SCLK 18
+#define TFT_CS   5  // Chip select control pin
+#define TFT_DC    17  // Data Command control pin
+#define TFT_RST   16  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
-//#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
+#define TOUCH_CS 4     // Chip select pin (T_CS) of touch screen
 
 //#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
