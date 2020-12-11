@@ -665,7 +665,7 @@ void IRAM_ATTR dc_callback(spi_transaction_t *spi_tx)
 ** Function name:           initDMA
 ** Description:             Initialise the DMA engine - returns true if init OK
 ***************************************************************************************/
-bool TFT_eSPI::initDMA(void)
+bool TFT_eSPI::initDMA(bool ctrl_cs)
 {
   if (DMA_Enabled) return false;
 
@@ -680,6 +680,10 @@ bool TFT_eSPI::initDMA(void)
     .flags = 0,
     .intr_flags = 0
   };
+
+  int8_t pin = -1;
+  if (ctrl_cs) pin = TFT_CS;
+
   spi_device_interface_config_t devcfg = {
     .command_bits = 0,
     .address_bits = 0,
@@ -690,7 +694,7 @@ bool TFT_eSPI::initDMA(void)
     .cs_ena_posttrans = 0,
     .clock_speed_hz = SPI_FREQUENCY,
     .input_delay_ns = 0,
-    .spics_io_num = TFT_CS,
+    .spics_io_num = pin,
     .flags = SPI_DEVICE_NO_DUMMY, //0,
     .queue_size = 1,
     .pre_cb = 0, //dc_callback, //Callback to handle D/C line

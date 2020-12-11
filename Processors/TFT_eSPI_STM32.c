@@ -538,8 +538,10 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 // This initialisation is for STM32F2xx/4xx/7xx processors and may not work on others
 // Dual core H7xx series not supported yet, they are different and have a DMA MUX: 
 // https://electronics.stackexchange.com/questions/379813/configuring-the-dma-request-multiplexer-on-a-stm32h7-mcu
-bool TFT_eSPI::initDMA(void)
+bool TFT_eSPI::initDMA(bool ctrl_cs)
 {
+  ctrl_cs = ctrl_cs; // Not used for STM32, so stop compiler warning
+
   #if (TFT_SPI_PORT == 1)
     __HAL_RCC_DMA2_CLK_ENABLE();                           // Enable DMA2 clock
     dmaHal.Init.Channel = DMA_CHANNEL_3;                   // DMA channel 3 is for SPI1 TX
