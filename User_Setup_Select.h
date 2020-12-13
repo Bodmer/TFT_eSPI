@@ -74,6 +74,8 @@
 
 //#include <User_Setups/Setup47_ST7735.h>            // Setup file configured for ST7735 128 x 128 animated eyes
 
+//#include <User_Setups/Setup48_ST7796_Parallel_ESP32.h>  // Setup for ESP32 and ST7796 parallel display (with Arduino pin layout)
+
 //#include <User_Setups/Setup50_SSD1963_Parallel.h>  // Setup file for ESP32 and SSD1963 TFT display
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
