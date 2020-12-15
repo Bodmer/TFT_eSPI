@@ -485,7 +485,7 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
   int32_t yt = min_y - spr->_yPivot;
   uint32_t xe = _dwidth << FP_SCALE;
   uint32_t ye = _dheight << FP_SCALE;
-  uint16_t tpcolor = transp>>8 | transp<<8;  // convert to unsigned swapped bytes
+  uint32_t tpcolor = transp>>8 | transp<<8;  // convert to unsigned swapped bytes
 
   bool oldSwapBytes = spr->getSwapBytes();
   spr->setSwapBytes(false);
