@@ -52,7 +52,7 @@
 #endif
 
 // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
-#if !defined(TFT_PARALLEL_8_BIT) && !defined(SPI_18BIT_DRIVER)  && !defined (RPI_DISPLAY_TYPE) || (defined (RPI_DISPLAY_TYPE) && defined (ST7796_DRIVER))
+#if !defined(TFT_PARALLEL_8_BIT) && !defined(SPI_18BIT_DRIVER)
   #define ESP32_DMA
   // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
   #define DMA_BUSY_CHECK  dmaWait()
