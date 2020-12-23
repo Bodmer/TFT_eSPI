@@ -13,8 +13,13 @@
 #include "driver/spi_master.h"
 
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
-#define SET_BUS_WRITE_MODE // Not used
-#define SET_BUS_READ_MODE  // Not used
+#if (TFT_SPI_MODE == SPI_MODE1) || (TFT_SPI_MODE == SPI_MODE2)
+  #define SET_BUS_WRITE_MODE *_spi_user = SPI_USR_MOSI | SPI_CK_OUT_EDGE
+  #define SET_BUS_READ_MODE  *_spi_user = SPI_USR_MOSI | SPI_USR_MISO | SPI_DOUTDIN | SPI_CK_OUT_EDGE
+#else
+  #define SET_BUS_WRITE_MODE *_spi_user = SPI_USR_MOSI
+  #define SET_BUS_READ_MODE  *_spi_user = SPI_USR_MOSI | SPI_USR_MISO | SPI_DOUTDIN
+#endif
 
 // SUPPORT_TRANSACTIONS is mandatory for ESP32 so the hal mutex is toggled
 #if !defined (SUPPORT_TRANSACTIONS)

@@ -26,6 +26,15 @@
   #endif
 #endif
 
+#if !defined (TFT_PARALLEL_8_BIT)
+  // Volatile for register reads:
+  volatile uint32_t* _spi_cmd       = (volatile uint32_t*)(SPI_CMD_REG(SPI_PORT));
+  volatile uint32_t* _spi_user      = (volatile uint32_t*)(SPI_USER_REG(SPI_PORT));
+  // Register writes only:
+           uint32_t* _spi_mosi_dlen =          (uint32_t*)(SPI_MOSI_DLEN_REG(SPI_PORT));
+           uint32_t* _spi_w         =          (uint32_t*)(SPI_W0_REG(SPI_PORT));
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////
 #if defined (TFT_SDA_READ) && !defined (TFT_PARALLEL_8_BIT)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -39,6 +48,7 @@ void TFT_eSPI::begin_SDA_Read(void)
   pinMatrixOutDetach(TFT_MOSI, false, false);
   pinMode(TFT_MOSI, INPUT);
   pinMatrixInAttach(TFT_MOSI, VSPIQ_IN_IDX, false);
+  SET_BUS_READ_MODE;
 }
 
 /***************************************************************************************
@@ -51,6 +61,7 @@ void TFT_eSPI::end_SDA_Read(void)
   pinMatrixOutAttach(TFT_MOSI, VSPID_OUT_IDX, false, false);
   pinMode(TFT_MISO, INPUT);
   pinMatrixInAttach(TFT_MISO, VSPIQ_IN_IDX, false);
+  SET_BUS_WRITE_MODE;
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 #endif // #if defined (TFT_SDA_READ)
@@ -183,42 +194,47 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
   
   uint32_t color32 = (color<<8 | color >>8)<<16 | (color<<8 | color >>8);
-
+  bool empty = true;
+  uint32_t* spi_w   = (uint32_t*)_spi_w;
   if (len > 31)
   {
-    WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 511);
+    *_spi_mosi_dlen =  511;
+    spi_w[0]  = color32;
+    spi_w[1]  = color32;
+    spi_w[2]  = color32;
+    spi_w[3]  = color32;
+    spi_w[4]  = color32;
+    spi_w[5]  = color32;
+    spi_w[6]  = color32;
+    spi_w[7]  = color32;
+    spi_w[8]  = color32;
+    spi_w[9]  = color32;
+    spi_w[10] = color32;
+    spi_w[11] = color32;
+    spi_w[12] = color32;
+    spi_w[13] = color32;
+    spi_w[14] = color32;
+    spi_w[15] = color32;
     while(len>31)
     {
-      while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
-      WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W1_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W2_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W3_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W4_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W5_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W6_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W7_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W8_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W9_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W10_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W11_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W12_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W13_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W14_REG(SPI_PORT), color32);
-      WRITE_PERI_REG(SPI_W15_REG(SPI_PORT), color32);
-      SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR);
+      while ((*_spi_cmd)&SPI_USR);
+      *_spi_cmd = SPI_USR;
       len -= 32;
     }
-    while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
+    empty = false;
   }
 
   if (len)
   {
-    WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), (len << 4) - 1);
-    for (uint32_t i=0; i <= (len<<1); i+=4) WRITE_PERI_REG(SPI_W0_REG(SPI_PORT) + i, color32);
-    SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR);
-    while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
+    if(empty) {
+      for (uint32_t i=0; i <= len; i+=2) *spi_w++ = color32;
+    }
+    len = (len << 4) - 1;
+    while (*_spi_cmd&SPI_USR);
+    *_spi_mosi_dlen = len;
+    *_spi_cmd = SPI_USR;
   }
+  while ((*_spi_cmd)&SPI_USR); // Move to later in code to use transmit time usefully?
 }
 
 /***************************************************************************************
