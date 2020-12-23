@@ -3,6 +3,7 @@
 // See SetupX_Template.h for all options available
 
 #define ST7789_DRIVER
+#define TFT_SDA_READ   // Display has a bidirectionsl SDA pin
 
 #define TFT_WIDTH  135
 #define TFT_HEIGHT 240
