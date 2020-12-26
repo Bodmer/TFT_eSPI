@@ -1,15 +1,18 @@
-// Setup for the TTGO T4 ("Bitcoin Tracker") ESP32 board with 2.2" ILI9341 display
+// Setup for the TTGO T4 v1.1 ("Bitcoin Tracker") ESP32 board with 2.2" ILI9341 display
 
 // See SetupX_Template.h for all options available
 
 #define ILI9341_DRIVER
+
+//#define TFT_BACKLIGHT_ON HIGH // LED control for TTGO T4 v1.3 only
+//#define TFT_BL 4
 
 #define TFT_MISO 12
 #define TFT_MOSI 23
 #define TFT_SCLK 18
 
 #define TFT_CS   27
-#define TFT_DC   26
+#define TFT_DC   26 // pin 32 for TTGO T4 v1.3
 #define TFT_RST   5
 
 #define LOAD_GLCD

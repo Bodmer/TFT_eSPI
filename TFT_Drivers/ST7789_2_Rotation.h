@@ -5,8 +5,16 @@
   switch (rotation) {
     case 0: // Portrait
 #ifdef CGRAM_OFFSET
-      colstart = 0;
-      rowstart = 0;
+      if (_init_width == 135)
+      {
+        colstart = 52;
+        rowstart = 40;
+      }
+      else
+      {
+        colstart = 0;
+        rowstart = 0;
+      }
 #endif
       writedata(TFT_MAD_COLOR_ORDER);
 
@@ -16,8 +24,16 @@
 
     case 1: // Landscape (Portrait + 90)
 #ifdef CGRAM_OFFSET
-      colstart = 0;
-      rowstart = 0;
+      if (_init_width == 135)
+      {
+        colstart = 40;
+        rowstart = 53;
+      }
+      else
+      {
+        colstart = 0;
+        rowstart = 0;
+      }
 #endif
       writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_COLOR_ORDER);
 
@@ -27,8 +43,16 @@
 
     case 2: // Inverter portrait
 #ifdef CGRAM_OFFSET
-       colstart = 0;
-       rowstart = 80;
+      if (_init_width == 135)
+      {
+        colstart = 53;
+        rowstart = 40;
+      }
+      else
+      {
+        colstart = 0;
+        rowstart = 80;
+      }
 #endif
       writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
 
@@ -37,8 +61,16 @@
        break;
     case 3: // Inverted landscape
 #ifdef CGRAM_OFFSET
-      colstart = 80;
-      rowstart = 0;
+      if (_init_width == 135)
+      {
+        colstart = 40;
+        rowstart = 52;
+      }
+      else
+      {
+        colstart = 80;
+        rowstart = 0;
+      }
 #endif
       writedata(TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
 

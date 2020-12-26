@@ -42,30 +42,42 @@
 #if defined (EPD1IN54_H) || defined (EPD1IN54B_H)
   #define EPD_WIDTH       200 // Frame buffer is 5000 bytes
   #define EPD_HEIGHT      200
+  #define INIT_LUT        lut_full_update
 
 #elif defined (EPD1IN54C_H)
   #define EPD_WIDTH       152 // 2 frame buffers of 2888 bytes each
   #define EPD_HEIGHT      152
+  #define INIT_LUT
 
 #elif defined (EPD2IN7_H) || defined (EPD2IN7B_H)
   #define EPD_WIDTH       176 // Frame buffer is 5808 bytes
   #define EPD_HEIGHT      264
+  #define INIT_LUT
 
-#elif defined (EPD2IN9_H) || defined (EPD2IN9B_H)
+#elif defined (EPD2IN9_H)
   #define EPD_WIDTH       128 // Frame buffer is 4736 bytes
   #define EPD_HEIGHT      296
+  #define INIT_LUT        lut_full_update
+
+#elif defined (EPD2IN9B_H)
+  #define EPD_WIDTH       128 // Frame buffer is 4736 bytes
+  #define EPD_HEIGHT      296
+  #define INIT_LUT
 
 #elif defined (EPD2IN13_H)
   #define EPD_WIDTH       122 // Frame buffer is 4000 bytes
   #define EPD_HEIGHT      250
+  #define INIT_LUT        lut_full_update
 
 #elif defined (EPD2IN13B_H)
   #define EPD_WIDTH       104 // 2 frame buffers of 2756 bytes each
   #define EPD_HEIGHT      212
+  #define INIT_LUT
 
-#elif defined (EPD4IN2_H)
+#elif defined (EPD4IN2_H) || defined (EPD4IN2B_H)
   #define EPD_WIDTH       400 // Frame buffer is 15000 bytes
   #define EPD_HEIGHT      300
+  #define INIT_LUT
 
 // ESP8266 has just enough RAM for a 2 color 7.5" display full screen buffer
 // ESP32 has just enough RAM for 2 or 3 color 7.5" display
@@ -73,6 +85,7 @@
 #elif defined (EPD7IN5_H) || defined (EPD7IN5B_H)
   #define EPD_WIDTH       640  // 2 colour frame buffer is 30720 bytes
   #define EPD_HEIGHT      384  // 2 colour frame buffer is 61440 bytes
+  #define INIT_LUT
 
 #else
   # error "Selected ePaper library is not supported"
@@ -95,11 +108,10 @@
     ePaper.DisplayFrame(blackFrame);            // Update 2 color display
 
   #elif defined (EPD1IN54_H) || defined(EPD2IN13_H) || defined(EPD2IN9_H)
-    ePaper.SetFrameMemory(blackFrame);          // Update 2 colour display
-
+    ePaper.SetFrameMemory(blackFrame);
+    ePaper.DisplayFrame();            // Update 2 color display
   #else
     # error "Selected ePaper library is not supported"
   #endif
 #endif
 }
-

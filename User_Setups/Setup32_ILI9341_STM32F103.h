@@ -36,7 +36,7 @@
                     // T_DIN - connect to processor MOSI
                     // T_CS  - connect to processor pin specified by TOUCH_CS above
                     // T_SCK - connect to processor SCK
-//*
+
 #define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
 #define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
 #define LOAD_FONT4  // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
@@ -44,10 +44,9 @@
 #define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:-.
 #define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
 #define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
-//*/
-// At the moment SMOOTH fonts MUST be disabled for STM32 processors (due to lack of SPIFFS)
-// Support for smooth fonts via SD cards is planned.
-//#define SMOOTH_FONT // Must be commented out for STM32
+
+// STM32 support for smooth fonts via program memory (FLASH) arrays
+#define SMOOTH_FONT
 
 // Assuming the processor clock is 72MHz:
 #define SPI_FREQUENCY  36000000   // 36MHz SPI clock

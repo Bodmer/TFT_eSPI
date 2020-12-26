@@ -22,7 +22,36 @@
 // MOSI and SCK do not need to be defined, connect:
 //  - Arduino SCK  to TFT SCK
 //  - Arduino MOSI to TFT SDI(may be marked SDA or MOSI)
-// Standard Arduino SPI pins are p(SCK=D13, MOSI=D11) this is port pins PA5 and PA7 on Nucleo-F767ZI
+// Typical Arduino SPI port 1 pins are (SCK=D13, MISO=D12, MOSI=D11) this is port pins PA5, PA6 and PA7 on Nucleo-F767ZI
+//                 SPI port 2 pins are (SCK=D18, MISO=A7, MOSI=D17) this is port pins PB13, PC2 and PB15 on Nucleo-F767ZI
+
+/*
+#define TFT_SPI_PORT 1 // SPI 1 maximum clock rate is 55MHz
+#define TFT_MOSI PA7
+#define TFT_MISO PA6
+#define TFT_SCLK PA5
+//*/
+
+/*
+#define TFT_SPI_PORT 2 // SPI 2 maximum clock rate is 27MHz
+#define TFT_MOSI D17
+#define TFT_MISO A7
+#define TFT_SCLK D18
+//*/
+
+/*
+#define TFT_SPI_PORT 2 // SPI 2 maximum clock rate is 27MHz
+#define TFT_MOSI PB15
+#define TFT_MISO PC2
+#define TFT_SCLK PB13
+//*/
+
+/*
+#define TFT_SPI_PORT 2 // SPI 2 maximum clock rate is 27MHz
+#define TFT_MOSI PB15
+#define TFT_MISO PB14
+#define TFT_SCLK PB13
+//*/
 
 // Can use Ardiuno pin references, arbitrary allocation, TFT_eSPI controls chip select
 #define TFT_CS   D5 // Chip select control pin to TFT CS
@@ -49,11 +78,10 @@
 #define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
 #define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
 
-// At the moment SMOOTH fonts must be disabled for STM32 processors (due to lack of SPIFFS)
-// Support for smooth fonts via SD cards is planned.
-//#define SMOOTH_FONT // Must be commented out for STM32
+// STM32 support for smooth fonts via program memory (FLASH) arrays
+#define SMOOTH_FONT
 
-       
+
 // Nucleo-F767ZI has a ~216MHZ CPU clock, this is divided by 4, 8, 16 etc
 
 #define SPI_FREQUENCY  27000000   // 27MHz SPI clock

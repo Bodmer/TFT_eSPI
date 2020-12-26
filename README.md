@@ -1,50 +1,58 @@
-# Tips
-If you load a new copy of TFT_eSPI then it will over-write your setups if they are kept within the TFT_eSPI folder. One way around this is to create a new folder in your Arduino library folder called "TFT_eSPI_Setups". You then place your custom setup.h files in there. After an upgrade simply edit the User_Setup_Select.h file to point to your custom setup file e.g.:
-```
-#include <../TFT_eSPI_Setups/my_custom_setup.h>
-```
-You must make sure only one setup file is called. In the the custom setup file I add the file path as a commented out first line that can be cut and pasted back into the upgraded User_Setup_Select.h file.  The ../ at the start of the path means go up one directory level. Clearly you could use different file paths or directory names as long as it does not clash with another library or folder name.
-
-You can take this one step further and have your own setup select file and then you only need to replace the Setup.h line reference in User_Setup_Select.h to, for example:
-```
-#include <../TFT_eSPI_Setups/my_setup_select.h>
-```
-To select a new setup you then edit your own my_setup_select.h file (which will not get over-written during an upgrade).
-
+A new ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
-1. The Sprite class now supports 4 bits per pixel with a 16 color palette. Three new examples have been added.
+1. Viewports can now be applied to sprites e.g. spr.setViewport(5, 5, 20, 20); so graphics can be restricted to a particular area of the sprite. This operates in the same way as the TFT viewports, see 2. below.
 
-2. The library has been upgraded to support STM32 processors when used with SPI or 8 bit parallel displays. DMA capability for SPI displays has been added for STM32F103 (e.g. "Blue Pill") and STM32F2xx/4xx/7xx (e.g. 32/64/144 Nucleo boards). New DMA demo examples have been added (for STM32 only). Smooth (anti-aliased) fonts are not yet supported for STM32 processors due to the lack of SPIFFS, support for smooth fonts using SD cards will be added at a future date.
+2. The library now provides a "viewport" capability. See "Viewport_Demo" and "Viewport_graphicstest" examples. When a viewport is defined graphics will only appear within that window.  The coordinate datum by default moves to the top left corner of the viewport, but can optionally remain at top left corner of TFT. The GUIslice library will make use of this feature to speed up the rendering of GUI objects ([see #769](https://github.com/Bodmer/TFT_eSPI/issues/769)).
 
-3. The ST7796 display controller has been added. The ST7796 RPi MHS-4.0 inch Display-B type display is supported (this is fast for a SPI display as an ESP32 can clock it at 80MHz (ESP8266 at 40MHz)), see setups 27 and 28.
+3. The library now supports SSD1963 based screen, this has been tested on a [480x800 screen](https://www.buydisplay.com/7-tft-screen-touch-lcd-display-module-w-ssd1963-controller-board-mcu) with an ESP32. The interface is 8 bit parallel only as that controller does not support a SPI interface.
 
-4. A callback function has been added, this allows antialiased fonts to be rendered over colour gradients or images. Two new examples have been added to illustrate this new capability:
+4. A companion library [U8g2_for_TFT_eSPI](https://github.com/Bodmer/U8g2_for_TFT_eSPI) has been created to allow U8g2 library fonts to be used with TFT_eSPI.
 
-           "Smooth_font_reading_TFT"
-    
-           "Smooth_font_gradient"
-           
-      ![AA_gradien](https://i.imgur.com/YMBcPHp.png)
-    
-5. Sprites can now by pushed to the screen (or another Sprite) with a rotation angle. The new function is pushRotated(). Three new examples (Rotate_Sprite_1/2/3) have been added to show how the functions can be used to rotate text, images and to draw animated dials with moving needles.
+5. The library now supports SPI DMA transfers for both ESP32 and STM32 processors. The DMA Test examples now work on the ESP32 for SPI displays (excluding RPi type and ILI9488).
 
-6. A new TFT_eFEX support library has been created which includes extra functions such as drawing a BMP or Jpeg to the screen. This library will simplify the examples. It will be expanded at a future date to include meters, dials and GUI elements like progress bars, graphs and animated buttons:
-https://github.com/Bodmer/TFT_eFEX
+6. A new option has been added for STM32 processors to optimise performance where Port A (or B) pins 0-7 are used for the 8 bit parallel interface data pins 0-7 to the TFT. This gives a dramatic 8 times better rendering performance for the lower clock rate STM32 processors such as the STM32F103 "Blue Pill" or STM411 "Black Pill" since no time consuming data bit manipulation is required. See setup file "User_Setups/Setup35_ILI9341_STM32_Port_Bus.h".
+
+7. A new "Animated_dial" example has been added to show how dials can be created using a rotated Sprite for the needle. To run this example the TFT must support reading from the screen RAM. The dial rim and scale is a jpeg image, created using a paint program.
+
+      ![Animated_dial](https://i.imgur.com/S736Rg6.png)
+
+8. Anti-aliased (smooth) fonts can now be stored as arrays in FLASH (program) memory. This means that processors such as STM32 that do not have SPIFFS support can use the fonts. The processor must have sufficient FLASH memory to store the fonts used.
 
 
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for ESP8266 and ESP32 processors with drivers for ILI9341, ILI9163, ST7735, S6D02A1, ILI9481, ILI9486, ILI9488, HX8357D, ST7789 and ST7796 based TFT displays that support SPI. The library can be loaded using the Arduino IDE's Library Manager.
+An Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targetted at 32 bit processors, it  has been performance optimised for STM32, ESP8266 and ESP32 types. The library can be loaded using the Arduino IDE's Library Manager. Direct Memory Access (DMA) can be used with the ESP32 and STM32 processors to improve rendering performance.
 
-8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with an ESP32.
+"Four wire" SPI and 8 bit parallel interfaces are supported. Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
 
-The library supports TFT displays designed for the Raspberry Pi (RPi) that are based on a ILI9486 or ST7796 driver chip with a 480 x 320 pixel screen. The ILI9486 RPi display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. A modification to these displays is possible (see mod image in Tools folder) to make many graphics functions much faster (e.g. 23ms to clear the screen, 1.2ms to draw a 72 pixel high numeral). The RPi ST7796 display is superior to the Waveshare design, it must be of the MHS-4.0 inch Display-B type.
+Displays using the following controllers are supported:
 
-Some displays permit the internal TFT screen RAM to be read. The library supports reading from ILI9341, ST7789 and ILI9488 SPI displays for the ESP32 and ESP8266. The 8 bit parallel displays used with the ESP32 can usually can be read too. The TFT_Screen_Capture example allows full screens to be captured and sent to a PC, this is handy to create program documentation.
+* ILI9163
+* ILI9225
+* ILI9341
+* ILI9481
+* ILI9486
+* ILI9488
+* HX8357D
+* S6D02A1
+* SSD1963
+* ST7735
+* ST7789
+* ST7796
 
-Support has been added recently for Waveshare 2 and 3 colour ePaper displays using full frame buffers. This addition is currently relatively immature and thus only one example has been provided. Further examples will be added soon.
+ILI9341 and ST7796 SPI based displays are recommended as starting point for experimenting with this library.
+
+The library supports some TFT displays designed for the Raspberry Pi (RPi) that are based on a ILI9486 or ST7796 driver chip with a 480 x 320 pixel screen. The ILI9486 RPi display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. Note that due to design variations between these displays not all RPi displays will work with this library, so purchaing a RPi display of these types soley for use with this library is not recommended.
+
+The "good" RPi displays are the [MHS-4.0 inch Display-B type ST7796](http://www.lcdwiki.com/MHS-4.0inch_Display-B) and [Waveshare 3.5 inch ILI9486 Type C](https://www.waveshare.com/wiki/3.5inch_RPi_LCD_(C)) displays are supported and provides good performance. These have a dedicated controller and can be clocked at up to 80MHz with the ESP32 (55MHz with STM32 and 40MHz with ESP8266).
+
+Some displays permit the internal TFT screen RAM to be read, some of the examples use this feature. The TFT_Screen_Capture example allows full screens to be captured and sent to a PC, this is handy to create program documentation.
+
+The library supports Waveshare 2 and 3 colour ePaper displays using full frame buffers. This addition is relatively immature and thus only one example has been provided.
 
 The library includes a "Sprite" class, this enables flicker free updates of complex graphics. Direct writes to the TFT with graphics functions are still available, so existing sketches do not need to be changed.
+
+# Sprites
 
 A Sprite is notionally an invisible graphics screen that is kept in the processors RAM. Graphics can be drawn into the Sprite just as they can be drawn directly to the screen. Once the Sprite is completed it can be plotted onto the screen in any position. If there is sufficient RAM then the Sprite can be the same size as the screen and used as a frame buffer. Sprites by default use 16 bit colours, the bit depth can be set to 8 bits (256 colours) , or 1 bit (any 2 colours) to reduce the RAM needed. On an ESP8266 the largest 16 bit colour Sprite that can be created is about 160x128 pixels, this consumes 40Kbytes of RAM. On an ESP32 the workspace RAM is more limited than the datsheet implies so a 16 bit colour Sprite is limited to about 200x200 pixels (~80Kbytes), an 8 bit sprite to 320x240 pixels (~76kbytes). A 1 bit per pixel Sprite requires only 9600 bytes for a full 320 x 240 screen buffer, this is ideal for supporting use with 2 colour bitmap fonts.
 
@@ -56,11 +64,18 @@ Sprites can be plotted to the TFT with one colour being specified as "transparen
 
 If an ESP32 board has SPIRAM (i.e. PSRAM) fitted then Sprites will use the PSRAM memory and large full screen buffer Sprites can be created. Full screen Sprites take longer to render (~45ms for a 320 x 240 16 bit Sprite), so bear that in mind.
 
-The XPT2046 touch screen controller is supported. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed.
+# Touch controller support
+
+The XPT2046 touch screen controller is supported for SPI based displays only. The SPI bus for the touch controller is shared with the TFT and only an additional chip select line is needed. This support will eventually be deprecated when a suitable touch screen library is avaiable.
 
 The Button class from Adafruit_GFX is incorporated, with the enhancement that the button labels can be in any font.
 
+# ESP8266 overlay mode
+
 The library supports SPI overlap on the ESP8266 so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH, this frees up GPIO pins for other uses.
+
+
+# Fonts
 
 The library contains proportional fonts, different sizes can be enabled/disabled at compile time to optimise the use of FLASH memory. Anti-alased (smooth) font files in vlw format stored in SPIFFS are supported. Any 16 bit Unicode character can be included and rendered, this means many language specific characters can be rendered to the screen.
 
@@ -89,7 +104,9 @@ Here is an example screenshot showing the anti-aliased Hiragana character Unicod
 
 Antialiased fonts can also be drawn over a gradient background with a callback to fetch the background colour of each pixel. This pixel colour can be set by the gradient algorithm or by reading back the TFT screen memory (if reading the display is supported).
 
-# ESP32 with 8 bit Mcufriend UNO shields
+# 8 bit parallel support
+
+The common 8 bit "Mcufriend" shields are supported for the STM Nucleo 64/144 boards and ESP32 UNO style board. The STM32 "Blue/Black Pill" boards can also be used with 8 bit parallel displays.
 
 The ESP32 board I have been using for testing has the following pinout:
 
@@ -109,6 +126,19 @@ IO32 wired to IO36
 
 If the display board is fitted with a resistance based touch screen then this can be used by performing the modifications described here and the fork of the Adafruit library:
 https://github.com/s60sc/Adafruit_TouchScreen
+
+# Tips
+If you load a new copy of TFT_eSPI then it will over-write your setups if they are kept within the TFT_eSPI folder. One way around this is to create a new folder in your Arduino library folder called "TFT_eSPI_Setups". You then place your custom setup.h files in there. After an upgrade simply edit the User_Setup_Select.h file to point to your custom setup file e.g.:
+```
+#include <../TFT_eSPI_Setups/my_custom_setup.h>
+```
+You must make sure only one setup file is called. In the the custom setup file I add the file path as a commented out first line that can be cut and pasted back into the upgraded User_Setup_Select.h file.  The ../ at the start of the path means go up one directory level. Clearly you could use different file paths or directory names as long as it does not clash with another library or folder name.
+
+You can take this one step further and have your own setup select file and then you only need to replace the Setup.h line reference in User_Setup_Select.h to, for example:
+```
+#include <../TFT_eSPI_Setups/my_setup_select.h>
+```
+To select a new setup you then edit your own my_setup_select.h file (which will not get over-written during an upgrade).
 
 # ePaper displays
 

@@ -15,8 +15,12 @@
     delay(120);
 
     writecommand(0x3A);
-    writedata(0x55);
- 
+    #ifdef TFT_PARALLEL_8_BIT
+      writedata(0x55);           // 16 bit colour interface
+    #else
+      writedata(0x66);           // 18 bit colour interface
+    #endif
+
     writecommand(0xC2);
     writedata(0x44);
 
@@ -60,8 +64,12 @@
     writedata(0x20);
     writedata(0x00);
  
-    writecommand(0x20);                     // display inversion OFF
-  
+    #ifdef TFT_PARALLEL_8_BIT
+      writecommand(TFT_INVOFF);
+    #else
+      writecommand(TFT_INVON);
+    #endif
+ 
     writecommand(0x36);
     writedata(0x48);
 

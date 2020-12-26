@@ -45,12 +45,11 @@ void loop() {
 
   tft.setTextColor(TFT_RED, TFT_BLACK);
   tft.drawFloat(drawTime / 2890.0, 3, 0, 80, 4);
-  if (drawTime < 100) tft.drawString("Font 1 not loaded!", 0, 108, 2);
-  
+ 
   delay(4000);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    drawTime = millis();
+  drawTime = millis();
 
   for (int i = 0; i < 1000; i++) {
     tft.drawNumber(i, 0, 0, 2);
@@ -60,12 +59,11 @@ void loop() {
 
   tft.setTextColor(TFT_RED, TFT_BLACK);
   tft.drawFloat(drawTime / 2890.0, 3, 0, 80, 4);
-  if (drawTime < 200) tft.drawString("Font 2 not loaded!", 0, 108, 2);
-  
+
   delay(4000);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    drawTime = millis();
+  drawTime = millis();
 
   for (int i = 0; i < 1000; i++) {
     tft.drawNumber(i, 0, 0, 4);
@@ -75,12 +73,11 @@ void loop() {
 
   tft.setTextColor(TFT_RED, TFT_BLACK);
   tft.drawFloat(drawTime / 2890.0, 3, 0, 80, 4);
-  if (drawTime < 200) tft.drawString("Font 4 not loaded!", 0, 108, 2);
-  
+
   delay(4000);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    drawTime = millis();
+  drawTime = millis();
 
   for (int i = 0; i < 1000; i++) {
     yield(); tft.drawNumber(i, 0, 0, 6);
@@ -90,12 +87,11 @@ void loop() {
 
   tft.setTextColor(TFT_RED, TFT_BLACK);
   tft.drawFloat(drawTime / 2890.0, 3, 0, 80, 4);
-  if (drawTime < 200) tft.drawString("Font 6 not loaded!", 0, 108, 2);
-  
+ 
   delay(4000);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    drawTime = millis();
+  drawTime = millis();
 
   for (int i = 0; i < 1000; i++) {
     yield(); tft.drawNumber(i, 0, 0, 7);
@@ -105,12 +101,11 @@ void loop() {
 
   tft.setTextColor(TFT_RED, TFT_BLACK);
   tft.drawFloat(drawTime / 2890.0, 3, 0, 80, 4);
-  if (drawTime < 200) tft.drawString("Font 7 not loaded!", 0, 108, 2);
-  
+
   delay(4000);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    drawTime = millis();
+  drawTime = millis();
 
   for (int i = 0; i < 100; i++) {
     yield(); tft.drawNumber(i, 0, 0, 8);
@@ -120,8 +115,7 @@ void loop() {
 
   tft.setTextColor(TFT_RED, TFT_BLACK);
   tft.drawFloat(drawTime / 190.0, 3, 0, 80, 4);
-  if (drawTime < 200) tft.drawString("Font 8 not loaded!", 0, 108, 2);
-  
+
   delay(4000);
 }
 

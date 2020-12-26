@@ -58,7 +58,7 @@
     writedata(0x48);          // MX, BGR
 
     writecommand(0x3A); // Pixel Interface Format
-#if defined (ESP32_PARALLEL)
+#if defined (TFT_PARALLEL_8_BIT)
     writedata(0x55);  // 16 bit colour for parallel
 #else
     writedata(0x66);  // 18 bit colour for SPI

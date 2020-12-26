@@ -14,7 +14,7 @@
 // ##################################################################################
 
 // Display type -  only define if RPi display
-#define RPI_DRIVER
+#define RPI_DISPLAY_TYPE
 
 // Only define one driver
 #define ST7796_DRIVER

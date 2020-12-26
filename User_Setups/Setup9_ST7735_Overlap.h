@@ -9,6 +9,12 @@
 
 #define ST7735_REDTAB
 
+// For ST7735, ST7789 and ILI9341 ONLY, define the colour order IF the blue and red are swapped on your display
+// Try ONE option at a time to find the correct colour order for your display
+
+//  #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
+//  #define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+
 // Overlap mode shares the ESP8266 FLASH SPI bus with the TFT so has a performance impact
 // but saves pins for other functions. It is best not to connect MISO as some displays
 // do not tristate that line wjen chip select is high!

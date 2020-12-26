@@ -19,7 +19,7 @@
 #define DMA_BUSY_CHECK // DMA not available, leave blank
 
 // Initialise processor specific SPI functions, used by init()
-#if !defined (SUPPORT_TRANSACTIONS) && defined (ESP8266)
+#if (!defined (SUPPORT_TRANSACTIONS) && defined (ESP8266))
   #define INIT_TFT_DATA_BUS \
     spi.setBitOrder(MSBFIRST); \
     spi.setDataMode(TFT_SPI_MODE); \
@@ -33,6 +33,7 @@
   // Call up the SPIFFS FLASH filing system for the anti-aliased fonts
   #define FS_NO_GLOBALS
   #include <FS.h>
+  #define FONT_FS_AVAILABLE
 #endif
 
 // Do not allow parallel mode for ESP8266
@@ -114,9 +115,9 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Macros to write commands/pixel colour data to an ILI9488 TFT
+// Macros to write commands/pixel colour data to a SPI ILI948x TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#if  defined (ILI9488_DRIVER) // 16 bit colour converted to 3 bytes for 18 bit RGB
+#if  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
 
   // Write 8 bits to TFT
   #define tft_Write_8(C)   spi.transfer(C)
@@ -147,7 +148,7 @@
   // Command is 16 bits
   #define CMD_BITS 16
 
-  // ESP32 low level SPI writes for 8, 16 and 32 bit values
+  // ESP8266 low level SPI writes for 8, 16 and 32 bit values
   // to avoid the function call overhead
   #define TFT_WRITE_BITS(D, B) \
   SPI1U1 = ((B-1) << SPILMOSI); \
@@ -176,11 +177,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
   // Command is 8 bits
-  #define CMD_BITS (8-1)
+  #define CMD_BITS 8
 
   #define tft_Write_8(C) \
-  SPI1U1 = (CMD_BITS << SPILMOSI) | (CMD_BITS << SPILMISO); \
-  SPI1W0 = (C)<<(CMD_BITS + 1 - 8); \
+  SPI1U1 = ((CMD_BITS-1) << SPILMOSI) | ((CMD_BITS-1) << SPILMISO); \
+  SPI1W0 = (C)<<(CMD_BITS - 8); \
   SPI1CMD |= SPIBUSY; \
   while(SPI1CMD & SPIBUSY) {;}
 

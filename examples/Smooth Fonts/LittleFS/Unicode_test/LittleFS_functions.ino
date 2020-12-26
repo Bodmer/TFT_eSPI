@@ -1,18 +1,18 @@
 /*====================================================================================
-  This sketch contains support functions for the ESP6266 SPIFFS filing system
+  This sketch supports the ESP6266 with LittleFS Flash filing system
 
   Created by Bodmer 15th Jan 2017
   ==================================================================================*/
- 
+
 //====================================================================================
-//                 Print a SPIFFS directory list (root directory)
+//                 Print a Flash FS directory list (root directory)
 //====================================================================================
 
 void listFiles(void) {
   Serial.println();
-  Serial.println("SPIFFS files found:");
+  Serial.println("Flash FS files found:");
 
-  fs::Dir dir = SPIFFS.openDir("/"); // Root directory
+  fs::Dir dir = LittleFS.openDir("/"); // Root directory
   String  line = "=====================================";
 
   Serial.println(line);
@@ -23,12 +23,15 @@ void listFiles(void) {
     String fileName = dir.fileName();
     Serial.print(fileName);
     int spaces = 25 - fileName.length(); // Tabulate nicely
+    if (spaces < 0) spaces = 1;
     while (spaces--) Serial.print(" ");
     fs::File f = dir.openFile("r");
     Serial.print(f.size()); Serial.println(" bytes");
+    yield();
   }
 
   Serial.println(line);
+
   Serial.println();
   delay(1000);
 }

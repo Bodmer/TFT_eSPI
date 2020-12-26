@@ -25,20 +25,17 @@
 	writedata(0x48);    //X-Mirror, Top-Left to right-Buttom, RGB  
 	
 	writecommand(0x3A); //Interface Pixel Format                                    
-	writedata(0x05);    //Control interface color format set to 16
+	writedata(0x55);    //Control interface color format set to 16
 	
 	
 	writecommand(0xB4); //Column inversion 
 	writedata(0x01);    //1-dot inversion
 
 	writecommand(0xB6); //Display Function Control
-	writedata(0x20);    //RGB interface for RAM access, RGB transfer in DE mode  
-						          //display data path in memory
-						          //Gate outputs in non-display area in Normal scan 
-						          //Source output in non-display area =V63
-
+	writedata(0x80);    //Bypass
 	writedata(0x02);    //Source Output Scan from S1 to S960, Gate Output scan from G1 to G480, scan cycle=2
 	writedata(0x3B);    //LCD Drive Line=8*(59+1)
+
 
 	writecommand(0xE8); //Display Output Ctrl Adjust
 	writedata(0x40);

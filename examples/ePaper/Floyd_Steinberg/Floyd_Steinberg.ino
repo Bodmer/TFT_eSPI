@@ -37,8 +37,9 @@
 
 // The following is for the Waveshare 2.7" colour ePaper display
 // include <epd?in?.h>  where ?.?? is screen size in inches
-
 #include   <epd2in7.h>                  // Screen specific library
+//#include <epd2in13.h>
+
 Epd ePaper;                             // Create an instance ePaper
 
 #include <TFT_eSPI.h>                   // Graphics library and Sprite class
@@ -68,7 +69,7 @@ void setup() {
   Serial.begin(250000); // Used for messages
 
   // Initialise the ePaper library
-  if (ePaper.Init() != 0) {
+  if (ePaper.Init(INIT_LUT) != 0) {
     Serial.print("ePaper init failed");
     while (1) yield(); // Wait here until re-boot
   }
@@ -140,7 +141,7 @@ void loop() {
 
   // Wake up ePaper display so we can talk to it
   Serial.println("Waking up!");
-  ePaper.Init();
+  ePaper.Init(INIT_LUT);
 
 } // end of loop()
 
