@@ -116,8 +116,10 @@
 #endif
 
 // Invoke 18 bit colour for selected displays
-#if (defined (ILI9481_DRIVER) || defined (ILI9486_DRIVER) || defined (ILI9488_DRIVER)) && !defined (TFT_PARALLEL_8_BIT) && !defined (ESP32_PARALLEL)
-  #define SPI_18BIT_DRIVER
+#if !defined (RPI_DISPLAY_TYPE) && !defined (TFT_PARALLEL_8_BIT) && !defined (ESP32_PARALLEL)
+  #if defined (ILI9481_DRIVER) || defined (ILI9486_DRIVER) || defined (ILI9488_DRIVER)
+    #define SPI_18BIT_DRIVER
+  #endif
 #endif
 
 // Load the right driver definition - do not tinker here !

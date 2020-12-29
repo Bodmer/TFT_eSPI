@@ -15,7 +15,7 @@
     delay(120);
 
     writecommand(0x3A);
-    #ifdef TFT_PARALLEL_8_BIT
+    #if defined (TFT_PARALLEL_8_BIT) || defined (RPI_DISPLAY_TYPE)
       writedata(0x55);           // 16 bit colour interface
     #else
       writedata(0x66);           // 18 bit colour interface
@@ -64,7 +64,7 @@
     writedata(0x20);
     writedata(0x00);
  
-    #ifdef TFT_PARALLEL_8_BIT
+    #if defined (TFT_PARALLEL_8_BIT) || defined (RPI_DISPLAY_TYPE)
       writecommand(TFT_INVOFF);
     #else
       writecommand(TFT_INVON);
