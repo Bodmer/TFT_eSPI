@@ -594,8 +594,10 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 ** Function name:           initDMA
 ** Description:             Initialise the DMA engine - returns true if init OK
 ***************************************************************************************/
-bool TFT_eSPI::initDMA(void)
+bool TFT_eSPI::initDMA(bool ctrl_cs)
 {
+  ctrl_cs = ctrl_cs; // Not used for STM32, so stop compiler warning
+
   __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA1 clock
 
   dmaHal.Init.Mode =  DMA_NORMAL; //DMA_CIRCULAR;   //   // Normal = send buffer once

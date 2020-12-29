@@ -20,6 +20,10 @@
 //#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
 #define TFT_RGB_ORDER TFT_BGR // Colour order Blue-Green-Red
 
+// Black and white swap option
+//#define TFT_INVERSION_ON
+#define TFT_INVERSION_OFF
+
 #define LOAD_GLCD
 #define LOAD_FONT2
 #define LOAD_FONT4
