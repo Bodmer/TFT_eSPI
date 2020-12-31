@@ -2460,6 +2460,7 @@ void TFT_eSprite::drawGlyph(uint16_t code)
           if (pixel != 0xFF)
           {
             if (dl) { drawFastHLine( xs, y + cursor_y + gFont.maxAscent - gdY[gNum], dl, fg); dl = 0; }
+            if (getColor) bg = getColor(x + cursor_x + gdX[gNum], y + cursor_y + gFont.maxAscent - gdY[gNum]);
             if (_bpp != 1) drawPixel(x + cursor_x + gdX[gNum], y + cursor_y + gFont.maxAscent - gdY[gNum], alphaBlend(pixel, fg, bg));
             else if (pixel>127) drawPixel(x + cursor_x + gdX[gNum], y + cursor_y + gFont.maxAscent - gdY[gNum], fg);
           }
