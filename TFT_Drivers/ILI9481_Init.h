@@ -5,11 +5,11 @@
 //
 // See ST7735_Setup.h file for an alternative format
 
-//#define ILI9481_INIT_1 // Original default
+#define ILI9481_INIT_1 // Original default
 //#define ILI9481_INIT_2 // CPT29
 //#define ILI9481_INIT_3 // PVI35
 //#define ILI9481_INIT_4 // AUO317
-#define ILI9481_INIT_5 // CMO35 *****
+//#define ILI9481_INIT_5 // CMO35 *****
 //#define ILI9481_INIT_6 // RGB
 
 /////////////////////////////////////////////////////////////////////////////////////////
