@@ -12,21 +12,6 @@
 #include "soc/spi_reg.h"
 #include "driver/spi_master.h"
 
-// Processor specific code used by SPI bus transaction startWrite and endWrite functions
-#if !defined (ESP32_PARALLEL)
-  #if (TFT_SPI_MODE == SPI_MODE1) || (TFT_SPI_MODE == SPI_MODE2)
-    #define SET_BUS_WRITE_MODE *_spi_user = SPI_USR_MOSI | SPI_CK_OUT_EDGE
-    #define SET_BUS_READ_MODE  *_spi_user = SPI_USR_MOSI | SPI_USR_MISO | SPI_DOUTDIN | SPI_CK_OUT_EDGE
-  #else
-    #define SET_BUS_WRITE_MODE *_spi_user = SPI_USR_MOSI
-    #define SET_BUS_READ_MODE  *_spi_user = SPI_USR_MOSI | SPI_USR_MISO | SPI_DOUTDIN
-  #endif
-#else
-    // Not applicable to parallel bus
-    #define SET_BUS_WRITE_MODE
-    #define SET_BUS_READ_MODE
-#endif
-
 // SUPPORT_TRANSACTIONS is mandatory for ESP32 so the hal mutex is toggled
 #if !defined (SUPPORT_TRANSACTIONS)
   #define SUPPORT_TRANSACTIONS
@@ -60,6 +45,21 @@
   #if !defined (ESP32_PARALLEL)
     #define ESP32_PARALLEL
   #endif
+#endif
+
+// Processor specific code used by SPI bus transaction startWrite and endWrite functions
+#if !defined (ESP32_PARALLEL)
+  #if (TFT_SPI_MODE == SPI_MODE1) || (TFT_SPI_MODE == SPI_MODE2)
+    #define SET_BUS_WRITE_MODE *_spi_user = SPI_USR_MOSI | SPI_CK_OUT_EDGE
+    #define SET_BUS_READ_MODE  *_spi_user = SPI_USR_MOSI | SPI_USR_MISO | SPI_DOUTDIN | SPI_CK_OUT_EDGE
+  #else
+    #define SET_BUS_WRITE_MODE *_spi_user = SPI_USR_MOSI
+    #define SET_BUS_READ_MODE  *_spi_user = SPI_USR_MOSI | SPI_USR_MISO | SPI_DOUTDIN
+  #endif
+#else
+    // Not applicable to parallel bus
+    #define SET_BUS_WRITE_MODE
+    #define SET_BUS_READ_MODE
 #endif
 
 // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
