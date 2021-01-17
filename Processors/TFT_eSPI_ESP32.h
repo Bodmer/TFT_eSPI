@@ -346,8 +346,8 @@
    // Read pin
   #ifdef TFT_RD
     #if (TFT_RD >= 32)
-      #define RD_L GPIO.out1_w1tc.val =  = (1 << (TFT_RD - 32))
-      #define RD_H GPIO.out1_w1ts.val =  = (1 << (TFT_RD - 32))
+      #define RD_L GPIO.out1_w1tc.val = (1 << (TFT_RD - 32))
+      #define RD_H GPIO.out1_w1ts.val = (1 << (TFT_RD - 32))
     #elif (TFT_RD >= 0)
       #define RD_L GPIO.out_w1tc = (1 << TFT_RD)
       //#define RD_L digitalWrite(TFT_WR, LOW)
