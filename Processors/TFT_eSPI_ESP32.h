@@ -181,8 +181,12 @@
 // Define the WR (TFT Write) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #if defined (TFT_WR)
-  #if (TFT_WR >= 0)
-    // TFT_WR, by design, must be in range 0-31 for single register parallel write
+  #if (TFT_WR >= 32)
+    // Note: it will be ~1.25x faster if the TFT_WR pin uses a GPIO pin lower than 32
+    #define WR_L GPIO.out1_w1tc.val = (1 << (TFT_WR - 32))
+    #define WR_H GPIO.out1_w1ts.val = (1 << (TFT_WR - 32))
+  #elif (TFT_WR >= 0)
+    // TFT_WR, for best performance, should be in range 0-31 for single register parallel write
     #define WR_L GPIO.out_w1tc = (1 << TFT_WR)
     #define WR_H GPIO.out_w1ts = (1 << TFT_WR)
   #else
@@ -290,8 +294,15 @@
   // Mask for the 8 data bits to set pin directions
   #define dir_mask ((1 << TFT_D0) | (1 << TFT_D1) | (1 << TFT_D2) | (1 << TFT_D3) | (1 << TFT_D4) | (1 << TFT_D5) | (1 << TFT_D6) | (1 << TFT_D7))
 
-  // Data bits and the write line are cleared to 0 in one step
-  #define clr_mask (dir_mask | (1 << TFT_WR))
+  #if (TFT_WR >= 32)
+    // Data bits and the write line are cleared sequentially
+    #define clr_mask (dir_mask); WR_L
+  #elif (TFT_WR >= 0)
+    // Data bits and the write line are cleared to 0 in one step (1.25x faster)
+    #define clr_mask (dir_mask | (1 << TFT_WR))
+  #else
+    #define clr_mask
+  #endif
 
   // A lookup table is used to set the different bit patterns, this uses 1kByte of RAM
   #define set_mask(C) xset_mask[C] // 63fps Sprite rendering test 33% faster, graphicstest only 1.8% faster than shifting in real time
