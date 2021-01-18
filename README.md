@@ -122,6 +122,8 @@ IO33 wired to IO34
 
 IO32 wired to IO36
 
+This is an [example setup file](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup14_ILI9341_Parallel.h) with the correct GPIO for this UNO board.
+
 ![Example](https://i.imgur.com/pUZn6lF.jpg)
 
 If the display board is fitted with a resistance based touch screen then this can be used by performing the modifications described here and the fork of the Adafruit library:
