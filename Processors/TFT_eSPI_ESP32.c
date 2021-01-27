@@ -31,8 +31,8 @@
   volatile uint32_t* _spi_cmd       = (volatile uint32_t*)(SPI_CMD_REG(SPI_PORT));
   volatile uint32_t* _spi_user      = (volatile uint32_t*)(SPI_USER_REG(SPI_PORT));
   // Register writes only:
-           uint32_t* _spi_mosi_dlen =          (uint32_t*)(SPI_MOSI_DLEN_REG(SPI_PORT));
-           uint32_t* _spi_w         =          (uint32_t*)(SPI_W0_REG(SPI_PORT));
+  volatile uint32_t* _spi_mosi_dlen = (volatile uint32_t*)(SPI_MOSI_DLEN_REG(SPI_PORT));
+  volatile uint32_t* _spi_w         = (volatile uint32_t*)(SPI_W0_REG(SPI_PORT));
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
