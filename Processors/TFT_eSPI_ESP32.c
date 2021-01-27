@@ -195,7 +195,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
   
   uint32_t color32 = (color<<8 | color >>8)<<16 | (color<<8 | color >>8);
   bool empty = true;
-  uint32_t* spi_w   = (uint32_t*)_spi_w;
+  volatile uint32_t* spi_w = (volatile uint32_t*)_spi_w;
   if (len > 31)
   {
     *_spi_mosi_dlen =  511;
