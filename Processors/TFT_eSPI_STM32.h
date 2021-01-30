@@ -17,6 +17,12 @@
 #define SET_BUS_WRITE_MODE // Not used
 #define SET_BUS_READ_MODE  // Not used
 
+#if defined(TFT_PARALLEL_8_BIT)
+  #define SPI_BUSY_CHECK
+#else
+  #define SPI_BUSY_CHECK while (spiHal.State == HAL_SPI_STATE_BUSY_TX)
+#endif
+
 // SUPPORT_TRANSACTIONS is mandatory for STM32
 #if !defined (SUPPORT_TRANSACTIONS)
   #define SUPPORT_TRANSACTIONS
@@ -183,7 +189,8 @@
                                 dmaHal.Instance = DMA1_Channel5
     #endif
   #else
-    // For STM32 processor with no implemented DMA support (yet)
+    // For other STM32 processor with no implemented DMA support (yet)
+    // #define STM32_DMA // Commented out - DMA not tested with other processors
     #if (TFT_SPI_PORT == 1)
       #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1
     #elif (TFT_SPI_PORT == 2)
@@ -199,6 +206,7 @@
 #else
   #define DMA_BUSY_CHECK
 #endif
+
 
 // If smooth fonts are enabled the filing system may need to be loaded
 #ifdef SMOOTH_FONT
@@ -1032,6 +1040,10 @@
   { spiBuffer[0] = (C)>>8; spiBuffer[1] = C; \
   HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
 
+  #define tft_Write_16N(C) \
+  { spiBuffer[0] = (C)>>8; spiBuffer[1] = C; \
+  HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
+
   #define tft_Write_16S(C) \
   { spiBuffer[0] = C; spiBuffer[1] = (C)>>8; \
   HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
@@ -1064,6 +1076,10 @@
   #endif
 
   #define tft_Write_16(C) \
+  { spiBuffer[0] = (C)>>8; spiBuffer[1] = C; \
+  HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
+
+  #define tft_Write_16N(C) \
   { spiBuffer[0] = (C)>>8; spiBuffer[1] = C; \
   HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
 

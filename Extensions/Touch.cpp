@@ -16,7 +16,7 @@
 ***************************************************************************************/
 // The touch controller has a low SPI clock rate
 inline void TFT_eSPI::begin_touch_read_write(void){
-  DMA_BUSY_CHECK;
+  DMA_BUSY_CHECK; // Wait for any DMA transfer to complete before changing SPI settings
   CS_H; // Just in case it has been left low
   #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
     if (locked) {locked = false; spi.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
@@ -38,7 +38,6 @@ inline void TFT_eSPI::end_touch_read_write(void){
   #else
     spi.setFrequency(SPI_FREQUENCY);
   #endif
-  //SET_BUS_WRITE_MODE;
 }
 
 /***************************************************************************************

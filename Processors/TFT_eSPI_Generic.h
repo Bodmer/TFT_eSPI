@@ -18,8 +18,9 @@
 #define SET_BUS_WRITE_MODE // Not used
 #define SET_BUS_READ_MODE  // Not used
 
-// Code to check if DMA is busy, used by SPI bus transaction startWrite and endWrite functions
+// Code to check if SPI or DMA is busy, used by SPI bus transaction startWrite and/or endWrite functions
 #define DMA_BUSY_CHECK // Not used so leave blank
+#define SPI_BUSY_CHECK // Not used so leave blank
 
 // To be safe, SUPPORT_TRANSACTIONS is assumed mandatory
 #if !defined (SUPPORT_TRANSACTIONS)
@@ -104,6 +105,11 @@
                            spi.transfer(((C) & 0x07E0)>>3); \
                            spi.transfer(((C) & 0x001F)<<3)
 
+  // Convert 16 bit colour to 18 bit and write in 3 bytes
+  #define tft_Write_16N(C)  spi.transfer(((C) & 0xF800)>>8); \
+                            spi.transfer(((C) & 0x07E0)>>3); \
+                            spi.transfer(((C) & 0x001F)<<3)
+
   // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
   #define tft_Write_16S(C) spi.transfer((C) & 0xF8); \
                            spi.transfer(((C) & 0xE000)>>11 | ((C) & 0x07)<<5); \
@@ -124,6 +130,7 @@
   #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
     #define tft_Write_8(C)   spi.transfer(C); spi.transfer(C)
     #define tft_Write_16(C)  spi.transfer((uint8_t)((C)>>8));spi.transfer((uint8_t)((C)>>0))
+    #define tft_Write_16N(C) spi.transfer((uint8_t)((C)>>8));spi.transfer((uint8_t)((C)>>0))
     #define tft_Write_16S(C) spi.transfer((uint8_t)((C)>>0));spi.transfer((uint8_t)((C)>>8))
 
     #define tft_Write_32(C) \
@@ -144,13 +151,15 @@
 
   #else
     #ifdef __AVR__ // AVR processors do not have 16 bit transfer
-      #define tft_Write_8(C)   {SPDR=(C); while (!(SPSR&_BV(SPIF)));}
-      #define tft_Write_16(C)  tft_Write_8((uint8_t)((C)>>8));tft_Write_8((uint8_t)((C)>>0))
-      #define tft_Write_16S(C) tft_Write_8((uint8_t)((C)>>0));tft_Write_8((uint8_t)((C)>>8))
+      #define tft_Write_8(C)    {SPDR=(C); while (!(SPSR&_BV(SPIF)));}
+      #define tft_Write_16(C)   tft_Write_8((uint8_t)((C)>>8));tft_Write_8((uint8_t)((C)>>0))
+      #define tft_Write_16N(C)  tft_Write_8((uint8_t)((C)>>8));tft_Write_8((uint8_t)((C)>>0))
+      #define tft_Write_16S(C)  tft_Write_8((uint8_t)((C)>>0));tft_Write_8((uint8_t)((C)>>8))
     #else
-      #define tft_Write_8(C)   spi.transfer(C)
-      #define tft_Write_16(C)  spi.transfer16(C)
-      #define tft_Write_16S(C) spi.transfer16(((C)>>8) | ((C)<<8))
+      #define tft_Write_8(C)    spi.transfer(C)
+      #define tft_Write_16(C)   spi.transfer16(C)
+      #define tft_Write_16N(C)  spi.transfer16(C)
+      #define tft_Write_16S(C)  spi.transfer16(((C)>>8) | ((C)<<8))
     #endif // AVR    
 
     #define tft_Write_32(C) \

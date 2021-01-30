@@ -24,7 +24,7 @@
 // STM32F767 27MHz SPI  0% processor load: Non DMA  97 fps, with DMA 102 fps
 
 // ESP32     27MHz SPI  0% processor load: Non DMA  90 fps, with DMA 101 fps
-// ESP32     40MHz SPI  0% processor load: Non DMA 127 fps, with DMA 145 fps
+// ESP32     40MHz SPI  0% processor load: Non DMA 127 fps, with DMA 152 fps
 // NOTE: FOR SPI DISPLAYS ONLY
 #define USE_DMA_TO_TFT
 

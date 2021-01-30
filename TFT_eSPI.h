@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.3.59"
+#define TFT_ESPI_VERSION "2.4.0"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -295,7 +295,7 @@ typedef struct
 {
 String  version = TFT_ESPI_VERSION;
 int32_t esp;         // Processor code
-uint8_t trans;       // SPI transaction supoort
+uint8_t trans;       // SPI transaction support
 uint8_t serial;      // Serial (SPI) or parallel
 uint8_t overlap;     // ESP8266 overlap mode
 
@@ -384,6 +384,9 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
                    height(void),
                    width(void);
 
+                   // Read the colour of a pixel at x,y and return value in 565 format 
+  virtual uint16_t readPixel(int32_t x, int32_t y);
+
   void     setRotation(uint8_t r); // Set the display image orientation to 0, 1, 2 or 3
   uint8_t  getRotation(void);      // Read the current rotation
 
@@ -391,12 +394,21 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
 
   // The TFT_eSprite class inherits the following functions (not all are useful to Sprite class
-  void     setAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h), // Note: start coordinates + width and height
-           setWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);   // Note: start + end coordinates
+  void     setAddrWindow(int32_t x, int32_t y, int32_t w, int32_t h); // Note: start coordinates + width and height
+  void     setWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);   // Note: start + end coordinates
 
   // Viewport commands, see "Viewport_Demo" sketch
   void     setViewport(int32_t x, int32_t y, int32_t w, int32_t h, bool vpDatum = true);
-  bool     checkViewport(int32_t x, int32_t y, int32_t w, int32_t h);
+
+  // Check if whole of specified area is within viewport area, returns true if clipping is not required
+  bool     checkViewport  (int32_t x, int32_t y, int32_t w, int32_t h); // Deprecated use checkAddrWindow
+  bool     checkAddrWindow(int32_t x, int32_t y, int32_t w, int32_t h);
+
+  // Clip input window to viewport bounds, return false if whole area is out of bounds
+  bool     clipAddrWindow(int32_t* x, int32_t* y, int32_t* w, int32_t* h);
+  // Clip input window area to viewport bounds, return false if whole area is out of bounds
+  bool     clipWindow(int32_t* xs, int32_t* ys, int32_t* xe, int32_t* ye);
+
   int32_t  getViewportX(void);
   int32_t  getViewportY(void);
   int32_t  getViewportWidth(void);
@@ -417,9 +429,6 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // Write a set of pixels stored in memory, use setSwapBytes(true/false) function to correct endianess
   void     pushPixels(const void * data_in, uint32_t len);
 
-           // Read the colour of a pixel at x,y and return value in 565 format 
-  uint16_t readPixel(int32_t x, int32_t y);
-
            // Support for half duplex (bi-directional SDA) SPI bus where MOSI must be switched to input
            #ifdef TFT_SDA_READ
              #if defined (TFT_eSPI_ENABLE_8_BIT_READ)
@@ -435,6 +444,20 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color),
            fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color);
 
+           // Draw an anti-aliased wide line from ax,ay to bx,by width wd with radiused ends (radius is wd/2)
+  void     drawWideLine(float ax, float ay, float bx, float by, float wd, uint16_t fg_color, uint16_t bg_color);
+           // For sprites and also TFT screens where the background pixel colours can be read
+  void     drawWideLine(float ax, float ay, float bx, float by, float wd, uint16_t fg_color);
+
+           // Draw an anti-aliased wide line from ax,ay to bx,by with different width at each end aw, bw and with radiused ends
+  void     drawWedgeLine(float ax, float ay, float bx, float by, float aw, float bw, uint16_t fg_color, uint16_t bg_color);
+           // For sprites and also TFT screens where the background pixel colours can be read
+  void     drawWedgeLine(float ax, float ay, float bx, float by, float aw, float bw, uint16_t fg_color);
+
+           // Draw an anti-aliased filled circle at ax,ay with radius r (uses drawWideLine)
+  void     drawSpot(float ax, float ay, float r, uint16_t fg_color, uint16_t bg_color);
+           // For sprites and also TFT screens where the background pixel colours can be read
+  void     drawSpot(float ax, float ay, float r, uint16_t fg_color);
 
   void     drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
            drawCircleHelper(int32_t x, int32_t y, int32_t r, uint8_t cornername, uint32_t color),
@@ -521,6 +544,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   void     setTextColor(uint16_t color),                    // Set character (glyph) color only (background not over-written)
            setTextColor(uint16_t fgcolor, uint16_t bgcolor),// Set character (glyph) foreground and backgorund colour
            setTextSize(uint8_t size);                       // Set character size multiplier (this increases pixel size)
+                                                            // Note: Smooth fonts cannot be scaled using setTextSize
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
 
@@ -701,6 +725,11 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
            // Same as setAddrWindow but exits with CGRAM in read mode
   void     readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h);
+
+           // Helper function: calculate distance of a point from a finite length line between two points
+  float    wideLineDistance(float pax, float pay, float bax, float bay, float dr)  __attribute__((always_inline));
+           // As above but adds delta distance for wedge shaped lines
+  float    wedgeLineDistance(float pax, float pay, float bax, float bay, float dr) __attribute__((always_inline));
 
            // Byte read prototype
   uint8_t  readByte(void);

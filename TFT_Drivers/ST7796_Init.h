@@ -27,6 +27,8 @@
 	writecommand(0x3A); //Interface Pixel Format                                    
 	writedata(0x55);    //Control interface color format set to 16
 	
+ 	writecommand(0xB0); //Interface mode control
+	writedata(0x00);    //0x00 = SDA input and SDO output, 0x80 bidirections SDA
 	
 	writecommand(0xB4); //Column inversion 
 	writedata(0x01);    //1-dot inversion

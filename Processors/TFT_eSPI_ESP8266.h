@@ -17,6 +17,7 @@
 
 // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
 #define DMA_BUSY_CHECK // DMA not available, leave blank
+#define SPI_BUSY_CHECK while(SPI1CMD & SPIBUSY) {;}
 
 // Initialise processor specific SPI functions, used by init()
 #if (!defined (SUPPORT_TRANSACTIONS) && defined (ESP8266))
@@ -127,6 +128,11 @@
                            spi.transfer(((C) & 0x07E0)>>3); \
                            spi.transfer(((C) & 0x001F)<<3)
 
+  // Convert 16 bit colour to 18 bit and write in 3 bytes
+  #define tft_Write_16N(C) spi.transfer(((C) & 0xF800)>>8); \
+                           spi.transfer(((C) & 0x07E0)>>3); \
+                           spi.transfer(((C) & 0x001F)<<3)
+
   // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
   #define tft_Write_16S(C) spi.transfer((C) & 0xF8); \
                            spi.transfer(((C) & 0xE000)>>11 | ((C) & 0x07)<<5); \
@@ -160,6 +166,10 @@
 
   #define tft_Write_16(C)    TFT_WRITE_BITS((C)>>8 | (C)<<8, 16)
 
+  #define tft_Write_16N(C)   SPI1U1 = ((16-1) << SPILMOSI); \
+                             SPI1W0 = (C)>>8 | (C)<<8; \
+                             SPI1CMD |= SPIBUSY; \
+
   #define tft_Write_16S(C)   TFT_WRITE_BITS(C, 16)
 
   #define tft_Write_32(C)    TFT_WRITE_BITS(C, 32)
@@ -190,6 +200,11 @@
   SPI1W0 = ((C)<<8 | (C)>>8); \
   SPI1CMD |= SPIBUSY; \
   while(SPI1CMD & SPIBUSY) {;}
+
+  #define tft_Write_16N(C)      \
+  SPI1U1 = (15 << SPILMOSI) | (15 << SPILMISO); \
+  SPI1W0 = ((C)<<8 | (C)>>8); \
+  SPI1CMD |= SPIBUSY;
 
   #define tft_Write_16S(C) \
   SPI1U1 = (15 << SPILMOSI) | (15 << SPILMISO); \

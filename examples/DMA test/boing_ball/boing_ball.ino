@@ -20,11 +20,19 @@
 // Blue Pill overclocked to 128MHz with DMA - 32MHz SPI 116 fps
 
 // ESP32     - 8 bit parallel     110 fps (no DMA)
-// ESP32     - 40MHz SPI *no* DMA  93 fps
-// ESP32     - 40MHz SPI with DMA 112 fps
+// ESP32     - 27MHz SPI *no* DMA  75 fps
+// ESP32     - 27MHz SPI with DMA 110 fps
+// ESP32     - 40MHz SPI *no* DMA  94 fps
+// ESP32     - 40MHz SPI with DMA 160 fps
+// ESP32     - 80MHz SPI *no* DMA 128 fps
+// ESP32     - 80MHz SPI with DMA 187 fps
 
-#define SCREENWIDTH 320
+// Comment out next line for no DMA
+#define USE_DMA
+
+#define SCREENWIDTH  320
 #define SCREENHEIGHT 240
+#define BUFFER_SIZE  1024 // DMA buffers (4 kbytes reserved)
 
 #include "graphic.h"
 
@@ -51,7 +59,7 @@ int   balloldx  = ballx, balloldy = bally;   // Prior ball position
 
 // Working buffer for ball rendering...2 scanlines that alternate,
 // one is rendered while the other is transferred via DMA.
-uint16_t renderbuf[2][SCREENWIDTH];
+uint16_t renderbuf[2][BUFFER_SIZE];
 
 uint16_t palette[16]; // Color table for ball rotation effect
 
@@ -64,12 +72,12 @@ void setup() {
   tft.begin();
   tft.setRotation(3); // Landscape orientation, USB at bottom right
   tft.setSwapBytes(false);
-  // Draw initial framebuffer contents:
-  //tft.setBitmapColor(GRIDCOLOR, BGCOLOR);
-  tft.fillScreen(BGCOLOR);
-
+#ifdef USE_DMA
   tft.initDMA();
+#endif
 
+  // Draw initial framebuffer contents:
+  tft.fillScreen(BGCOLOR);
   tft.drawBitmap(0, 0, (const uint8_t *)background, SCREENWIDTH, SCREENHEIGHT, GRIDCOLOR);
 
   startTime = millis();
@@ -127,16 +135,17 @@ void loop() {
            x, y, bx1, bgx1;         // Loop counters and working vars
   uint8_t  p;                       // 'packed' value of 2 ball pixels
   int8_t bufIdx = 0;
+  uint32_t pCount = 0;
 
   // Start SPI transaction and drop TFT_CS - avoids transaction overhead in loop
   tft.startWrite();
-
   // Set window area to pour pixels into
   tft.setAddrWindow(minx, miny, width, height);
+  destPtr = &renderbuf[bufIdx][0];
 
   // Draw line by line loop
   for(y=0; y<height; y++) { // For each row...
-    destPtr = &renderbuf[bufIdx][0];
+
     bx1  = bx;  // Need to keep the original bx and bgx values,
     bgx1 = bgx; // so copies of them are made here (and changed in loop below)
     for(x=0; x<width; x++) {
@@ -156,22 +165,29 @@ void loop() {
         c = background[bgy][bgx1 / 8] & (0x80 >> (bgx1 & 7)) ? GRIDCOLOR : BGCOLOR;
       }
       *destPtr++ = c<<8 | c>>8; // Store pixel color
+      pCount++;
+      if (pCount >= BUFFER_SIZE) {
+#ifdef USE_DMA
+        tft.pushPixelsDMA(&renderbuf[bufIdx][0], BUFFER_SIZE); // Push line to screen
+#else
+        tft.pushPixels(&renderbuf[bufIdx][0], BUFFER_SIZE);
+#endif
+        bufIdx = 1 - bufIdx;
+        destPtr = &renderbuf[bufIdx][0];
+        pCount = 0;
+      }
       bx1++;  // Increment bitmap position counters (X axis)
       bgx1++;
     }
-
-    tft.pushPixelsDMA(&renderbuf[bufIdx][0], width); // Push line to screen
-
-    // Push line to screen (swap bytes false for STM/ESP32)
-    //tft.pushPixels(&renderbuf[bufIdx][0], width);
-
-    bufIdx = 1 - bufIdx;
     by++; // Increment bitmap position counters (Y axis)
     bgy++;
   }
-  //if (random(100) == 1) delay(2000);
-  tft.endWrite();
-  //delay(5);
+#ifdef USE_DMA
+  if (pCount) tft.pushPixelsDMA(&renderbuf[bufIdx][0], pCount); // Push line to screen
+#else
+  if (pCount) tft.pushPixels(&renderbuf[bufIdx][0], pCount);
+#endif
+
   // Show approximate frame rate
   if(!(++frame & 255)) { // Every 256 frames...
     uint32_t elapsed = (millis() - startTime) / 1000; // Seconds

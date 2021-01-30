@@ -127,6 +127,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
   uint32_t r1 = g<<24 | r<<16 | b<<8 | g;
   uint32_t r2 = b<<24 | g<<16 | r<<8 | b;
 
+  while(SPI1CMD & SPIBUSY) {}
   SPI1W0 = r0;
   SPI1W1 = r1;
   SPI1W2 = r2;
@@ -163,15 +164,16 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
       SPI1CMD |= SPIBUSY;
       len -= 21;
     }
-    while(SPI1CMD & SPIBUSY) {}
+    //while(SPI1CMD & SPIBUSY) {}
   }
 
   if (len)
   {
     len = (len * 24) - 1;
+    while(SPI1CMD & SPIBUSY) {}
     SPI1U1 = (len << SPILMOSI);
     SPI1CMD |= SPIBUSY;
-    while(SPI1CMD & SPIBUSY) {}
+    //while(SPI1CMD & SPIBUSY) {}
   }
 
 }
@@ -183,6 +185,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
 void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
   uint16_t *data = (uint16_t*)data_in;
+  while(SPI1CMD & SPIBUSY) {}
 
   // Send groups of 4 concatenated pixels
   if (len > 3) {
@@ -222,12 +225,8 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
       SPI1CMD |= SPIBUSY;
       len -= 4;
     }
-    while(SPI1CMD & SPIBUSY) {}
+    //while(SPI1CMD & SPIBUSY) {}
   }
-
-  // ILI9488 write macro is not endianess dependant, hence !_swapBytes
-  if (!_swapBytes) while ( len-- ) { tft_Write_16S(*data); data++;}
-  else while ( len-- ) {tft_Write_16(*data); data++;}
 }
 
 /***************************************************************************************
@@ -257,23 +256,10 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
 //
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
 {
-/*
-while (len>1) { tft_Write_32(color<<16 | color); len-=2;}
-if (len) tft_Write_16(color);
-return;
-//*/
   uint16_t color16 = (color >> 8) | (color << 8);
   uint32_t color32 = color16 | color16 << 16;
-/*
-  while(len--) {
-    SPI1U1 = ((16-1) << SPILMOSI) | ((16-1) << SPILMISO);
-    SPI1W0 = color16;
-    SPI1CMD |= SPIBUSY;
-    while(SPI1CMD & SPIBUSY) {}
-  }
-  return;
-//*/
-
+  while(SPI1CMD & SPIBUSY) {}
+  
   SPI1W0 = color32;
   SPI1W1 = color32;
   SPI1W2 = color32;
@@ -311,15 +297,16 @@ return;
       SPI1CMD |= SPIBUSY;
       len -= 32;
     }
-    while(SPI1CMD & SPIBUSY) {}
+    //while(SPI1CMD & SPIBUSY) {}
   }
 
   if (len)
   {
     len = (len << 4) - 1;
+    while(SPI1CMD & SPIBUSY) {}
     SPI1U1 = (len << SPILMOSI);
     SPI1CMD |= SPIBUSY;
-    while(SPI1CMD & SPIBUSY) {}
+    //while(SPI1CMD & SPIBUSY) {}
   }
 
 }
@@ -339,6 +326,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
   uint32_t color[8];
 
+  while(SPI1CMD & SPIBUSY) {}
   SPI1U1 = (255 << SPILMOSI) | (255 << SPILMISO);
 
 
@@ -381,7 +369,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
     SPI1CMD |= SPIBUSY;
   }
 
-  while(SPI1CMD & SPIBUSY) {}
+  //while(SPI1CMD & SPIBUSY) {}
 
 }
 
@@ -396,6 +384,7 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
 
   uint32_t color[8];
 
+  while(SPI1CMD & SPIBUSY) {}
   SPI1U1 = (255 << SPILMOSI) | (255 << SPILMISO);
 
   while(len>15)
@@ -438,7 +427,7 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
     SPI1CMD |= SPIBUSY;
   }
 
-  while(SPI1CMD & SPIBUSY) {}
+  //while(SPI1CMD & SPIBUSY) {}
 
 }
 

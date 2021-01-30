@@ -65,10 +65,17 @@
 // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
 #if !defined(TFT_PARALLEL_8_BIT) && !defined(SPI_18BIT_DRIVER)
   #define ESP32_DMA
+  #define DMA_QUEUE_SIZE 1
   // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
   #define DMA_BUSY_CHECK  dmaWait()
 #else
   #define DMA_BUSY_CHECK
+#endif
+
+#if defined(TFT_PARALLEL_8_BIT)
+  #define SPI_BUSY_CHECK
+#else
+  #define SPI_BUSY_CHECK while (*_spi_cmd&SPI_USR)
 #endif
 
 // If smooth font is used then it is likely SPIFFS will be needed
@@ -167,7 +174,7 @@
         #define CS_L GPIO.out_w1ts = (1 << TFT_CS); GPIO.out_w1tc = (1 << TFT_CS)
         #define CS_H GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1ts = (1 << TFT_CS)
       #else
-        #define CS_L GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1tc = (1 << TFT_CS)
+        #define CS_L GPIO.out_w1tc = (1 << TFT_CS)//; GPIO.out_w1tc = (1 << TFT_CS)
         #define CS_H GPIO.out_w1ts = (1 << TFT_CS)//;GPIO.out_w1ts = (1 << TFT_CS)
       #endif
     #else
@@ -198,6 +205,7 @@
   #define WR_H
 #endif
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the touch screen chip select pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -217,11 +225,7 @@
   #ifdef USE_HSPI_PORT
 
     #ifndef TFT_MISO
-      #define TFT_MISO 12
-    #endif
-    #if (TFT_MISO == -1)
-      #undef TFT_MISO
-      #define TFT_MISO 12
+      #define TFT_MISO -1
     #endif
 
     #ifndef TFT_MOSI
@@ -243,11 +247,7 @@
   #else // VSPI port
 
     #ifndef TFT_MISO
-      #define TFT_MISO 19
-    #endif
-    #if (TFT_MISO == -1)
-      #undef TFT_MISO
-      #define TFT_MISO 19
+      #define TFT_MISO -1
     #endif
 
     #ifndef TFT_MOSI
@@ -375,11 +375,17 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 #elif  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
 
+  // ESP32 low level SPI writes for 8, 16 and 32 bit values too fast for ILI9488
   // Write 8 bits to TFT
   #define tft_Write_8(C)   spi.transfer(C)
 
   // Convert 16 bit colour to 18 bit and write in 3 bytes
   #define tft_Write_16(C)  spi.transfer(((C) & 0xF800)>>8); \
+                           spi.transfer(((C) & 0x07E0)>>3); \
+                           spi.transfer(((C) & 0x001F)<<3)
+
+  // Convert 16 bit colour to 18 bit and write in 3 bytes
+  #define tft_Write_16N(C) spi.transfer(((C) & 0xF800)>>8); \
                            spi.transfer(((C) & 0x07E0)>>3); \
                            spi.transfer(((C) & 0x001F)<<3)
 
@@ -404,17 +410,24 @@
 
   // ESP32 low level SPI writes for 8, 16 and 32 bit values
   // to avoid the function call overhead
-  #define TFT_WRITE_BITS(D, B) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), B-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), D); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
+  #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;    \
+                               *_spi_w = D;             \
+                               *_spi_cmd = SPI_USR;      \
+                        while (*_spi_cmd & SPI_USR);
+
+  #define TFT_WRITE_BITSN(D, B) *_spi_mosi_dlen = B-1;    \
+                               *_spi_w = D;             \
+                               *_spi_cmd = SPI_USR;
 
   // Write 8 bits
   #define tft_Write_8(C) TFT_WRITE_BITS((C)<<8, 16)
 
   // Write 16 bits with corrected endianess for 16 bit colours
   #define tft_Write_16(C) TFT_WRITE_BITS((C)<<8 | (C)>>8, 16)
+
+  #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;       \
+                           *_spi_w = ((C)<<8 | (C)>>8); \
+                           *_spi_cmd = SPI_USR;
 
   // Write 16 bits
   #define tft_Write_16S(C) TFT_WRITE_BITS(C, 16)
@@ -429,24 +442,26 @@
   // Write same value twice
   #define tft_Write_32D(C) tft_Write_32C(C,C)
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros for all other SPI displays
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
 
-  // ESP32 low level SPI writes for 8, 16 and 32 bit values
-  // to avoid the function call overhead
-  #define TFT_WRITE_BITS(D, B) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), B-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), D); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
+  #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;    \
+                               *_spi_w = D;             \
+                               *_spi_cmd = SPI_USR;      \
+                        while (*_spi_cmd & SPI_USR);
 
   // Write 8 bits
   #define tft_Write_8(C) TFT_WRITE_BITS(C, 8)
 
   // Write 16 bits with corrected endianess for 16 bit colours
   #define tft_Write_16(C) TFT_WRITE_BITS((C)<<8 | (C)>>8, 16)
+
+  #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;       \
+                           *_spi_w = ((C)<<8 | (C)>>8); \
+                           *_spi_cmd = SPI_USR;
 
   // Write 16 bits
   #define tft_Write_16S(C) TFT_WRITE_BITS(C, 16)
