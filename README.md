@@ -1,3 +1,5 @@
+A [Beta test branch](https://github.com/Bodmer/TFT_eSPI/tree/2.4.0-Beta) has been created, this has some new anti-aliased line functions (drawSpot, drawWideLine and drawWedgeLine), see the new Anti-aliased_Clock_v3 example. Comments in discussions tab (not issues at the moment please) are welcome.
+
 A new ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
 1. Viewports can now be applied to sprites e.g. spr.setViewport(5, 5, 20, 20); so graphics can be restricted to a particular area of the sprite. This operates in the same way as the TFT viewports, see 2. below.
