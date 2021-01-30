@@ -2485,7 +2485,7 @@ float TFT_eSPI::wedgeLineDistance(float pax, float pay, float bax, float bay, fl
 void TFT_eSPI::drawSpot(float ax, float ay, float r, uint16_t fg_color, uint16_t bg_color)
 {
   // Filled circle can be created by the wide line function with length zero
-  drawWideLine( ax, ay, ax, ay, r, fg_color, bg_color);
+  drawWideLine( ax, ay, ax, ay, 2.0*r, fg_color, bg_color);
 }
 
 /***************************************************************************************
@@ -2496,7 +2496,7 @@ void TFT_eSPI::drawSpot(float ax, float ay, float r, uint16_t fg_color, uint16_t
 void TFT_eSPI::drawSpot(float ax, float ay, float r, uint16_t fg_color)
 {
   // Filled circle can be created by the wide line function with length zero
-  drawWideLine( ax, ay, ax, ay, r, fg_color);
+  drawWideLine( ax, ay, ax, ay, 2.0*r, fg_color);
 }
 
 /***************************************************************************************
