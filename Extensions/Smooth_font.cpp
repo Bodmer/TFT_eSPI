@@ -1,6 +1,6 @@
  // Coded by Bodmer 10/2/18, see license in root directory.
  // This is part of the TFT_eSPI class and is associated with anti-aliased font functions
- 
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // New anti-aliased (smoothed) font functions added below
@@ -365,7 +365,13 @@ void TFT_eSPI::drawGlyph(uint16_t code)
   if (code < 0x21)
   {
     if (code == 0x20) {
-      //if (fg!=bg) fillRect(cursor_x, cursor_y, gFont.spaceWidth, gFont.yAdvance, bg);
+
+ #ifdef SMOOTH_FONT_OVERRIDE_BG
+
+      if (fg!=bg) fillRect(cursor_x, cursor_y, gFont.spaceWidth, gFont.yAdvance, bg);
+
+#endif
+
       cursor_x += gFont.spaceWidth;
       return;
     }
@@ -380,7 +386,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
   uint16_t gNum = 0;
   bool found = getUnicodeIndex(code, &gNum);
-  
+
   if (found)
   {
 
@@ -414,6 +420,19 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
     //if (fg!=bg) fillRect(cursor_x, cursor_y, gxAdvance[gNum], gFont.yAdvance, bg);
 
+#ifdef SMOOTH_FONT_OVERRIDE_BG
+
+    if (gdY[gNum] < (2 * (gFont.ascent + gFont.descent)))
+    {
+        // strange condition, explanation see below
+        for (int y = 0; y < (gFont.maxAscent - gdY[gNum]); ++y)
+        {
+            drawFastHLine(cursor_x, cursor_y + y, gxAdvance[gNum], bg);
+        }
+    }
+
+#endif
+
     for (int y = 0; y < gHeight[gNum]; y++)
     {
 #ifdef FONT_FS_AVAILABLE
@@ -432,6 +451,16 @@ void TFT_eSPI::drawGlyph(uint16_t code)
         }
       }
 #endif
+
+#ifdef SMOOTH_FONT_OVERRIDE_BG
+
+    if (gdY[gNum] < (2 * (gFont.ascent + gFont.descent)))
+    {
+        drawFastHLine(cursor_x, y + cy, gxAdvance[gNum], bg);
+    }
+
+#endif
+
       for (int x = 0; x < gWidth[gNum]; x++)
       {
 #ifdef FONT_FS_AVAILABLE
@@ -466,6 +495,35 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       if (dl) { drawFastHLine( xs, y + cy, dl, fg); dl = 0; }
     }
 
+#ifdef SMOOTH_FONT_OVERRIDE_BG
+
+        if (gdY[gNum] == (2 * (gFont.ascent + gFont.descent)))
+        {
+            // odd, unexpected situation,
+            // happens with an unicode special space character (not 0x20)
+            // with no pixels in it
+            // e.g. Six-Per-Em Space U+2006
+            //
+            // With NotoSans Regular, size 50, I got the following values:
+            // ascent:    38, maxAscent:  38, maxDescent: 12, descent: 12
+            // gxAdvance: 8,  gdX:        4294967246
+            // gHeight:   1,  gdY:        100
+
+            for (int y = 0; y < (gFont.ascent + gFont.descent); ++y)
+            {
+                drawFastHLine(cursor_x, y + cursor_y, gxAdvance[gNum], bg);
+            }
+        }
+        else
+        {
+            for (int y = 0; y < (gFont.descent - (gHeight[gNum] - gdY[gNum])); ++y)
+            {
+                drawFastHLine(cursor_x, y + cursor_y + gFont.ascent + (gHeight[gNum] - gdY[gNum]), gxAdvance[gNum], bg);
+            }
+        }
+
+#endif
+
     if (pbuffer) free(pbuffer);
     cursor_x += gxAdvance[gNum];
     endWrite();
@@ -491,7 +549,7 @@ void TFT_eSPI::showFont(uint32_t td)
   uint32_t timeDelay = 0;    // No delay before first page
 
   fillScreen(textbgcolor);
-  
+
   for (uint16_t i = 0; i < gFont.gCount; i++)
   {
     // Check if this will need a new screen
