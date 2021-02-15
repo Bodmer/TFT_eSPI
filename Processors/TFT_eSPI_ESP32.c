@@ -438,7 +438,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
         _spi_w[10] = r1;
         _spi_w[11] = r2;
         _spi_w[12] = r0;
-        _spi_w[14] = r1;
+        _spi_w[13] = r1;
         _spi_w[14] = r2;
       }
     }
