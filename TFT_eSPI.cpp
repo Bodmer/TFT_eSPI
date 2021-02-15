@@ -506,6 +506,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   textwrapY  = false;   // Wrap text at bottom of screen when using print stream
   textdatum = TL_DATUM; // Top Left text alignment is default
   fontsloaded = 0;
+  glyph_xbg = 0;        // Smooth font scan blanking line start coordinate
+  // glyph_1st = true;  // Not used at the moment, flags blanking adjustment needed
 
   _swapBytes = false;   // Do not swap colour bytes by default
 
@@ -515,7 +517,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   _booted   = true;     // Default attributes
   _cp437    = true;
   _utf8     = true;
-
+  _sfbg_enable = false;
+ 
 #ifdef FONT_FS_AVAILABLE
   fs_font  = true;     // Smooth font filing system or array (fs_font = false) flag
 #endif
@@ -1414,9 +1417,12 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
 
     // The 6 colour bits are in MS 6 bits of each byte, but the ILI9488 needs an extra clock pulse
     // so bits appear shifted right 1 bit, so mask the middle 6 bits then shift 1 place left
-    *data++ = (tft_Read_8()&0x7E)<<1;
-    *data++ = (tft_Read_8()&0x7E)<<1;
-    *data++ = (tft_Read_8()&0x7E)<<1;
+    //*data++ = (tft_Read_8()&0x7E)<<1;
+    //*data++ = (tft_Read_8()&0x7E)<<1;
+    //*data++ = (tft_Read_8()&0x7E)<<1;
+    *data++ = tft_Read_8();
+    *data++ = tft_Read_8();
+    *data++ = tft_Read_8();
 
   #endif
 
@@ -1565,9 +1571,12 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 
       // The 6 colour bits are in MS 6 bits of each byte but we do not include the extra clock pulse
       // so we use a trick and mask the middle 6 bits of the byte, then only shift 1 place left
-      uint8_t r = (tft_Read_8()&0x7E)<<1;
-      uint8_t g = (tft_Read_8()&0x7E)<<1;
-      uint8_t b = (tft_Read_8()&0x7E)<<1;
+      //uint8_t r = (tft_Read_8()&0x7E)<<1;
+      //uint8_t g = (tft_Read_8()&0x7E)<<1;
+      //uint8_t b = (tft_Read_8()&0x7E)<<1;
+      uint8_t r = tft_Read_8();
+      uint8_t g = tft_Read_8();
+      uint8_t b = tft_Read_8();
       color = color565(r, g, b);
   #endif
 
@@ -3824,7 +3833,10 @@ void TFT_eSPI::setAttribute(uint8_t attr_id, uint8_t param) {
 #endif
             _psram_enable = false;
             break;
-        //case 4: // TBD future feature control
+        case SFBG_ENABLE: // Enable glyph by glyph background clearing
+            _sfbg_enable = param;
+            break;
+        //case 5: // TBD future feature control
         //    _tbd = param;
         //    break;
     }
@@ -3843,7 +3855,9 @@ uint8_t TFT_eSPI::getAttribute(uint8_t attr_id) {
             return _utf8;
         case PSRAM_ENABLE:
             return _psram_enable;
-        //case 3: // TBD future feature control
+        case SFBG_ENABLE:
+            return _sfbg_enable;
+        //case 5: // TBD future feature control
         //    return _tbd;
         //    break;
     }
@@ -4495,7 +4509,8 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
 
 #ifdef SMOOTH_FONT
   if(fontLoaded) {
-    if (textcolor!=textbgcolor) fillRect(poX, poY, cwidth, cheight, textbgcolor);
+    // This line causes flicker - to be replaced by new experimental scanline blanking
+    if (textcolor!=textbgcolor && !_sfbg_enable) fillRect(poX, poY, cwidth, cheight, textbgcolor);
 /*
     // The above only works for a single text line, not if the text is going to wrap...
     // So need to use code like this in a while loop to fix it:
@@ -4507,12 +4522,15 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
     cursor_x += drawChar(uniCode, cursor_x, cursor_y, textfont);
 */
     setCursor(poX, poY);
+    glyph_xbg = poX;     // Keeps track of next area to clear
+    // glyph_1st = true; // Flag for first glyph, true means glyph_xbg adjustment required
 
     while (n < len) {
       uint16_t uniCode = decodeUTF8((uint8_t*)string, &n, len - n);
       drawGlyph(uniCode);
     }
     sumX += cwidth;
+    // glyph_1st = false;
     //fontFile.close();
   }
   else

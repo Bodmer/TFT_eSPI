@@ -316,7 +316,7 @@ uint32_t TFT_eSPI::readInt32(void)
 
 #ifdef FONT_FS_AVAILABLE
   if (fs_font) {
-    val |= fontFile.read() << 24;
+    val  = fontFile.read() << 24;
     val |= fontFile.read() << 16;
     val |= fontFile.read() << 8;
     val |= fontFile.read();
@@ -324,7 +324,7 @@ uint32_t TFT_eSPI::readInt32(void)
   else
 #endif
   {
-    val |= pgm_read_byte(fontPtr++) << 24;
+    val  = pgm_read_byte(fontPtr++) << 24;
     val |= pgm_read_byte(fontPtr++) << 16;
     val |= pgm_read_byte(fontPtr++) << 8;
     val |= pgm_read_byte(fontPtr++);
@@ -364,8 +364,12 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
   if (code < 0x21)
   {
-    if (code == 0x20) {
-      //if (fg!=bg) fillRect(cursor_x, cursor_y, gFont.spaceWidth, gFont.yAdvance, bg);
+    if (code == 0x20) { // May need to expand to other thin space glyphs, see https://en.wikipedia.org/wiki/Thin_space
+      if (fg!=bg && _sfbg_enable) {
+        fillRect(glyph_xbg, cursor_y, gFont.spaceWidth, gFont.yAdvance, bg);
+        glyph_xbg += gFont.spaceWidth;
+        // glyph_1st = false;
+      }
       cursor_x += gFont.spaceWidth;
       return;
     }
@@ -374,6 +378,8 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       cursor_x = 0;
       cursor_y += gFont.yAdvance;
       if (textwrapY && (cursor_y >= height())) cursor_y = 0;
+      glyph_xbg = 0;
+      // glyph_1st = true;
       return;
     }
   }
@@ -390,7 +396,12 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       cursor_x = 0;
     }
     if (textwrapY && ((cursor_y + gFont.yAdvance) >= height())) cursor_y = 0;
-    if (cursor_x == 0) cursor_x -= gdX[gNum];
+    if (cursor_x == 0)
+    {
+      cursor_x -= gdX[gNum];
+      glyph_xbg = 0;
+      // glyph_1st = true;
+    }
 
     uint8_t* pbuffer = nullptr;
     const uint8_t* gPtr = (const uint8_t*) gFont.gArray;
@@ -405,6 +416,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
     int16_t cy = cursor_y + gFont.maxAscent - gdY[gNum];
     int16_t cx = cursor_x + gdX[gNum];
+    int32_t bw = 0;
 
     int16_t  xs = cx;
     uint32_t dl = 0;
@@ -412,7 +424,15 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
     startWrite(); // Avoid slow ESP32 transaction overhead for every pixel
 
-    //if (fg!=bg) fillRect(cursor_x, cursor_y, gxAdvance[gNum], gFont.yAdvance, bg);
+    if (fg!=bg && _sfbg_enable)
+    {
+      bw = (cursor_x + gxAdvance[gNum]) - glyph_xbg;
+      if (bw > 0)
+      {
+        fillRect(glyph_xbg, cursor_y, bw, gFont.maxAscent - gdY[gNum], bg);
+        fillRect(glyph_xbg, cursor_y + (gFont.maxAscent - gdY[gNum]) + gHeight[gNum], bw, gFont.descent - (gHeight[gNum] - gdY[gNum]), bg);
+      }
+    }
 
     for (int y = 0; y < gHeight[gNum]; y++)
     {
@@ -432,6 +452,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
         }
       }
 #endif
+      drawFastHLine(glyph_xbg, y + cy, bw, bg);
       for (int x = 0; x < gWidth[gNum]; x++)
       {
 #ifdef FONT_FS_AVAILABLE
@@ -468,6 +489,8 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
     if (pbuffer) free(pbuffer);
     cursor_x += gxAdvance[gNum];
+    glyph_xbg += bw;
+    // glyph_1st = false;
     endWrite();
   }
   else

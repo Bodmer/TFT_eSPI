@@ -676,9 +676,11 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   //       id = 1: Turn on (a=true) or off (a=false) GLCD cp437 font character error correction
   //       id = 2: Turn on (a=true) or off (a=false) UTF8 decoding
   //       id = 3: Enable or disable use of ESP32 PSRAM (if available)
+  //       id = 4: Enable or disable glyph by glyph background clearing to reduce flicker (experimental)
            #define CP437_SWITCH 1
            #define UTF8_SWITCH  2
            #define PSRAM_ENABLE 3
+           #define SFBG_ENABLE  4
   void     setAttribute(uint8_t id = 0, uint8_t a = 0); // Set attribute value
   uint8_t  getAttribute(uint8_t id = 0);                // Get attribute value
 
@@ -788,6 +790,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
   uint8_t  glyph_ab,   // Smooth font glyph delta Y (height) above baseline
            glyph_bb;   // Smooth font glyph delta Y (height) below baseline
+  int32_t  glyph_xbg;  // x coordinate for glyph by glyph background clearing (experimental)
+  //bool     glyph_1st;  // flags first glyph in a string, since glyph_xbg might need adjusting for italic scripts
 
   bool     isDigits;   // adjust bounding box for numbers to reduce visual jiggling
   bool     textwrapX, textwrapY;  // If set, 'wrap' text at right and optionally bottom edge of display
@@ -800,6 +804,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     _cp437;        // If set, use correct CP437 charset (default is ON)
   bool     _utf8;         // If set, use UTF-8 decoder in print stream 'write()' function (default ON)
   bool     _psram_enable; // Enable PSRAM use for library functions (TBD) and Sprites
+  bool     _sfbg_enable;  // Enable glyph by glyph background clearing (experimental)
 
   uint32_t _lastColor; // Buffered value of last colour used
 
