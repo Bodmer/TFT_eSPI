@@ -65,7 +65,11 @@
 #endif
 
     writecommand(0xB0); // Interface Mode Control
+#ifdef TFT_SDA_READ
+    writedata(0x80);
+#else
     writedata(0x00);
+#endif
 
     writecommand(0xB1); // Frame Rate Control
     writedata(0xA0);

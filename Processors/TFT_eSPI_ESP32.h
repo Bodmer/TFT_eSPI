@@ -374,8 +374,49 @@
 // Macros to write commands/pixel colour data to a SPI ILI948x TFT
 ////////////////////////////////////////////////////////////////////////////////////////
 #elif  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+//*
+  #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;    \
+                               *_spi_w = D;              \
+                               *_spi_cmd = SPI_USR;      \
+                               while (*_spi_cmd & SPI_USR);
 
-  // ESP32 low level SPI writes for 8, 16 and 32 bit values too fast for ILI9488
+  // ESP32 low level SPI writes for 24 bit values too fast for ILI9488
+  // Write 8 bits to TFT
+  #define tft_Write_8(C)   TFT_WRITE_BITS(C, 8)
+
+  // Convert 16 bit colour to 18 bit and write in 3 bytes
+  #define tft_Write_16(C)  TFT_WRITE_BITS((((C) & 0xF800)>>8), 8); \
+                           TFT_WRITE_BITS((((C) & 0x07E0)>>3), 8); \
+                           TFT_WRITE_BITS((((C) & 0x001F)<<3), 8)
+
+  // Convert 16 bit colour to 18 bit and write in 3 bytes
+  #define tft_Write_16N(C) TFT_WRITE_BITS((((C) & 0xF800)>>8), 8); \
+                           TFT_WRITE_BITS((((C) & 0x07E0)>>3), 8); \
+                           *_spi_mosi_dlen = 8-1;       \
+                           *_spi_w = ((((C) & 0x001F)<<3)); \
+                           *_spi_cmd = SPI_USR;\
+                           //while (*_spi_cmd & SPI_USR);
+
+  // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
+  #define tft_Write_16S(C) TFT_WRITE_BITS(((C) & 0xF8), 8); \
+                           TFT_WRITE_BITS((((C) & 0xE000)>>11 | ((C) & 0x07)<<5), 8); \
+                           TFT_WRITE_BITS((((C) & 0x1F00)>>5), 8)
+
+  // Write 32 bits to TFT
+  //#define tft_Write_32(C)  spi.write32(C)
+  #define tft_Write_32(C) TFT_WRITE_BITS(C, 32)
+
+
+  // Write two concatenated 16 bit values to TFT
+  //#define tft_Write_32C(C,D) spi.write32((C)<<16 | (D))
+  #define tft_Write_32C(C,D)  TFT_WRITE_BITS((uint16_t)((D)<<8 | (D)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
+
+  // Write 16 bit value twice to TFT
+  //#define tft_Write_32D(C)  spi.write32((C)<<16 | (C))
+  #define tft_Write_32D(C) TFT_WRITE_BITS((uint16_t)((C)<<8 | (C)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
+//*/
+/*
+  // ESP32 low level SPI writes for 8, 16 and 32 bit values -  slower variant for ILI9488
   // Write 8 bits to TFT
   #define tft_Write_8(C)   spi.transfer(C)
 
@@ -402,6 +443,7 @@
 
   // Write 16 bit value twice to TFT
   #define tft_Write_32D(C)  spi.write32((C)<<16 | (C))
+//*/
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to an Raspberry Pi TFT
