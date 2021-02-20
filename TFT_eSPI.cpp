@@ -2990,7 +2990,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   if ((rotation & 0x1) == 0) { swap_coord(x, y); }
 #endif
 
-#ifdef MULTI_TFT_SUPPORT
+#if defined (MULTI_TFT_SUPPORT) || defined (GC9A01_DRIVER)
   // No optimisation
   DC_C; tft_Write_8(TFT_CASET);
   DC_D; tft_Write_32D(x);
@@ -2998,21 +2998,21 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   DC_D; tft_Write_32D(y);
 #else
   // No need to send x if it has not changed (speeds things up)
-  if (addr_col != (x<<16 | x)) {
+  if (addr_col != x) {
     DC_C; tft_Write_8(TFT_CASET);
     DC_D; tft_Write_32D(x);
-    addr_col = (x<<16 | x);
+    addr_col = x;
   }
 
   // No need to send y if it has not changed (speeds things up)
-  if (addr_row != (y<<16 | y)) {
+  if (addr_row != y) {
     DC_C; tft_Write_8(TFT_PASET);
     DC_D; tft_Write_32D(y);
-    addr_row = (y<<16 | y);
+    addr_row = y;
   }
 #endif
   DC_C; tft_Write_8(TFT_RAMWR);
-  DC_D; tft_Write_16(color);
+    DC_D; tft_Write_16(color);
 #endif
 
   end_tft_write();
