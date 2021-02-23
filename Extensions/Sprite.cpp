@@ -395,7 +395,7 @@ void TFT_eSprite::deleteSprite(void)
 ** Description:             Push rotated Sprite to TFT screen
 ***************************************************************************************/
 #define FP_SCALE 10
-bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
+bool TFT_eSprite::pushRotated(int16_t angle, uint32_t transp)
 {
   if ( !_created || _tft->_vpOoB) return false;
 
@@ -414,10 +414,13 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
   int32_t yt = min_y - _tft->_yPivot;
   uint32_t xe = _dwidth << FP_SCALE;
   uint32_t ye = _dheight << FP_SCALE;
-  uint16_t tpcolor = transp;  // convert to unsigned
-  if (_bpp == 4) tpcolor = _colorMap[transp & 0x0F];
-  tpcolor = tpcolor>>8 | tpcolor<<8; // Working with swapped color bytes
-  _tft->startWrite(); // Avoid transaction overhead for every tft pixel
+  uint32_t tpcolor = transp;
+
+  if (transp != 0x00FFFFFF) {
+    if (_bpp == 4) tpcolor = _colorMap[transp & 0x0F];
+    tpcolor = tpcolor>>8 | tpcolor<<8; // Working with swapped color bytes
+  }
+    _tft->startWrite(); // Avoid transaction overhead for every tft pixel
 
   // Scan destination bounding box and fetch transformed pixels from source Sprite
   for (int32_t y = min_y; y <= max_y; y++, yt++) {
@@ -430,11 +433,11 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
 
     uint32_t pixel_count = 0;
     do {
-      uint16_t rp;
+      uint32_t rp;
       int32_t xp = xs >> FP_SCALE;
       int32_t yp = ys >> FP_SCALE;
       if (_bpp == 16) {rp = _img[xp + yp * _iwidth]; }
-      else { rp = readPixel(xp, yp); rp = rp>>8 | rp<<8; }
+      else { rp = readPixel(xp, yp); rp = (uint16_t)(rp>>8 | rp<<8); }
       if (tpcolor == rp) {
         if (pixel_count) {
           // TFT window is already clipped, so this is faster than pushImage()
@@ -465,7 +468,7 @@ bool TFT_eSprite::pushRotated(int16_t angle, int32_t transp)
 ** Description:             Push a rotated copy of the Sprite to another Sprite
 ***************************************************************************************/
 // Not compatible with 4bpp
-bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
+bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, uint32_t transp)
 {
   if ( !_created  || _bpp == 4) return false; // Check this Sprite is created
   if ( !spr->_created  || spr->_bpp == 4) return false;  // Ckeck destination Sprite is created
@@ -485,7 +488,12 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
   int32_t yt = min_y - spr->_yPivot;
   uint32_t xe = _dwidth << FP_SCALE;
   uint32_t ye = _dheight << FP_SCALE;
-  uint32_t tpcolor = transp>>8 | transp<<8;  // convert to unsigned swapped bytes
+  uint32_t tpcolor = transp;
+  
+  if (transp != 0x00FFFFFF) {
+    if (_bpp == 4) tpcolor = _colorMap[transp & 0x0F];
+    tpcolor = tpcolor>>8 | tpcolor<<8; // Working with swapped color bytes
+  }
 
   bool oldSwapBytes = spr->getSwapBytes();
   spr->setSwapBytes(false);
@@ -501,11 +509,11 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp)
 
     uint32_t pixel_count = 0;
     do {
-      uint16_t rp;
+      uint32_t rp;
       int32_t xp = xs >> FP_SCALE;
       int32_t yp = ys >> FP_SCALE;
       if (_bpp == 16) rp = _img[xp + yp * _iwidth];
-      else { rp = readPixel(xp, yp); rp = rp>>8 | rp<<8; }
+      else { rp = readPixel(xp, yp); rp = (uint16_t)(rp>>8 | rp<<8); }
       if (tpcolor == rp) {
         if (pixel_count) {
           spr->pushImage(x - pixel_count, y, pixel_count, 1, sline_buffer);
