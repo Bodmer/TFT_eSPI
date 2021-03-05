@@ -3,7 +3,7 @@
 
  This sketch uses the GLCD (font 1) and fonts 2, 4, 6, 7, 8
  
- Make sure all the display driver and pin comnenctions are correct by
+ Make sure all the display driver and pin connections are correct by
  editting the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################

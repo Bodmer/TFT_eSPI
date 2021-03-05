@@ -6,7 +6,7 @@
  For a more accurate clock, it would be better to use the RTClib library.
  But this is just a demo...
 
- Make sure all the display driver and pin comnenctions are correct by
+ Make sure all the display driver and pin connections are correct by
  editting the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################

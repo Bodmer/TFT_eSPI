@@ -5,7 +5,7 @@
  
  This sketch uses the GLCD font only.
 
- Make sure all the display driver and pin comnenctions are correct by
+ Make sure all the display driver and pin connections are correct by
  editting the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################
