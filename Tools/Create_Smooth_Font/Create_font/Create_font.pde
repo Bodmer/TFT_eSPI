@@ -147,7 +147,7 @@ int displayFontSize = 28;
 static final int[] unicodeBlocks = {
   // The list below has been created from the table here: https://en.wikipedia.org/wiki/Unicode_block
   // Remove // at start of lines below to include that unicode block, different code ranges can also be specified by
-  // editting the start and end-of-range values. Multiple lines from the list below can be included, limited only by
+  // editing the start and end-of-range values. Multiple lines from the list below can be included, limited only by
   // the final font file size!
 
   // Block range,   //Block name, Code points, Assigned characters, Scripts

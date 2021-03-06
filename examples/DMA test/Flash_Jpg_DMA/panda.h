@@ -2,7 +2,7 @@
     http://tomeko.net/online_tools/file_to_hex.php?lang=en
 
     If needed, first resize and crop to an appropriate width and height
-    to suit your display with an image editting program such as IrfanView.
+    to suit your display with an image editing program such as IrfanView.
     
     You can also change the image "guality" to reduce the file size.
     

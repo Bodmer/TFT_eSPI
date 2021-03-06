@@ -2,7 +2,7 @@
  Display all the fast rendering fonts in a sprite
 
  Make sure all the display driver and pin comnections are correct by
- editting the User_Setup.h file in the TFT_eSPI library folder.
+ editing the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################
  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
