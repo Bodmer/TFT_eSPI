@@ -1,11 +1,11 @@
 /*
- Adapted from the Adafruit graphicstest sketch, see orignal header at end
+ Adapted from the Adafruit graphicstest sketch, see original header at end
  of sketch.
 
  This sketch uses the GLCD font (font 1) only.
 
- Make sure all the display driver and pin comnenctions are correct by
- editting the User_Setup.h file in the TFT_eSPI library folder.
+ Make sure all the display driver and pin connections are correct by
+ editing the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################
  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
