@@ -3,8 +3,8 @@
 
  Needs Font 2 (also Font 4 if using large scale label)
 
- Make sure all the display driver and pin comnenctions are correct by
- editting the User_Setup.h file in the TFT_eSPI library folder.
+ Make sure all the display driver and pin connections are correct by
+ editing the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################
  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######

@@ -15,8 +15,8 @@
 
   This sketch uses the GLCD, 2, 4, 6 fonts only.
 
-  Make sure all the display driver and pin comnenctions are correct by
-  editting the User_Setup.h file in the TFT_eSPI library folder.
+  Make sure all the display driver and pin connections are correct by
+  editing the User_Setup.h file in the TFT_eSPI library folder.
 
   Maximum recommended SPI clock rate is 27MHz when reading pixels, 40MHz
   seems to be OK with ILI9341 displays but this is above the manufacturers
