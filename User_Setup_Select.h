@@ -66,7 +66,7 @@
 //#include <User_Setups/Setup34_ILI9481_Parallel_STM32.h> // Setup for Nucleo board and parallel display
 //#include <User_Setups/Setup35_ILI9341_STM32_Port_Bus.h> // Setup for STM32 port A parallel display
 
-//#include <User_Setups/Setup36_RPi_touch_ST7796.h>      // Setup file configured for ESP32 and RPi ST7796 TFT with touch
+//#include <User_Setups/Setup36_RPi_touch_ILI9341.h>      // Setup file configured for ESP32 and RPi TFT with touch
 
 //#include <User_Setups/Setup43_ST7735.h>            // Setup file configured for my ST7735S 80x160
 //#include <User_Setups/Setup44_TTGO_CameraPlus.h>   // Setup file for ESP32 and TTGO T-CameraPlus ST7789 SPI bus TFT    240x240
@@ -76,9 +76,9 @@
 
 //#include <User_Setups/Setup50_SSD1963_Parallel.h>  // Setup file for ESP32 and SSD1963 TFT display
 
-//#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
+//#include <User_Setups/Setup51_LilyPi_ILI9481.h>  // Setup file for LilyGo LilyPi with ILI9481 display
 
-//#include <User_Setups/Setup136_LilyGo_TTV.h>       // Setup file for ESP32 and Lilygo TTV ST7789 SPI bus TFT  135x240
+//#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 
 //#include <User_Setups/Setup200_GC9A01.h>           // Setup file for ESP32 and GC9A01 240 x 240 TFT
 
