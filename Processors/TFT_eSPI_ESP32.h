@@ -217,11 +217,7 @@
   #ifdef USE_HSPI_PORT
 
     #ifndef TFT_MISO
-      #define TFT_MISO 12
-    #endif
-    #if (TFT_MISO == -1)
-      #undef TFT_MISO
-      #define TFT_MISO 12
+      #define TFT_MISO -1
     #endif
 
     #ifndef TFT_MOSI
@@ -243,11 +239,7 @@
   #else // VSPI port
 
     #ifndef TFT_MISO
-      #define TFT_MISO 19
-    #endif
-    #if (TFT_MISO == -1)
-      #undef TFT_MISO
-      #define TFT_MISO 19
+      #define TFT_MISO -1
     #endif
 
     #ifndef TFT_MOSI
