@@ -19,7 +19,8 @@ void setup() {
   // Initialise the TFT screen
   tft.init();
 
-  // Set the rotation before we calibrate
+  // Set the rotation to the orientation you wish to use in your project before calibration
+  // (the touch coordinates returned then correspond to that rotation only)
   tft.setRotation(1);
 
   // Calibrate the touch screen and retrieve the scaling factors
