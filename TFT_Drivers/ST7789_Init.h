@@ -25,6 +25,9 @@
   writedata(0x55);
   delay(10);
 
+  writecommand(ST7789_RAMCTRL);
+  writedata(0x00);
+  writedata(0xC0);
   //--------------------------------ST7789V Frame rate setting----------------------------------//
   writecommand(ST7789_PORCTRL);
   writedata(0x0c);
