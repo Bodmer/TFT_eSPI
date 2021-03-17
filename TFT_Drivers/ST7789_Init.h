@@ -21,6 +21,10 @@
   writedata(0x0A);
   writedata(0x82);
 
+  writecommand(ST7789_RAMCTRL);
+  writedata(0x00);
+  writedata(0xE0); // 5 to 6 bit conversion: r0 = r5, b0 = b5
+
   writecommand(ST7789_COLMOD);
   writedata(0x55);
   delay(10);
