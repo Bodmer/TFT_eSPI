@@ -27,7 +27,7 @@
 // If STN32 Port A or B pins 0-7 are used for 8 bit parallel data bus bits 0-7
 // then this will improve rendering performance by a factor of ~8x
 //#define STM_PORTA_DATA_BUS
-//#define STM_PORTA_DATA_BUS
+//#define STM_PORTB_DATA_BUS
 
 // Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
