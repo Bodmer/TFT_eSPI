@@ -27,7 +27,7 @@
 // If STN32 Port A or B pins 0-7 are used for 8 bit parallel data bus bits 0-7
 // then this will improve rendering performance by a factor of ~8x
 //#define STM_PORTA_DATA_BUS
-//#define STM_PORTA_DATA_BUS
+//#define STM_PORTB_DATA_BUS
 
 // Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
@@ -138,7 +138,7 @@
 //
 // The TFT RESET pin can be connected to the NodeMCU RST pin or 3.3V to free up a control pin
 //
-// The DC (Data Command) pin may be labeled AO or RS (Register Select)
+// The DC (Data Command) pin may be labelled AO or RS (Register Select)
 //
 // With some displays such as the ILI9341 the TFT CS pin can be connected to GND if no more
 // SPI devices (e.g. an SD Card) are connected, in this case comment out the #define TFT_CS
@@ -172,7 +172,7 @@
 
 // Overlap mode shares the ESP8266 FLASH SPI bus with the TFT so has a performance impact
 // but saves pins for other functions. It is best not to connect MISO as some displays
-// do not tristate that line wjen chip select is high!
+// do not tristate that line when chip select is high!
 // On NodeMCU 1.0 SD0=MISO, SD1=MOSI, CLK=SCLK to connect to TFT in overlap mode
 // On NodeMCU V3  S0 =MISO, S1 =MOSI, S2 =SCLK
 // In ESP8266 overlap mode the following must be defined

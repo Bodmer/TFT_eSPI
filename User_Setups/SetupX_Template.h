@@ -27,7 +27,7 @@
 // If STN32 Port A or B pins 0-7 are used for 8 bit parallel data bus bits 0-7
 // then this will improve rendering performance by a factor of ~8x
 //#define STM_PORTA_DATA_BUS
-//#define STM_PORTA_DATA_BUS
+//#define STM_PORTB_DATA_BUS
 
 // Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
@@ -50,13 +50,17 @@
 //#define R61581_DRIVER
 //#define RM68140_DRIVER
 //#define ST7796_DRIVER
+//#define SSD1963_480_DRIVER
+//#define SSD1963_800_DRIVER
+//#define SSD1963_800ALT_DRIVER
+//#define ILI9225_DRIVER
 //#define GC9A01_DRIVER
 
 // Some displays support SPI reads via the MISO pin, other displays have a single
 // bi-directional SDA pin and the library will try to read this via the MOSI line.
 // To use the SDA line for reading data from the TFT uncomment the following line:
 
-// #define TFT_SDA_READ      // This option is for ESP32 ONLY, tested with ST7789 display only
+// #define TFT_SDA_READ      // This option is for ESP32 ONLY, tested with ST7789 and GC9A01 display only
 
 // For ST7735, ST7789 and ILI9341 ONLY, define the colour order IF the blue and red are swapped on your display
 // Try ONE option at a time to find the correct colour order for your display
@@ -68,7 +72,7 @@
 
 // #define M5STACK
 
-// For ST7789, ST7735 and ILI9163 ONLY, define the pixel width and height in portrait orientation
+// For ST7789, ST7735, ILI9163 and GC9A01 ONLY, define the pixel width and height in portrait orientation
 // #define TFT_WIDTH  80
 // #define TFT_WIDTH  128
 // #define TFT_WIDTH  240 // ST7789 240 x 240 and 240 x 320
@@ -76,6 +80,7 @@
 // #define TFT_HEIGHT 128
 // #define TFT_HEIGHT 240 // ST7789 240 x 240
 // #define TFT_HEIGHT 320 // ST7789 240 x 320
+#define TFT_HEIGHT 240 // GC9A01 240 x 240
 
 // For ST7735 ONLY, define the type of display, originally this was based on the
 // colour of the tab on the screen protector film but this is not always true, so try
@@ -133,7 +138,7 @@
 //
 // The TFT RESET pin can be connected to the NodeMCU RST pin or 3.3V to free up a control pin
 //
-// The DC (Data Command) pin may be labeled AO or RS (Register Select)
+// The DC (Data Command) pin may be labelled AO or RS (Register Select)
 //
 // With some displays such as the ILI9341 the TFT CS pin can be connected to GND if no more
 // SPI devices (e.g. an SD Card) are connected, in this case comment out the #define TFT_CS
@@ -167,7 +172,7 @@
 
 // Overlap mode shares the ESP8266 FLASH SPI bus with the TFT so has a performance impact
 // but saves pins for other functions. It is best not to connect MISO as some displays
-// do not tristate that line wjen chip select is high!
+// do not tristate that line when chip select is high!
 // On NodeMCU 1.0 SD0=MISO, SD1=MOSI, CLK=SCLK to connect to TFT in overlap mode
 // On NodeMCU V3  S0 =MISO, S1 =MOSI, S2 =SCLK
 // In ESP8266 overlap mode the following must be defined
@@ -193,6 +198,16 @@
 //#define TFT_DC    2  // Data Command control pin
 //#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
+
+// For ESP32 Dev board (only tested with GC9A01 display)
+// The hardware SPI can be mapped to any pins
+
+//#define TFT_MOSI 15 // In some display driver board, it might be written as "SDA" and so on.
+//#define TFT_SCLK 14
+//#define TFT_CS   5  // Chip select control pin
+//#define TFT_DC   27  // Data Command control pin
+//#define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
+//#define TFT_BL   22  // LED back-light
 
 //#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
 
