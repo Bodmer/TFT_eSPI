@@ -476,7 +476,11 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
   #if defined (SSD1963_DRIVER)
     while (--len) {WR_L; WR_H; WR_L; WR_H; WR_L; WR_H;}
   #else
-    while (--len) {WR_L; WR_H; WR_L; WR_H;}
+    #ifdef PSEUDO_16_BIT
+      while (--len) {WR_L; WR_H;}
+    #else
+      while (--len) {WR_L; WR_H; WR_L; WR_H;}
+    #endif
   #endif
   }
   else while (len--) {tft_Write_16(color);}
