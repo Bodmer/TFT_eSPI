@@ -9,7 +9,7 @@
 #define _TFT_eSPI_RP2040H_
 
 // Processor ID reported by getSetup()
-#define PROCESSOR_ID 0x0000
+#define PROCESSOR_ID 0x2040
 
 // Include processor specific header
 // None
