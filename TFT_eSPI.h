@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.3.61"
+#define TFT_ESPI_VERSION "2.3.62"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -54,6 +54,8 @@
   #include "Processors/TFT_eSPI_ESP8266.h"
 #elif defined (STM32)
   #include "Processors/TFT_eSPI_STM32.h"
+#elif defined (RP2040)
+  #include "Processors/TFT_eSPI_RP2040.h"
 #else
   #include "Processors/TFT_eSPI_Generic.h"
 #endif
@@ -773,6 +775,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     _psram_enable; // Enable PSRAM use for library functions (TBD) and Sprites
 
   uint32_t _lastColor; // Buffered value of last colour used
+  uint32_t _Cbuf;      // SPI buffer for RP2040
 
 #ifdef LOAD_GFXFF
   GFXfont  *gfxFont;

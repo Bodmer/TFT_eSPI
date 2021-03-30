@@ -76,7 +76,9 @@
 
 //#include <User_Setups/Setup50_SSD1963_Parallel.h>  // Setup file for ESP32 and SSD1963 TFT display
 
-//#include <User_Setups/Setup51_LilyPi_ILI9481.h>  // Setup file for LilyGo LilyPi with ILI9481 display
+//#include <User_Setups/Setup51_LilyPi_ILI9481.h>    // Setup file for LilyGo LilyPi with ILI9481 display
+
+//#include <User_Setups/Setup60_RP2040_ILI9341.h>    // Setup file for Raspberry Pi Pico with SPI ILI9341
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 

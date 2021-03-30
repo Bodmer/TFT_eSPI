@@ -22,6 +22,8 @@
   #include "Processors/TFT_eSPI_ESP8266.c"
 #elif defined (STM32) // (_VARIANT_ARDUINO_STM32_) stm32_def.h
   #include "Processors/TFT_eSPI_STM32.c"
+#elif defined (RP2040) // Raspberry Pi Pico
+  #include "Processors/TFT_eSPI_RP2040.c"
 #else
   #include "Processors/TFT_eSPI_Generic.c"
 #endif
@@ -513,7 +515,7 @@ void TFT_eSPI::init(uint8_t tc)
 {
   if (_booted)
   {
-#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT)
+#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040)
   #if defined (TFT_CS) && (TFT_CS >= 0)
     cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
   #endif
@@ -541,7 +543,7 @@ void TFT_eSPI::init(uint8_t tc)
 
 #else
   #if !defined(TFT_PARALLEL_8_BIT)
-    #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP)
+    #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP) && !defined(RP2040)
       spi.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
     #else
       spi.begin();
@@ -1806,46 +1808,62 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
 // Optimised midpoint circle algorithm
 void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 {
-  int32_t  x  = 1;
-  int32_t  dx = 1;
-  int32_t  dy = r+r;
-  int32_t  p  = -(r>>1);
+  if ( r <= 0 ) return;
 
   //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
-  // These are ordered to minimise coordinate changes in x or y
-  // drawPixel can then send fewer bounding box commands
-  drawPixel(x0 + r, y0, color);
-  drawPixel(x0 - r, y0, color);
-  drawPixel(x0, y0 - r, color);
-  drawPixel(x0, y0 + r, color);
+    int32_t f     = 1 - r;
+    int32_t ddF_y = -2 * r;
+    int32_t ddF_x = 1;
+    int32_t xs    = -1;
+    int32_t xe    = 0;
+    int32_t len   = 0;
+    
+    bool first = true;
+    do {
+      while (f < 0) {
+        ++xe;
+        f += (ddF_x += 2);
+      }
+      f += (ddF_y += 2);
 
-  while(x<r){
+      if (xe-xs>1) {
+        if (first) {
+          len = 2*(xe - xs)-1;
+          drawFastHLine(x0 - xe, y0 + r, len, color);
+          drawFastHLine(x0 - xe, y0 - r, len, color);
+          drawFastVLine(x0 + r, y0 - xe, len, color);
+          drawFastVLine(x0 - r, y0 - xe, len, color);
+          first = false;
+        }
+        else {
+          len = xe - xs++;
+          drawFastHLine(x0 - xe, y0 + r, len, color);
+          drawFastHLine(x0 - xe, y0 - r, len, color);
+          drawFastHLine(x0 + xs, y0 - r, len, color);
+          drawFastHLine(x0 + xs, y0 + r, len, color);
 
-    if(p>=0) {
-      dy-=2;
-      p-=dy;
-      r--;
-    }
+          drawFastVLine(x0 + r, y0 + xs, len, color);
+          drawFastVLine(x0 + r, y0 - xe, len, color);
+          drawFastVLine(x0 - r, y0 - xe, len, color);
+          drawFastVLine(x0 - r, y0 + xs, len, color);
+        }
+      }
+      else {
+        ++xs;
+        drawPixel(x0 - xe, y0 + r, color);
+        drawPixel(x0 - xe, y0 - r, color);
+        drawPixel(x0 + xs, y0 - r, color);
+        drawPixel(x0 + xs, y0 + r, color);
 
-    dx+=2;
-    p+=dx;
-
-    // These are ordered to minimise coordinate changes in x or y
-    // drawPixel can then send fewer bounding box commands
-    drawPixel(x0 + x, y0 + r, color);
-    drawPixel(x0 - x, y0 + r, color);
-    drawPixel(x0 - x, y0 - r, color);
-    drawPixel(x0 + x, y0 - r, color);
-    if (r != x) {
-      drawPixel(x0 + r, y0 + x, color);
-      drawPixel(x0 - r, y0 + x, color);
-      drawPixel(x0 - r, y0 - x, color);
-      drawPixel(x0 + r, y0 - x, color);
-    }
-    x++;
-  }
+        drawPixel(x0 + r, y0 + xs, color);
+        drawPixel(x0 + r, y0 - xe, color);
+        drawPixel(x0 - r, y0 - xe, color);
+        drawPixel(x0 - r, y0 + xs, color);
+      }
+      xs = xe;
+    } while (xe < --r);
 
   inTransaction = false;
   end_tft_write();              // Does nothing if Sprite class uses this function
@@ -1856,41 +1874,69 @@ void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 ** Function name:           drawCircleHelper
 ** Description:             Support function for drawRoundRect()
 ***************************************************************************************/
-void TFT_eSPI::drawCircleHelper( int32_t x0, int32_t y0, int32_t r, uint8_t cornername, uint32_t color)
+void TFT_eSPI::drawCircleHelper( int32_t x0, int32_t y0, int32_t rr, uint8_t cornername, uint32_t color)
 {
-  int32_t f     = 1 - r;
+  if (rr <= 0) return;
+  int32_t f     = 1 - rr;
   int32_t ddF_x = 1;
-  int32_t ddF_y = -2 * r;
-  int32_t x     = 0;
+  int32_t ddF_y = -2 * rr;
+  int32_t xe    = 0;
+  int32_t xs    = 0;
+  int32_t len   = 0;
 
-  while (x < r) {
-    if (f >= 0) {
-      r--;
-      ddF_y += 2;
-      f     += ddF_y;
+  //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
+  inTransaction = true;
+
+  while (xe < rr--)
+  {
+    while (f < 0) {
+      ++xe;
+      f += (ddF_x += 2);
     }
-    x++;
-    ddF_x += 2;
-    f     += ddF_x;
-    if (cornername & 0x4) {
-      drawPixel(x0 + x, y0 + r, color);
-      drawPixel(x0 + r, y0 + x, color);
+    f += (ddF_y += 2);
+
+    if (xe-xs==1) {
+      if (cornername & 0x1) { // left top
+        drawPixel(x0 - xe, y0 - rr, color);
+        drawPixel(x0 - rr, y0 - xe, color);
+      }
+      if (cornername & 0x2) { // right top
+        drawPixel(x0 + rr    , y0 - xe, color);
+        drawPixel(x0 + xs + 1, y0 - rr, color);
+      }
+      if (cornername & 0x4) { // right bottom
+        drawPixel(x0 + xs + 1, y0 + rr    , color);
+        drawPixel(x0 + rr, y0 + xs + 1, color);
+      }
+      if (cornername & 0x8) { // left bottom
+        drawPixel(x0 - rr, y0 + xs + 1, color);
+        drawPixel(x0 - xe, y0 + rr    , color);
+      }
     }
-    if (cornername & 0x2) {
-      drawPixel(x0 + x, y0 - r, color);
-      drawPixel(x0 + r, y0 - x, color);
+    else {
+      len = xe - xs++;
+      if (cornername & 0x1) { // left top
+        drawFastHLine(x0 - xe, y0 - rr, len, color);
+        drawFastVLine(x0 - rr, y0 - xe, len, color);
+      }
+      if (cornername & 0x2) { // right top
+        drawFastVLine(x0 + rr, y0 - xe, len, color);
+        drawFastHLine(x0 + xs, y0 - rr, len, color);
+      }
+      if (cornername & 0x4) { // right bottom
+        drawFastHLine(x0 + xs, y0 + rr, len, color);
+        drawFastVLine(x0 + rr, y0 + xs, len, color);
+      }
+      if (cornername & 0x8) { // left bottom
+        drawFastVLine(x0 - rr, y0 + xs, len, color);
+        drawFastHLine(x0 - xe, y0 + rr, len, color);
+      }
     }
-    if (cornername & 0x8) {
-      drawPixel(x0 - r, y0 + x, color);
-      drawPixel(x0 - x, y0 + r, color);
-    }
-    if (cornername & 0x1) {
-      drawPixel(x0 - r, y0 - x, color);
-      drawPixel(x0 - x, y0 - r, color);
-    }
+    xs = xe;
   }
+  inTransaction = false;
+  end_tft_write();              // Does nothing if Sprite class uses this function
 }
-
 
 /***************************************************************************************
 ** Function name:           fillCircle
