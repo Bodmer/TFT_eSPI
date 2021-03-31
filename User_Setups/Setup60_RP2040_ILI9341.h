@@ -107,13 +107,13 @@
 // We must use hardware SPI, a minimum of 3 GPIO pins is needed.
 // Typical setup for the RP2040 is :
 //
-// Display SDO/MISO  to RP2040 pin D8 (or leave disconnected if not reading TFT)
+// Display SDO/MISO  to RP2040 pin D0 (or leave disconnected if not reading TFT)
 // Display LED       to RP2040 pin 3V3 or 5V
-// Display SCK       to RP2040 pin D10
-// Display SDI/MOSI  to RP2040 pin D11
-// Display DC (RS/AO)to RP2040 pin D18
-// Display RESET     to RP2040 pin D19
-// Display CS        to RP2040 pin D20 (or GND, see below)
+// Display SCK       to RP2040 pin D2
+// Display SDI/MOSI  to RP2040 pin D3
+// Display DC (RS/AO)to RP2040 pin D18 (can use another pin if desired)
+// Display RESET     to RP2040 pin D19 (can use another pin if desired)
+// Display CS        to RP2040 pin D20 (can use another pin if desired, or GND, see below)
 // Display GND       to RP2040 pin GND (0V)
 // Display VCC       to RP2040 5V or 3.3V (5v if display has a 5V to 3.3V regulator fitted)
 //
@@ -125,9 +125,9 @@
 // to be toggled during setup, so in these cases the TFT_CS line must be defined and connected.
 
 // For the Pico use these #define lines
-#define TFT_MISO D8
-#define TFT_MOSI D11
-#define TFT_SCLK D10
+#define TFT_MISO D0
+#define TFT_MOSI D3
+#define TFT_SCLK D2
 #define TFT_CS   D20  // Chip select control pin
 #define TFT_DC   D18  // Data Command control pin
 #define TFT_RST  D19  // Reset pin (could connect to Arduino RESET pin)
