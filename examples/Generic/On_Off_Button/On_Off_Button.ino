@@ -27,7 +27,7 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 // Repeat calibration if you change the screen rotation.
 #define REPEAT_CAL false
 
-boolean SwitchOn = false;
+bool SwitchOn = false;
 
 // Comment out to stop drawing black spots
 #define BLACK_SPOT

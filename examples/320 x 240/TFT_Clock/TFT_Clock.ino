@@ -33,7 +33,7 @@ uint32_t targetTime = 0;                    // for next 1 second timeout
 static uint8_t conv2d(const char* p); // Forward declaration needed for IDE 1.6.x
 uint8_t hh=conv2d(__TIME__), mm=conv2d(__TIME__+3), ss=conv2d(__TIME__+6);  // Get H, M, S from compile time
 
-boolean initial = 1;
+bool initial = 1;
 
 void setup(void) {
   tft.init();

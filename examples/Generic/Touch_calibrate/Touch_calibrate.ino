@@ -44,7 +44,7 @@ void loop(void) {
   uint16_t x = 0, y = 0; // To store the touch coordinates
 
   // Pressed will be set true is there is a valid touch on the screen
-  boolean pressed = tft.getTouch(&x, &y);
+  bool pressed = tft.getTouch(&x, &y);
 
   // Draw a white spot at the detected coordinates
   if (pressed) {

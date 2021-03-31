@@ -218,7 +218,7 @@ void frame( // Process motion for a single frame of left or right eye
       // Periodically initiates motion to a new random point, random speed,
       // holds there for random period until next motion.
 
-  static boolean  eyeInMotion      = false;
+  static bool  eyeInMotion      = false;
   static int32_t  eyeOldX=512, eyeOldY=512, eyeNewX=512, eyeNewY=512;
   static uint32_t eyeMoveStartTime = 0L;
   static int32_t  eyeMoveDuration  = 0L;

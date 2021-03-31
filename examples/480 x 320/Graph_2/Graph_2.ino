@@ -60,8 +60,8 @@ TFT_eSPI tft = TFT_eSPI();                   // Invoke custom library with defau
 // and will mimize flicker
 // also create some variables to store the old x and y, if you draw 2 graphs on the same display
 // you will need to store ox and oy per each display
-boolean display1 = true;
-boolean update1 = true;
+bool display1 = true;
+bool update1 = true;
 
 double ox = -999, oy = -999; // Force them to be off screen
 
@@ -97,7 +97,7 @@ void Graph(TFT_eSPI &tft, double x, double y, byte dp,
                            double xlo, double xhi, double xinc,
                            double ylo, double yhi, double yinc,
                            char *title, char *xlabel, char *ylabel,
-                           boolean &redraw, unsigned int color) {
+                           bool &redraw, unsigned int color) {
 
   double ydiv, xdiv;
   double i;
@@ -191,7 +191,7 @@ void Trace(TFT_eSPI &tft, double x,  double y,  byte dp,
            double xlo, double xhi, double xinc,
            double ylo, double yhi, double yinc,
            char *title, char *xlabel, char *ylabel,
-           boolean &update1, unsigned int color)
+           bool &update1, unsigned int color)
 {
   double ydiv, xdiv;
   double i;
