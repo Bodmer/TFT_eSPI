@@ -4,8 +4,6 @@ A new ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility h
 # News
 1. The library now supports the Raspberry Pi Pico with the [Arduino core provided by Earle Philhower](https://github.com/earlephilhower/arduino-pico). The setup file "Setup60_RP2040_ILI9341.h" has been used for tests with and ILI9341 display. At the moment only SPI interface displays have been tested.
 
-![Pico rotating cube demo](https://imgur.com/B9BBJMd)
-
 2. Viewports can now be applied to sprites e.g. spr.setViewport(5, 5, 20, 20); so graphics can be restricted to a particular area of the sprite. This operates in the same way as the TFT viewports, see 2. below.
 
 3. The library now provides a "viewport" capability. See "Viewport_Demo" and "Viewport_graphicstest" examples. When a viewport is defined graphics will only appear within that window.  The coordinate datum by default moves to the top left corner of the viewport, but can optionally remain at top left corner of TFT. The GUIslice library will make use of this feature to speed up the rendering of GUI objects ([see #769](https://github.com/Bodmer/TFT_eSPI/issues/769)).
