@@ -4,7 +4,7 @@ A new ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility h
 # News
 1. The library now supports the Raspberry Pi Pico with the [Arduino core provided by Earle Philhower](https://github.com/earlephilhower/arduino-pico). The setup file "Setup60_RP2040_ILI9341.h" has been used for tests with and ILI9341 display. At the moment only SPI interface displays have been tested.
 
-![Pico rotating cube demo](https://i.imgur.com/B9BBJMd.mp4)
+![Pico rotating cube demo](https://imgur.com/B9BBJMd)
 
 2. Viewports can now be applied to sprites e.g. spr.setViewport(5, 5, 20, 20); so graphics can be restricted to a particular area of the sprite. This operates in the same way as the TFT viewports, see 2. below.
 
