@@ -15,9 +15,6 @@
 //
 // ##################################################################################
 
-// Define RP2040 to invoke optimised processor support (only for RP2040)
-//#define RP2040
-
 // Define STM32 to invoke optimised processor support (only for STM32)
 //#define STM32
 

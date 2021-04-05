@@ -2,7 +2,7 @@
   Arduino TFT graphics library targeted at ESP8266
   and ESP32 based boards.
 
-  This is a standalone library that contains the
+  This is a stand-alone library that contains the
   hardware driver, the graphics functions and the
   proportional fonts.
 
@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.3.62"
+#define TFT_ESPI_VERSION "2.3.63"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -54,7 +54,7 @@
   #include "Processors/TFT_eSPI_ESP8266.h"
 #elif defined (STM32)
   #include "Processors/TFT_eSPI_STM32.h"
-#elif defined (RP2040)
+#elif defined(ARDUINO_ARCH_RP2040)
   #include "Processors/TFT_eSPI_RP2040.h"
 #else
   #include "Processors/TFT_eSPI_Generic.h"
@@ -690,13 +690,13 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // New begin and end prototypes
            // begin/end a TFT write transaction
            // For SPI bus the transmit clock rate is set
-  inline void begin_tft_write()      __attribute__((always_inline));
-  inline void end_tft_write()        __attribute__((always_inline));
+  inline void begin_tft_write() __attribute__((always_inline));
+  inline void end_tft_write()   __attribute__((always_inline));
 
            // begin/end a TFT read transaction
            // For SPI bus: begin lowers SPI clock rate, end reinstates transmit clock rate
-  inline void begin_tft_read() __attribute__((always_inline));
-  inline void end_tft_read()   __attribute__((always_inline));
+  inline void begin_tft_read()  __attribute__((always_inline));
+  inline void end_tft_read()    __attribute__((always_inline));
 
            // Temporary  library development function  TODO: remove need for this
   void     pushSwapBytePixels(const void* data_in, uint32_t len);
@@ -765,7 +765,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     isDigits;   // adjust bounding box for numbers to reduce visual jiggling
   bool     textwrapX, textwrapY;  // If set, 'wrap' text at right and optionally bottom edge of display
   bool     _swapBytes; // Swap the byte order for TFT pushImage()
-  bool     locked, inTransaction; // SPI transaction and mutex lock flags
+  bool     locked, inTransaction, lockTransaction; // SPI transaction and mutex lock flags
 
   bool     _booted;    // init() or begin() has already run once
   
@@ -775,7 +775,6 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     _psram_enable; // Enable PSRAM use for library functions (TBD) and Sprites
 
   uint32_t _lastColor; // Buffered value of last colour used
-  uint32_t _Cbuf;      // SPI buffer for RP2040
 
 #ifdef LOAD_GFXFF
   GFXfont  *gfxFont;

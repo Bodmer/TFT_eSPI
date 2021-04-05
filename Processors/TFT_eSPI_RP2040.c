@@ -220,22 +220,10 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
-
-  bool loaded = false;
-  uint16_t colorBuf[64];
-  const uint16_t* colorPtr = colorBuf;
-  if (len>63) {
-    loaded = true;
-    for (uint32_t i = 0; i < 64; i++) colorBuf[i] = color;
-    while(len>63) {
-      spi_write16_blocking(spi0, (const uint16_t*)colorPtr, 64);
-      len -=64;
-    }
-  }
-
-  if (len) {
-    if (!loaded) for (uint32_t i = 0; i < len; i++) colorBuf[i] = color;
-    spi_write16_blocking(spi0, (const uint16_t*)colorPtr, len);
+  while(len--)
+  {
+    while (!spi_is_writable(spi0)){};
+    spi_get_hw(spi0)->dr = (uint32_t)color;
   }
 }
 
@@ -244,14 +232,23 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 ** Description:             Write a sequence of pixels
 ***************************************************************************************/
 void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
-
+  uint16_t *data = (uint16_t*)data_in;
   if (_swapBytes) {
-    spi_write16_blocking(spi0, (const uint16_t*)data_in, len);
+    while(len--)
+    {
+      while (!spi_is_writable(spi0)){};
+      spi_get_hw(spi0)->dr = (uint32_t)(*data++);
+    }
   }
-  else {
-    spi_set_format(spi0, 8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
-    spi_write_blocking(spi0, (const uint8_t*)data_in, len * 2);
-    spi_set_format(spi0, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  else
+  {
+    while(len--)
+    {
+      uint16_t color = *data++;
+      color = color >> 8 | color << 8;
+      while (!spi_is_writable(spi0)){};
+      spi_get_hw(spi0)->dr = (uint32_t)color;
+    }
   }
 }
 

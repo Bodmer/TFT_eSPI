@@ -15,9 +15,6 @@
 //
 // ##################################################################################
 
-// Define RP2040 to invoke optimised processor support (only for RP2040)
-#define RP2040
-
 // Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
 
@@ -177,7 +174,7 @@
 // #define SPI_FREQUENCY  10000000
 // #define SPI_FREQUENCY  20000000
 // #define SPI_FREQUENCY  32000000
- #define SPI_FREQUENCY  63000000
+ #define SPI_FREQUENCY  70000000
 
 // Optional reduced SPI frequency for reading TFT
 #define SPI_READ_FREQUENCY  20000000
@@ -185,11 +182,3 @@
 // The XPT2046 requires a lower SPI clock rate of 2.5MHz so we define that here:
 #define SPI_TOUCH_FREQUENCY  2500000
 
-// Comment out the following #define if "SPI Transactions" do not need to be
-// supported. When commented out the code size will be smaller and sketches will
-// run slightly faster, so leave it commented out unless you need it!
-
-// Transaction support is needed to work with SD library but not needed with TFT_SdFat
-// Transaction support is required if other SPI devices are connected.
-
-// #define SUPPORT_TRANSACTIONS

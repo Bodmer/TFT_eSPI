@@ -14,13 +14,17 @@
 // Include processor specific header
 // None
 
-// Processor specific code used by SPI bus transaction startWrite and endWrite functions
-#define SET_BUS_WRITE_MODE // Not used
-#define SET_BUS_READ_MODE  // Not used
+// Processor specific code used by SPI bus transaction begin/end_tft_write functions
+#define SET_BUS_WRITE_MODE spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
+#define SET_BUS_READ_MODE  // spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
 
 // Code to check if SPI or DMA is busy, used by SPI bus transaction startWrite and/or endWrite functions
 #define DMA_BUSY_CHECK // Not used so leave blank
-#define SPI_BUSY_CHECK // Not used so leave blank
+
+// Wait for tx to end, flush rx FIFO, clear rx overrun
+#define SPI_BUSY_CHECK while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};     \
+                       while (spi_is_readable(spi0)) (void)spi_get_hw(spi0)->dr; \
+                       spi_get_hw(spi0)->icr = SPI_SSPICR_RORIC_BITS
 
 // To be safe, SUPPORT_TRANSACTIONS is assumed mandatory
 #if !defined (SUPPORT_TRANSACTIONS)
@@ -28,7 +32,7 @@
 #endif
 
 // Initialise processor specific SPI functions, used by init()
-#define INIT_TFT_DATA_BUS
+#define INIT_TFT_DATA_BUS  // Not used
 
 // If smooth fonts are enabled the filing system may need to be loaded
 #ifdef SMOOTH_FONT
@@ -150,18 +154,27 @@
       spi.transfer(0); spi.transfer((C)>>0)
 
   #else
-    #define tft_Write_8(C)    spi_set_format(spi0, 8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST); \
-                              _Cbuf = (C); spi_write_blocking(spi0, (const uint8_t*)&(_Cbuf), 1); \
-                              spi_set_format(spi0, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
-    #define tft_Write_16(C)   _Cbuf = (C); spi_write16_blocking(spi0, (const uint16_t*)&(_Cbuf), 1)
-    #define tft_Write_16N(C)  _Cbuf = (C); spi_write16_blocking(spi0, (const uint16_t*)&(_Cbuf), 1)
-    #define tft_Write_16S(C)  _Cbuf = (C)<<8 | (C)>>8; spi_write16_blocking(spi0, (const uint16_t*)&(_Cbuf), 1)
 
-    #define tft_Write_32(C) _Cbuf = (C); spi_write16_blocking(spi0, (const uint16_t*)&(_Cbuf), 2)
+    // This swaps to 8 bit mode, then back to 16 bit mode
+    #define tft_Write_8(C)      while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {}; \
+                                spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST); \
+                                spi_get_hw(spi0)->dr = (uint32_t)(C); \
+                                while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {}; \
+                                spi_set_format(spi0, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
 
-    #define tft_Write_32C(C,D) _Cbuf = (C) | (D) << 16; spi_write16_blocking(spi0, (const uint16_t*)&(_Cbuf), 2)
+    // Note: the following macros do not wait for the end of transmission
 
-    #define tft_Write_32D(C) _Cbuf = (C) | (C) << 16; spi_write16_blocking(spi0, (const uint16_t*)&(_Cbuf), 2)
+    #define tft_Write_16(C)     while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)(C)
+
+    #define tft_Write_16N(C)    while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)(C)
+
+    #define tft_Write_16S(C)    while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)(C)<<8 | (C)>>8
+
+    #define tft_Write_32(C)     while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)((C)>>8);spi_get_hw(spi0)->dr = (uint32_t)(C)
+
+    #define tft_Write_32C(C,D)  while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)(C);spi_get_hw(spi0)->dr = (uint32_t)(D)
+
+    #define tft_Write_32D(C)    while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)(C);spi_get_hw(spi0)->dr = (uint32_t)(C)
 
   #endif // RPI_DISPLAY_TYPE
 #endif
