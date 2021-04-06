@@ -1383,6 +1383,138 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
   end_tft_write();
 }
 
+/***************************************************************************************
+** Function name:           pushImage
+** Description:             plot 8 bit or 4 bit or 1 bit image or sprite using a line buffer
+***************************************************************************************/
+void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *data, bool bpp8,  uint16_t *cmap)
+{
+  PI_CLIP;
+
+  begin_tft_write();
+  inTransaction = true;
+  bool swap = _swapBytes;
+
+  setWindow(x, y, x + dw - 1, y + dh - 1); // Sets CS low and sent RAMWR
+
+  // Line buffer makes plotting faster
+  uint16_t  lineBuf[dw];
+
+  if (bpp8)
+  {
+    _swapBytes = false;
+
+    uint8_t  blue[] = {0, 11, 21, 31}; // blue 2 to 5 bit colour lookup table
+
+    _lastColor = -1; // Set to illegal value
+
+    // Used to store last shifted colour
+    uint8_t msbColor = 0;
+    uint8_t lsbColor = 0;
+
+    data += dx + dy * w;
+    while (dh--) {
+      uint32_t len = dw;
+      uint8_t* ptr = (uint8_t*)data;
+      uint8_t* linePtr = (uint8_t*)lineBuf;
+
+      while(len--) {
+        uint32_t color = pgm_read_byte(ptr++);
+
+        // Shifts are slow so check if colour has changed first
+        if (color != _lastColor) {
+          //          =====Green=====     ===============Red==============
+          msbColor = (color & 0x1C)>>2 | (color & 0xC0)>>3 | (color & 0xE0);
+          //          =====Green=====    =======Blue======
+          lsbColor = (color & 0x1C)<<3 | blue[color & 0x03];
+          _lastColor = color;
+        }
+
+       *linePtr++ = msbColor;
+       *linePtr++ = lsbColor;
+      }
+
+      pushPixels(lineBuf, dw);
+
+      data += w;
+    }
+    _swapBytes = swap; // Restore old value
+  }
+  else if (cmap != nullptr) // Must be 4bpp
+  {
+    _swapBytes = true;
+
+    w = (w+1) & 0xFFFE;   // if this is a sprite, w will already be even; this does no harm.
+    bool splitFirst = (dx & 0x01) != 0; // split first means we have to push a single px from the left of the sprite / image
+
+    if (splitFirst) {
+      data += ((dx - 1 + dy * w) >> 1);
+    }
+    else {
+      data += ((dx + dy * w) >> 1);
+    }
+
+    while (dh--) {
+      uint32_t len = dw;
+      uint8_t * ptr = (uint8_t*)data;
+      uint16_t *linePtr = lineBuf;
+      uint8_t colors; // two colors in one byte
+      uint16_t index;
+
+      if (splitFirst) {
+        colors = pgm_read_byte(ptr);
+        index = (colors & 0x0F);
+        *linePtr++ = cmap[index];
+        len--;
+        ptr++;
+      }
+
+      while (len--)
+      {
+        colors = pgm_read_byte(ptr);
+        index = ((colors & 0xF0) >> 4) & 0x0F;
+        *linePtr++ = cmap[index];
+
+        if (len--)
+        {
+          index = colors & 0x0F;
+          *linePtr++ = cmap[index];
+        } else {
+          break;  // nothing to do here
+        }
+
+        ptr++;
+      }
+
+      pushPixels(lineBuf, dw);
+      data += (w >> 1);
+    }
+    _swapBytes = swap; // Restore old value
+  }
+  else // Must be 1bpp
+  {
+    _swapBytes = false;
+    uint8_t * ptr = (uint8_t*)data;
+    uint32_t ww =  (w+7)>>3; // Width of source image line in bytes
+    for (int32_t yp = dy;  yp < dy + dh; yp++)
+    {
+      uint8_t* linePtr = (uint8_t*)lineBuf;
+      for (int32_t xp = dx; xp < dx + dw; xp++)
+      {
+        uint16_t col = (pgm_read_byte(ptr + (xp>>3)) & (0x80 >> (xp & 0x7)) );
+        if (col) {*linePtr++ = bitmap_fg>>8; *linePtr++ = (uint8_t) bitmap_fg;}
+        else     {*linePtr++ = bitmap_bg>>8; *linePtr++ = (uint8_t) bitmap_bg;}
+      }
+      ptr += ww;
+      pushPixels(lineBuf, dw);
+    }
+  }
+
+  _swapBytes = swap; // Restore old value
+  inTransaction = lockTransaction;
+  end_tft_write();
+}
+
 
 /***************************************************************************************
 ** Function name:           pushImage

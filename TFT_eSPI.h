@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.3.63"
+#define TFT_ESPI_VERSION "2.3.64"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -490,7 +490,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // Set bpp8 true for 8bpp sprites, false otherwise. The cmap pointer must be specified for 4bpp
   void     pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t  *data, bool bpp8 = true, uint16_t *cmap = nullptr);
   void     pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t  *data, uint8_t  transparent, bool bpp8 = true, uint16_t *cmap = nullptr);
-
+           // FLASH version
+  void     pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *data, bool bpp8,  uint16_t *cmap = nullptr);
            // This next function has been used successfully to dump the TFT screen to a PC for documentation purposes
            // It reads a screen area and returns the 3 RGB 8 bit colour values of each pixel in the buffer
            // Set w and h to 1 to read 1 pixel's colour. The data buffer must be at least w * h * 3 bytes
