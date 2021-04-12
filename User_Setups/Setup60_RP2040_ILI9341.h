@@ -122,12 +122,12 @@
 // to be toggled during setup, so in these cases the TFT_CS line must be defined and connected.
 
 // For the Pico use these #define lines
-#define TFT_MISO D0
-#define TFT_MOSI D3
-#define TFT_SCLK D2
-#define TFT_CS   D20  // Chip select control pin
-#define TFT_DC   D18  // Data Command control pin
-#define TFT_RST  D19  // Reset pin (could connect to Arduino RESET pin)
+#define TFT_MISO  0
+#define TFT_MOSI  3
+#define TFT_SCLK  2
+#define TFT_CS   20  // Chip select control pin
+#define TFT_DC   18  // Data Command control pin
+#define TFT_RST  19  // Reset pin (could connect to Arduino RESET pin)
 //#define TFT_BL     // LED back-light
 
 //#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
