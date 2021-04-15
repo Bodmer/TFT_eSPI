@@ -84,7 +84,7 @@ void TFT_eSPI::end_SDA_Read(void)
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
-    // Loop unrolling improves speed dramtically graphics test  0.634s => 0.374s
+    // Loop unrolling improves speed dramatically graphics test  0.634s => 0.374s
     while (len>31) {
     #if !defined (SSD1963_DRIVER)
       // 32D macro writes 16 bits twice
@@ -165,6 +165,22 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
     if (mode == OUTPUT) GPIOB->MODER = (GPIOB->MODER & 0xFFFF0000) | 0x00005555;
     else GPIOB->MODER &= 0xFFFF0000;
   #endif
+#elif defined (STM_PORTC_DATA_BUS)
+  #if defined (STM32F1xx)
+    if (mode == OUTPUT) GPIOC->CRL = 0x33333333;
+    else GPIOC->CRL = 0x88888888;
+  #else
+    if (mode == OUTPUT) GPIOC->MODER = (GPIOC->MODER & 0xFFFF0000) | 0x00005555;
+    else GPIOC->MODER &= 0xFFFF0000;
+  #endif
+#elif defined (STM_PORTD_DATA_BUS)
+  #if defined (STM32F1xx)
+    if (mode == OUTPUT) GPIOD->CRL = 0x33333333;
+    else GPIOD->CRL = 0x88888888;
+  #else
+    if (mode == OUTPUT) GPIOD->MODER = (GPIOD->MODER & 0xFFFF0000) | 0x00005555;
+    else GPIOD->MODER &= 0xFFFF0000;
+  #endif
 #else
   if (mode == OUTPUT) {
     LL_GPIO_SetPinMode(D0_PIN_PORT, D0_PIN_MASK, LL_GPIO_MODE_OUTPUT);
@@ -222,6 +238,16 @@ uint8_t TFT_eSPI::readByte(void)
   b = GPIOB->IDR;
   b = GPIOB->IDR;
   b = (GPIOB->IDR) & 0xFF;
+#elif defined (STM_PORTC_DATA_BUS)
+  b = GPIOC->IDR;
+  b = GPIOC->IDR;
+  b = GPIOC->IDR;
+  b = (GPIOC->IDR) & 0xFF;
+#elif defined (STM_PORTD_DATA_BUS)
+  b = GPIOD->IDR;
+  b = GPIOD->IDR;
+  b = GPIOD->IDR;
+  b = (GPIOD->IDR) & 0xFF;
 #else
   b  = RD_TFT_D0 | RD_TFT_D0 | RD_TFT_D0 | RD_TFT_D0; //Delay for bits to settle
 
