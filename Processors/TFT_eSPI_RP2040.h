@@ -8,6 +8,8 @@
 #ifndef _TFT_eSPI_RP2040H_
 #define _TFT_eSPI_RP2040H_
 
+#include "hardware/dma.h"
+
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x2040
 
@@ -19,7 +21,13 @@
 #define SET_BUS_READ_MODE  // spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
 
 // Code to check if SPI or DMA is busy, used by SPI bus transaction startWrite and/or endWrite functions
-#define DMA_BUSY_CHECK // Not used so leave blank
+#if !defined(TFT_PARALLEL_8_BIT) && !defined(SPI_18BIT_DRIVER)
+  #define RP2040_DMA
+  // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
+  #define DMA_BUSY_CHECK dmaWait()
+#else
+  #define DMA_BUSY_CHECK
+#endif
 
 // Wait for tx to end, flush rx FIFO, clear rx overrun
 #define SPI_BUSY_CHECK while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};     \

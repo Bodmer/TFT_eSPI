@@ -644,7 +644,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
     }
   }
 
-  if (spiBusyCheck) dmaWait(); // Incase we did not wait earlier
+  if (spiBusyCheck) dmaWait(); // In case we did not wait earlier
 
   setAddrWindow(x, y, dw, dh);
 

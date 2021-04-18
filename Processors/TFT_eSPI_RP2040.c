@@ -9,6 +9,11 @@
 // Select the SPI port to use
 SPIClass& spi = SPI;
 
+#ifdef RP2040_DMA
+  uint32_t           dma_tx_channel;
+  dma_channel_config dma_tx_config;
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////
 #if defined (TFT_SDA_READ) && !defined (TFT_PARALLEL_8_BIT)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -258,18 +263,148 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-//                                DMA FUNCTIONS                                         
+#if defined (RP2040_DMA) && !defined (TFT_PARALLEL_8_BIT) //       DMA FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////
-
-//                Placeholder for DMA functions
 
 /*
 Minimal function set to support DMA:
-
-bool TFT_eSPI::initDMA(void)
-void TFT_eSPI::deInitDMA(void)
-bool TFT_eSPI::dmaBusy(void)
-void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
-void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t* image)
-
+  uint32_t           dma_tx_channel;
+  dma_channel_config dma_tx_config;
 */
+
+/***************************************************************************************
+** Function name:           dmaBusy
+** Description:             Check if DMA is busy
+***************************************************************************************/
+bool TFT_eSPI::dmaBusy(void) {
+  if (!DMA_Enabled) return false;
+
+  if (dma_channel_is_busy(dma_tx_channel)) return true;
+  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  return false;
+}
+
+/***************************************************************************************
+** Function name:           dmaWait
+** Description:             Wait until DMA is over (blocking!)
+***************************************************************************************/
+void TFT_eSPI::dmaWait(void)
+{
+  while (dma_channel_is_busy(dma_tx_channel));
+  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+}
+
+/***************************************************************************************
+** Function name:           pushPixelsDMA
+** Description:             Push pixels to TFT (len must be less than 32767)
+***************************************************************************************/
+// This will byte swap the original image if setSwapBytes(true) was called by sketch.
+void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
+{
+  if ((len == 0) || (!DMA_Enabled)) return;
+
+  dmaWait();
+
+  if(_swapBytes) {
+    channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
+    dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint16_t*)image, len, true);
+  }
+  else
+  {
+    spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_8);
+    dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint8_t*)image, len*2, true);
+  }
+}
+
+/***************************************************************************************
+** Function name:           pushImageDMA
+** Description:             Push image to a window (w*h must be less than 65536)
+***************************************************************************************/
+// This will clip and also swap bytes if setSwapBytes(true) was called by sketch
+void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t* image, uint16_t* buffer)
+{
+  if ((x >= _vpW) || (y >= _vpH) || (!DMA_Enabled)) return;
+
+  int32_t dx = 0;
+  int32_t dy = 0;
+  int32_t dw = w;
+  int32_t dh = h;
+
+  if (x < _vpX) { dx = _vpX - x; dw -= dx; x = _vpX; }
+  if (y < _vpY) { dy = _vpY - y; dh -= dy; y = _vpY; }
+
+  if ((x + dw) > _vpW ) dw = _vpW - x;
+  if ((y + dh) > _vpH ) dh = _vpH - y;
+
+  if (dw < 1 || dh < 1) return;
+
+  uint32_t len = dw*dh;
+
+  if (buffer == nullptr) {
+    buffer = image;
+    dmaWait();
+  }
+
+  // If image is clipped, copy pixels into a contiguous block
+  if ( (dw != w) || (dh != h) ) {
+    for (int32_t yb = 0; yb < dh; yb++) {
+      memcpy((uint8_t*) (buffer + yb * dw), (uint8_t*) (image + dx + w * (yb + dy)), dw << 1);
+    }
+  }
+  // else, if a buffer pointer has been provided copy whole image to the buffer
+  else if (buffer != image || _swapBytes) {
+    memcpy(buffer, image, len*2);
+  }
+
+  dmaWait(); // In case we did not wait earlier
+
+  setAddrWindow(x, y, dw, dh);
+
+  if(_swapBytes) {
+    channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
+    dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint16_t*)buffer, len, true);
+  }
+  else
+  {
+    spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_8);
+    dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint8_t*)buffer, len*2, true);
+  }
+
+
+}
+
+/***************************************************************************************
+** Function name:           initDMA
+** Description:             Initialise the DMA engine - returns true if init OK
+***************************************************************************************/
+bool TFT_eSPI::initDMA(bool ctrl_cs)
+{
+  if (DMA_Enabled) return false;
+
+  dma_tx_channel = dma_claim_unused_channel(true);
+  dma_tx_config = dma_channel_get_default_config(dma_tx_channel);
+  channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
+  channel_config_set_dreq(&dma_tx_config, spi_get_index(spi0) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
+
+  DMA_Enabled = true;
+  return true;
+}
+
+/***************************************************************************************
+** Function name:           deInitDMA
+** Description:             Disconnect the DMA engine from SPI
+***************************************************************************************/
+void TFT_eSPI::deInitDMA(void)
+{
+  if (!DMA_Enabled) return;
+  dma_channel_unclaim(dma_tx_channel);
+  DMA_Enabled = false;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+#endif // End of DMA FUNCTIONS    
+////////////////////////////////////////////////////////////////////////////////////////
