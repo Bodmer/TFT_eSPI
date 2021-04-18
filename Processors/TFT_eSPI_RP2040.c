@@ -6,8 +6,11 @@
 // Global variables
 ////////////////////////////////////////////////////////////////////////////////////////
 
-// Select the SPI port to use
-SPIClass& spi = SPI;
+#if !defined (TFT_PARALLEL_8_BIT)
+  // Select the SPI port to use
+  //SPIClass& spi = SPI;
+  MbedSPI spi = MbedSPI(TFT_MISO, TFT_MOSI, TFT_SCLK);
+#endif
 
 #ifdef RP2040_DMA
   uint32_t           dma_tx_channel;
