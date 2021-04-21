@@ -1,7 +1,6 @@
 #define SCLERA_WIDTH  200
 #define SCLERA_HEIGHT 200
 
-#include <pgmspace.h>
 
 const uint16_t sclera[SCLERA_HEIGHT * SCLERA_WIDTH] PROGMEM= {
   0X6901, 0X6901, 0X6901, 0X6901, 0X6901, 0X6901, 0X6901, 0X6901,

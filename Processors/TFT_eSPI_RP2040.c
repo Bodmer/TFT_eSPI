@@ -301,9 +301,8 @@ void TFT_eSPI::dmaWait(void)
 
 /***************************************************************************************
 ** Function name:           pushPixelsDMA
-** Description:             Push pixels to TFT (len must be less than 32767)
+** Description:             Push pixels to TFT
 ***************************************************************************************/
-// This will byte swap the original image if setSwapBytes(true) was called by sketch.
 void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 {
   if ((len == 0) || (!DMA_Enabled)) return;
@@ -324,9 +323,9 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 
 /***************************************************************************************
 ** Function name:           pushImageDMA
-** Description:             Push image to a window (w*h must be less than 65536)
+** Description:             Push image to a window
 ***************************************************************************************/
-// This will clip and also swap bytes if setSwapBytes(true) was called by sketch
+// This will clip to the viewport
 void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t* image, uint16_t* buffer)
 {
   if ((x >= _vpW) || (y >= _vpH) || (!DMA_Enabled)) return;
