@@ -3730,14 +3730,14 @@ uint8_t TFT_eSPI::getAttribute(uint8_t attr_id) {
 ** Function name:           decodeUTF8
 ** Description:             Serial UTF-8 decoder with fall-back to extended ASCII
 *************************************************************************************x*/
-#define DECODE_UTF8 // Test only, comment out to stop decoding
 uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
 {
-#ifdef DECODE_UTF8
+  if (!_utf8) return c;
+
   // 7 bit Unicode Code Point
   if ((c & 0x80) == 0x00) {
     decoderState = 0;
-    return (uint16_t)c;
+    return c;
   }
 
   if (decoderState == 0) {
@@ -3754,7 +3754,7 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
       return 0;
     }
     // 21 bit Unicode  Code Point not supported so fall-back to extended ASCII
-    // if ((c & 0xF8) == 0xF0) return (uint16_t)c;
+    // if ((c & 0xF8) == 0xF0) return c;
   }
   else {
     if (decoderState == 2) {
@@ -3770,9 +3770,8 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t c)
   }
 
   decoderState = 0;
-#endif
 
-  return (uint16_t)c; // fall-back to extended ASCII
+  return c; // fall-back to extended ASCII
 }
 
 
@@ -3785,7 +3784,8 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
   uint16_t c = buf[(*index)++];
   //Serial.print("Byte from string = 0x"); Serial.println(c, HEX);
 
-#ifdef DECODE_UTF8
+  if (!_utf8) return c;
+
   // 7 bit Unicode
   if ((c & 0x80) == 0x00) return c;
 
@@ -3801,7 +3801,6 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 
   // 21 bit Unicode not supported so fall-back to extended ASCII
   // if ((c & 0xF8) == 0xF0) return c;
-#endif
 
   return c; // fall-back to extended ASCII
 }
