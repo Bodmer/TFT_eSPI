@@ -5,6 +5,8 @@ A new ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility h
 
 1. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with 16 bit colour SPI displays such as the ILI9341.
 
+      ["Bouncing circles"](https://www.youtube.com/watch?v=njFXIzCTQ_Q&lc=UgymaUIwOIuihvYh-Qt4AaABAg)
+
 2. The library now supports the Raspberry Pi Pico with both the [official Arduino board package](https://github.com/arduino/ArduinoCore-mbed) and the one provided by [Earle Philhower](https://github.com/earlephilhower/arduino-pico). The setup file "Setup60_RP2040_ILI9341.h" has been used for tests with an ILI9341 display. At the moment only SPI interface displays have been tested.
 
       ["Rotating cube demo"](https://www.youtube.com/watch?v=4fPxEN9ImVE)
