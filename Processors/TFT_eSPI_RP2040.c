@@ -309,16 +309,8 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 
   dmaWait();
 
-  if(_swapBytes) {
-    channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
-    dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint16_t*)image, len, true);
-  }
-  else
-  {
-    spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
-    channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_8);
-    dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint8_t*)image, len*2, true);
-  }
+  channel_config_set_bswap(&dma_tx_config, !_swapBytes);
+  dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint16_t*)buffer, len, true);
 }
 
 /***************************************************************************************
@@ -365,17 +357,8 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   setAddrWindow(x, y, dw, dh);
 
-  if(_swapBytes) {
-    channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
-    dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint16_t*)buffer, len, true);
-  }
-  else
-  {
-    spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
-    channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_8);
-    dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint8_t*)buffer, len*2, true);
-  }
-
+  channel_config_set_bswap(&dma_tx_config, !_swapBytes);
+  dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint16_t*)buffer, len, true);
 
 }
 
@@ -389,6 +372,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 
   dma_tx_channel = dma_claim_unused_channel(true);
   dma_tx_config = dma_channel_get_default_config(dma_tx_channel);
+  
   channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
   channel_config_set_dreq(&dma_tx_config, spi_get_index(spi0) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
 
