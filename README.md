@@ -3,7 +3,7 @@ A [Beta test branch](https://github.com/Bodmer/TFT_eSPI/tree/2.4.0-Beta) has bee
 A new ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
 
-1. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with 16 bit colour SPI displays such as the ILI9341.
+1. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with 16 bit colour SPI displays such as the ILI9341. See "Bouncy_Circles" sketch.
 
       ["Bouncing circles"](https://www.youtube.com/watch?v=njFXIzCTQ_Q&lc=UgymaUIwOIuihvYh-Qt4AaABAg)
 
