@@ -310,7 +310,7 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
   dmaWait();
 
   channel_config_set_bswap(&dma_tx_config, !_swapBytes);
-  dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint16_t*)buffer, len, true);
+  dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(spi0)->dr, (uint16_t*)image, len, true);
 }
 
 /***************************************************************************************
