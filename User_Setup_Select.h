@@ -86,6 +86,8 @@
 
 //#include <User_Setups/Setup200_GC9A01.h>           // Setup file for ESP32 and GC9A01 240 x 240 TFT
 
+//#include <User_Setups/Setup201_WT32_SC01.h>
+
 //#include <User_Setups/SetupX_Template.h>
 
 
