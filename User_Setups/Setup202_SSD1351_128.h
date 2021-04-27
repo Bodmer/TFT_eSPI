@@ -26,7 +26,7 @@
   #define TFT_SCLK 18
   #define TFT_DC   2
   #define TFT_RST  4
-  #define TFT_CS   15 // Set to -1 if using more than one display and manage it in sketch
+  #define TFT_CS   15
 #elif defined(ESP8266)
 //#define TFT_MOSI PIN_D5 // Can't change
 //#define TFT_SCLK PIN_D7 // Can't change
