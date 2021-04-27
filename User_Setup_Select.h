@@ -88,6 +88,8 @@
 
 //#include <User_Setups/Setup201_WT32_SC01.h>        // Setup file for ESP32 based WT32_SC01 from Seeed
 
+//#include <User_Setups/Setup202_SSD1351_128.h>      // Setup file for ESP32/ESP8266 based SSD1351 128x128 1.5inch OLED display
+
 //#include <User_Setups/SetupX_Template.h>
 
 

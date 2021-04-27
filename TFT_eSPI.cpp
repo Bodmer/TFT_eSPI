@@ -3038,6 +3038,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   //begin_tft_write(); // Must be called before setWindow
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
+
 #if defined (ILI9225_DRIVER)
   if (rotation & 0x01) { swap_coord(x0, y0); swap_coord(x1, y1); }
 
@@ -3066,23 +3067,22 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   }
 
   DC_C; tft_Write_8(TFT_CASET);
-  DC_D; tft_Write_16C(x0, x1);
+  DC_D; tft_Write_16(x1 | (x0 << 8));
   DC_C; tft_Write_8(TFT_PASET);
-  DC_D; tft_Write_16C(y0, y1);
+  DC_D; tft_Write_16(y1 | (y0 << 8));
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D;
 #else
+  #if defined (SSD1963_DRIVER)
+    if ((rotation & 0x1) == 0) { swap_coord(x0, y0); swap_coord(x1, y1); }
+  #endif
 
-#if defined (SSD1963_DRIVER)
-  if ((rotation & 0x1) == 0) { swap_coord(x0, y0); swap_coord(x1, y1); }
-#endif
-
-#ifdef CGRAM_OFFSET
-  x0+=colstart;
-  x1+=colstart;
-  y0+=rowstart;
-  y1+=rowstart;
-#endif
+  #ifdef CGRAM_OFFSET
+    x0+=colstart;
+    x1+=colstart;
+    y0+=rowstart;
+    y1+=rowstart;
+  #endif
 
   // Temporary solution is to include the RP2040 optimised code here
   #if defined(ARDUINO_ARCH_RP2040) && !defined(TFT_PARALLEL_8BIT)
@@ -3118,17 +3118,15 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     DC_D;
 
   #else
-
     DC_C; tft_Write_8(TFT_CASET);
     DC_D; tft_Write_32C(x0, x1);
     DC_C; tft_Write_8(TFT_PASET);
     DC_D; tft_Write_32C(y0, y1);
     DC_C; tft_Write_8(TFT_RAMWR);
     DC_D;
-    //end_tft_write(); // Must be called after setWindow
-
   #endif // RP2040 SPI
 #endif
+  //end_tft_write(); // Must be called after setWindow
 }
 
 
@@ -3335,14 +3333,14 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != x) {
     DC_C; tft_Write_8(TFT_CASET);
-    DC_D; tft_Write_16D(x);
+    DC_D; tft_Write_16(x | (x << 8));
     addr_col = x;
   }
 
   // No need to send y if it has not changed (speeds things up)
   if (addr_row != y) {
     DC_C; tft_Write_8(TFT_PASET);
-    DC_D; tft_Write_16D(y);
+    DC_D; tft_Write_16(y | (y << 8));
     addr_row = y;
   }
 #else
