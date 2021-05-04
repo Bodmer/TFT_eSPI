@@ -36,6 +36,7 @@ void TFT_eSPI_Button::initButtonUL(
   _textsize     = textsize;
   _gfx          = gfx;
   strncpy(_label, label, 9);
+  _label[9] = 0;  // strncpy does not place a null at the end. When 'label' is 9 characters, _label is not terminated.
 }
 
 // Adjust text datum and x, y deltas
