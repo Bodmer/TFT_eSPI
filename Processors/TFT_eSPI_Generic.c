@@ -68,6 +68,9 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 
   while (len>1) {tft_Write_32D(color); len-=2;}
   if (len) {tft_Write_16(color);}
+#if defined(NO_MIPI_DCS_REV1)
+  setWindow(0, 0, _width - 1, _height - 1);
+#endif
 }
 
 /***************************************************************************************

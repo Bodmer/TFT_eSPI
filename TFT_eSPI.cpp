@@ -656,6 +656,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Init.h"
 
+#elif defined (ST7781_DRIVER)
+     #include "TFT_Drivers/ST7781_Init.h"
+
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -744,6 +747,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Rotation.h"
 
+#elif defined (ST7781_DRIVER)
+     #include "TFT_Drivers/ST7781_Rotation.h"
+
 #endif
 
   delayMicroseconds(10);
@@ -814,7 +820,11 @@ void TFT_eSPI::writecommand(uint8_t c)
 
   DC_C;
 
-  tft_Write_8(c);
+#if defined(WRITE_COMMAND_16)
+    tft_Write_16(c);
+#else
+    tft_Write_8(c);
+#endif
 
   DC_D;
 
@@ -3060,6 +3070,32 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   // write to RAM
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D;
+
+#elif defined (ST7781_DRIVER) // Like ILI9225_DRIVER, but 16 bits
+  if (rotation & 0x01) { swap_coord(x0, y0); swap_coord(x1, y1); }
+
+  addr_row = 0xFFFF;
+  addr_col = 0xFFFF;
+
+  DC_C; tft_Write_16(TFT_CASET1);
+  DC_D; tft_Write_16(x0);
+  DC_C; tft_Write_16(TFT_CASET2);
+  DC_D; tft_Write_16(x1);
+
+  DC_C; tft_Write_16(TFT_PASET1);
+  DC_D; tft_Write_16(y0);
+  DC_C; tft_Write_16(TFT_PASET2);
+  DC_D; tft_Write_16(y1);
+
+  DC_C; tft_Write_16(TFT_RAM_ADDR1);
+  DC_D; tft_Write_16(x0);
+  DC_C; tft_Write_16(TFT_RAM_ADDR2);
+  DC_D; tft_Write_16(y0);
+
+  // write to RAM
+  DC_C; tft_Write_16(TFT_RAMWR);
+  DC_D;
+
 #elif defined (SSD1351_DRIVER)
   if (rotation & 1) {
     swap_coord(x0, y0);
@@ -3258,6 +3294,34 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
   // write to RAM
   DC_C; tft_Write_8(TFT_RAMWR);
+  DC_D; tft_Write_16(color);
+
+#elif defined (ST7781_DRIVER) // Like ILI9225_DRIVER, but commands 16 Bits
+
+  if (rotation & 0x01) { swap_coord(x, y); }
+
+  // Set window to full screen to optimise sequential pixel rendering
+  if (addr_row != TFT_DRIVER) {
+    addr_row = TFT_DRIVER; // addr_row used for flag
+    DC_C; tft_Write_16(TFT_CASET1);
+    DC_D; tft_Write_16(0);
+    DC_C; tft_Write_16(TFT_CASET2);
+    DC_D; tft_Write_16(TFT_WIDTH - 1);
+
+    DC_C; tft_Write_16(TFT_PASET1);
+    DC_D; tft_Write_16(0);
+    DC_C; tft_Write_16(TFT_PASET2);
+    DC_D; tft_Write_16(TFT_HEIGHT - 1);
+  }
+
+  // Define pixel coordinate
+  DC_C; tft_Write_16(TFT_RAM_ADDR1);
+  DC_D; tft_Write_16(x);
+  DC_C; tft_Write_16(TFT_RAM_ADDR2);
+  DC_D; tft_Write_16(y);
+
+  // write to RAM
+  DC_C; tft_Write_16(TFT_RAMWR);
   DC_D; tft_Write_16(color);
 
   // Temporary solution is to include the RP2040 optimised code here

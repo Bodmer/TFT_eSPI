@@ -322,6 +322,10 @@ return;
     while(SPI1CMD & SPIBUSY) {}
   }
 
+#if defined(NO_MIPI_DCS_REV1)
+  setWindow(0, 0, _width - 1, _height - 1);
+#endif
+
 }
 
 /***************************************************************************************

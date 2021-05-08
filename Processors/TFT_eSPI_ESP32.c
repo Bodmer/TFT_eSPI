@@ -235,6 +235,11 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
     *_spi_cmd = SPI_USR;
   }
   while ((*_spi_cmd)&SPI_USR); // Move to later in code to use transmit time usefully?
+
+#if defined(NO_MIPI_DCS_REV1)
+  setWindow(0, 0, _width - 1, _height - 1);
+#endif
+
 }
 
 /***************************************************************************************
