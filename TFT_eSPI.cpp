@@ -604,7 +604,7 @@ void TFT_eSPI::init(uint8_t tc)
   tc = tc; // Supress warning
 
   // This loads the driver specific initialisation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
-#if   defined (ILI9341_DRIVER)
+#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER)
     #include "TFT_Drivers/ILI9341_Init.h"
 
 #elif defined (ST7735_DRIVER)
@@ -690,7 +690,7 @@ void TFT_eSPI::setRotation(uint8_t m)
   begin_tft_write();
 
     // This loads the driver specific rotation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
-#if   defined (ILI9341_DRIVER)
+#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER)
     #include "TFT_Drivers/ILI9341_Rotation.h"
 
 #elif defined (ST7735_DRIVER)
@@ -941,7 +941,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   // Fetch the 16 bit BRG pixel
   //uint16_t rgb = (readByte() << 8) | readByte();
 
-  #if defined (ILI9341_DRIVER) | defined (ILI9488_DRIVER) | defined (SSD1963_DRIVER)// Read 3 bytes
+  #if defined (ILI9341_DRIVER)  || defined(ILI9341_2_DRIVER) || defined (ILI9488_DRIVER) || defined (SSD1963_DRIVER)// Read 3 bytes
 
     // Read window pixel 24 bit RGB values and fill in LS bits
     uint16_t rgb = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
@@ -1059,7 +1059,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
   // Set masked pins D0- D7 to input
   busDir(dir_mask, INPUT);
 
-  #if defined (ILI9341_DRIVER) | defined (ILI9488_DRIVER) // Read 3 bytes
+  #if defined (ILI9341_DRIVER)  || defined(ILI9341_2_DRIVER) || defined (ILI9488_DRIVER) // Read 3 bytes
     // Dummy read to throw away don't care value
     readByte();
 
