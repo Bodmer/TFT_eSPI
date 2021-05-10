@@ -44,6 +44,7 @@ Displays using the following controllers are supported:
 * ILI9488
 * HX8357D
 * S6D02A1
+* SSD1351
 * SSD1963
 * ST7735
 * ST7789
