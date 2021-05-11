@@ -5,14 +5,6 @@
   #define TFT_HEIGHT 128
 #endif
 
-#ifndef tft_Write_16D
-  #define tft_Write_16C(C) tft_Write_8(C); tft_Write_8(C);
-#endif
-
-#ifndef tft_Write_16C
-  #define tft_Write_16C(C,D) tft_Write_8(C); tft_Write_8(D);
-#endif
-
 // Delay between some initialisation commands
 #define TFT_INIT_DELAY 0x80
 

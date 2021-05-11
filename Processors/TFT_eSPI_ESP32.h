@@ -454,12 +454,6 @@
   #define tft_Write_32(C) TFT_WRITE_BITS(C, 32)
 
   // Write two address coordinates
-  #define tft_Write_16C(C,D) TFT_WRITE_BITS((uint16_t)(D)<<8 | (C), 16)
-
-  // Write same value twice
-  #define tft_Write_16D(C) TFT_WRITE_BITS((uint16_t)(C)<<8 | (C), 16)
-
-  // Write two address coordinates
   #define tft_Write_32C(C,D) TFT_WRITE_BITS((uint16_t)((D)<<8 | (D)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
 
   // Write same value twice
