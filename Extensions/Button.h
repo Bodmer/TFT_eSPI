@@ -10,7 +10,7 @@ class TFT_eSPI_Button {
 
  public:
   TFT_eSPI_Button(void);
-  // "Classic" initButton() uses center & size
+  // "Classic" initButton() uses centre & size
   void     initButton(TFT_eSPI *gfx, int16_t x, int16_t y,
   uint16_t w, uint16_t h, uint16_t outline, uint16_t fill,
   uint16_t textcolor, char *label, uint8_t textsize);
@@ -34,7 +34,7 @@ class TFT_eSPI_Button {
  private:
   TFT_eSPI *_gfx;
   int16_t  _x1, _y1; // Coordinates of top-left corner of button
-  int16_t  _xd, _yd; // Button text datum offsets (wrt center of button)
+  int16_t  _xd, _yd; // Button text datum offsets (wrt centre of button)
   uint16_t _w, _h;   // Width and height of button
   uint8_t  _textsize, _textdatum; // Text size multiplier and text datum for button
   uint16_t _outlinecolor, _fillcolor, _textcolor;
