@@ -46,6 +46,3 @@
       _height = _init_width;
     break;
   }
-
-  // Finish Window
-  setWindow(0, 0, _width - 1, _height - 1);

@@ -6,7 +6,6 @@
 
 
 #define WRITE_COMMAND_16        // Change TFT_eSPI::writecommand(); to use tft_Write_16(c);
-#define NO_MIPI_DCS_REV1        // Add setWindow(0, 0, _width - 1, _height - 1); after TFT_eSPI::pushBlock()
 
 #define TFT_WIDTH  240
 #define TFT_HEIGHT 320

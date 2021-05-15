@@ -233,9 +233,6 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
     while (!spi_is_writable(spi0)){};
     spi_get_hw(spi0)->dr = (uint32_t)color;
   }
-#if defined(NO_MIPI_DCS_REV1)
-  setWindow(0, 0, _width - 1, _height - 1);
-#endif
 }
 
 /***************************************************************************************

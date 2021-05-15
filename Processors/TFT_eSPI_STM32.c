@@ -382,9 +382,6 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
   } while ( len>=BUF_SIZE ) ;
   // Send remaining pixels
   if (len) HAL_SPI_Transmit(&spiHal, (uint8_t*)col, len<<1, HAL_MAX_DELAY); //*/
-#if defined(NO_MIPI_DCS_REV1)
-  setWindow(0, 0, _width - 1, _height - 1);
-#endif
 }
 
 
