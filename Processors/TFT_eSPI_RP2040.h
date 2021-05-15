@@ -8,7 +8,7 @@
 #ifndef _TFT_eSPI_RP2040H_
 #define _TFT_eSPI_RP2040H_
 
-#include "hardware/dma.h"
+//#include "hardware/dma.h"
 
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x2040
@@ -17,7 +17,7 @@
 // None
 
 // Processor specific code used by SPI bus transaction begin/end_tft_write functions
-#define SET_BUS_WRITE_MODE spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
+#define SET_BUS_WRITE_MODE spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
 #define SET_BUS_READ_MODE  // spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
 
 // Code to check if SPI or DMA is busy, used by SPI bus transaction startWrite and/or endWrite functions
@@ -56,6 +56,8 @@
   #define DC_C // No macro allocated so it generates no code
   #define DC_D // No macro allocated so it generates no code
 #else
+  //#define DC_C sio_hw->gpio_clr = (1ul << TFT_DC)
+  //#define DC_D sio_hw->gpio_set = (1ul << TFT_DC)
   #define DC_C sio_hw->gpio_clr = (1ul << TFT_DC)
   #define DC_D sio_hw->gpio_set = (1ul << TFT_DC)
 #endif
@@ -110,30 +112,44 @@
 #if  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
 
   // Write 8 bits to TFT
-  #define tft_Write_8(C)   spi.transfer(C)
+  #define tft_Write_8(C)      spi_get_hw(spi0)->dr = (uint32_t)(C); \
+                              while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {}; \
+
+  //#define tft_Write_8(C)   spi.transfer(C);
+  #define tft_Write_8N(B)   while (!spi_is_writable(spi0)){}; \
+                           spi_get_hw(spi0)->dr = (uint8_t)(B)
 
   // Convert 16 bit colour to 18 bit and write in 3 bytes
-  #define tft_Write_16(C)  spi.transfer(((C) & 0xF800)>>8); \
-                           spi.transfer(((C) & 0x07E0)>>3); \
-                           spi.transfer(((C) & 0x001F)<<3)
+  #define tft_Write_16(C)  tft_Write_8N(((C) & 0xF800)>>8); \
+                           tft_Write_8N(((C) & 0x07E0)>>3); \
+                           tft_Write_8N(((C) & 0x001F)<<3)
 
   // Convert 16 bit colour to 18 bit and write in 3 bytes
-  #define tft_Write_16N(C)  spi.transfer(((C) & 0xF800)>>8); \
-                            spi.transfer(((C) & 0x07E0)>>3); \
-                            spi.transfer(((C) & 0x001F)<<3)
+  #define tft_Write_16N(C)  tft_Write_8N(((C) & 0xF800)>>8); \
+                            tft_Write_8N(((C) & 0x07E0)>>3); \
+                            tft_Write_8N(((C) & 0x001F)<<3)
 
   // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
-  #define tft_Write_16S(C) spi.transfer((C) & 0xF8); \
-                           spi.transfer(((C) & 0xE000)>>11 | ((C) & 0x07)<<5); \
-                           spi.transfer(((C) & 0x1F00)>>5)
+  #define tft_Write_16S(C) tft_Write_8N((C) & 0xF8); \
+                           tft_Write_8N(((C) & 0xE000)>>11 | ((C) & 0x07)<<5); \
+                           tft_Write_8N(((C) & 0x1F00)>>5)
   // Write 32 bits to TFT
-  #define tft_Write_32(C)  spi.transfer16((C)>>16); spi.transfer16((uint16_t)(C))
+  #define tft_Write_32(C)  tft_Write_8N(C>>24); \
+                           tft_Write_8N(C>>16); \
+                           tft_Write_8N(C>>8);  \
+                           tft_Write_8N(C)
 
   // Write two address coordinates
-  #define tft_Write_32C(C,D) spi.transfer16(C); spi.transfer16(D)
+  #define tft_Write_32C(C,D) tft_Write_8N(C>>8); \
+                             tft_Write_8N(C);    \
+                             tft_Write_8N(D>>8); \
+                             tft_Write_8N(D)
 
   // Write same value twice
-  #define tft_Write_32D(C) spi.transfer16(C); spi.transfer16(C)
+  #define tft_Write_32D(C) tft_Write_8N(C>>8); \
+                           tft_Write_8N(C);    \
+                           tft_Write_8N(C>>8); \
+                           tft_Write_8N(C)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to other displays
@@ -178,11 +194,11 @@
 
     #define tft_Write_16S(C)    while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)(C)<<8 | (C)>>8
 
-    #define tft_Write_32(C)     while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)((C)>>8);spi_get_hw(spi0)->dr = (uint32_t)(C)
+    #define tft_Write_32(C)     spi_get_hw(spi0)->dr = (uint32_t)((C)>>16); spi_get_hw(spi0)->dr = (uint32_t)(C)
 
-    #define tft_Write_32C(C,D)  while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)(C);spi_get_hw(spi0)->dr = (uint32_t)(D)
+    #define tft_Write_32C(C,D)  spi_get_hw(spi0)->dr = (uint32_t)(C); spi_get_hw(spi0)->dr = (uint32_t)(D)
 
-    #define tft_Write_32D(C)    while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = (uint32_t)(C);spi_get_hw(spi0)->dr = (uint32_t)(C)
+    #define tft_Write_32D(C)    spi_get_hw(spi0)->dr = (uint32_t)(C); spi_get_hw(spi0)->dr = (uint32_t)(C)
 
   #endif // RPI_DISPLAY_TYPE
 #endif

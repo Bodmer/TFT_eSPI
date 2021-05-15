@@ -28,6 +28,10 @@
   #include "Processors/TFT_eSPI_Generic.c"
 #endif
 
+#ifndef SPI_BUSY_CHECK
+  #define SPI_BUSY_CHECK
+#endif
+
 // Clipping macro for pushImage
 #define PI_CLIP                                        \
   if (_vpOoB) return;                                  \
@@ -3041,7 +3045,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 
 #if defined (ILI9225_DRIVER)
   if (rotation & 0x01) { swap_coord(x0, y0); swap_coord(x1, y1); }
-
+  SPI_BUSY_CHECK;
   DC_C; tft_Write_8(TFT_CASET1);
   DC_D; tft_Write_16(x0);
   DC_C; tft_Write_8(TFT_CASET2);
@@ -3065,7 +3069,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     swap_coord(x0, y0);
     swap_coord(x1, y1);
   }
-
+  SPI_BUSY_CHECK;
   DC_C; tft_Write_8(TFT_CASET);
   DC_D; tft_Write_16(x1 | (x0 << 8));
   DC_C; tft_Write_8(TFT_PASET);
@@ -3088,7 +3092,9 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   #if defined(ARDUINO_ARCH_RP2040) && !defined(TFT_PARALLEL_8BIT)
     while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_C;
-    spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    #if !defined (SPI_18BIT_DRIVER)
+      spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    #endif
     spi_get_hw(spi0)->dr = (uint32_t)TFT_CASET;
 
     while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
@@ -3114,10 +3120,13 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     spi_get_hw(spi0)->dr = (uint32_t)TFT_RAMWR;
 
     while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
-    spi_set_format(spi0, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    #if !defined (SPI_18BIT_DRIVER)
+      spi_set_format(spi0, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    #endif
     DC_D;
 
   #else
+    SPI_BUSY_CHECK;
     DC_C; tft_Write_8(TFT_CASET);
     DC_D; tft_Write_32C(x0, x1);
     DC_C; tft_Write_8(TFT_PASET);
@@ -3236,6 +3245,8 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
   if (rotation & 0x01) { swap_coord(x, y); }
 
+  SPI_BUSY_CHECK;
+
   // Set window to full screen to optimise sequential pixel rendering
   if (addr_row != 0x9225) {
     addr_row = 0x9225; // addr_row used for flag
@@ -3258,7 +3269,11 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
   // write to RAM
   DC_C; tft_Write_8(TFT_RAMWR);
-  DC_D; tft_Write_16(color);
+  #if defined(TFT_PARALLEL_8_BIT) || !defined(ESP32)
+    DC_D; tft_Write_16(color);
+  #else
+    DC_D; tft_Write_16N(color);
+  #endif
 
   // Temporary solution is to include the RP2040 optimised code here
 #elif defined (ARDUINO_ARCH_RP2040)
@@ -3292,11 +3307,19 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   DC_C;
   spi_get_hw(spi0)->dr = (uint32_t)TFT_RAMWR;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
-  DC_D;
-  spi_get_hw(spi0)->dr = (uint32_t)color>>8;
-  spi_get_hw(spi0)->dr = (uint32_t)color;
-
+  #if defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+    uint8_t r = (color & 0xF800)>>8;
+    uint8_t g = (color & 0x07E0)>>3;
+    uint8_t b = (color & 0x001F)<<3;
+    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    DC_D;
+    tft_Write_8N(r); tft_Write_8N(g); tft_Write_8N(b);
+  #else
+    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    DC_D;
+    spi_get_hw(spi0)->dr = (uint32_t)color>>8;
+    spi_get_hw(spi0)->dr = (uint32_t)color;
+  #endif
 /*
   // Subsequent pixel reads work OK without draining the FIFO...
   // Drain RX FIFO, then wait for shifting to finish (which may be *after*
@@ -3322,6 +3345,8 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 #if defined (SSD1351_DRIVER) || defined (SSD1963_DRIVER) 
   if ((rotation & 0x1) == 0) { swap_coord(x, y); }
 #endif
+
+  SPI_BUSY_CHECK;
 
 #if defined (MULTI_TFT_SUPPORT) || defined (GC9A01_DRIVER)
   // No optimisation
@@ -3359,7 +3384,12 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   }
 #endif
   DC_C; tft_Write_8(TFT_RAMWR);
-  DC_D; tft_Write_16(color);
+  
+  #if defined(TFT_PARALLEL_8_BIT) || !defined(ESP32)
+    DC_D; tft_Write_16(color);
+  #else
+    DC_D; tft_Write_16N(color);
+  #endif
 #endif
 
   end_tft_write();
@@ -3495,11 +3525,11 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
       dlen++;
       err -= dy;
       if (err < 0) {
-        err += dx;
         if (dlen == 1) drawPixel(y0, xs, color);
         else drawFastVLine(y0, xs, dlen, color);
         dlen = 0;
         y0 += ystep; xs = x0 + 1;
+        err += dx;
       }
     }
     if (dlen) drawFastVLine(y0, xs, dlen, color);
@@ -3510,11 +3540,11 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
       dlen++;
       err -= dy;
       if (err < 0) {
-        err += dx;
         if (dlen == 1) drawPixel(xs, y0, color);
         else drawFastHLine(xs, y0, dlen, color);
         dlen = 0;
         y0 += ystep; xs = x0 + 1;
+        err += dx;
       }
     }
     if (dlen) drawFastHLine(xs, y0, dlen, color);

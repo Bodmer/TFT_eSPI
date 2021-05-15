@@ -71,6 +71,12 @@
   #define DMA_BUSY_CHECK
 #endif
 
+#if defined(TFT_PARALLEL_8_BIT)
+  #define SPI_BUSY_CHECK
+#else
+  #define SPI_BUSY_CHECK while (*_spi_cmd&SPI_USR)
+#endif
+
 // If smooth font is used then it is likely SPIFFS will be needed
 #ifdef SMOOTH_FONT
   // Call up the SPIFFS (SPI FLASH Filing System) for the anti-aliased fonts
@@ -382,6 +388,9 @@
                            spi.transfer(((C) & 0x07E0)>>3); \
                            spi.transfer(((C) & 0x001F)<<3)
 
+  // Future option for transfer without wait
+  #define tft_Write_16N(C) tft_Write_16(C)
+
   // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
   #define tft_Write_16S(C) spi.transfer((C) & 0xF8); \
                            spi.transfer(((C) & 0xE000)>>11 | ((C) & 0x07)<<5); \
@@ -415,6 +424,9 @@
   // Write 16 bits with corrected endianess for 16 bit colours
   #define tft_Write_16(C) TFT_WRITE_BITS((C)<<8 | (C)>>8, 16)
 
+  // Future option for transfer without wait
+  #define tft_Write_16N(C) tft_Write_16(C)
+
   // Write 16 bits
   #define tft_Write_16S(C) TFT_WRITE_BITS(C, 16)
 
@@ -432,7 +444,7 @@
 // Macros for all other SPI displays
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
-
+/* Old macros
   // ESP32 low level SPI writes for 8, 16 and 32 bit values
   // to avoid the function call overhead
   #define TFT_WRITE_BITS(D, B) \
@@ -458,7 +470,37 @@
 
   // Write same value twice
   #define tft_Write_32D(C) TFT_WRITE_BITS((uint16_t)((C)<<8 | (C)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
+//*/
+//* Replacement slimmer macros
+  #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;    \
+                               *_spi_w = D;             \
+                               *_spi_cmd = SPI_USR;      \
+                        while (*_spi_cmd & SPI_USR);
 
+  // Write 8 bits
+  #define tft_Write_8(C) TFT_WRITE_BITS(C, 8)
+
+  // Write 16 bits with corrected endianess for 16 bit colours
+  #define tft_Write_16(C) TFT_WRITE_BITS((C)<<8 | (C)>>8, 16)
+
+  // Future option for transfer without wait
+  #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;       \
+                           *_spi_w = ((C)<<8 | (C)>>8); \
+                           *_spi_cmd = SPI_USR;
+
+  // Write 16 bits
+  #define tft_Write_16S(C) TFT_WRITE_BITS(C, 16)
+
+  // Write 32 bits
+  #define tft_Write_32(C) TFT_WRITE_BITS(C, 32)
+
+  // Write two address coordinates
+  #define tft_Write_32C(C,D)  TFT_WRITE_BITS((uint16_t)((D)<<8 | (D)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
+
+  // Write same value twice
+  #define tft_Write_32D(C) TFT_WRITE_BITS((uint16_t)((C)<<8 | (C)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
+
+//*/
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////

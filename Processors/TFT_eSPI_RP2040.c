@@ -7,9 +7,14 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #if !defined (TFT_PARALLEL_8_BIT)
-  // Select the SPI port to use
-  //SPIClass& spi = SPI;
-  MbedSPI spi = MbedSPI(TFT_MISO, TFT_MOSI, TFT_SCLK);
+  // Select the SPI port and board package to use
+  #ifdef ARDUINO_ARCH_MBED
+    // Arduino RP2040 board package
+    MbedSPI spi = MbedSPI(TFT_MISO, TFT_MOSI, TFT_SCLK);
+  #else
+    // Community RP2040 board package by Earle Philhower
+    SPIClass& spi = SPI;
+  #endif
 #endif
 
 #ifdef RP2040_DMA
@@ -185,12 +190,31 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 ***************************************************************************************/
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
 {
-  // Split out the colours
-  uint8_t r = (color & 0xF800)>>8;
-  uint8_t g = (color & 0x07E0)>>3;
-  uint8_t b = (color & 0x001F)<<3;
+  uint16_t r = (color & 0xF800)>>8;
+  uint16_t g = (color & 0x07E0)>>3;
+  uint16_t b = (color & 0x001F)<<3;
 
-  while ( len-- ) {tft_Write_8(r); tft_Write_8(g); tft_Write_8(b);}
+  // If more than 32 pixels then change to 16 bit transfers with concatenated pixels
+  if (len > 32) {
+    uint32_t rg = r<<8 | g;
+    uint32_t br = b<<8 | r;
+    uint32_t gb = g<<8 | b;
+    // Must wait before changing to 16 bit
+    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    while ( len > 1 ) {
+      while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = rg;
+      while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = br;
+      while (!spi_is_writable(spi0)){}; spi_get_hw(spi0)->dr = gb;
+      len -= 2;
+    }
+    // Must wait before changing back to 8 bit
+    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  }
+
+  // Mop up the remaining pixels
+  while ( len-- ) {tft_Write_8N(r);tft_Write_8N(g);tft_Write_8N(b);}
 }
 
 /***************************************************************************************
@@ -202,19 +226,14 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
   uint16_t *data = (uint16_t*)data_in;
   if (_swapBytes) {
     while ( len-- ) {
-      uint16_t color = *data >> 8 | *data << 8;
-      tft_Write_8((color & 0xF800)>>8);
-      tft_Write_8((color & 0x07E0)>>3);
-      tft_Write_8((color & 0x001F)<<3);
-      data++;
+      uint32_t col = *data++;
+      tft_Write_16(col);
     }
   }
   else {
     while ( len-- ) {
-      tft_Write_8((*data & 0xF800)>>8);
-      tft_Write_8((*data & 0x07E0)>>3);
-      tft_Write_8((*data & 0x001F)<<3);
-      data++;
+      uint32_t col = *data++;
+      tft_Write_16S(col);
     }
   }
 }
