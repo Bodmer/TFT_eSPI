@@ -1079,7 +1079,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
   // Set masked pins D0- D7 to input
   busDir(dir_mask, INPUT);
 
-  #if defined (ILI9341_DRIVER)  || defined(ILI9341_2_DRIVER) || defined (ILI9488_DRIVER) // Read 3 bytes
+  #if defined (ILI9341_DRIVER)  | defined(ILI9341_2_DRIVER) | defined (ILI9488_DRIVER) // Read 3 bytes
     // Dummy read to throw away don't care value
     readByte();
 
