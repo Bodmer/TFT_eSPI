@@ -953,6 +953,10 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   // Dummy read to throw away don't care value
   readByte();
 #endif
+// Some drives need throw 16 bits
+#if defined (ST7781_DRIVER)
+  readByte();
+#endif
 
   // Fetch the 16 bit BRG pixel
   //uint16_t rgb = (readByte() << 8) | readByte();
@@ -979,7 +983,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
     // Set masked pins D0- D7 to output
     busDir(dir_mask, OUTPUT);
 
-    #ifdef ILI9486_DRIVER
+    #if defined(ILI9486_DRIVER) | defined(ST7781_DRIVER)
       return  bgr;
     #else
       // Swap Red and Blue (could check MADCTL setting to see if this is needed)
@@ -1113,13 +1117,17 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
   #else // ILI9481 reads as 16 bits
     // Dummy read to throw away don't care value
     readByte();
+    // Some drives need throw 16 bits
+    #if defined (ST7781_DRIVER)
+        readByte();
+    #endif
 
     // Fetch the 16 bit BRG pixels
     while (dh--) {
       int32_t lw = dw;
       uint16_t* line = data;
       while (lw--) {
-      #ifdef ILI9486_DRIVER
+      #if defined (ILI9486_DRIVER) | defined (ST7781_DRIVER)
         // Read the RGB 16 bit colour
         *line++ = readByte() | (readByte() << 8);
       #else
@@ -3227,6 +3235,32 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   // Flush the rx buffer and reset overflow flag
   while (spi_is_readable(spi0)) (void)spi_get_hw(spi0)->dr;
   spi_get_hw(spi0)->icr = SPI_SSPICR_RORIC_BITS;
+
+#elif defined (ST7781_DRIVER)
+    // Is Like setWindow()
+    if (rotation & 0x01) { swap_coord(xs, ys); swap_coord(xe, ye); }
+
+    // Horizontal Range
+    DC_C; tft_Write_16(TFT_CASET1);
+    DC_D; tft_Write_16(xs);
+    DC_C; tft_Write_16(TFT_CASET2);
+    DC_D; tft_Write_16(xe);
+
+    // Vertical Range
+    DC_C; tft_Write_16(TFT_PASET1);
+    DC_D; tft_Write_16(ys);
+    DC_C; tft_Write_16(TFT_PASET2);
+    DC_D; tft_Write_16(ye);
+
+    // Start Address Pointer
+    DC_C; tft_Write_16(TFT_RAM_ADDR1);
+    DC_D; tft_Write_16(xs);
+    DC_C; tft_Write_16(TFT_RAM_ADDR2);
+    DC_D; tft_Write_16(ys);
+
+    // write to RAM
+    DC_C; tft_Write_16(TFT_RAMWR);
+    DC_D;
 
 #else
   // Column addr set
