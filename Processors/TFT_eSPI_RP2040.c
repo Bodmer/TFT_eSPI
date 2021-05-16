@@ -13,7 +13,8 @@
     MbedSPI spi = MbedSPI(TFT_MISO, TFT_MOSI, TFT_SCLK);
   #else
     // Community RP2040 board package by Earle Philhower
-    SPIClass& spi = SPI;
+    //SPIClass& spi = SPI; // will use board package default pins
+    SPIClassRP2040 spi = SPIClassRP2040(spi0, TFT_MISO, -1, TFT_SCLK, TFT_MOSI);
   #endif
 #endif
 
