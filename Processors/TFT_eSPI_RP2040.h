@@ -8,7 +8,7 @@
 #ifndef _TFT_eSPI_RP2040H_
 #define _TFT_eSPI_RP2040H_
 
-//#include "hardware/dma.h"
+#include "hardware/dma.h"
 
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x2040
