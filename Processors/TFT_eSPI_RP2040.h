@@ -8,6 +8,7 @@
 #ifndef _TFT_eSPI_RP2040H_
 #define _TFT_eSPI_RP2040H_
 
+// Required for both the official and community board packages
 #include "hardware/dma.h"
 
 // Processor ID reported by getSetup()
