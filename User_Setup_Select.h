@@ -67,6 +67,7 @@
 //#include <User_Setups/Setup35_ILI9341_STM32_Port_Bus.h> // Setup for STM32 port A parallel display
 
 //#include <User_Setups/Setup36_RPi_touch_ST7796.h>      // Setup file configured for ESP32 and RPi ST7796 TFT with touch
+//#include <User_Setups/Setup37_ST7781.h>                // Setup for ST7781 parallel display
 
 //#include <User_Setups/Setup43_ST7735.h>            // Setup file configured for my ST7735S 80x160
 //#include <User_Setups/Setup44_TTGO_CameraPlus.h>   // Setup file for ESP32 and TTGO T-CameraPlus ST7789 SPI bus TFT    240x240
@@ -198,6 +199,9 @@
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Defines.h"
      #define  TFT_DRIVER 0x9225
+#elif defined (ST7781_DRIVER)
+     #include "TFT_Drivers/ST7781_Defines.h"
+     #define  TFT_DRIVER 0x7781
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
                               // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp
 #elif defined (XYZZY_DRIVER)
