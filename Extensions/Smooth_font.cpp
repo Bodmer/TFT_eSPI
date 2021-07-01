@@ -338,6 +338,37 @@ uint32_t TFT_eSPI::readInt32(void)
 ** Function name:           getUnicodeIndex
 ** Description:             Get the font file index of a Unicode character
 *************************************************************************************x*/
+
+#ifdef FAST_UNICODE_INDEX
+bool TFT_eSPI::getUnicodeIndex(uint16_t unicode, uint16_t *index)
+{
+  int above = gFont.gCount;
+  int bottom = 0;
+  int i = above / 2;
+  do
+  {
+    uint16_t code = gUnicode[i];
+    if (code == unicode)
+    {
+      *index = i;
+      return true;
+    }
+    if (code > unicode)
+    {
+      above = i;
+    }
+    else
+    {
+      bottom = i+1;
+    }
+    i = (above+bottom)/2;
+  } while (above > bottom);
+
+  return false;
+}
+
+#else
+
 bool TFT_eSPI::getUnicodeIndex(uint16_t unicode, uint16_t *index)
 {
   for (uint16_t i = 0; i < gFont.gCount; i++)
@@ -350,6 +381,8 @@ bool TFT_eSPI::getUnicodeIndex(uint16_t unicode, uint16_t *index)
   }
   return false;
 }
+
+#endif
 
 
 /***************************************************************************************

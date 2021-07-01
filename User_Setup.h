@@ -304,6 +304,8 @@
 // this will save ~20kbytes of FLASH
 #define SMOOTH_FONT
 
+// Smooth font improvements
+#define FAST_UNICODE_INDEX
 
 // ##################################################################################
 //
