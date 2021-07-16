@@ -27,9 +27,10 @@
     int16_t  descent;                // Offset to bottom of 'p', other characters may have a larger descent
     uint16_t maxAscent;              // Maximum ascent found in font
     uint16_t maxDescent;             // Maximum descent found in font
+	bool     c4bpp;
   } fontMetrics;
 
-fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
+fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 ,false };
 
   // These are for the metrics for each individual glyph (so we don't need to seek this in file and waste time)
   uint16_t* gUnicode = NULL;  //UTF-16 code, the codes are searched so do not need to be sequential
@@ -56,6 +57,8 @@ fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
 
   void     loadMetrics(void);
   uint32_t readInt32(void);
+  uint16_t readInt16(void);
+  uint8_t  readInt8(void);
 
   uint8_t* fontPtr = nullptr;
 
