@@ -475,7 +475,6 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     int16_t  xs = cx;
     uint32_t dl = 0;
     uint8_t pixel = 0;
-    uint8_t pixel_before = 0;
 
     startWrite(); // Avoid slow ESP32 transaction overhead for every pixel
 
@@ -517,25 +516,14 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       {
 #ifdef FONT_FS_AVAILABLE
         if (fs_font)
-        {
-          pixel = (!gFont.c4bpp ? pbuffer[x] : pbuffer[(x >> 1) + (x & 1)]);
-          pixel_before = (!gFont.c4bpp || x == 0 ? 0 : pbuffer[((x-1) >> 1) + ((x - 1) & 1)]);
-        }
-        else{
+          pixel = (!gFont.c4bpp ? pbuffer[x] : pbuffer[(x >> 1)]);
+        else
 #endif
-          pixel = (!gFont.c4bpp ? pgm_read_byte(gPtr + gBitmap[gNum] + x + gWidth[gNum] * y)
-		                      : pgm_read_byte( gPtr + gBitmap[gNum] + (x >> 1) + (x & 1) +
-                               ((gWidth[gNum] >> 1) + (gWidth[gNum] & 1)) * y));
-		  pixel_before = (!gFont.c4bpp || x == 0 ? 0 : pgm_read_byte( gPtr + gBitmap[gNum] + ((x -1) >> 1) +
-		                                              ((x -1) & 1) + ((gWidth[gNum] >> 1) + (gWidth[gNum] & 1)) * y));
-#ifdef FONT_FS_AVAILABLE
-        }
-#endif
+          pixel = (!gFont.c4bpp ? pgm_read_byte(gPtr + gBitmap[gNum] + x + gWidth[gNum] * y) : pgm_read_byte( gPtr + gBitmap[gNum] + (x >> 1) + ((gWidth[gNum] >> 1) + (gWidth[gNum] & 1)) * y));
+
 		//Prepare real pixel data for 4bpp mode
         if(gFont.c4bpp)
-        {
-          pixel = (!(x & 1) ? (pixel & 0xf0) : ((pixel_before & 0x0f) << 4));
-        }
+          pixel = ((x & 1) ? ((pixel & 0x0f) << 4) : (pixel & 0xf0));
 
         if (pixel)
         {
