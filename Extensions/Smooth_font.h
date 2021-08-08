@@ -9,6 +9,8 @@
   void     loadFont(String fontName, fs::FS &ffs);
 #endif
   void     loadFont(String fontName, bool flash = true);
+  void     loadFont(const char * partitionName, esp_partition_subtype_t subtype);
+
   void     unloadFont( void );
   bool     getUnicodeIndex(uint16_t unicode, uint16_t *index);
 
@@ -29,19 +31,31 @@
     uint16_t maxDescent;             // Maximum descent found in font
   } fontMetrics;
 
-fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
+  fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
+
+#define MAX_GLYPH_WIDTH 30
+    uint8_t glyph_line_buffer[MAX_GLYPH_WIDTH];
 
   // These are for the metrics for each individual glyph (so we don't need to seek this in file and waste time)
-  uint16_t* gUnicode = NULL;  //UTF-16 code, the codes are searched so do not need to be sequential
-  uint8_t*  gHeight = NULL;   //cheight
-  uint8_t*  gWidth = NULL;    //cwidth
-  uint8_t*  gxAdvance = NULL; //setWidth
-  int16_t*  gdY = NULL;       //topExtent
-  int8_t*   gdX = NULL;       //leftExtent
-  uint32_t* gBitmap = NULL;   //file pointer to greyscale bitmap
+  typedef struct
+  {
+    uint16_t gUnicode;  //UTF-16 code, the codes are searched so do not need to be sequential
+    uint8_t  gHeight;   //cheight
+    uint8_t  gWidth;    //cwidth
+    uint8_t  gxAdvance; //setWidth
+    int16_t  gdY;       //topExtent
+    int8_t   gdX;       //leftExtent
+    uint32_t gBitmap;   //bitmap offset
+  } CharMetrics;
+  
+  TFT_eSPI::CharMetrics * getCharMetrics(uint16_t gNum);
+ 
+//  uint32_t* gBitmap = NULL;   //file pointer to greyscale bitmap
 
   bool     fontLoaded = false; // Flags when a anti-aliased font is loaded
 
+  spi_flash_mmap_handle_t font_handle;
+  
 #ifdef FONT_FS_AVAILABLE
   fs::File fontFile;
   fs::FS   &fontFS  = SPIFFS;
@@ -54,7 +68,6 @@ fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
 
   private:
 
-  void     loadMetrics(void);
   uint32_t readInt32(void);
 
   uint8_t* fontPtr = nullptr;

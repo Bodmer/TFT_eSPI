@@ -19,7 +19,7 @@ class TFT_eSprite : public TFT_eSPI {
            //  - 1 nibble per pixel for 4 bit colour
            //  - 1 byte per pixel for 8 bit colour
            //  - 2 bytes per pixel for 16 bit color depth
-  void*    createSprite(int16_t width, int16_t height, uint8_t frames = 1);
+  void*    createSprite(int16_t width, int16_t height, uint8_t frames = 1, uint8_t * mem = nullptr);
 
            // Returns a pointer to the sprite or nullptr if not created, user must cast to pointer type
   void*    getPointer(void);
@@ -28,7 +28,7 @@ class TFT_eSprite : public TFT_eSPI {
   bool     created(void);
 
            // Delete the sprite to free up the RAM
-  void     deleteSprite(void);
+  void     deleteSprite(bool keep = false);
 
            // Select the frame buffer for graphics write (for 2 colour ePaper and DMA toggle buffer)
            // Returns a pointer to the Sprite frame buffer

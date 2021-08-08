@@ -10,6 +10,11 @@
 // there is a nett performance gain by using swapped bytes.
 ***************************************************************************************/
 
+//syntax highlight enable
+#ifndef TFT_ESPI_VERSION
+#include "TFT_eSPI.h"
+#endif
+
 /***************************************************************************************
 ** Function name:           TFT_eSprite
 ** Description:             Class constructor
@@ -45,7 +50,7 @@ TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
 ** Description:             Create a sprite (bitmap) of defined width and height
 ***************************************************************************************/
 // cast returned value to (uint8_t*) for 8 bit or (uint16_t*) for 16 bit colours
-void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
+void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames, uint8_t * mem)
 {
 
   if ( _created ) return _img8_1;
@@ -65,7 +70,16 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
   _sh = h;
   _scolor = TFT_BLACK;
 
-  _img8   = (uint8_t*) callocSprite(w, h, frames);
+    if (!mem)
+    {
+        _img8   = (uint8_t*) callocSprite(w, h, frames);
+Serial.println("error: alloc!!!!");
+    }
+    else
+    {
+        //memset(mem, 0, w*h*sizeof(uint8_t)/_bpp*8);
+        _img8 = mem;
+    }
   _img8_1 = _img8;
   _img8_2 = _img8;
   _img    = (uint16_t*) _img8;
@@ -372,17 +386,18 @@ uint16_t TFT_eSprite::getPaletteColor(uint8_t index)
 ** Function name:           deleteSprite
 ** Description:             Delete the sprite to free up memory (RAM)
 ***************************************************************************************/
-void TFT_eSprite::deleteSprite(void)
+void TFT_eSprite::deleteSprite(bool keep)
 {
   if (_colorMap != nullptr)
   {
     free(_colorMap);
-	_colorMap = nullptr;
+    _colorMap = nullptr;
   }
 
   if (_created)
   {
-    free(_img8_1);
+      if (!keep)
+        free(_img8_1);
     _img8 = nullptr;
     _created = false;
     _vpOoB   = true;  // TFT_eSPI class write() uses this to check for valid sprite
@@ -2380,6 +2395,8 @@ int16_t TFT_eSprite::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t fo
 
 
 #ifdef SMOOTH_FONT
+void * memcpy_I(void * dst, const void * src, int len);
+
 /***************************************************************************************
 ** Function name:           drawGlyph
 ** Description:             Write a character to the sprite cursor position
@@ -2410,60 +2427,60 @@ void TFT_eSprite::drawGlyph(uint16_t code)
 
   if (found)
   {
+    CharMetrics * cm = getCharMetrics(gNum);
 
     bool newSprite = !_created;
 
     if (newSprite)
     {
-      createSprite(gWidth[gNum], gFont.yAdvance);
+      createSprite(cm->gWidth, gFont.yAdvance);
       if(fg != bg) fillSprite(bg);
-      cursor_x = -gdX[gNum];
+      cursor_x = -cm->gdX;
       cursor_y = 0;
     }
     else
     {
-      if( textwrapX && ((cursor_x + gWidth[gNum] + gdX[gNum]) > width())) {
+      if( textwrapX && ((cursor_x + cm->gWidth + cm->gdX) > width())) {
         cursor_y += gFont.yAdvance;
         cursor_x = 0;
       }
 
       if( textwrapY && ((cursor_y + gFont.yAdvance) > height())) cursor_y = 0;
 
-      if ( cursor_x == 0) cursor_x -= gdX[gNum];
+      if ( cursor_x == 0) cursor_x -= cm->gdX;
     }
 
-    uint8_t* pbuffer = nullptr;
-    const uint8_t* gPtr = (const uint8_t*) gFont.gArray;
+    uint8_t* pbuffer = glyph_line_buffer;//(uint8_t*)malloc(cm->gWidth);
+    const uint8_t* gPtr = (const uint8_t*) gFont.gArray + cm->gBitmap;
 
 #ifdef FONT_FS_AVAILABLE
     if (fs_font) {
-      fontFile.seek(gBitmap[gNum], fs::SeekSet); // This is slow for a significant position shift!
-      pbuffer =  (uint8_t*)malloc(gWidth[gNum]);
+      fontFile.seek(cm->gBitmap, fs::SeekSet); // This is slow for a significant position shift!
     }
 #endif
 
     int16_t  xs = 0;
     uint16_t dl = 0;
     uint8_t pixel = 0;
-    int32_t cgy = cursor_y + gFont.maxAscent - gdY[gNum];
-    int32_t cgx = cursor_x + gdX[gNum];
+    int32_t cgy = cursor_y + gFont.maxAscent - cm->gdY;
+    int32_t cgx = cursor_x + cm->gdX;
 
-    for (int32_t y = 0; y < gHeight[gNum]; y++)
+    for (int32_t y = 0; y < cm->gHeight; y++)
     {
 #ifdef FONT_FS_AVAILABLE
       if (fs_font) {
-        fontFile.read(pbuffer, gWidth[gNum]);
+        fontFile.read(pbuffer, cm->gWidth);
       }
+      else
 #endif
-      for (int32_t x = 0; x < gWidth[gNum]; x++)
       {
-#ifdef FONT_FS_AVAILABLE
-        if (fs_font) {
-          pixel = pbuffer[x];
-        }
-        else
-#endif
-        pixel = pgm_read_byte(gPtr + gBitmap[gNum] + x + gWidth[gNum] * y);
+        memcpy_I(pbuffer, gPtr, cm->gWidth);
+        gPtr += cm->gWidth;
+      }
+
+      for (int32_t x = 0; x < cm->gWidth; x++)
+      {
+        pixel = pbuffer[x];
 
         if (pixel)
         {
@@ -2490,14 +2507,14 @@ void TFT_eSprite::drawGlyph(uint16_t code)
       if (dl) { drawFastHLine( xs, y + cgy, dl, fg); dl = 0; }
     }
 
-    if (pbuffer) free(pbuffer);
+    //if (pbuffer) free(pbuffer);
 
     if (newSprite)
     {
       pushSprite(cgx, cursor_y);
       deleteSprite();
     }
-    cursor_x += gxAdvance[gNum];
+    cursor_x += cm->gxAdvance;
   }
   else
   {
@@ -2540,9 +2557,10 @@ void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
       uint16_t unicode = decodeUTF8((uint8_t*)cbuffer, &n, len - n);
       if (getUnicodeIndex(unicode, &index))
       {
-        if (n == 0) sWidth -= gdX[index];
-        if (n == len-1) sWidth += ( gWidth[index] + gdX[index]);
-        else sWidth += gxAdvance[index];
+        CharMetrics * cm = getCharMetrics(index);
+        if (n == 0) sWidth -= cm->gdX;
+        if (n == len-1) sWidth += ( cm->gWidth + cm->gdX);
+        else sWidth += cm->gxAdvance;
       }
       else sWidth += gFont.spaceWidth + 1;
     }
@@ -2577,7 +2595,8 @@ void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
 int16_t TFT_eSprite::printToSprite(int16_t x, int16_t y, uint16_t index)
 {
   bool newSprite = !_created;
-  int16_t sWidth = gWidth[index];
+  CharMetrics * cm = getCharMetrics(index);
+  int16_t sWidth = cm->gWidth;
 
   if (newSprite)
   {
@@ -2585,14 +2604,15 @@ int16_t TFT_eSprite::printToSprite(int16_t x, int16_t y, uint16_t index)
 
     if (textcolor != textbgcolor) fillSprite(textbgcolor);
 
-    drawGlyph(gUnicode[index]);
+    //todo:drawGlyphIndex
+    drawGlyph(cm->gUnicode);
 
-    pushSprite(x + gdX[index], y, textbgcolor);
+    pushSprite(x + cm->gdX, y, textbgcolor);
     deleteSprite();
   }
 
-  else drawGlyph(gUnicode[index]);
+  else drawGlyph(cm->gUnicode);
 
-  return gxAdvance[index];
+  return cm->gxAdvance;
 }
 #endif
