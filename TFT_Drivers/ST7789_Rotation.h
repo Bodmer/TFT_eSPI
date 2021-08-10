@@ -1,6 +1,6 @@
   // This is the command sequence that rotates the ST7789 driver coordinate frame
-
   writecommand(TFT_MADCTL);
+  uint8_t writedata(0);
   rotation = m % 4;
   switch (rotation) {
     case 0: // Portrait
@@ -16,7 +16,11 @@
         rowstart = 0;
       }
 #endif
-      writedata(TFT_MAD_COLOR_ORDER);
+      if (mirror) {
+        writedata(TFT_MAD_MX | TFT_MAD_COLOR_ORDER);
+      } else {
+        writedata(TFT_MAD_COLOR_ORDER);
+      }
 
       _width  = _init_width;
       _height = _init_height;
@@ -24,6 +28,7 @@
 
     case 1: // Landscape (Portrait + 90)
 #ifdef CGRAM_OFFSET
+      // TODO: Fix offset after mirror
       if (_init_width == 135)
       {
         colstart = 40;
@@ -31,11 +36,20 @@
       }
       else
       {
-        colstart = 0;
-        rowstart = 0;
+        if (mirror) {
+          colstart = 80;
+          rowstart = 0;
+        } else {
+          colstart = 0;
+          rowstart = 0;
+        }
       }
 #endif
-      writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_COLOR_ORDER);
+      if (mirror) {
+        writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
+      } else {
+        writedata(TFT_MAD_MX | TFT_MAD_MV | TFT_MAD_COLOR_ORDER);
+      }
 
       _width  = _init_height;
       _height = _init_width;
@@ -54,13 +68,18 @@
         rowstart = 80;
       }
 #endif
-      writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
+      if (mirror) {
+        writedata(TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
+      } else {
+        writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
+      }
 
       _width  = _init_width;
       _height = _init_height;
        break;
     case 3: // Inverted landscape
 #ifdef CGRAM_OFFSET
+      // TODO: Fix offset after mirror
       if (_init_width == 135)
       {
         colstart = 40;
@@ -68,11 +87,20 @@
       }
       else
       {
-        colstart = 80;
-        rowstart = 0;
+        if (mirror) {
+          colstart = 0;
+          rowstart = 0;
+        } else {
+          colstart = 80;
+          rowstart = 0;
+        }
       }
 #endif
-      writedata(TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
+      if (mirror) {
+        writedata(TFT_MAD_MV | TFT_MAD_COLOR_ORDER);
+      } else {
+        writedata(TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
+      }
 
       _width  = _init_height;
       _height = _init_width;
