@@ -412,6 +412,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
                    width(void);
 
   void     setRotation(uint8_t r); // Set the display image orientation to 0, 1, 2 or 3
+  void     setRotation(uint8_t r, bool mirror); // Set the display image orientation with mirror option
   uint8_t  getRotation(void);      // Read the current rotation
 
   void     invertDisplay(bool i);  // Tell TFT to invert all displayed colours
