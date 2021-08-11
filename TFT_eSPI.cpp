@@ -189,7 +189,7 @@ bool TFT_eSPI::checkViewport(int32_t x, int32_t y, int32_t w, int32_t h)
   x+= _xDatum;
   y+= _yDatum;
 
-  if ((x >= _vpW) || (y >= _vpH)) return false; 
+  if ((x >= _vpW) || (y >= _vpH)) return false;
 
   int32_t dx = 0;
   int32_t dy = 0;
@@ -296,7 +296,7 @@ void TFT_eSPI::frameViewport(uint16_t color, int32_t w)
   // a large negative width will clear the screen outside the viewport
   {
     w = -w;
-    
+
     // Save old values
     int32_t _xT = _vpX; _vpX = 0;
     int32_t _yT = _vpY; _vpY = 0;
@@ -691,7 +691,13 @@ void TFT_eSPI::init(uint8_t tc)
 ** Function name:           setRotation
 ** Description:             rotate the screen orientation m = 0-3 or 4-7 for BMP drawing
 ***************************************************************************************/
+
 void TFT_eSPI::setRotation(uint8_t m)
+{
+  setRotation(m, false);
+}
+
+void TFT_eSPI::setRotation(uint8_t m, bool mirror)
 {
 
   begin_tft_write();
@@ -1894,7 +1900,7 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
   uint8_t* buf565 = data + len;
 
   readRect(x0, y0, w, h, (uint16_t*)buf565);
-  
+
   while (len--) {
     uint16_t pixel565 = (*buf565++)<<8;
     pixel565 |= *buf565++;
@@ -1973,7 +1979,7 @@ void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
     int32_t xs    = -1;
     int32_t xe    = 0;
     int32_t len   = 0;
-    
+
     bool first = true;
     do {
       while (f < 0) {
@@ -3231,7 +3237,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   x+= _xDatum;
   y+= _yDatum;
 
-  // Range checking 
+  // Range checking
   if ((x < _vpX) || (y < _vpY) ||(x >= _vpW) || (y >= _vpH)) return;
 
 #ifdef CGRAM_OFFSET
@@ -3254,7 +3260,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
     DC_D; tft_Write_16(0);
     DC_C; tft_Write_8(TFT_CASET2);
     DC_D; tft_Write_16(175);
- 
+
     DC_C; tft_Write_8(TFT_PASET1);
     DC_D; tft_Write_16(0);
     DC_C; tft_Write_8(TFT_PASET2);
@@ -3342,7 +3348,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
 #else
 
-#if defined (SSD1351_DRIVER) || defined (SSD1963_DRIVER) 
+#if defined (SSD1351_DRIVER) || defined (SSD1963_DRIVER)
   if ((rotation & 0x1) == 0) { swap_coord(x, y); }
 #endif
 
@@ -3384,7 +3390,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   }
 #endif
   DC_C; tft_Write_8(TFT_RAMWR);
-  
+
   #if defined(TFT_PARALLEL_8_BIT) || !defined(ESP32)
     DC_D; tft_Write_16(color);
   #else
@@ -3899,7 +3905,7 @@ uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc, uint8_t
     if (alphaDither <  0) alpha = 0;
     if (alphaDither >255) alpha = 255;
   }
-  
+
   return alphaBlend(alpha, fgc, bgc);
 }
 
@@ -4235,7 +4241,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 
     w *= height; // Now w is total number of pixels in the character
     if (textcolor == textbgcolor && !clip) {
-      
+
       int32_t px = 0, py = pY; // To hold character block start and end column and row values
       int32_t pc = 0; // Pixel count
       uint8_t np = textsize * textsize; // Number of pixels in a drawn pixel

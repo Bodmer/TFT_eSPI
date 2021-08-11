@@ -277,6 +277,11 @@ const PROGMEM fontinfo fontdata [] = {
 #define TFT_SKYBLUE     0x867D      /* 135, 206, 235 */
 #define TFT_VIOLET      0x915C      /* 180,  46, 226 */
 
+#define TFT_PORTRAIT           0
+#define TFT_LANDSCAPE          1
+#define TFT_PORTRAIT_INVERT    2
+#define TFT_LANDSCAPE_INVERT   3
+
 // Next is a special 16 bit colour value that encodes to 8 bits
 // and will then decode back to the same 16 bit value.
 // Convenient for 8 bit and 16 bit transparent sprites.
@@ -303,15 +308,7 @@ static const uint16_t default_4bit_palette[] PROGMEM = {
 };
 
 /***************************************************************************************
-**                         Section 7: Screen rotation enumeration
-***************************************************************************************/
-#define TFT_PORTRAIT           0
-#define TFT_LANDSCAPE          1
-#define TFT_PORTRAIT_INVERT    2
-#define TFT_LANDSCAPE_INVERT   3
-
-/***************************************************************************************
-**                         Section 8: Diagnostic support
+**                         Section 7: Diagnostic support
 ***************************************************************************************/
 // #define TFT_eSPI_DEBUG     // Switch on debug support serial messages  (not used yet)
 // #define TFT_eSPI_FNx_DEBUG // Switch on debug support for function "x" (not used yet)
@@ -377,7 +374,7 @@ int16_t tch_spi_freq;// Touch controller read/write SPI frequency
 } setup_t;
 
 /***************************************************************************************
-**                         Section 9: Class member and support functions
+**                         Section 8: Class member and support functions
 ***************************************************************************************/
 // Swap any type
 template <typename T> static inline void
@@ -412,7 +409,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
                    width(void);
 
   void     setRotation(uint8_t r); // Set the display image orientation to 0, 1, 2 or 3
-  void     setRotation(uint8_t r, bool mirror); // Set the display image orientation with mirror option
+  void     setRotation(uint8_t r, bool mirror);  // Set the display image orientation with mirro flag
   uint8_t  getRotation(void);      // Read the current rotation
 
   void     invertDisplay(bool i);  // Tell TFT to invert all displayed colours
@@ -808,7 +805,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 #endif
 
 /***************************************************************************************
-**                         Section 10: TFT_eSPI class conditional extensions
+**                         Section 9: TFT_eSPI class conditional extensions
 ***************************************************************************************/
 // Load the Touch extension
 #ifdef TOUCH_CS
@@ -823,7 +820,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 }; // End of class TFT_eSPI
 
 /***************************************************************************************
-**                         Section 11: Additional extension classes
+**                         Section 10: Additional extension classes
 ***************************************************************************************/
 // Load the Button Class
 #include "Extensions/Button.h"
