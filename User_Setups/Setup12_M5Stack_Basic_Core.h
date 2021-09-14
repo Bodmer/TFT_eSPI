@@ -1,10 +1,10 @@
 // See SetupX_Template.h for all options available
 
+//Setup file for the M5Stack Basic Core
+
 #define ILI9341_DRIVER
 
-
 #define M5STACK
-
 
 #define TFT_MISO 19
 #define TFT_MOSI 23
