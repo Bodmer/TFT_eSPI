@@ -126,7 +126,7 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
   gFont.gArray   = (const uint8_t*)fontPtr;
 
   gFont.gCount   = (uint16_t)readInt32(); // glyph count in file
-                             readInt32(); // vlw encoder version - discard
+  gFont.c4bpp    = (readInt32() == 0xC); // vlw encoder version,0xC for 4bpp version
   gFont.yAdvance = (uint16_t)readInt32(); // Font size in points, not pixels
                              readInt32(); // discard
   gFont.ascent   = (uint16_t)readInt32(); // top of "d"
@@ -154,6 +154,10 @@ void TFT_eSPI::loadMetrics(void)
 {
   uint32_t headerPtr = 24;
   uint32_t bitmapPtr = headerPtr + gFont.gCount * 28;
+  if(gFont.c4bpp)
+  {
+	bitmapPtr = headerPtr + gFont.gCount * 8;
+  }
 
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
   if ( psramFound() )
@@ -191,19 +195,29 @@ void TFT_eSPI::loadMetrics(void)
 
   while (gNum < gFont.gCount)
   {
-    gUnicode[gNum]  = (uint16_t)readInt32(); // Unicode code point value
-    gHeight[gNum]   =  (uint8_t)readInt32(); // Height of glyph
-    gWidth[gNum]    =  (uint8_t)readInt32(); // Width of glyph
-    gxAdvance[gNum] =  (uint8_t)readInt32(); // xAdvance - to move x cursor
-    gdY[gNum]       =  (int16_t)readInt32(); // y delta from baseline
-    gdX[gNum]       =   (int8_t)readInt32(); // x delta from cursor
-    readInt32(); // ignored
-
+	if(!gFont.c4bpp)
+	{
+	  gUnicode[gNum]  = (uint16_t)readInt32(); // Unicode code point value
+      gHeight[gNum]   =  (uint8_t)readInt32(); // Height of glyph
+      gWidth[gNum]    =  (uint8_t)readInt32(); // Width of glyph
+      gxAdvance[gNum] =  (uint8_t)readInt32(); // xAdvance - to move x cursor
+      gdY[gNum]       =  (int16_t)readInt32(); // y delta from baseline
+      gdX[gNum]       =   (int8_t)readInt32(); // x delta from cursor
+      readInt32(); // ignored
+	}else{
+	  gUnicode[gNum]  = (uint16_t)readInt16(); // Unicode code point value
+      gHeight[gNum]   =  (uint8_t)readInt8(); // Height of glyph
+      gWidth[gNum]    =  (uint8_t)readInt8(); // Width of glyph
+      gxAdvance[gNum] =  (uint8_t)readInt8(); // xAdvance - to move x cursor
+      gdY[gNum]       =  (int16_t)readInt16(); // y delta from baseline
+      gdX[gNum]       =   (int8_t)readInt8(); // x delta from cursor
+    }
     //Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", gHeight  = "); Serial.println(gHeight[gNum]);
     //Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", gWidth  = "); Serial.println(gWidth[gNum]);
     //Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", gxAdvance  = "); Serial.println(gxAdvance[gNum]);
     //Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", gdY  = "); Serial.println(gdY[gNum]);
-
+	//Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", gdX  = "); Serial.println(gdX[gNum]);
+	//Serial.println("");
     // Different glyph sets have different ascent values not always based on "d", so we could get
     // the maximum glyph ascent by checking all characters. BUT this method can generate bad values
     // for non-existant glyphs, so we will reply on processing for the value and disable this code for now...
@@ -229,14 +243,22 @@ void TFT_eSPI::loadMetrics(void)
       {
         gFont.maxDescent   = gHeight[gNum] - gdY[gNum];
 #ifdef SHOW_ASCENT_DESCENT
-        Serial.print("Unicode = 0x"); Serial.print(gUnicode[gNum], HEX); Serial.print(", maxDescent = "); Serial.println(gHeight[gNum] - gdY[gNum]);
+        Serial.print("Unicode = 0x");
+        Serial.print(gUnicode[gNum], HEX); Serial.print(", maxDescent = ");
+        Serial.println(gHeight[gNum] - gdY[gNum]);
 #endif
       }
     }
 
     gBitmap[gNum] = bitmapPtr;
-
-    bitmapPtr += gWidth[gNum] * gHeight[gNum];
+	if(gFont.c4bpp)
+	{
+	  bitmapPtr += ((gWidth[gNum] >> 1) + (gWidth[gNum] & 1)) * gHeight[gNum];
+	}
+	else
+	{
+	  bitmapPtr += gWidth[gNum] * gHeight[gNum];
+	}
 
     gNum++;
     yield();
@@ -333,6 +355,50 @@ uint32_t TFT_eSPI::readInt32(void)
   return val;
 }
 
+/***************************************************************************************
+** Function name:           readInt16
+** Description:             Get a 16 bit integer from the font file
+*************************************************************************************x*/
+uint16_t TFT_eSPI::readInt16(void)
+{
+  uint16_t val = 0;
+
+#ifdef FONT_FS_AVAILABLE
+  if (fs_font) {
+    val |= fontFile.read() << 8;
+    val |= fontFile.read();
+  }
+  else
+#endif
+  {
+    val |= pgm_read_byte(fontPtr++) << 8;
+    val |= pgm_read_byte(fontPtr++);
+  }
+
+  return val;
+}
+
+/***************************************************************************************
+** Function name:           readInt8
+** Description:             Get a 8 bit integer from the font file
+*************************************************************************************x*/
+uint8_t TFT_eSPI::readInt8(void)
+{
+  uint8_t val = 0;
+
+#ifdef FONT_FS_AVAILABLE
+  if (fs_font) {
+    val = fontFile.read();
+  }
+  else
+#endif
+  {
+    val = pgm_read_byte(fontPtr++);
+  }
+
+  return val;
+}
+
 
 /***************************************************************************************
 ** Function name:           getUnicodeIndex
@@ -408,7 +474,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
     int16_t  xs = cx;
     uint32_t dl = 0;
-    uint8_t pixel;
+    uint8_t pixel = 0;
 
     startWrite(); // Avoid slow ESP32 transaction overhead for every pixel
 
@@ -420,13 +486,27 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       if (fs_font) {
         if (spiffs)
         {
-          fontFile.read(pbuffer, gWidth[gNum]);
+          if(gFont.c4bpp)
+          {
+            fontFile.read(pbuffer, (gWidth[gNum] >> 1) + (gWidth[gNum] & 1));
+          }
+          else
+          {
+            fontFile.read(pbuffer, gWidth[gNum]);
+          }
           //Serial.println("SPIFFS");
         }
         else
         {
           endWrite();    // Release SPI for SD card transaction
-          fontFile.read(pbuffer, gWidth[gNum]);
+          if(gFont.c4bpp)
+          {
+            fontFile.read(pbuffer, (gWidth[gNum] >> 1) + (gWidth[gNum] & 1));
+          }
+          else
+          {
+            fontFile.read(pbuffer, gWidth[gNum]);
+          }
           startWrite();  // Re-start SPI for TFT transaction
           //Serial.println("Not SPIFFS");
         }
@@ -435,10 +515,15 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       for (int x = 0; x < gWidth[gNum]; x++)
       {
 #ifdef FONT_FS_AVAILABLE
-        if (fs_font) pixel = pbuffer[x];
+        if (fs_font)
+          pixel = (!gFont.c4bpp ? pbuffer[x] : pbuffer[(x >> 1)]);
         else
 #endif
-        pixel = pgm_read_byte(gPtr + gBitmap[gNum] + x + gWidth[gNum] * y);
+          pixel = (!gFont.c4bpp ? pgm_read_byte(gPtr + gBitmap[gNum] + x + gWidth[gNum] * y) : pgm_read_byte( gPtr + gBitmap[gNum] + (x >> 1) + ((gWidth[gNum] >> 1) + (gWidth[gNum] & 1)) * y));
+
+		//Prepare real pixel data for 4bpp mode
+        if(gFont.c4bpp)
+          pixel = ((x & 1) ? ((pixel & 0x0f) << 4) : (pixel & 0xf0));
 
         if (pixel)
         {
