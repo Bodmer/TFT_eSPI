@@ -16,7 +16,9 @@
 
 #include "TFT_eSPI.h"
 
-#if defined (ESP32)
+#if defined (TFT_eSPI_USE_SWSPI)
+  #include "Processors/TFT_eSPI_SWSPI.c"
+#elif defined (ESP32)
   #include "Processors/TFT_eSPI_ESP32.c"
 #elif defined (ESP8266)
   #include "Processors/TFT_eSPI_ESP8266.c"
@@ -106,8 +108,10 @@ inline void TFT_eSPI::begin_tft_read(void){
     CS_L;
   }
 #else
+  #ifndef TFT_eSPI_USE_SWSPI
   #if !defined(TFT_PARALLEL_8_BIT)
     spi.setFrequency(SPI_READ_FREQUENCY);
+  #endif
   #endif
    CS_L;
 #endif
@@ -339,8 +343,10 @@ inline void TFT_eSPI::end_tft_read(void){
     }
   }
 #else
+  #ifndef TFT_eSPI_USE_SWSPI
   #if !defined(TFT_PARALLEL_8_BIT)
     spi.setFrequency(SPI_FREQUENCY);
+  #endif
   #endif
    if(!inTransaction) {CS_H;}
 #endif
@@ -552,11 +558,13 @@ void TFT_eSPI::init(uint8_t tc)
 
 #else
   #if !defined(TFT_PARALLEL_8_BIT)
+  #ifndef TFT_eSPI_USE_SWSPI
     #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP) && !defined(ARDUINO_ARCH_RP2040)
       spi.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
     #else
       spi.begin();
     #endif
+  #endif
   #endif
 #endif
     lockTransaction = false;
@@ -566,6 +574,10 @@ void TFT_eSPI::init(uint8_t tc)
     INIT_TFT_DATA_BUS;
 
 
+#ifdef TFT_eSPI_USE_SWSPI
+  pinMode(TFT_SCLK, OUTPUT);
+  pinMode(TFT_MOSI, OUTPUT);
+#endif
 
 #ifdef TFT_CS
   // Set to output once again in case ESP8266 D6 (MISO) is used for CS
@@ -852,6 +864,7 @@ void TFT_eSPI::writedata(uint8_t d)
 uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
 {
   uint8_t reg = 0;
+#ifndef TFT_eSPI_USE_SWSPI
 #ifdef TFT_PARALLEL_8_BIT
 
   writecommand(cmd_function); // Sets DC and CS high
@@ -883,6 +896,7 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
   reg = tft_Read_8();
 
   end_tft_read();
+#endif
 #endif
   return reg;
 }
@@ -926,6 +940,9 @@ uint32_t TFT_eSPI::readcommand32(uint8_t cmd_function, uint8_t index)
 ***************************************************************************************/
 uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 {
+#ifdef TFT_eSPI_USE_SWSPI
+  return 0;
+#else
   if (_vpOoB) return 0;
 
   x0+= _xDatum;
@@ -1042,6 +1059,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   return color;
 
 #endif
+#endif
 }
 
 void TFT_eSPI::setCallback(getColorCallback getCol)
@@ -1058,6 +1076,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 {
   PI_CLIP ;
 
+#ifndef TFT_eSPI_USE_SWSPI
 #if defined(TFT_PARALLEL_8_BIT)
 
   CS_L;
@@ -1202,6 +1221,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 
   // Reinstate the transaction if one was in progress
   if(wasInTransaction) { begin_tft_write(); inTransaction = true; }
+#endif
 #endif
 }
 
@@ -1888,6 +1908,7 @@ bool TFT_eSPI::getSwapBytes(void)
 // If w and h are 1, then 1 pixel is read, *data array size must be 3 bytes per pixel
 void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t *data)
 {
+#ifndef TFT_eSPI_USE_SWSPI
 #if defined(TFT_PARALLEL_8_BIT)
 
   uint32_t len = w * h;
@@ -1951,6 +1972,7 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
 
   end_tft_read();
 
+#endif
 #endif
 }
 
@@ -3145,6 +3167,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 ***************************************************************************************/
 void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 {
+#ifndef TFT_eSPI_USE_SWSPI
   //begin_tft_write(); // Must be called before readAddrWindow or CS set low
 
   int32_t xe = xs + w - 1;
@@ -3216,6 +3239,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   DC_D;
 #endif // RP2040 SPI
 
+#endif
   //end_tft_write(); // Must be called after readAddrWindow or CS set high
 }
 
@@ -4814,11 +4838,13 @@ void TFT_eSPI::setTextFont(uint8_t f)
 ** Function name:           getSPIinstance
 ** Description:             Get the instance of the SPI class
 ***************************************************************************************/
+#ifndef TFT_eSPI_USE_SWSPI
 #if !defined (TFT_PARALLEL_8_BIT)
 SPIClass& TFT_eSPI::getSPIinstance(void)
 {
   return spi;
 }
+#endif
 #endif
 
 /***************************************************************************************
