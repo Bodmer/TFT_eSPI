@@ -7,10 +7,12 @@
 // Define STM32 to invoke STM32 optimised driver
 #define STM32
 
-// Define if Port A (or B) pins 0-7 are used for data bus bits 0-7
+// Define if Port A (B, C or D) pins 0-7 are used for data bus bits 0-7
 // this will improve rendering performance by a factor of ~8x
 #define STM_PORTA_DATA_BUS
 //#define STM_PORTB_DATA_BUS // Pins below must re re-allocated to use this option
+//#define STM_PORTC_DATA_BUS // Pins below must re re-allocated to use this option
+//#define STM_PORTD_DATA_BUS // Pins below must re re-allocated to use this option
 
 // Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
 #define TFT_PARALLEL_8_BIT
