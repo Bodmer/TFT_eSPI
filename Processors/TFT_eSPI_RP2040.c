@@ -365,7 +365,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   // If image is clipped, copy pixels into a contiguous block
   if ( (dw != w) || (dh != h) ) {
     for (int32_t yb = 0; yb < dh; yb++) {
-      memcpy((uint8_t*) (buffer + yb * dw), (uint8_t*) (image + dx + w * (yb + dy)), dw << 1);
+      memmove((uint8_t*) (buffer + yb * dw), (uint8_t*) (image + dx + w * (yb + dy)), dw << 1);
     }
   }
   // else, if a buffer pointer has been provided copy whole image to the buffer
@@ -389,6 +389,8 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 bool TFT_eSPI::initDMA(bool ctrl_cs)
 {
   if (DMA_Enabled) return false;
+  
+  ctrl_cs = ctrl_cs; // stop unused parameter warning
 
   dma_tx_channel = dma_claim_unused_channel(true);
   dma_tx_config = dma_channel_get_default_config(dma_tx_channel);
