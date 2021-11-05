@@ -1,5 +1,5 @@
 /*
-  This tests the alpha blending function that is used with the antialiased
+  This tests the alpha blending function that is used with the anti-aliased
   fonts:
 
   Alpha = 0 = 100% background, alpha = 255 = 100% foreground colour

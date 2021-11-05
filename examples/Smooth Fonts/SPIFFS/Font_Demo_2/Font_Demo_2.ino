@@ -32,7 +32,7 @@
 #define AA_FONT_SMALL "NotoSansBold15"
 #define AA_FONT_LARGE "NotoSansBold36"
 
-// Font files are stored in SPIFFS, so load the linbrary
+// Font files are stored in SPIFFS, so load the library
 #include <FS.h>
 
 #include <SPI.h>

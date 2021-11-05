@@ -20,7 +20,7 @@
 
   An 8 bit colour Sprite occupies (width * height) bytes.
 
-  On a ESP8266, 16 bit Sprite sizes up to 128 x 160 can be accomodated,
+  On a ESP8266, 16 bit Sprite sizes up to 128 x 160 can be accommodated,
   this size requires 128*160*2 bytes (40kBytes) of RAM.
 
   This sketch sets the colour depth to 8 bits so larger sprites can be
@@ -108,7 +108,7 @@ void build_banner(String msg, int xpos)
   // Fill with rainbow stripes
   while (h--) img.drawFastHLine(0, h, IWIDTH, rainbow(h * 4));
 
-  // Draw some graphics, the text will apear to scroll over these
+  // Draw some graphics, the text will appear to scroll over these
   img.fillRect  (IWIDTH / 2 - 20, IHEIGHT / 2 - 10, 40, 20, TFT_YELLOW);
   img.fillCircle(IWIDTH / 2, IHEIGHT / 2, 10, TFT_ORANGE);
 

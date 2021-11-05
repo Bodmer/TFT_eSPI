@@ -1,6 +1,6 @@
 /*
   This sketch uses Smooth fonts stored in FLASH program memory. It uses a method
-  for rendering anti-aliased fonts on a graded background. This is acheived by
+  for rendering anti-aliased fonts on a graded background. This is achieved by
   telling the TFT_eSPI library the pixel color at each point on the screen. In
   this sketch a background colour gradient is drawn, the color of each pixel can
   therefore be determined by a function. The TFT does not need to support reading
@@ -74,7 +74,7 @@ void setup(void) {
 
 void loop() {
 
-  // Select a font size comensurate with screen size
+  // Select a font size commensurate with screen size
   if (tft.width()>= 320)
     tft.loadFont(AA_FONT_LARGE);
   else

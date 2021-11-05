@@ -11,7 +11,7 @@
   tft.setBitmapColor(ON_COLOR, OFF_COLOR);
 
   Scrolling moves the pixels in a defined rectangle within
-  the Sprite. By defalt the whole sprite is scrolled.
+  the Sprite. By default the whole sprite is scrolled.
   The gap left by scrolling is filled with a defined colour.
 
   Example for library:
@@ -82,7 +82,7 @@ void loop() {
   // Draw number in stext1 sprite at 31,63 (bottom right datum set)
   stext1.drawNumber(graphVal, 31, 63, 2); // plot value in font 2
 
-  // Push the sprites onto the TFT at specied coordinates
+  // Push the sprites onto the TFT at specified coordinates
   tft.setBitmapColor(TFT_WHITE, TFT_BLUE); // Specify the colours of the ON and OFF pixels
   graph1.pushSprite(0, 0);
 

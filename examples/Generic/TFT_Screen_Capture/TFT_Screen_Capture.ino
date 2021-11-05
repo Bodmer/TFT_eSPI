@@ -87,7 +87,7 @@ void loop() {
       // The new larger fonts do not need to use the .setCursor call, coords are embedded
       tft.setTextColor(TFT_BLACK); // Do not plot the background colour
 
-      // Overlay the black text on top of the rainbow plot (the advantage of not drawing the backgorund colour!)
+      // Overlay the black text on top of the rainbow plot (the advantage of not drawing the background colour!)
       tft.drawString("Font size 2", xpos, 14, 2); // Draw text centre at position xpos, 14 using font 2
       tft.drawString("Font size 4", xpos, 30, 4); // Draw text centre at position xpos, 30 using font 4
       tft.drawString("12.34", xpos, 54, 6);       // Draw text centre at position xpos, 54 using font 6
@@ -150,7 +150,7 @@ void loop() {
 // Fill screen with a rainbow pattern
 void rainbow_fill()
 {
-  // The colours and state are not initialised so the start colour changes each time the funtion is called
+  // The colours and state are not initialised so the start colour changes each time the function is called
   int rotation = tft.getRotation();
   tft.setRotation(random(4));
   for (int i = tft.height() - 1; i >= 0; i--) {

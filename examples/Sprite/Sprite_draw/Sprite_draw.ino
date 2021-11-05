@@ -16,7 +16,7 @@
 
   A 16 bit Sprite occupies (2 * width * height) bytes in RAM.
 
-  On a ESP8266 Sprite sizes up to 126 x 160 can be accomodated,
+  On a ESP8266 Sprite sizes up to 126 x 160 can be accommodated,
   this size requires 40kBytes of RAM for a 16 bit colour depth.
   
   When 8 bit colour depth sprites are created they occupy
@@ -46,7 +46,7 @@ void setup()
   // Initialise the TFT registers
   tft.init();
 
-  // Optionally set colour depth to 8 or 16 bits, default is 16 if not spedified
+  // Optionally set colour depth to 8 or 16 bits, default is 16 if not specified
   // spr.setColorDepth(8);
 
   // Create a sprite of defined size
@@ -123,7 +123,7 @@ void loop(void)
     {
       if (updateTime <= millis())
       {
-        // Use time delay so sprtie does not move fast when not all on screen
+        // Use time delay so sprite does not move fast when not all on screen
         updateTime = millis() + wait;
 
         // Push the sprite to the TFT screen

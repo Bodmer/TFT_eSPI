@@ -1,5 +1,5 @@
 // This sketch draws a rotating Yin and Yang symbol. It illustrates
-// the drawimg and rendering of simple animated graphics using
+// the drawing and rendering of simple animated graphics using
 // a 1 bit per pixel (1 bpp) Sprite.
 
 // Note:  TFT_BLACK sets the pixel value to 0

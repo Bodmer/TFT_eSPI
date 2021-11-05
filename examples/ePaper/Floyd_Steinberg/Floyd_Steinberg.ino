@@ -118,7 +118,7 @@ void loop() {
 
   frame.fillSprite(PAPER);  // Fill frame with white
 
-  // Draw circle in frame buffer (x, y, r, color) in center of screen
+  // Draw circle in frame buffer (x, y, r, color) in centre of screen
   frame.drawCircle(frame.width()/2, frame.height()/2, frame.width()/6, INK);
 
   // Draw diagonal lines

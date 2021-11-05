@@ -1,7 +1,7 @@
 
 //   Diagnostic test for the displayed colour order
 //
-// Writen by Bodmer 17/2/19 for the TFT_eSPI library:
+// Written by Bodmer 17/2/19 for the TFT_eSPI library:
 // https://github.com/Bodmer/TFT_eSPI
 
 /* 
@@ -66,7 +66,7 @@ void setup(void) {
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
   // We can now plot text on screen using the "print" class
-  tft.println("Intialised default\n");
+  tft.println("Initialised default\n");
   tft.println("White text");
   
   tft.setTextColor(TFT_RED, TFT_BLACK);

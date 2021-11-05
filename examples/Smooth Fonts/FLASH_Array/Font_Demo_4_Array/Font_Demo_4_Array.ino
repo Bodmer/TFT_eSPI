@@ -58,7 +58,7 @@ void setup(void) {
 
   tft.setRotation(1);
 
-  spr.setColorDepth(16); // 16 bit colour needed to show antialiased fonts
+  spr.setColorDepth(16); // 16 bit colour needed to show anti-aliased fonts
 }
 
 void loop() {
