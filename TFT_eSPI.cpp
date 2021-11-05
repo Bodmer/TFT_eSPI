@@ -3093,7 +3093,11 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_C;
     #if !defined (SPI_18BIT_DRIVER)
-      spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+      #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
+      	spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+      #else
+        spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+      #endif
     #endif
     spi_get_hw(spi0)->dr = (uint32_t)TFT_CASET;
 
@@ -3282,7 +3286,11 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   // a busy check is not needed.
   while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
-  spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
+   	spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  #else
+    spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  #endif
   spi_get_hw(spi0)->dr = (uint32_t)TFT_CASET;
 
   while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS){};
@@ -3317,8 +3325,12 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   #else
     while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_D;
-    spi_get_hw(spi0)->dr = (uint32_t)color>>8;
-    spi_get_hw(spi0)->dr = (uint32_t)color;
+    #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
+      spi_get_hw(spi0)->dr = (uint32_t)color;
+    #else
+      spi_get_hw(spi0)->dr = (uint32_t)color>>8;
+      spi_get_hw(spi0)->dr = (uint32_t)color;
+    #endif
   #endif
 /*
   // Subsequent pixel reads work OK without draining the FIFO...

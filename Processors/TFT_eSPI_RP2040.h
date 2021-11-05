@@ -59,8 +59,13 @@
 #else
   //#define DC_C sio_hw->gpio_clr = (1ul << TFT_DC)
   //#define DC_D sio_hw->gpio_set = (1ul << TFT_DC)
-  #define DC_C sio_hw->gpio_clr = (1ul << TFT_DC)
-  #define DC_D sio_hw->gpio_set = (1ul << TFT_DC)
+  #if  defined (RPI_DISPLAY_TYPE)
+    #define DC_C digitalWrite(TFT_DC, LOW);
+    #define DC_D digitalWrite(TFT_DC, HIGH);
+  #else
+    #define DC_C sio_hw->gpio_clr = (1ul << TFT_DC)
+    #define DC_D sio_hw->gpio_set = (1ul << TFT_DC)
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -70,8 +75,13 @@
   #define CS_L // No macro allocated so it generates no code
   #define CS_H // No macro allocated so it generates no code
 #else
-  #define CS_L sio_hw->gpio_clr = (1ul << TFT_CS)
-  #define CS_H sio_hw->gpio_set = (1ul << TFT_CS)
+  #if  defined (RPI_DISPLAY_TYPE)
+    #define CS_L digitalWrite(TFT_CS, LOW);
+    #define CS_H digitalWrite(TFT_CS, HIGH);
+  #else
+    #define CS_L sio_hw->gpio_clr = (1ul << TFT_CS)
+    #define CS_H sio_hw->gpio_set = (1ul << TFT_CS)
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
