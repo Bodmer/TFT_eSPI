@@ -3,7 +3,7 @@
   This example draws a jpeg image in a Sprite then plot a rotated copy of the Sprite
   to the TFT.
 
-  The jpeg used in in the sketch Data folder (presss Ctrl+K to see folder)
+  The jpeg used in in the sketch Data folder (press Ctrl+K to see folder)
 
   The jpeg must be uploaded to the ESP8266 or ESP32 SPIFFS by using the Tools menu
   sketch data upload option of the Arduino IDE. If you do not have that option it can
@@ -19,7 +19,7 @@
   Created by Bodmer 6/1/19 as an example to the TFT_eSPI library:
   https://github.com/Bodmer/TFT_eSPI
 
-  Extension funtions in the TFT_eFEX library are used to list SPIFFS files and render
+  Extension functions in the TFT_eFEX library are used to list SPIFFS files and render
   the jpeg to the TFT and to the Sprite:
   https://github.com/Bodmer/TFT_eFEX
 

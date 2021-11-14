@@ -44,7 +44,7 @@
 #define AA_FONT_SMALL "NotoSansBold15"
 #define AA_FONT_LARGE "NotoSansBold36"
 
-// Font files are stored in SPIFFS, so load the linbrary
+// Font files are stored in SPIFFS, so load the library
 #include <FS.h>
 
 #include <SPI.h>
@@ -61,7 +61,7 @@ void setup(void) {
 
   tft.setRotation(1);
 
-  spr.setColorDepth(16); // 16 bit colour needed to show antialiased fonts
+  spr.setColorDepth(16); // 16 bit colour needed to show anti-aliased fonts
 
   if (!SPIFFS.begin()) {
     Serial.println("SPIFFS initialisation failed!");

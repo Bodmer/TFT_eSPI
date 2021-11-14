@@ -1,7 +1,7 @@
 /*
   Sketch to demonstrate using the print class with smooth fonts
 
-  Sketch is writtent for a 240 x 320 display
+  Sketch is written for a 240 x 320 display
 
   Load the font file into SPIFFS first by using the Arduino IDE
   Sketch Data Upload menu option. Font files must be stored in the
@@ -15,13 +15,13 @@
 
   Note: SPIFFS does not accept an underscore _ in filenames!
 
-  The library supports 16 bit unicode characters:
+  The library supports 16 bit Unicode characters:
   https://en.wikipedia.org/wiki/Unicode_font
 
-  The characters supported are in the in the Basic Multilingal Plane:
+  The characters supported are in the in the Basic Multilingual Plane:
   https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane
 
-  Make sure all the display driver and pin connenctions are correct by
+  Make sure all the display driver and pin connections are correct by
   editing the User_Setup.h file in the TFT_eSPI library folder.
 
   #########################################################################

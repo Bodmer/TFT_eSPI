@@ -4,9 +4,9 @@
     If needed, first resize and crop to an appropriate width and height
     to suit your display with an image editing program such as IrfanView.
     
-    You can also change the image "guality" to reduce the file size.
+    You can also change the image "quality" to reduce the file size.
     
-    Paste the array into a new tabe, top and tail the array from the
+    Paste the array into a new tab, top and tail the array from the
     tool to look like the one below with:
 
         const uint8_t name[] PROGMEM = {

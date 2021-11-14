@@ -8,9 +8,9 @@
 // To do, maybe, one day:
 // 1. Get the eye to blink
 // 2. Add another screen for another eye
-// 3. Add varaible to set how wide open the eye is
+// 3. Add variable to set how wide open the eye is
 // 4. Add a reflected highlight to the cornea
-// 5. Add top eyelid shaddow to eye surface
+// 5. Add top eyelid shadow to eye surface
 // 6. Add aliasing to blur mask edge
 //
 // With one lidded eye drawn the code runs at 28-33fps (at 27-40MHz SPI clock)
@@ -58,8 +58,8 @@
 
 // The ESP8266 is rather constrained here as it only has one analogue port.
 // An I2C ADC could be used for more analogue channels
-//#define JOYSTICK_X_PIN A0 // Analog pin for eye horiz pos (else auto)
-//#define JOYSTICK_Y_PIN A0 // Analog pin for eye vert position (")
+//#define JOYSTICK_X_PIN A0 // Analogue pin for eye horiz pos (else auto)
+//#define JOYSTICK_Y_PIN A0 // Analogue pin for eye vert position (")
 //#define JOYSTICK_X_FLIP   // If set, reverse stick X axis
 //#define JOYSTICK_Y_FLIP   // If set, reverse stick Y axis
 #define TRACKING          // If enabled, eyelid tracks pupil
@@ -107,7 +107,7 @@ void setup(void) {
   uint8_t e = 0;
   
   Serial.begin(250000);
-  randomSeed(analogRead(A0)); // Seed random() from floating analog input
+  randomSeed(analogRead(A0)); // Seed random() from floating analogue input
 
   eye[e].tft.init();
   eye[e].tft.fillScreen(TFT_BLACK);

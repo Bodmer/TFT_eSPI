@@ -14,7 +14,7 @@
 
   A 16 bit Sprite occupies (2 * width * height) bytes in RAM.
 
-  On a ESP8266 Sprite sizes up to 126 x 160 can be accomodated,
+  On a ESP8266 Sprite sizes up to 126 x 160 can be accommodated,
   this size requires 40kBytes of RAM for a 16 bit colour depth.
   
   When 8 bit colour depth sprites are created they occupy
@@ -54,7 +54,7 @@ void loop() {
 
   uint32_t dt = millis();
 
-  // Now go bananas and draw 500 nore
+  // Now go bananas and draw 500 more
   for (int i = 0; i < 500; i++)
   {
     int x = random(240-70);

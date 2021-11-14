@@ -39,7 +39,7 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 #define RED        0xF800
 #define WHITE      0xFFFF
 
-#define YBOTTOM  123  // Ball Y coord at bottom
+#define YBOTTOM  123  // Ball Y coordinate at bottom
 #define YBOUNCE -3.5  // Upward velocity on ball bounce
 
 // Ball coordinates are stored floating-point because screen refresh
@@ -49,7 +49,7 @@ float ballx     = 20.0, bally     = YBOTTOM, // Current ball position
       ballframe = 3;                         // Ball animation frame #
 int   balloldx  = ballx, balloldy = bally;   // Prior ball position
 
-// Working buffer for ball rendering...2 scanlines that alternate,
+// Working buffer for ball rendering...2 scan lines that alternate,
 // one is rendered while the other is transferred via DMA.
 uint16_t renderbuf[2][SCREENWIDTH];
 
@@ -64,7 +64,7 @@ void setup() {
   tft.begin();
   tft.setRotation(3); // Landscape orientation, USB at bottom right
   tft.setSwapBytes(false);
-  // Draw initial framebuffer contents:
+  // Draw initial frame buffer contents:
   //tft.setBitmapColor(GRIDCOLOR, BGCOLOR);
   tft.fillScreen(BGCOLOR);
 
@@ -144,7 +144,7 @@ void loop() {
          (by  >= 0) && (by  < BALLHEIGHT)) { // inside the ball bitmap area?
         // Yes, do ball compositing math...
         p = ball[by][bx1 / 2];                // Get packed value (2 pixels)
-        c = (bx1 & 1) ? (p & 0xF) : (p >> 4); // Unpack high or low nybble
+        c = (bx1 & 1) ? (p & 0xF) : (p >> 4); // Unpack high or low nibble
         if(c == 0) { // Outside ball - just draw grid
           c = background[bgy][bgx1 / 8] & (0x80 >> (bgx1 & 7)) ? GRIDCOLOR : BGCOLOR;
         } else if(c > 1) { // In ball area...
@@ -155,7 +155,7 @@ void loop() {
       } else { // Outside ball bitmap, just draw background bitmap...
         c = background[bgy][bgx1 / 8] & (0x80 >> (bgx1 & 7)) ? GRIDCOLOR : BGCOLOR;
       }
-      *destPtr++ = c<<8 | c>>8; // Store pixel color
+      *destPtr++ = c<<8 | c>>8; // Store pixel colour
       bx1++;  // Increment bitmap position counters (X axis)
       bgx1++;
     }

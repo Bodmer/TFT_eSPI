@@ -883,7 +883,7 @@ bool TFT_eSprite::pushSprite(int32_t tx, int32_t ty, int32_t sx, int32_t sy, int
       _tft->startWrite();
       while (sh--)
       {
-        _tft->pushImage(tx, ty++, sw, 1, _img8 + (_bitwidth>>3) * _ys, (bool)false );
+        _tft->pushImage(tx, ty++, sw, 1, _img8 + (_bitwidth>>3) * _ys++, (bool)false );
       }
       _tft->endWrite();
     }

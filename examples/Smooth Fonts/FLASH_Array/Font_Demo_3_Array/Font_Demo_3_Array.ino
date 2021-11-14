@@ -144,7 +144,7 @@ void loop() {
   // Mono spaced font
   // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   
-  spr.loadFont(AA_FONT_MONO); // Mono spaced fonts have fixed intercharacter gaps to
+  spr.loadFont(AA_FONT_MONO); // Mono spaced fonts have fixed inter-character gaps to
                               // aid formatting
   int bnum = 1;
 

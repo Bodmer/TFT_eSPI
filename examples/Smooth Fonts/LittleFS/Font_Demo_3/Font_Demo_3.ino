@@ -3,7 +3,7 @@
 
   This sketch uses method 3, the font characters are first plotted in a Sprite, then the
   Sprite is pushed to the screen. This method is very flexible and the Sprite can be
-  created, deleted, resized as needed. To render anit-aliased fonts well the Sprite
+  created, deleted, resized as needed. To render anti-aliased fonts well the Sprite
   needs to be 16 bit.  The fonts will render in 1 bit per pixel sprites but there
   will then be no anti-aliasing. Using 1 bit per pixel Sprites is however useful
   to use the extended Unicode range in fonts on mono displays like ePaper.
@@ -112,7 +112,7 @@ void loop() {
 
   tft.fillScreen(TFT_BLACK);
 
-  // Beware: Sprites are a differerent "class" to TFT, so different fonts can be loaded
+  // Beware: Sprites are a different "class" to TFT, so different fonts can be loaded
   // in the tft and sprite instances, so load the font in the class instance you use!
   // In this example this means the spr. instance.
 
@@ -163,7 +163,7 @@ void loop() {
   // Mono spaced font
   // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   
-  spr.loadFont(AA_FONT_MONO, LittleFS); // Mono spaced fonts have fixed intercharacter gaps to
+  spr.loadFont(AA_FONT_MONO, LittleFS); // Mono spaced fonts have fixed inter-character gaps to
                               // aid formatting
   int bnum = 1;
 

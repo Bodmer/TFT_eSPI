@@ -33,12 +33,12 @@ String fps = "xx.xx fps";
 
 // Structure to hold circle plotting parameters
 typedef struct circle_t {
-  int16_t   cx[CNUMBER] = { 0 }; // x coord of centre
-  int16_t   cy[CNUMBER] = { 0 }; // y coord of centre
+  int16_t   cx[CNUMBER] = { 0 }; // x coordinate of centre
+  int16_t   cy[CNUMBER] = { 0 }; // y coordinate of centre
   int16_t   cr[CNUMBER] = { 0 }; // radius
   uint16_t col[CNUMBER] = { 0 }; // colour
-  int16_t   dx[CNUMBER] = { 0 }; // x movment & direction
-  int16_t   dy[CNUMBER] = { 0 }; // y movment & direction
+  int16_t   dx[CNUMBER] = { 0 }; // x movement & direction
+  int16_t   dy[CNUMBER] = { 0 }; // y movement & direction
 } circle_param;
 
 // Create the structure and get a pointer to it

@@ -19,7 +19,7 @@
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 // This is the file name used to store the touch coordinate
-// calibration data. Cahnge the name to start a new calibration.
+// calibration data. Change the name to start a new calibration.
 #define CALIBRATION_FILE "/TouchCalData3"
 
 // Set REPEAT_CAL to true instead of false to run calibration
@@ -115,7 +115,7 @@ void touch_calibrate()
 
   // check file system exists
   if (!SPIFFS.begin()) {
-    Serial.println("Formating file system");
+    Serial.println("Formatting file system");
     SPIFFS.format();
     SPIFFS.begin();
   }

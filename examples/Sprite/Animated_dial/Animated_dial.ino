@@ -6,10 +6,10 @@
 
 // The sketch operates by creating a copy of the screen block where
 // the needle will be drawn, the needle is then drawn on the screen.
-// When the needle moves, the original copy of the sreen area is
+// When the needle moves, the original copy of the screen area is
 // pushed to the screen to over-write the needle graphic. A copy
 // of the screen where the new position will be drawn is then made
-// before drawing the needle in the new postion. This technique
+// before drawing the needle in the new position. This technique
 // allows the needle to move over other screen graphics.
 
 // The sketch calculates the size of the buffer memory required and
@@ -195,7 +195,7 @@ void plotNeedle(int16_t angle, uint16_t ms_delay)
         buffer_loaded = true;
       }
 
-      // Draw the needle in the new postion, black in needle image is transparent
+      // Draw the needle in the new position, black in needle image is transparent
       needle.pushRotated(old_angle, TFT_BLACK);
 
       // Wait before next update
