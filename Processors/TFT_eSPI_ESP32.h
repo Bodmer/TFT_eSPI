@@ -17,11 +17,37 @@
   #define SUPPORT_TRANSACTIONS
 #endif
 
+/*
+ESP32:
+FSPI not defined
+HSPI = 2, uses SPI2
+VSPI = 3, uses SPI3
+
+ESP32-S2:
+FSPI = 1, uses SPI2
+HSPI = 2, uses SPI3
+VSPI not defined
+
+ESP32 C3:
+FSPI = 0, uses SPI2 ???? To be checked
+HSPI = 1, uses SPI3 ???? To be checked
+VSPI not defined
+
+For ESP32/S2/C3:
+SPI1_HOST = 0
+SPI2_HOST = 1
+SPI3_HOST = 2
+*/
+
 // ESP32 specific SPI port selection
 #ifdef USE_HSPI_PORT
-  #define SPI_PORT HSPI
+  #ifdef CONFIG_IDF_TARGET_ESP32
+    #define SPI_PORT HSPI  //HSPI is port 2 on ESP32
+  #else
+    #define SPI_PORT 3     //HSPI is port 3 on ESP32 S2
+  #endif
 #else
-  #define SPI_PORT VSPI
+  #define SPI_PORT 2 //FSPI(ESP32 S2) or VSPI (ESP32)
 #endif
 
 #ifdef RPI_DISPLAY_TYPE

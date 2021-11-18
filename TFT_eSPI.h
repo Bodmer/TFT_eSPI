@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.3.73"
+#define TFT_ESPI_VERSION "2.3.80"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -317,15 +317,19 @@ int32_t esp;         // Processor code
 uint8_t trans;       // SPI transaction support
 uint8_t serial;      // Serial (SPI) or parallel
 uint8_t overlap;     // ESP8266 overlap mode
-
+/*
 #if defined (ESP32)  // TODO: make generic for other processors
   #if defined (USE_HSPI_PORT)
     uint8_t  port = HSPI;
   #else
-    uint8_t  port = VSPI;
+    #ifdef CONFIG_IDF_TARGET_ESP32
+      uint8_t  port = VSPI;
+    #else
+      uint8_t  port = FSPI;
+    #endif
   #endif
 #endif
-
+*/
 uint16_t tft_driver; // Hexadecimal code
 uint16_t tft_width;  // Rotation 0 width and height
 uint16_t tft_height;
