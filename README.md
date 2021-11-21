@@ -115,7 +115,9 @@ Here is an example screenshot showing the anti-aliased Hiragana character Unicod
 
 Anti-aliased fonts can also be drawn over a gradient background with a callback to fetch the background colour of each pixel. This pixel colour can be set by the gradient algorithm or by reading back the TFT screen memory (if reading the display is supported).
 
-# 8 bit parallel support
+Anti-aliased fonts cannot be scaled with setTextSize so you need to create a font for each size you need. See examples.
+
+# 8 bit parallel supportset
 
 The common 8 bit "Mcufriend" shields are supported for the STM Nucleo 64/144 boards and ESP32 UNO style board. The STM32 "Blue/Black Pill" boards can also be used with 8 bit parallel displays.
 
