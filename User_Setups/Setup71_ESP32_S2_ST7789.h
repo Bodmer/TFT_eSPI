@@ -1,4 +1,4 @@
-// Setup for the ESP32 S2 with ILI9341 display
+// Setup for the ESP32 S2 with ST7789 display
 // Note SPI DMA with ESP32 S2 is not currently supported
 
 // See SetupX_Template.h for all options available
