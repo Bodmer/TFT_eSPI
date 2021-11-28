@@ -1272,7 +1272,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
   {
     int32_t len = dw;
     uint16_t* ptr = data;
-    int32_t px = x;
+    int32_t px = x, sx = x;
     bool move = true;
     uint16_t np = 0;
 
@@ -1280,7 +1280,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
     {
       if (transp != *ptr)
       {
-        if (move) { move = false; setWindow(px, y, xe, ye); }
+        if (move) { move = false; sx = px; }
         lineBuf[np] = *ptr;
         np++;
       }
@@ -1289,14 +1289,15 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
         move = true;
         if (np)
         {
-           pushPixels((uint16_t*)lineBuf, np);
-           np = 0;
+          setWindow(sx, y, sx + np - 1, y);
+          pushPixels((uint16_t*)lineBuf, np);
+          np = 0;
         }
       }
       px++;
       ptr++;
     }
-    if (np) pushPixels((uint16_t*)lineBuf, np);
+    if (np) { setWindow(sx, y, sx + np - 1, y); pushPixels((uint16_t*)lineBuf, np); }
 
     y++;
     data += w;
@@ -1361,7 +1362,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
   while (dh--) {
     int32_t len = dw;
     uint16_t* ptr = (uint16_t*)data;
-    int32_t px = x;
+    int32_t px = x, sx = x;
     bool move = true;
 
     uint16_t np = 0;
@@ -1369,21 +1370,22 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
     while (len--) {
       uint16_t color = pgm_read_word(ptr);
       if (transp != color) {
-        if (move) { move = false; setWindow(px, y, xe, ye); }
+        if (move) { move = false; sx = px; }
         lineBuf[np] = color;
         np++;
       }
       else {
         move = true;
         if (np) {
-           pushPixels(lineBuf, np);
-           np = 0;
+          setWindow(sx, y, sx + np - 1, y);
+          pushPixels(lineBuf, np);
+          np = 0;
         }
       }
       px++;
       ptr++;
     }
-    if (np) pushPixels(lineBuf, np);
+    if (np) { setWindow(sx, y, sx + np - 1, y); pushPixels(lineBuf, np); }
 
     y++;
     data += w;
@@ -1694,13 +1696,13 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
       uint8_t* ptr = data;
       uint8_t* linePtr = (uint8_t*)lineBuf;
 
-      int32_t px = x;
+      int32_t px = x, sx = x;
       bool move = true;
       uint16_t np = 0;
 
       while (len--) {
         if (transp != *ptr) {
-          if (move) { move = false; setWindow(px, y, xe, ye);}
+          if (move) { move = false; sx = px; }
           uint8_t color = *ptr;
 
           // Shifts are slow so check if colour has changed first
@@ -1718,6 +1720,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
         else {
           move = true;
           if (np) {
+            setWindow(sx, y, sx + np - 1, y);
             pushPixels(lineBuf, np);
             linePtr = (uint8_t*)lineBuf;
             np = 0;
@@ -1727,7 +1730,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
         ptr++;
       }
 
-      if (np) pushPixels(lineBuf, np);
+      if (np) { setWindow(sx, y, sx + np - 1, y); pushPixels(lineBuf, np); }
       y++;
       data += w;
     }
@@ -1749,7 +1752,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
       uint32_t len = dw;
       uint8_t * ptr = data;
 
-      int32_t px = x;
+      int32_t px = x, sx = x;
       bool move = true;
       uint16_t np = 0;
 
@@ -1758,7 +1761,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
       if (splitFirst) {
         index = (*ptr & 0x0F);  // odd = bits 3 .. 0
         if (index != transp) {
-          move = false; setWindow(px, y, xe, ye);
+          move = false; sx = px;
           lineBuf[np] = cmap[index];
           np++;
         }
@@ -1775,7 +1778,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
         uint16_t index = ((color & 0xF0) >> 4) & 0x0F;  // high bits are the even numbers
         if (index != transp) {
           if (move) {
-            move = false; setWindow(px, y, xe, ye);
+            move = false; sx = px;
           }
           lineBuf[np] = cmap[index];
           np++; // added a pixel
@@ -1783,6 +1786,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
         else {
           move = true;
           if (np) {
+            setWindow(sx, y, sx + np - 1, y);
             pushPixels(lineBuf, np);
             np = 0;
           }
@@ -1794,7 +1798,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
           index = color & 0x0F; // the odd number is 3 .. 0
           if (index != transp) {
             if (move) {
-              move = false; setWindow(px, y, xe, ye);
+              move = false; sx = px;
              }
             lineBuf[np] = cmap[index];
             np++;
@@ -1802,6 +1806,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
           else {
             move = true;
             if (np) {
+              setWindow(sx, y, sx + np - 1, y);
               pushPixels(lineBuf, np);
               np = 0;
             }
@@ -1815,6 +1820,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
       }
 
       if (np) {
+        setWindow(sx, y, sx + np - 1, y);
         pushPixels(lineBuf, np);
         np = 0;
       }
@@ -1830,29 +1836,30 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
     for (int32_t yp = dy;  yp < dy + dh; yp++)
     {
-      int32_t px = x;
+      int32_t px = x, sx = x;
       bool move = true;
       for (int32_t xp = dx; xp < dx + dw; xp++)
       {
         if (data[(xp>>3)] & (0x80 >> (xp & 0x7))) {
           if (move) {
             move = false;
-            setWindow(px, y, xe, ye);
+            sx = px;
           }
           np++;
         }
         else {
+          move = true;
           if (np) {
+            setWindow(sx, y, sx + np - 1, y);
             pushBlock(bitmap_fg, np);
             np = 0;
-            move = true;
           }
         }
         px++;
       }
       y++;
       data += ww;
-      if (np) { pushBlock(bitmap_fg, np); np = 0; }
+      if (np) { setWindow(sx, y, sx + np - 1, y); pushBlock(bitmap_fg, np); np = 0; }
     }
   }
   _swapBytes = swap; // Restore old value
@@ -2900,7 +2907,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
     uint8_t mask = 0x1;
     begin_tft_write();
 
-    setWindow(xd, yd, xd+5, yd+8);
+    setWindow(xd, yd, xd+5, yd+7);
 
     for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(font + (c * 5) + i);
     column[5] = 0;
