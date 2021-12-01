@@ -12,6 +12,23 @@
 #include "soc/spi_reg.h"
 #include "driver/spi_master.h"
 
+// Fix IDF problems with ESP32C3
+#if CONFIG_IDF_TARGET_ESP32C3
+  // Fix ESP32C3 IDF bug for missing definition
+  #ifndef REG_SPI_BASE
+    #define REG_SPI_BASE(i)     (DR_REG_SPI1_BASE + (((i)>1) ? (((i)* 0x1000) + 0x20000) : (((~(i)) & 1)* 0x1000 )))
+  #endif
+
+  // Fix ESP32C3 IDF bug for name change
+  #ifndef SPI_MOSI_DLEN_REG
+    #define SPI_MOSI_DLEN_REG(x) SPI_MS_DLEN_REG(x)
+  #endif
+
+  // Fix ESP32C3 specific register reference
+  #define out_w1tc out_w1tc.val
+  #define out_w1ts out_w1ts.val
+#endif
+
 // SUPPORT_TRANSACTIONS is mandatory for ESP32 so the hal mutex is toggled
 #if !defined (SUPPORT_TRANSACTIONS)
   #define SUPPORT_TRANSACTIONS

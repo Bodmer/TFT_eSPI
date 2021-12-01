@@ -29,6 +29,7 @@
   // DMA SPA handle
   spi_device_handle_t dmaHAL;
   #ifdef CONFIG_IDF_TARGET_ESP32
+    #define DMA_CHANNEL 1
     #ifdef USE_HSPI_PORT
       spi_host_device_t spi_host = HSPI_HOST;
     #else // use VSPI port
@@ -36,9 +37,11 @@
     #endif
   #else
     #ifdef USE_HSPI_PORT
-      spi_host_device_t spi_host = (spi_host_device_t)1; // 1 scrambles display area!
+      #define DMA_CHANNEL 2
+      spi_host_device_t spi_host = (spi_host_device_t) DMA_CHANNEL; // Draws once then freezes
     #else // use FSPI port
-      spi_host_device_t spi_host = (spi_host_device_t)1; // 1 draws once then freezes
+      #define DMA_CHANNEL 1
+      spi_host_device_t spi_host = (spi_host_device_t) DMA_CHANNEL; // Draws once then freezes
     #endif
   #endif
 #endif
@@ -774,7 +777,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .pre_cb = 0, //dc_callback, //Callback to handle D/C line
     .post_cb = 0
   };
-  ret = spi_bus_initialize(spi_host, &buscfg, 1);
+  ret = spi_bus_initialize(spi_host, &buscfg, DMA_CHANNEL);
   ESP_ERROR_CHECK(ret);
   ret = spi_bus_add_device(spi_host, &devcfg, &dmaHAL);
   ESP_ERROR_CHECK(ret);
