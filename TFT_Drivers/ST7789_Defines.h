@@ -8,7 +8,16 @@
 #endif
 
 #if (TFT_HEIGHT == 240) && (TFT_WIDTH == 240)
-  #define CGRAM_OFFSET
+  #ifndef CGRAM_OFFSET
+    #define CGRAM_OFFSET
+  #endif
+#endif
+
+// Adafruit 1.44 TFT support
+#if (TFT_HEIGHT == 240) && (TFT_WIDTH == 135)
+  #ifndef CGRAM_OFFSET
+    #define CGRAM_OFFSET
+  #endif
 #endif
 
 // Delay between some initialisation commands

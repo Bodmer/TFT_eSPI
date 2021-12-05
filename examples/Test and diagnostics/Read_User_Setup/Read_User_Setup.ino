@@ -159,7 +159,7 @@ void printProcessorName(void)
 // Get pin name
 int8_t getPinName(int8_t pin)
 {
-  // For ESP32 pin labels on boards use the GPIO number
+  // For ESP32 and RP2040 pin labels on boards use the GPIO number
   if (user.esp == 0x32 || user.esp == 0x2040) return pin;
 
   if (user.esp == 0x8266) {

@@ -3097,42 +3097,42 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 
   // Temporary solution is to include the RP2040 optimised code here
   #if defined(ARDUINO_ARCH_RP2040) && !defined(TFT_PARALLEL_8BIT)
-    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_C;
     #if !defined (SPI_18BIT_DRIVER)
       #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
-      	spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+      	spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
       #else
-        spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+        spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
       #endif
     #endif
-    spi_get_hw(spi0)->dr = (uint32_t)TFT_CASET;
+    spi_get_hw(SPI_X)->dr = (uint32_t)TFT_CASET;
 
-    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_D;
-    spi_get_hw(spi0)->dr = (uint32_t)x0>>8;
-    spi_get_hw(spi0)->dr = (uint32_t)x0;
-    spi_get_hw(spi0)->dr = (uint32_t)x1>>8;
-    spi_get_hw(spi0)->dr = (uint32_t)x1;
+    spi_get_hw(SPI_X)->dr = (uint32_t)x0>>8;
+    spi_get_hw(SPI_X)->dr = (uint32_t)x0;
+    spi_get_hw(SPI_X)->dr = (uint32_t)x1>>8;
+    spi_get_hw(SPI_X)->dr = (uint32_t)x1;
 
-    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_C;
-    spi_get_hw(spi0)->dr = (uint32_t)TFT_PASET;
+    spi_get_hw(SPI_X)->dr = (uint32_t)TFT_PASET;
 
-    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_D;
-    spi_get_hw(spi0)->dr = (uint32_t)y0>>8;
-    spi_get_hw(spi0)->dr = (uint32_t)y0;
-    spi_get_hw(spi0)->dr = (uint32_t)y1>>8;
-    spi_get_hw(spi0)->dr = (uint32_t)y1;
+    spi_get_hw(SPI_X)->dr = (uint32_t)y0>>8;
+    spi_get_hw(SPI_X)->dr = (uint32_t)y0;
+    spi_get_hw(SPI_X)->dr = (uint32_t)y1>>8;
+    spi_get_hw(SPI_X)->dr = (uint32_t)y1;
 
-    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_C;
-    spi_get_hw(spi0)->dr = (uint32_t)TFT_RAMWR;
+    spi_get_hw(SPI_X)->dr = (uint32_t)TFT_RAMWR;
 
-    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     #if !defined (SPI_18BIT_DRIVER)
-      spi_set_format(spi0, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+      spi_set_format(SPI_X, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
     #endif
     DC_D;
 
@@ -3177,40 +3177,40 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 
   // Temporary solution is to include the RP2040 optimised code here
 #if defined(ARDUINO_ARCH_RP2040) && !defined(TFT_PARALLEL_8BIT)
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
-  spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
-  spi_get_hw(spi0)->dr = (uint32_t)TFT_CASET;
+  spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  spi_get_hw(SPI_X)->dr = (uint32_t)TFT_CASET;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_D;
-  spi_get_hw(spi0)->dr = (uint32_t)xs>>8;
-  spi_get_hw(spi0)->dr = (uint32_t)xs;
-  spi_get_hw(spi0)->dr = (uint32_t)xe>>8;
-  spi_get_hw(spi0)->dr = (uint32_t)xe;
+  spi_get_hw(SPI_X)->dr = (uint32_t)xs>>8;
+  spi_get_hw(SPI_X)->dr = (uint32_t)xs;
+  spi_get_hw(SPI_X)->dr = (uint32_t)xe>>8;
+  spi_get_hw(SPI_X)->dr = (uint32_t)xe;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
-  spi_get_hw(spi0)->dr = (uint32_t)TFT_PASET;
+  spi_get_hw(SPI_X)->dr = (uint32_t)TFT_PASET;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_D;
-  spi_get_hw(spi0)->dr = (uint32_t)ys>>8;
-  spi_get_hw(spi0)->dr = (uint32_t)ys;
-  spi_get_hw(spi0)->dr = (uint32_t)ye>>8;
-  spi_get_hw(spi0)->dr = (uint32_t)ye;
+  spi_get_hw(SPI_X)->dr = (uint32_t)ys>>8;
+  spi_get_hw(SPI_X)->dr = (uint32_t)ys;
+  spi_get_hw(SPI_X)->dr = (uint32_t)ye>>8;
+  spi_get_hw(SPI_X)->dr = (uint32_t)ye;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
-  spi_get_hw(spi0)->dr = (uint32_t)TFT_RAMRD;
+  spi_get_hw(SPI_X)->dr = (uint32_t)TFT_RAMRD;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
-  //spi_set_format(spi0, 8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
+  //spi_set_format(SPI_X, 8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
   DC_D;
 
   // Flush the rx buffer and reset overflow flag
-  while (spi_is_readable(spi0)) (void)spi_get_hw(spi0)->dr;
-  spi_get_hw(spi0)->icr = SPI_SSPICR_RORIC_BITS;
+  while (spi_is_readable(SPI_X)) (void)spi_get_hw(SPI_X)->dr;
+  spi_get_hw(SPI_X)->icr = SPI_SSPICR_RORIC_BITS;
 
 #else
   // Column addr set
@@ -3291,73 +3291,73 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
   // Since the SPI functions do not terminate until transmission is complete
   // a busy check is not needed.
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
   #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
-   	spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+   	spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
   #else
-    spi_set_format(spi0,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
   #endif
-  spi_get_hw(spi0)->dr = (uint32_t)TFT_CASET;
+  spi_get_hw(SPI_X)->dr = (uint32_t)TFT_CASET;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS){};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS){};
   DC_D;
-  spi_get_hw(spi0)->dr = (uint32_t)x>>8;
-  spi_get_hw(spi0)->dr = (uint32_t)x;
-  spi_get_hw(spi0)->dr = (uint32_t)x>>8;
-  spi_get_hw(spi0)->dr = (uint32_t)x;
+  spi_get_hw(SPI_X)->dr = (uint32_t)x>>8;
+  spi_get_hw(SPI_X)->dr = (uint32_t)x;
+  spi_get_hw(SPI_X)->dr = (uint32_t)x>>8;
+  spi_get_hw(SPI_X)->dr = (uint32_t)x;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
-  spi_get_hw(spi0)->dr = (uint32_t)TFT_PASET;
+  spi_get_hw(SPI_X)->dr = (uint32_t)TFT_PASET;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_D;
-  spi_get_hw(spi0)->dr = (uint32_t)y>>8;
-  spi_get_hw(spi0)->dr = (uint32_t)y;
-  spi_get_hw(spi0)->dr = (uint32_t)y>>8;
-  spi_get_hw(spi0)->dr = (uint32_t)y;
+  spi_get_hw(SPI_X)->dr = (uint32_t)y>>8;
+  spi_get_hw(SPI_X)->dr = (uint32_t)y;
+  spi_get_hw(SPI_X)->dr = (uint32_t)y>>8;
+  spi_get_hw(SPI_X)->dr = (uint32_t)y;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
-  spi_get_hw(spi0)->dr = (uint32_t)TFT_RAMWR;
+  spi_get_hw(SPI_X)->dr = (uint32_t)TFT_RAMWR;
 
   #if defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
     uint8_t r = (color & 0xF800)>>8;
     uint8_t g = (color & 0x07E0)>>3;
     uint8_t b = (color & 0x001F)<<3;
-    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_D;
     tft_Write_8N(r); tft_Write_8N(g); tft_Write_8N(b);
   #else
-    while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_D;
     #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
-      spi_get_hw(spi0)->dr = (uint32_t)color;
+      spi_get_hw(SPI_X)->dr = (uint32_t)color;
     #else
-      spi_get_hw(spi0)->dr = (uint32_t)color>>8;
-      spi_get_hw(spi0)->dr = (uint32_t)color;
+      spi_get_hw(SPI_X)->dr = (uint32_t)color>>8;
+      spi_get_hw(SPI_X)->dr = (uint32_t)color;
     #endif
   #endif
 /*
   // Subsequent pixel reads work OK without draining the FIFO...
   // Drain RX FIFO, then wait for shifting to finish (which may be *after*
   // TX FIFO drains), then drain RX FIFO again
-  while (spi_is_readable(spi0))
-      (void)spi_get_hw(spi0)->dr;
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS)
+  while (spi_is_readable(SPI_X))
+      (void)spi_get_hw(SPI_X)->dr;
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS)
       tight_loop_contents();
-  while (spi_is_readable(spi0))
-      (void)spi_get_hw(spi0)->dr;
+  while (spi_is_readable(SPI_X))
+      (void)spi_get_hw(SPI_X)->dr;
 //*/
 
 //  Subsequent pixel reads work without this
-//  spi_get_hw(spi0)->icr = SPI_SSPICR_RORIC_BITS;
+//  spi_get_hw(SPI_X)->icr = SPI_SSPICR_RORIC_BITS;
 
-  while (spi_get_hw(spi0)->sr & SPI_SSPSR_BSY_BITS) {};
+  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
 
   // Next call will start with 8 bit command so changing to 16 bit not needed here
-  //spi_set_format(spi0,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  //spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
 
 #else
 
@@ -4999,5 +4999,8 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
   #include "Extensions/Smooth_font.cpp"
 #endif
 
+#ifdef AA_GRAPHICS
+  #include "Extensions/AA_graphics.cpp"  // Loaded if SMOOTH_FONT is defined by user
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////
 

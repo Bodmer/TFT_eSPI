@@ -163,6 +163,9 @@
 //
 // ##################################################################################
 
+// For the RP2040 processor define the SPI port channel used, default is 0
+// #define TFT_SPI_PORT 1 // Set to 0 if SPI0 pins are used, or 1 if spi1 pins used
+
 // Define the SPI clock frequency, this affects the graphics rendering speed. Too
 // fast and the TFT driver will not keep up and display corruption appears.
 // With an ILI9341 display 40MHz works OK, 80MHz sometimes fails
