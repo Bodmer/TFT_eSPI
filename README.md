@@ -1,6 +1,4 @@
-A [Beta test branch](https://github.com/Bodmer/TFT_eSPI/tree/2.4.0-Beta) has been created, this has some new anti-aliased line functions (drawSpot, drawWideLine and drawWedgeLine), see the new Anti-aliased_Clock_v3 example. Comments in discussions tab (not issues at the moment please) are welcome.
-
-A new ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
+A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
 1. Support hase been added for the ESP32 S2 processor variant. A [new user setup](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h) file has been added as an example setup with an ILI9341 TFT. You will need to load ESP32 Arduino board package 2.0.0 or later to use the updated library.
 
@@ -8,7 +6,7 @@ A new ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility h
 
       ["Bouncing circles"](https://www.youtube.com/watch?v=njFXIzCTQ_Q&lc=UgymaUIwOIuihvYh-Qt4AaABAg)
 
-3. The library now supports the Raspberry Pi Pico with both the [official Arduino board package](https://github.com/arduino/ArduinoCore-mbed) and the one provided by [Earle Philhower](https://github.com/earlephilhower/arduino-pico). The setup file "Setup60_RP2040_ILI9341.h" has been used for tests with an ILI9341 display. At the moment only SPI interface displays have been tested.
+3. The library now supports the Raspberry Pi Pico with both the [official Arduino board package](https://github.com/arduino/ArduinoCore-mbed) and the one provided by [Earle Philhower](https://github.com/earlephilhower/arduino-pico). The setup file "Setup60_RP2040_ILI9341.h" has been used for tests with an ILI9341 display. At the moment only SPI interface displays have been tested. SPI port 0 is the default but SPI port 1 can be specifed in the setup file if those SPI pins are used.
 
       ["Rotating cube demo"](https://www.youtube.com/watch?v=4fPxEN9ImVE)
 
@@ -31,9 +29,18 @@ A new ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility h
 
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targeted at 32 bit processors, it  has been performance optimised for STM32, ESP8266 and ESP32 types. The library can be loaded using the Arduino IDE's Library Manager. Direct Memory Access (DMA) can be used with the ESP32 and STM32 processors to improve rendering performance.
+An Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targeted at 32 bit processors, it  has been performance optimised for STM32, ESP8266 and ESP32 types. The library can be loaded using the Arduino IDE's Library Manager. Direct Memory Access (DMA) can be used with the ESP32, RP2040 and STM32 processors to improve rendering performance.
 
-"Four wire" SPI and 8 bit parallel interfaces are supported. Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
+Optimised drivers are incorporated for the following processors:
+
+* RP2040, e.g. Raspberry Pi Pico
+* ESP32 and ESP32-S2 (ESP32C3 untested)
+* ESP8266
+* STM32F1xx, STM32F2xx, STM32F4xx, STM32F767 (higher RAM processors recommended)
+
+Generic (non-optimised Arduino function calls) are used by the library for other processors.
+
+"Four wire" SPI and 8 bit parallel interfaces are supported. Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32). The RP2040 has not been tested with parallel displays.
 
 Displays using the following controllers are supported:
 
@@ -42,7 +49,7 @@ Displays using the following controllers are supported:
 * ILI9341
 * ILI9481
 * ILI9486
-* ILI9488
+* ILI9488 (DMA not supported for this 18 bit display)
 * HX8357D
 * S6D02A1
 * SSD1351
@@ -50,6 +57,7 @@ Displays using the following controllers are supported:
 * ST7735
 * ST7789
 * ST7796
+* GC9A01
 
 ILI9341 and ST7796 SPI based displays are recommended as starting point for experimenting with this library.
 
@@ -81,7 +89,7 @@ The XPT2046 touch screen controller is supported for SPI based displays only. Th
 
 The Button class from Adafruit_GFX is incorporated, with the enhancement that the button labels can be in any font.
 
-# ESP8266 overlay mode
+# ESP8266 overlap mode
 
 The library supports SPI overlap on the ESP8266 so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH, this frees up GPIO pins for other uses.
 
@@ -90,7 +98,7 @@ The library supports SPI overlap on the ESP8266 so the TFT screen can share MOSI
 
 The library contains proportional fonts, different sizes can be enabled/disabled at compile time to optimise the use of FLASH memory. Anti-aliased (smooth) font files in vlw format stored in SPIFFS are supported. Any 16 bit Unicode character can be included and rendered, this means many language specific characters can be rendered to the screen.
 
-The library is based on the Adafruit GFX and Adafruit driver libraries and the aim is to retain compatibility. Significant additions have been made to the library to boost the speed for ESP8266/ESP32 processors (it is typically 3 to 10 times faster) and to add new features. The new graphics functions include different size proportional fonts and formatting features. There are lots of example sketches to demonstrate the different features and included functions.
+The library is based on the Adafruit GFX and Adafruit driver libraries and the aim is to retain compatibility. Significant additions have been made to the library to boost the speed for the different processors (it is typically 3 to 10 times faster) and to add new features. The new graphics functions include different size proportional fonts and formatting features. There are lots of example sketches to demonstrate the different features and included functions.
 
 Configuration of the library font selections, pins used to interface with the TFT and other features is made by editing the User_Setup.h file in the library folder, or by selecting your own configuration in the "User_Setup_Selet,h" file.  Fonts and features can easily be enabled/disabled by commenting out lines.
 
@@ -107,7 +115,7 @@ The smooth font example displays the following screen:
 
 ![Example](https://i.imgur.com/xJF0Oz7.png)
 
-It would be possible to compress the vlw font files but the rendering performance to a TFT is still good when storing the font file(s) in SPIFFS.
+It would be possible to compress the vlw font files but the rendering performance to a TFT is still good when storing the font file(s) in SPIFFS, LittleFS or FLASH arrays.
 
 Here is an example screenshot showing the anti-aliased Hiragana character Unicode block (0x3041 to 0x309F) in 24pt from the Microsoft Yahei font:
 
