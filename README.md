@@ -1,6 +1,6 @@
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
-1. Support hase been added for the ESP32 S2 processor variant. A [new user setup](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h) file has been added as an example setup with an ILI9341 TFT. You will need to load ESP32 Arduino board package 2.0.0 or later to use the updated library.
+1. Support hase been added for the ESP32 S2 processor variant. A [new user setup](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h) file has been added as an example setup with an ILI9341 TFT. You will need to load ESP32 Arduino board package 2.0.0 or later to use the updated library with an ESP32.
 
 2. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with 16 bit colour SPI displays such as the ILI9341. See "Bouncy_Circles" sketch.
 
