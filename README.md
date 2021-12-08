@@ -91,7 +91,7 @@ The Button class from Adafruit_GFX is incorporated, with the enhancement that th
 
 # ESP8266 overlap mode
 
-The library supports SPI overlap on the ESP8266 so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH, this frees up GPIO pins for other uses.
+The library supports SPI overlap on the ESP8266 so the TFT screen can share MOSI, MISO and SCLK pins with the program FLASH, this frees up GPIO pins for other uses. Only one SPI device can be connected to the FLASH pins and the chips select for the TFT must be on pin D3 (GPIO0).
 
 
 # Fonts
