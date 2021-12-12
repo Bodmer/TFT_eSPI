@@ -2529,19 +2529,24 @@ void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
 
   uint16_t n = 0;
   bool newSprite = !_created;
+  int16_t  cursorX = _tft->cursor_x;
 
   if (newSprite)
   {
-    int16_t sWidth = 1;
+    int16_t sWidth = 0;
     uint16_t index = 0;
-
+    bool     first = true;
     while (n < len)
     {
       uint16_t unicode = decodeUTF8((uint8_t*)cbuffer, &n, len - n);
       if (getUnicodeIndex(unicode, &index))
       {
-        if (n == 0) sWidth -= gdX[index];
-        if (n == len-1) sWidth += ( gWidth[index] + gdX[index]);
+        if (first) {
+          first = false;
+          sWidth -= gdX[index];
+          cursorX += gdX[index];
+        }
+        if (n == len) sWidth += ( gWidth[index] + gdX[index]);
         else sWidth += gxAdvance[index];
       }
       else sWidth += gFont.spaceWidth + 1;
@@ -2564,7 +2569,7 @@ void TFT_eSprite::printToSprite(char *cbuffer, uint16_t len) //String string)
 
   if (newSprite)
   { // The sprite had to be created so place at TFT cursor
-    pushSprite(_tft->cursor_x, _tft->cursor_y);
+    pushSprite(cursorX, _tft->cursor_y);
     deleteSprite();
   }
 }
