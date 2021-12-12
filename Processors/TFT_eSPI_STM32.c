@@ -551,6 +551,9 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   #elif (TFT_SPI_PORT == 2)
     extern "C" void DMA1_Stream4_IRQHandler();
     void DMA1_Stream4_IRQHandler(void)
+  #elif (TFT_SPI_PORT == 3)
+    extern "C" void DMA1_Stream5_IRQHandler();
+    void DMA1_Stream5_IRQHandler(void)
   #endif
   {
     // Call the default end of buffer handler
@@ -572,8 +575,12 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     __HAL_RCC_DMA2_CLK_ENABLE();                           // Enable DMA2 clock
     dmaHal.Init.Channel = DMA_CHANNEL_3;                   // DMA channel 3 is for SPI1 TX
   #elif (TFT_SPI_PORT == 2)
-    __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA2 clock
+    __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA1 clock
     dmaHal.Init.Channel = DMA_CHANNEL_0;                   // DMA channel 0 is for SPI2 TX
+  #elif (TFT_SPI_PORT == 3)
+    __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA1 clock
+    dmaHal.Init.Channel = DMA_CHANNEL_0;                   // DMA channel 0 is for SPI3 TX
+  
   #endif
 
   dmaHal.Init.Mode =  DMA_NORMAL; //DMA_CIRCULAR;   //   // Normal = send buffer once
