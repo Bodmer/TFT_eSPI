@@ -49,9 +49,9 @@ String image_type = ".png";   // Lossless compression                           
 //String image_type = ".bmp"; //                                                             #
 //String image_type = ".tif"; //                                                             #
 //                                                                                           #
-bool save_border = true;   // Save the image with a border                                #
+boolean save_border = true;   // Save the image with a border                                #
 int border = 5;               // Border pixel width                                          #
-bool fade = false;         // Fade out image after saving                                 #
+boolean fade = false;         // Fade out image after saving                                 #
 //                                                                                           #
 int max_images = 100; // Maximum of numbered file images before over-writing files           #
 //                                                                                           #
@@ -82,9 +82,9 @@ color frameColor = 42;
 color buttonStopped = color(255, 0, 0);
 color buttonRunning = color(128, 204, 206);
 color buttonDimmed  = color(180, 0, 0);
-bool dimmed   = false;
-bool running  = true;
-bool mouseClick = false;
+boolean dimmed   = false;
+boolean running  = true;
+boolean mouseClick = false;
 
 int[] rgb = new int[3]; // Buffer for the colour bytes
 int indexRed   = 0;     // Colour byte index in the array
@@ -288,7 +288,7 @@ void flushBuffer()
   while ( millis() < clearTime ) serial.clear();
 }
 
-bool getSize()
+boolean getSize()
 {
   if ( serial.available() > 6 ) {
     println();
@@ -371,7 +371,7 @@ void getFilename()
   else if (inByte == 't') image_type =".tif";
 }
 
-bool unicodeCheck(int unicode)
+boolean unicodeCheck(int unicode)
 {
   if (  unicode >= '0' && unicode <= '9' ) return true;
   if ( (unicode >= 'A' && unicode <= 'Z' ) || (unicode >= 'a' && unicode <= 'z')) return true;
@@ -475,7 +475,7 @@ void percent(float percentage)
   text(" [ " + (int)percentage + "% ]", 10, height-8);
 }
 
-bool fadedImage()
+boolean fadedImage()
 {
   int opacity = frameCount - drawLoopCount;  // So we get increasing fade
   if (fade)
