@@ -1857,9 +1857,9 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
         }
         px++;
       }
+      if (np) { setWindow(sx, y, sx + np - 1, y); pushBlock(bitmap_fg, np); np = 0; }
       y++;
       data += ww;
-      if (np) { setWindow(sx, y, sx + np - 1, y); pushBlock(bitmap_fg, np); np = 0; }
     }
   }
   _swapBytes = swap; // Restore old value
