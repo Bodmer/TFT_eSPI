@@ -1,0 +1,41 @@
+// Raspberry Pi Pico PIO program to output data to a TFT
+// controller via a 8 bit 8080 style data path.
+
+// Original sourced from:
+// https://github.com/zapta/pio_tft
+
+// Side set: 1 output pin, TFT_WR. Active low.
+// Data set: 8 consecutive output pins, TFT_D0 .. TFT_D7
+
+.program tft_io
+.side_set 1 opt ;  The TFT_WR output.
+
+// The C++ code switches between the 8 bits and 16 bits loops
+// by waiting for the SM to be idle and setting its PC.
+//
+public start_16:
+   // Fetch into OSR the next 32 bit value from the TX FIFO. 
+   // This is a blocking operation. Sets WR high.
+   pull side 1  
+   // Shift the OSR reg right by 8 bits, loading the low 8 bits
+   // of reg x with the shifted data.
+   out x, 8
+   // Write the first byte (MSB) and sets WR low. This also
+   // shift OSR by 8 bits which we don't care about.
+   out pins, 8 side 0 [1]       
+   // Set TFT_WR back high.    
+   nop side 1    
+   // Move the LSB byte back to the OSR.
+   mov osr, x        
+   // Output the second byte and set TFT_WRITE low.
+   out pins, 8 side 0    
+   jmp start_16 
+
+// 8 bit transfer
+public start_8:
+   // Fetch into OSR the next 32 bit value from the TX FIFO. 
+   // This is a blocking operation. Sets WR high.
+   pull side 1
+   // Write the first byte (LSB) and sets WR low. This also 
+   // shifts the OSR right by 8 bits.
+   out pins, 8 side 0 [1]     

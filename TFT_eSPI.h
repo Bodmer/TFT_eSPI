@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.3.89"
+#define TFT_ESPI_VERSION "2.4.0"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -655,6 +655,10 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // in progress, this simplifies the sketch and helps avoid "gotchas".
   void     pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t* data, uint16_t* buffer = nullptr);
 
+#if defined (ESP32) // ESP32 only at the moment
+           // For case where pointer is a const and the image data must not be modified (clipped or byte swapped)
+  void     pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t const* data);
+#endif
            // Push a block of pixels into a window set up using setAddrWindow()
   void     pushPixelsDMA(uint16_t* image, uint32_t len);
 

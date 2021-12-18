@@ -1,18 +1,26 @@
 // This sketch is for the RP2040 and ILI9341 TFT display.
 // Other processors may work if they have sufficient RAM for
 // a full screen buffer (240 x 320 x 2 = 153,600 bytes).
+
 // In this example 2 sprites are used to create DMA toggle
 // buffers. Each sprite is half the screen size, this allows
 // graphics to be rendered in one sprite at the same time
 // as the other sprite is being sent to the screen.
 
-// RP2040 @ 62.5MHz SPI clock typically runs at 45-46 fps
+// RP2040 typically runs at 45-48 fps
 
 // Created by Bodmer 20/04/2021 as an example for:
 // https://github.com/Bodmer/TFT_eSPI
 
 // Number of circles to draw
 #define CNUMBER 42
+
+// Define the width and height according to the TFT and the
+// available memory. The sprites will require:
+//     DWIDTH * DHEIGHT * 2 bytes of RAM
+// Note: for a 240 * 320 area this is 150 Kbytes!
+#define DWIDTH  240
+#define DHEIGHT 320
 
 #include <TFT_eSPI.h>
 
@@ -55,12 +63,12 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
 
   // Create the 2 sprites, each is half the size of the screen
-  sprPtr[0] = (uint16_t*)spr[0].createSprite(tft.width(), tft.height() / 2);
-  sprPtr[1] = (uint16_t*)spr[1].createSprite(tft.width(), tft.height() / 2);
+  sprPtr[0] = (uint16_t*)spr[0].createSprite(DWIDTH, DHEIGHT / 2);
+  sprPtr[1] = (uint16_t*)spr[1].createSprite(DWIDTH, DHEIGHT / 2);
 
   // Move the sprite 1 coordinate datum upwards half the screen height
   // so from coordinate point of view it occupies the bottom of screen
-  spr[1].setViewport(0, -tft.height() / 2, tft.width(), tft.height());
+  spr[1].setViewport(0, -DHEIGHT / 2, DWIDTH, DHEIGHT);
 
   // Define text datum for each Sprite
   spr[0].setTextDatum(MC_DATUM);
@@ -72,8 +80,8 @@ void setup() {
   // Initialise circle parameters
   for (uint16_t i = 0; i < CNUMBER; i++) {
     circle->cr[i] = random(12, 24);
-    circle->cx[i] = random(circle->cr[i], tft.width() - circle->cr[i]);
-    circle->cy[i] = random(circle->cr[i], tft.height() - circle->cr[i]);
+    circle->cx[i] = random(circle->cr[i], DWIDTH - circle->cr[i]);
+    circle->cy[i] = random(circle->cr[i], DHEIGHT - circle->cr[i]);
     
     circle->col[i] = rainbow(4 * i);
     circle->dx[i] = random(1, 5);
@@ -82,7 +90,7 @@ void setup() {
     if (random(2)) circle->dy[i] = -circle->dy[i];
   }
 
-  tft.startWrite(); // TFT chip select held low permanently
+ // tft.startWrite(); // TFT chip select held low permanently
 
   startMillis = millis();
 }
@@ -117,7 +125,7 @@ void drawUpdate (bool sel) {
     spr[sel].drawNumber(i + 1, 1 + circle->cx[i], circle->cy[i], 2);
   }
 
-  tft.pushImageDMA(0, sel * tft.height() / 2, tft.width(), tft.height() / 2, sprPtr[sel]);
+  tft.pushImageDMA(0, sel * DHEIGHT / 2, DWIDTH, DHEIGHT / 2, sprPtr[sel]);
 
   // Update circle positions after bottom half has been drawn
   if (sel) {
@@ -128,16 +136,16 @@ void drawUpdate (bool sel) {
         circle->cx[i] = circle->cr[i];
         circle->dx[i] = -circle->dx[i];
       }
-      else if (circle->cx[i] + circle->cr[i] >= tft.width() - 1) {
-        circle->cx[i] = tft.width() - circle->cr[i] - 1;
+      else if (circle->cx[i] + circle->cr[i] >= DWIDTH - 1) {
+        circle->cx[i] = DWIDTH - circle->cr[i] - 1;
         circle->dx[i] = -circle->dx[i];
       }
       if (circle->cy[i] <= circle->cr[i]) {
         circle->cy[i] = circle->cr[i];
         circle->dy[i] = -circle->dy[i];
       }
-      else if (circle->cy[i] + circle->cr[i] >= tft.height() - 1) {
-        circle->cy[i] = tft.height() - circle->cr[i] - 1;
+      else if (circle->cy[i] + circle->cr[i] >= DHEIGHT - 1) {
+        circle->cy[i] = DHEIGHT - circle->cr[i] - 1;
         circle->dy[i] = -circle->dy[i];
       }
     }

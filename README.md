@@ -1,14 +1,10 @@
-A new test branch has been created for the RP2040 processor with 8 bit parallel displays:
-
-["Test branch"](https://github.com/Bodmer/TFT_eSPI/tree/RP2040_8bit_parallel)
-
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
-1. Support hase been added for the ESP32 S2 processor variant. A [new user setup](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h) file has been added as an example setup with an ILI9341 TFT. You will need to load ESP32 Arduino board package 2.0.0 or later to use the updated library with an ESP32.
-
-2. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with 16 bit colour SPI displays such as the ILI9341. See "Bouncy_Circles" sketch.
+1. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with both 8 bit parallel and 16 bit colour SPI displays. See "Bouncy_Circles" sketch.
 
       ["Bouncing circles"](https://www.youtube.com/watch?v=njFXIzCTQ_Q&lc=UgymaUIwOIuihvYh-Qt4AaABAg)
+
+2. Support hase been added for the ESP32 S2 processor variant. A [new user setup](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h) file has been added as an example setup with an ILI9341 TFT. You will need to load ESP32 Arduino board package 2.0.0 or later to use the updated library with an ESP32.
 
 3. The library now supports the Raspberry Pi Pico with both the [official Arduino board package](https://github.com/arduino/ArduinoCore-mbed) and the one provided by [Earle Philhower](https://github.com/earlephilhower/arduino-pico). The setup file "Setup60_RP2040_ILI9341.h" has been used for tests with an ILI9341 display. At the moment only SPI interface displays have been tested. SPI port 0 is the default but SPI port 1 can be specifed in the setup file if those SPI pins are used.
 
@@ -25,11 +21,6 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 8. The library now supports SPI DMA transfers for both ESP32 and STM32 processors. The DMA Test examples now work on the ESP32 for SPI displays (excluding RPi type and ILI9488).
 
 9. A new option has been added for STM32 processors to optimise performance where Port A (or B) pins 0-7 are used for the 8 bit parallel interface data pins 0-7 to the TFT. This gives a dramatic 8 times better rendering performance for the lower clock rate STM32 processors such as the STM32F103 "Blue Pill" or STM411 "Black Pill" since no time consuming data bit manipulation is required. See setup file "User_Setups/Setup35_ILI9341_STM32_Port_Bus.h".
-
-10. A new "Animated_dial" example has been added to show how dials can be created using a rotated Sprite for the needle. To run this example the TFT must support reading from the screen RAM. The dial rim and scale is a jpeg image, created using a paint program.
-
-      ![Animated_dial](https://i.imgur.com/S736Rg6.png)
-
 
 # TFT_eSPI
 
@@ -86,6 +77,11 @@ Drawing graphics into a sprite is very fast, for those familiar with the Adafrui
 Sprites can be plotted to the TFT with one colour being specified as "transparent", see Transparent_Sprite_Demo example.
 
 If an ESP32 board has SPIRAM (i.e. PSRAM) fitted then Sprites will use the PSRAM memory and large full screen buffer Sprites can be created. Full screen Sprites take longer to render (~45ms for a 320 x 240 16 bit Sprite), so bear that in mind.
+
+The "Animated_dial" example shows how dials can be created using a rotated Sprite for the needle. To run this example the TFT interface must support reading from the screen RAM (not all do). The dial rim and scale is a jpeg image, created using a paint program.
+
+      ![Animated_dial](https://i.imgur.com/S736Rg6.png)
+
 
 # Touch controller support
 

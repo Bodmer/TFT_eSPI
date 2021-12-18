@@ -22,7 +22,7 @@
   #include "Processors/TFT_eSPI_ESP8266.c"
 #elif defined (STM32) // (_VARIANT_ARDUINO_STM32_) stm32_def.h
   #include "Processors/TFT_eSPI_STM32.c"
-#elif defined (ARDUINO_ARCH_RP2040) // Raspberry Pi Pico
+#elif defined (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED) // Raspberry Pi Pico
   #include "Processors/TFT_eSPI_RP2040.c"
 #else
   #include "Processors/TFT_eSPI_Generic.c"
@@ -78,7 +78,7 @@ inline void TFT_eSPI::begin_tft_write(void){
 ***************************************************************************************/
 inline void TFT_eSPI::end_tft_write(void){
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT)
-  if(!inTransaction) {      // Flag to stop ending tranaction during multiple graphics calls
+  if(!inTransaction) {      // Flag to stop ending transaction during multiple graphics calls
     if (!locked) {          // Locked when beginTransaction has been called
       locked = true;        // Flag to show SPI access now locked
       SPI_BUSY_CHECK;       // Check send complete and clean out unused rx data
@@ -345,11 +345,6 @@ inline void TFT_eSPI::end_tft_read(void){
    if(!inTransaction) {CS_H;}
 #endif
   SET_BUS_WRITE_MODE;
-
-// The ST7796 appears to need a 4ms delay after a CGRAM read, otherwise subsequent writes will fail!
-#ifdef ST7796_DRIVER
-  delay(4);
-#endif
 }
 
 /***************************************************************************************
@@ -382,7 +377,8 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   digitalWrite(TOUCH_CS, HIGH); // Chip select high (inactive)
 #endif
 
-#ifdef TFT_WR
+// In parallel mode and with the RP2040 processor, the TFT_WR line is handled in the  PIO
+#if defined (TFT_WR) && !defined (ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED)
   pinMode(TFT_WR, OUTPUT);
   digitalWrite(TFT_WR, HIGH); // Set write strobe high (inactive)
 #endif
@@ -405,15 +401,17 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   pinMode(TFT_RD, OUTPUT);
   digitalWrite(TFT_RD, HIGH);
 
-  // Set TFT data bus lines to output
-  pinMode(TFT_D0, OUTPUT); digitalWrite(TFT_D0, HIGH);
-  pinMode(TFT_D1, OUTPUT); digitalWrite(TFT_D1, HIGH);
-  pinMode(TFT_D2, OUTPUT); digitalWrite(TFT_D2, HIGH);
-  pinMode(TFT_D3, OUTPUT); digitalWrite(TFT_D3, HIGH);
-  pinMode(TFT_D4, OUTPUT); digitalWrite(TFT_D4, HIGH);
-  pinMode(TFT_D5, OUTPUT); digitalWrite(TFT_D5, HIGH);
-  pinMode(TFT_D6, OUTPUT); digitalWrite(TFT_D6, HIGH);
-  pinMode(TFT_D7, OUTPUT); digitalWrite(TFT_D7, HIGH);
+  #if  !defined (ARDUINO_ARCH_RP2040)  && !defined (ARDUINO_ARCH_MBED)// PIO manages pins
+    // Set TFT data bus lines to output
+    pinMode(TFT_D0, OUTPUT); digitalWrite(TFT_D0, HIGH);
+    pinMode(TFT_D1, OUTPUT); digitalWrite(TFT_D1, HIGH);
+    pinMode(TFT_D2, OUTPUT); digitalWrite(TFT_D2, HIGH);
+    pinMode(TFT_D3, OUTPUT); digitalWrite(TFT_D3, HIGH);
+    pinMode(TFT_D4, OUTPUT); digitalWrite(TFT_D4, HIGH);
+    pinMode(TFT_D5, OUTPUT); digitalWrite(TFT_D5, HIGH);
+    pinMode(TFT_D6, OUTPUT); digitalWrite(TFT_D6, HIGH);
+    pinMode(TFT_D7, OUTPUT); digitalWrite(TFT_D7, HIGH);
+  #endif
 
   CONSTRUCTOR_INIT_TFT_DATA_BUS;
 
@@ -523,7 +521,7 @@ void TFT_eSPI::init(uint8_t tc)
 {
   if (_booted)
   {
-#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT) && !defined(ARDUINO_ARCH_RP2040)
+#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED)
   // Legacy bitmasks for GPIO
   #if defined (TFT_CS) && (TFT_CS >= 0)
     cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
@@ -552,7 +550,7 @@ void TFT_eSPI::init(uint8_t tc)
 
 #else
   #if !defined(TFT_PARALLEL_8_BIT)
-    #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP) && !defined(ARDUINO_ARCH_RP2040)
+    #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED)
       spi.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
     #else
       spi.begin();
@@ -1261,7 +1259,6 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 
   data += dx + dy * w;
 
-  int32_t xe = x + dw - 1, ye = y + dh - 1;
 
   uint16_t  lineBuf[dw]; // Use buffer to minimise setWindow call count
 
@@ -1352,7 +1349,6 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 
   data += dx + dy * w;
 
-  int32_t xe = x + dw - 1, ye = y + dh - 1;
 
   uint16_t  lineBuf[dw];
 
@@ -1673,7 +1669,6 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
   inTransaction = true;
   bool swap = _swapBytes;
 
-  int32_t xe = x + dw - 1, ye = y + dh - 1;
 
   // Line buffer makes plotting faster
   uint16_t  lineBuf[dw];
@@ -3096,7 +3091,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   #endif
 
   // Temporary solution is to include the RP2040 optimised code here
-  #if defined(ARDUINO_ARCH_RP2040) && !defined(TFT_PARALLEL_8BIT)
+  #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(TFT_PARALLEL_8_BIT)
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     DC_C;
     #if !defined (SPI_18BIT_DRIVER)
@@ -3176,7 +3171,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 #endif
 
   // Temporary solution is to include the RP2040 optimised code here
-#if defined(ARDUINO_ARCH_RP2040) && !defined(TFT_PARALLEL_8BIT)
+#if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(TFT_PARALLEL_8_BIT)
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
   spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
@@ -3287,7 +3282,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   #endif
 
   // Temporary solution is to include the RP2040 optimised code here
-#elif defined (ARDUINO_ARCH_RP2040)
+#elif (defined (ARDUINO_ARCH_RP2040)  || !defined (ARDUINO_ARCH_MBED)) && !defined(TFT_PARALLEL_8_BIT)
 
   // Since the SPI functions do not terminate until transmission is complete
   // a busy check is not needed.

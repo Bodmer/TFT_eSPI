@@ -6,7 +6,8 @@
 // Global variables
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#if !defined (TFT_PARALLEL_8_BIT)
+#if !defined (TFT_PARALLEL_8_BIT) // SPI
+
   // Select the SPI port and board package to use
   #ifdef ARDUINO_ARCH_MBED
     // Arduino RP2040 board package
@@ -16,6 +17,26 @@
     //SPIClass& spi = SPI; // will use board package default pins
     SPIClassRP2040 spi = SPIClassRP2040(SPI_X, TFT_MISO, -1, TFT_SCLK, TFT_MOSI);
   #endif
+
+#else // 8 bit parallel
+
+  #include "pio_8bit_parallel.pio.h"
+
+  // Board package specific differences
+  #ifdef ARDUINO_ARCH_MBED
+    // Not supported at the moment
+    #error The Arduino RP2040 MBED board package is not supported. Use the community package by Earle Philhower.
+  #endif
+
+  // Community RP2040 board package by Earle Philhower
+  PIO pio = pio0;     // Code will try both pio's to find a free SM
+  int8_t pio_sm = 0;  // pioinit will claim a free one
+
+  // Updated later with the loading offset of the PIO program.
+  uint32_t program_offset  = 0;
+  uint32_t pull_stall_mask = 0;
+  uint32_t pio_instr_jmp8  = 0;
+
 #endif
 
 #ifdef RP2040_DMA
@@ -69,10 +90,57 @@ void TFT_eSPI::end_SDA_Read(void)
 #endif // #if defined (TFT_SDA_READ)
 ////////////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////////////
+#if defined (TFT_PARALLEL_8_BIT)
+////////////////////////////////////////////////////////////////////////////////////////
+void pioinit(uint8_t tft_d0_pin, uint8_t tft_wr_pin, uint16_t clock_div, uint16_t fract_div) {
 
-////////////////////////////////////////////////////////////////////////////////////////
-#if defined (TFT_PARALLEL_8_BIT) // Code for generic (i.e. any) processor
-////////////////////////////////////////////////////////////////////////////////////////
+  // Find a free SM on one of the PIO's
+  pio = pio0;
+  pio_sm = pio_claim_unused_sm(pio, false); // false means don't panic
+  // Try pio1 if SM not found
+  if (pio_sm < 0) {
+    pio = pio1;
+    pio_sm = pio_claim_unused_sm(pio, true); // panic this time if no SM is free
+  }
+
+  // Load the PIO program
+  program_offset = pio_add_program(pio, &tft_io_program);
+
+  // Associate pins with the PIO
+  pio_gpio_init(pio, tft_wr_pin);
+  for (int i = 0; i < 8; i++) {
+    pio_gpio_init(pio, tft_d0_pin + i);
+  }
+
+  // Configure the pins to be outputs
+  pio_sm_set_consecutive_pindirs(pio, pio_sm, tft_wr_pin, 1, true);
+  pio_sm_set_consecutive_pindirs(pio, pio_sm, tft_d0_pin, 8, true);
+
+  // Configure the state machine
+  pio_sm_config c = tft_io_program_get_default_config(program_offset);
+  // Define the single side-set pin
+  sm_config_set_sideset_pins(&c, tft_wr_pin);
+  // Define the 8 consecutive pins that are used for data output
+  sm_config_set_out_pins(&c, tft_d0_pin, 8);
+  // Set clock divider and fractional divider
+  sm_config_set_clkdiv_int_frac(&c, clock_div, fract_div);
+  // Make a single 8 words FIFO from the 4 words TX and RX FIFOs
+  sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
+  // The OSR register shifts to the right, sm designed to send MS byte of a colour first
+  sm_config_set_out_shift(&c, true, false, 0);
+  // Now load the configuration
+  pio_sm_init(pio, pio_sm, program_offset + tft_io_offset_start_8, &c);
+
+  // Start the state machine.
+  pio_sm_set_enabled(pio, pio_sm, true);
+
+  // Create the pull stall bit mask
+  pull_stall_mask = 1u << (PIO_FDEBUG_TXSTALL_LSB + pio_sm);
+  
+  // Create the assembler instruction for the jump to byte send routine
+  pio_instr_jmp8  = pio_encode_jmp(program_offset + tft_io_offset_start_8);
+}
 
 /***************************************************************************************
 ** Function name:           pushBlock - for generic processor and parallel display
@@ -80,25 +148,71 @@ void TFT_eSPI::end_SDA_Read(void)
 ***************************************************************************************/
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 
-  while (len>1) {tft_Write_32D(color); len-=2;}
-  if (len) {tft_Write_16(color);}
+  while (len > 4) {
+    // 5 seems to be the optimum for maximum transfer rate
+    WAIT_FOR_FIFO_FREE(5);
+    TX_FIFO = color;
+    TX_FIFO = color;
+    TX_FIFO = color;
+    TX_FIFO = color;
+    TX_FIFO = color;
+
+    len -= 5;
+  }
+
+  if (len) {
+    // There could be a maximum of 4 words left  to send
+    WAIT_FOR_FIFO_FREE(4);
+    while (len--) TX_FIFO = color;
+  }
 }
 
 /***************************************************************************************
-** Function name:           pushPixels - for gereric processor and parallel display
+** Function name:           pushPixels - for generic processor and parallel display
 ** Description:             Write a sequence of pixels
 ***************************************************************************************/
 void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
-  uint16_t *data = (uint16_t*)data_in;
-  if(_swapBytes) {
-    while (len>1) {tft_Write_16(*data); data++; tft_Write_16(*data); data++; len -=2;}
-    if (len) {tft_Write_16(*data);}
-    return;
-  }
+  const uint16_t *data = (uint16_t*)data_in;
 
-  while (len>1) {tft_Write_16S(*data); data++; tft_Write_16S(*data); data++; len -=2;}
-  if (len) {tft_Write_16S(*data);}
+  // PIO sends MS byte first, so bytes are already swapped on transmit
+  if(_swapBytes) {
+    while (len > 4) {
+      WAIT_FOR_FIFO_FREE(5);
+      TX_FIFO = data[0];
+      TX_FIFO = data[1];
+      TX_FIFO = data[2];
+      TX_FIFO = data[3];
+      TX_FIFO = data[4];
+      data += 5;
+      len  -= 5;
+    }
+
+    if (len) {
+      WAIT_FOR_FIFO_FREE(4);
+      while(len--) TX_FIFO = *data++;
+    }
+  }
+  else {
+    while (len > 4) {
+      WAIT_FOR_FIFO_FREE(5);
+      TX_FIFO = data[0] << 8 | data[0] >> 8;
+      TX_FIFO = data[1] << 8 | data[1] >> 8;
+      TX_FIFO = data[2] << 8 | data[2] >> 8;
+      TX_FIFO = data[3] << 8 | data[3] >> 8;
+      TX_FIFO = data[4] << 8 | data[4] >> 8;
+      data += 5;
+      len  -= 5;
+    }
+
+    if (len) {
+      WAIT_FOR_FIFO_FREE(4);
+      while(len--) {
+        TX_FIFO = *data << 8 | *data >> 8;
+        data++;
+      }
+    }
+  }
 }
 
 /***************************************************************************************
@@ -107,6 +221,10 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 ***************************************************************************************/
 void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 {
+  // Avoid warnings
+  mask = mask;
+  mode = mode;
+/*
   // mask is unused for generic processor
   // Arduino native functions suited well to a generic driver
   pinMode(TFT_D0, mode);
@@ -117,7 +235,7 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
   pinMode(TFT_D5, mode);
   pinMode(TFT_D6, mode);
   pinMode(TFT_D7, mode);
-  return;
+*/
 }
 
 /***************************************************************************************
@@ -126,17 +244,20 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 ***************************************************************************************/
 void TFT_eSPI::gpioMode(uint8_t gpio, uint8_t mode)
 {
-  // No fast port based generic approach available
+  // Avoid warnings
+  gpio = gpio;
+  mode = mode;
+
 }
 
 /***************************************************************************************
 ** Function name:           read byte  - supports class functions
-** Description:             Read a byte - parallel bus only
+** Description:             Read a byte - parallel bus only - not supported yet
 ***************************************************************************************/
 uint8_t TFT_eSPI::readByte(void)
 {
   uint8_t b = 0;
-
+/*
   busDir(0, INPUT);
   digitalWrite(TFT_RD, LOW);
 
@@ -151,7 +272,7 @@ uint8_t TFT_eSPI::readByte(void)
 
   digitalWrite(TFT_RD, HIGH);
   busDir(0, OUTPUT); 
-
+*/
   return b;
 }
 
@@ -286,11 +407,10 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#if defined (RP2040_DMA) && !defined (TFT_PARALLEL_8_BIT) //       DMA FUNCTIONS
+#ifdef RP2040_DMA // DMA functions for 16 bit SPI and 8 bit parallel displays
 ////////////////////////////////////////////////////////////////////////////////////////
-
 /*
-Minimal function set to support DMA:
+These are created in header file:
   uint32_t           dma_tx_channel;
   dma_channel_config dma_tx_config;
 */
@@ -303,8 +423,13 @@ bool TFT_eSPI::dmaBusy(void) {
   if (!DMA_Enabled) return false;
 
   if (dma_channel_is_busy(dma_tx_channel)) return true;
+
+#if !defined (TFT_PARALLEL_8_BIT)
+  // For SPI must also wait for FIFO to flush and reset format
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+#endif
+
   return false;
 }
 
@@ -315,8 +440,12 @@ bool TFT_eSPI::dmaBusy(void) {
 void TFT_eSPI::dmaWait(void)
 {
   while (dma_channel_is_busy(dma_tx_channel));
+
+#if !defined (TFT_PARALLEL_8_BIT)
+  // For SPI must also wait for FIFO to flush and reset format
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+#endif
 }
 
 /***************************************************************************************
@@ -330,7 +459,12 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
   dmaWait();
 
   channel_config_set_bswap(&dma_tx_config, !_swapBytes);
+
+#if !defined (TFT_PARALLEL_8_BIT)
   dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(SPI_X)->dr, (uint16_t*)image, len, true);
+#else
+  dma_channel_configure(dma_tx_channel, &dma_tx_config, &pio->txf[pio_sm], (uint16_t*)image, len, true);
+#endif
 }
 
 /***************************************************************************************
@@ -378,8 +512,12 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   setAddrWindow(x, y, dw, dh);
 
   channel_config_set_bswap(&dma_tx_config, !_swapBytes);
-  dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(SPI_X)->dr, (uint16_t*)buffer, len, true);
 
+#if !defined (TFT_PARALLEL_8_BIT)
+  dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(SPI_X)->dr, (uint16_t*)buffer, len, true);
+#else
+  dma_channel_configure(dma_tx_channel, &dma_tx_config, &pio->txf[pio_sm], (uint16_t*)buffer, len, true);
+#endif
 }
 
 /***************************************************************************************
@@ -396,7 +534,11 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
   dma_tx_config = dma_channel_get_default_config(dma_tx_channel);
   
   channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
+#if !defined (TFT_PARALLEL_8_BIT)
   channel_config_set_dreq(&dma_tx_config, spi_get_index(SPI_X) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
+#else
+  channel_config_set_dreq(&dma_tx_config, pio_get_dreq(pio, pio_sm, true));
+#endif
 
   DMA_Enabled = true;
   return true;

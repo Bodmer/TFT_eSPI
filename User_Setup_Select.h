@@ -85,6 +85,12 @@
 
 //#include <User_Setups/Setup71_ESP32_S2_ST7789.h>  // Setup file for ESP32 S2 with ST7789
 
+//#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h>
+//#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h>
+//#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h>
+//#include <User_Setups/Setup103_RP2040_ILI9486_parallel.h>
+//#include <User_Setups/Setup104_RP2040_ST7796_parallel.h>
+
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 
 //#include <User_Setups/Setup136_LilyGo_TTV.h>       // Setup file for ESP32 and Lilygo TTV ST7789 SPI bus TFT  135x240
