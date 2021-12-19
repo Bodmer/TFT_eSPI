@@ -3282,7 +3282,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   #endif
 
   // Temporary solution is to include the RP2040 optimised code here
-#elif (defined (ARDUINO_ARCH_RP2040)  || !defined (ARDUINO_ARCH_MBED)) && !defined(TFT_PARALLEL_8_BIT)
+#elif (defined (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(TFT_PARALLEL_8_BIT)
 
   // Since the SPI functions do not terminate until transmission is complete
   // a busy check is not needed.
