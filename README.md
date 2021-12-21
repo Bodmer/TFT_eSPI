@@ -80,7 +80,7 @@ If an ESP32 board has SPIRAM (i.e. PSRAM) fitted then Sprites will use the PSRAM
 
 The "Animated_dial" example shows how dials can be created using a rotated Sprite for the needle. To run this example the TFT interface must support reading from the screen RAM (not all do). The dial rim and scale is a jpeg image, created using a paint program.
 
-      ![Animated_dial](https://i.imgur.com/S736Rg6.png)
+![Animated_dial](https://i.imgur.com/S736Rg6.png)
 
 
 # Touch controller support
