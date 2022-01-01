@@ -90,7 +90,7 @@ void setup() {
     if (random(2)) circle->dy[i] = -circle->dy[i];
   }
 
- // tft.startWrite(); // TFT chip select held low permanently
+  tft.startWrite(); // TFT chip select held low permanently
 
   startMillis = millis();
 }
