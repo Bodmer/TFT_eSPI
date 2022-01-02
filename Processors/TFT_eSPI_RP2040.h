@@ -11,6 +11,7 @@
 // Required for both the official and community board packages
 #include "hardware/dma.h"
 #include "hardware/pio.h"
+#include "hardware/clocks.h"
 
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x2040
@@ -18,8 +19,12 @@
 // Include processor specific header
 // None
 
+#if defined (TFT_PARALLEL_8_BIT) || defined (RP2040_PIO_SPI)
+  #define RP2040_PIO_INTERFACE
+  #define RP2040_PIO_PUSHBLOCK
+#endif
 
-#if !defined (TFT_PARALLEL_8_BIT) // SPI
+#if !defined (RP2040_PIO_INTERFACE)// SPI
   // Use SPI0 as default if not defined
   #ifndef TFT_SPI_PORT
     #define TFT_SPI_PORT 0
@@ -49,7 +54,7 @@
   #define DMA_BUSY_CHECK
 #endif
 
-#if !defined (TFT_PARALLEL_8_BIT) // SPI
+#if !defined (RP2040_PIO_INTERFACE) // SPI
   // Initialise processor specific SPI functions, used by init()
   #define INIT_TFT_DATA_BUS  // Not used
 
@@ -63,10 +68,6 @@
     #define SUPPORT_TRANSACTIONS
   #endif
 #else
-  // Initialise TFT data bus
-  #define INIT_TFT_DATA_BUS
-
-  #define SPI_BUSY_CHECK
 
   // ILI9481 needs a slower cycle time
   // Byte rate = (CPU clock/(4 * divider))
@@ -78,8 +79,17 @@
     #define DIV_FRACT 0
   #endif
 
+  // Initialise TFT data bus
+  #if defined (TFT_PARALLEL_8_BIT)
+    #define INIT_TFT_DATA_BUS pioinit(DIV_UNITS, DIV_FRACT);
+  #elif defined (RP2040_PIO_SPI)
+    #define INIT_TFT_DATA_BUS pioinit(SPI_FREQUENCY);
+  #endif
+
+  #define SPI_BUSY_CHECK
+
   // Set the state machine clock divider (from integer and fractional parts - 16:8) 
-  #define CONSTRUCTOR_INIT_TFT_DATA_BUS pioinit(TFT_D0, TFT_WR, DIV_UNITS, DIV_FRACT);
+  #define PARALLEL_INIT_TFT_DATA_BUS // Not used
 
 #endif
 
@@ -98,7 +108,7 @@
   #define DC_C // No macro allocated so it generates no code
   #define DC_D // No macro allocated so it generates no code
 #else
-  #if !defined (TFT_PARALLEL_8_BIT) // SPI
+  #if !defined (RP2040_PIO_INTERFACE)// SPI
     //#define DC_C sio_hw->gpio_clr = (1ul << TFT_DC)
     //#define DC_D sio_hw->gpio_set = (1ul << TFT_DC)
     #if  defined (RPI_DISPLAY_TYPE)
@@ -109,12 +119,13 @@
       #define DC_D sio_hw->gpio_set = (1ul << TFT_DC)
     #endif
   #else
+    // PIO takes control of TFT_DC
     // Must wait for data to flush through before changing DC line
     #define DC_C  WAIT_FOR_STALL; \
-                  sio_hw->gpio_clr = (1ul << TFT_DC)
+                  pio->sm[pio_sm].instr = pio_instr_clr_dc
 
     // Flush has happened before this and mode changed back to 16 bit
-    #define DC_D  sio_hw->gpio_set = (1ul << TFT_DC)
+    #define DC_D  pio->sm[pio_sm].instr = pio_instr_set_dc
   #endif
 #endif
 
@@ -125,12 +136,17 @@
   #define CS_L // No macro allocated so it generates no code
   #define CS_H // No macro allocated so it generates no code
 #else
-  #if  defined (RPI_DISPLAY_TYPE)
-    #define CS_L digitalWrite(TFT_CS, LOW);
-    #define CS_H digitalWrite(TFT_CS, HIGH);
-  #else
+  #if !defined (RP2040_PIO_INTERFACE) // SPI
+    #if  defined (RPI_DISPLAY_TYPE)
+      #define CS_L digitalWrite(TFT_CS, LOW);
+      #define CS_H digitalWrite(TFT_CS, HIGH);
+    #else
+      #define CS_L sio_hw->gpio_clr = (1ul << TFT_CS)
+      #define CS_H sio_hw->gpio_set = (1ul << TFT_CS)
+    #endif
+  #else // PIO interface display
     #define CS_L sio_hw->gpio_clr = (1ul << TFT_CS)
-    #define CS_H sio_hw->gpio_set = (1ul << TFT_CS)
+    #define CS_H WAIT_FOR_STALL; sio_hw->gpio_set = (1ul << TFT_CS)
   #endif
 #endif
 
@@ -157,7 +173,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the touch screen chip select pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined (TFT_PARALLEL_8_BIT) // SPI
+#if !defined (RP2040_PIO_INTERFACE)// SPI
   #if !defined TOUCH_CS || (TOUCH_CS < 0)
     #define T_CS_L // No macro allocated so it generates no code
     #define T_CS_H // No macro allocated so it generates no code
@@ -181,7 +197,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to a SPI ILI948x TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined (TFT_PARALLEL_8_BIT) // SPI
+#if !defined (RP2040_PIO_INTERFACE) // SPI
 
   #if  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
 
@@ -277,10 +293,10 @@
     #endif // RPI_DISPLAY_TYPE
   #endif
 
-#else // Parallel 8 bit
+#else // Parallel 8 bit or PIO SPI
 
-  // On it's own this does not appear to reliably detect a stall, found that we must wait
-  // for FIFO to empty before clearing the stall flag, and then wait for it to be set
+  // Wait for the PIO to stall (SM pull request finds no data in TX FIFO)
+  // This is used to detect when the SM is idle and hence ready for a jump instruction
   #define WAIT_FOR_STALL  pio->fdebug = pull_stall_mask; while (!(pio->fdebug & pull_stall_mask))
 
   // Wait until at least "S" locations free
@@ -306,8 +322,8 @@
       // Have already waited for pio stalled (last data write complete) when DC switched to command mode
       // The wait for stall allows DC to be changed immediately afterwards
       #define tft_Write_8(C)      pio->sm[pio_sm].instr = pio_instr_jmp8; \
-                                  TX_FIFO = C; \
-                                  WAIT_FOR_STALL; \
+                                  TX_FIFO = (C); \
+                                  WAIT_FOR_STALL
 
       // Note: the following macros do not wait for the end of transmission
 
@@ -317,7 +333,7 @@
 
       #define tft_Write_16S(C)    WAIT_FOR_FIFO_FREE(1); TX_FIFO = ((C)<<8) | ((C)>>8)
 
-      #define tft_Write_32(C)     WAIT_FOR_FIFO_FREE(2); TX_FIFO = (C)>>16; TX_FIFO = (C)
+      #define tft_Write_32(C)     WAIT_FOR_FIFO_FREE(2); TX_FIFO = ((C)>>16); TX_FIFO = (C)
 
       #define tft_Write_32C(C,D)  WAIT_FOR_FIFO_FREE(2); TX_FIFO = (C); TX_FIFO = (D)
 
@@ -327,7 +343,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to read from display using SPI or software SPI
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined (TFT_PARALLEL_8_BIT) // SPI
+#if !defined (RP2040_PIO_INTERFACE)// SPI
   #if defined (TFT_SDA_READ)
     // Use a bit banged function call for STM32 and bi-directional SDA pin
     #define TFT_eSPI_ENABLE_8_BIT_READ // Enable tft_Read_8(void);

@@ -1,26 +1,28 @@
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
-1. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with both 8 bit parallel and 16 bit colour SPI displays. See "Bouncy_Circles" sketch.
+1. The RP2040 8 bit parallel interface uses the PIO. The PIO now manages the "setWindow" and "block fill" actions, releasing the processor for other tasks when areas of the screen are being filled with a colour. The PIO can optionally be used for SPI interface displays if #define RP2040_PIO_SPI is put in the setup file. Touch screens and pixel read operations are not supported when the PIO interface is used.
+
+2. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with both 8 bit parallel and 16 bit colour SPI displays. See "Bouncy_Circles" sketch.
 
       ["Bouncing circles"](https://www.youtube.com/watch?v=njFXIzCTQ_Q&lc=UgymaUIwOIuihvYh-Qt4AaABAg)
 
-2. Support hase been added for the ESP32 S2 processor variant. A [new user setup](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h) file has been added as an example setup with an ILI9341 TFT. You will need to load ESP32 Arduino board package 2.0.0 or later to use the updated library with an ESP32.
+3. Support hase been added for the ESP32 S2 processor variant. A [new user setup](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h) file has been added as an example setup with an ILI9341 TFT. You will need to load ESP32 Arduino board package 2.0.0 or later to use the updated library with an ESP32.
 
-3. The library now supports the Raspberry Pi Pico with both the [official Arduino board package](https://github.com/arduino/ArduinoCore-mbed) and the one provided by [Earle Philhower](https://github.com/earlephilhower/arduino-pico). The setup file "Setup60_RP2040_ILI9341.h" has been used for tests with an ILI9341 display. At the moment only SPI interface displays have been tested. SPI port 0 is the default but SPI port 1 can be specifed in the setup file if those SPI pins are used.
+4. The library now supports the Raspberry Pi Pico with both the [official Arduino board package](https://github.com/arduino/ArduinoCore-mbed) and the one provided by [Earle Philhower](https://github.com/earlephilhower/arduino-pico). The setup file "Setup60_RP2040_ILI9341.h" has been used for tests with an ILI9341 display. At the moment only SPI interface displays have been tested. SPI port 0 is the default but SPI port 1 can be specifed in the setup file if those SPI pins are used.
 
       ["Rotating cube demo"](https://www.youtube.com/watch?v=4fPxEN9ImVE)
 
-4. Viewports can now be applied to sprites e.g. spr.setViewport(5, 5, 20, 20); so graphics can be restricted to a particular area of the sprite. This operates in the same way as the TFT viewports, see 5. below.
+5. Viewports can now be applied to sprites e.g. spr.setViewport(5, 5, 20, 20); so graphics can be restricted to a particular area of the sprite. This operates in the same way as the TFT viewports, see 5. below.
 
-5. The library now provides a "viewport" capability. See "Viewport_Demo" and "Viewport_graphicstest" examples. When a viewport is defined graphics will only appear within that window.  The coordinate datum by default moves to the top left corner of the viewport, but can optionally remain at top left corner of TFT. The GUIslice library will make use of this feature to speed up the rendering of GUI objects ([see #769](https://github.com/Bodmer/TFT_eSPI/issues/769)).
+6. The library now provides a "viewport" capability. See "Viewport_Demo" and "Viewport_graphicstest" examples. When a viewport is defined graphics will only appear within that window.  The coordinate datum by default moves to the top left corner of the viewport, but can optionally remain at top left corner of TFT. The GUIslice library will make use of this feature to speed up the rendering of GUI objects ([see #769](https://github.com/Bodmer/TFT_eSPI/issues/769)).
 
-6. The library now supports SSD1963 based screen, this has been tested on a [480x800 screen](https://www.buydisplay.com/7-tft-screen-touch-lcd-display-module-w-ssd1963-controller-board-mcu) with an ESP32. The interface is 8 bit parallel only as that controller does not support a SPI interface.
+7. The library now supports SSD1963 based screen, this has been tested on a [480x800 screen](https://www.buydisplay.com/7-tft-screen-touch-lcd-display-module-w-ssd1963-controller-board-mcu) with an ESP32. The interface is 8 bit parallel only as that controller does not support a SPI interface.
 
-7. A companion library [U8g2_for_TFT_eSPI](https://github.com/Bodmer/U8g2_for_TFT_eSPI) has been created to allow U8g2 library fonts to be used with TFT_eSPI.
+8. A companion library [U8g2_for_TFT_eSPI](https://github.com/Bodmer/U8g2_for_TFT_eSPI) has been created to allow U8g2 library fonts to be used with TFT_eSPI.
 
-8. The library now supports SPI DMA transfers for both ESP32 and STM32 processors. The DMA Test examples now work on the ESP32 for SPI displays (excluding RPi type and ILI9488).
+9. The library now supports SPI DMA transfers for both ESP32 and STM32 processors. The DMA Test examples now work on the ESP32 for SPI displays (excluding RPi type and ILI9488).
 
-9. A new option has been added for STM32 processors to optimise performance where Port A (or B) pins 0-7 are used for the 8 bit parallel interface data pins 0-7 to the TFT. This gives a dramatic 8 times better rendering performance for the lower clock rate STM32 processors such as the STM32F103 "Blue Pill" or STM411 "Black Pill" since no time consuming data bit manipulation is required. See setup file "User_Setups/Setup35_ILI9341_STM32_Port_Bus.h".
+10. A new option has been added for STM32 processors to optimise performance where Port A (or B) pins 0-7 are used for the 8 bit parallel interface data pins 0-7 to the TFT. This gives a dramatic 8 times better rendering performance for the lower clock rate STM32 processors such as the STM32F103 "Blue Pill" or STM411 "Black Pill" since no time consuming data bit manipulation is required. See setup file "User_Setups/Setup35_ILI9341_STM32_Port_Bus.h".
 
 # TFT_eSPI
 

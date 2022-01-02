@@ -6,7 +6,7 @@
 // Global variables
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#if !defined (TFT_PARALLEL_8_BIT) // SPI
+#if !defined (RP2040_PIO_INTERFACE) // SPI
 
   // Select the SPI port and board package to use
   #ifdef ARDUINO_ARCH_MBED
@@ -18,9 +18,13 @@
     SPIClassRP2040 spi = SPIClassRP2040(SPI_X, TFT_MISO, -1, TFT_SCLK, TFT_MOSI);
   #endif
 
-#else // 8 bit parallel
+#else // PIO interface used (8 bit parallel or SPI)
 
-  #include "pio_8bit_parallel.pio.h"
+  #ifdef RP2040_PIO_SPI
+    #include "pio_SPI.pio.h"
+  #else
+    #include "pio_8bit_parallel.pio.h"
+  #endif
 
   // Board package specific differences
   #ifdef ARDUINO_ARCH_MBED
@@ -31,11 +35,20 @@
   // Community RP2040 board package by Earle Philhower
   PIO pio = pio0;     // Code will try both pio's to find a free SM
   int8_t pio_sm = 0;  // pioinit will claim a free one
-
   // Updated later with the loading offset of the PIO program.
   uint32_t program_offset  = 0;
+
+  // SM stalled mask
   uint32_t pull_stall_mask = 0;
+
+  // SM jump instructions to change SM behaviour
   uint32_t pio_instr_jmp8  = 0;
+  uint32_t pio_instr_fill  = 0;
+  uint32_t pio_instr_addr  = 0;
+
+  // SM "set" instructions to control DC control signal
+  uint32_t pio_instr_set_dc = 0;
+  uint32_t pio_instr_clr_dc = 0;
 
 #endif
 
@@ -45,7 +58,7 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#if defined (TFT_SDA_READ) && !defined (TFT_PARALLEL_8_BIT)
+#if defined (TFT_SDA_READ) && !defined (RP2040_PIO_INTERFACE)
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -91,9 +104,10 @@ void TFT_eSPI::end_SDA_Read(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#if defined (TFT_PARALLEL_8_BIT)
+#if defined (RP2040_PIO_INTERFACE)
 ////////////////////////////////////////////////////////////////////////////////////////
-void pioinit(uint8_t tft_d0_pin, uint8_t tft_wr_pin, uint16_t clock_div, uint16_t fract_div) {
+#ifdef RP2040_PIO_SPI
+void pioinit(uint32_t clock_freq) {
 
   // Find a free SM on one of the PIO's
   pio = pio0;
@@ -108,29 +122,32 @@ void pioinit(uint8_t tft_d0_pin, uint8_t tft_wr_pin, uint16_t clock_div, uint16_
   program_offset = pio_add_program(pio, &tft_io_program);
 
   // Associate pins with the PIO
-  pio_gpio_init(pio, tft_wr_pin);
-  for (int i = 0; i < 8; i++) {
-    pio_gpio_init(pio, tft_d0_pin + i);
-  }
+  pio_gpio_init(pio, TFT_DC);
+  pio_gpio_init(pio, TFT_SCLK);
+  pio_gpio_init(pio, TFT_MOSI);
 
   // Configure the pins to be outputs
-  pio_sm_set_consecutive_pindirs(pio, pio_sm, tft_wr_pin, 1, true);
-  pio_sm_set_consecutive_pindirs(pio, pio_sm, tft_d0_pin, 8, true);
+  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_DC, 1, true);
+  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_SCLK, 1, true);
+  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_MOSI, 1, true);
 
   // Configure the state machine
   pio_sm_config c = tft_io_program_get_default_config(program_offset);
+
+  sm_config_set_set_pins(&c, TFT_DC, 1);
   // Define the single side-set pin
-  sm_config_set_sideset_pins(&c, tft_wr_pin);
-  // Define the 8 consecutive pins that are used for data output
-  sm_config_set_out_pins(&c, tft_d0_pin, 8);
-  // Set clock divider and fractional divider
-  sm_config_set_clkdiv_int_frac(&c, clock_div, fract_div);
+  sm_config_set_sideset_pins(&c, TFT_SCLK);
+  // Define the pin used for data output
+  sm_config_set_out_pins(&c, TFT_MOSI, 1);
+  // Set clock divider, frequency is set up to 2% faster than specified, or next division down
+  uint16_t clock_div = 0.98 + clock_get_hz(clk_sys) / (clock_freq * 2.0); // 2 cycles per bit
+  sm_config_set_clkdiv(&c, clock_div);
   // Make a single 8 words FIFO from the 4 words TX and RX FIFOs
   sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
-  // The OSR register shifts to the right, sm designed to send MS byte of a colour first
-  sm_config_set_out_shift(&c, true, false, 0);
+  // The OSR register shifts to the left, sm designed to send MS byte of a colour first, autopull off
+  sm_config_set_out_shift(&c, false, false, 0);
   // Now load the configuration
-  pio_sm_init(pio, pio_sm, program_offset + tft_io_offset_start_8, &c);
+  pio_sm_init(pio, pio_sm, program_offset + tft_io_offset_start_16, &c);
 
   // Start the state machine.
   pio_sm_set_enabled(pio, pio_sm, true);
@@ -140,12 +157,91 @@ void pioinit(uint8_t tft_d0_pin, uint8_t tft_wr_pin, uint16_t clock_div, uint16_
   
   // Create the assembler instruction for the jump to byte send routine
   pio_instr_jmp8  = pio_encode_jmp(program_offset + tft_io_offset_start_8);
+  pio_instr_fill  = pio_encode_jmp(program_offset + tft_io_offset_block_fill);
+  pio_instr_addr  = pio_encode_jmp(program_offset + tft_io_offset_set_addr_window);
+  
+  pio_instr_set_dc = pio_encode_set((pio_src_dest)0, 1);
+  pio_instr_clr_dc = pio_encode_set((pio_src_dest)0, 0);
 }
+#else
+void pioinit(uint16_t clock_div, uint16_t fract_div) {
+
+  // Find a free SM on one of the PIO's
+  pio = pio0;
+  pio_sm = pio_claim_unused_sm(pio, false); // false means don't panic
+  // Try pio1 if SM not found
+  if (pio_sm < 0) {
+    pio = pio1;
+    pio_sm = pio_claim_unused_sm(pio, true); // panic this time if no SM is free
+  }
+
+  // Load the PIO program
+  program_offset = pio_add_program(pio, &tft_io_program);
+
+  // Associate pins with the PIO
+  pio_gpio_init(pio, TFT_DC);
+  pio_gpio_init(pio, TFT_WR);
+  for (int i = 0; i < 8; i++) {
+    pio_gpio_init(pio, TFT_D0 + i);
+  }
+
+  // Configure the pins to be outputs
+  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_DC, 1, true);
+  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_WR, 1, true);
+  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_D0, 8, true);
+
+  // Configure the state machine
+  pio_sm_config c = tft_io_program_get_default_config(program_offset);
+  // Define the set pin
+  sm_config_set_set_pins(&c, TFT_DC, 1);
+  // Define the single side-set pin
+  sm_config_set_sideset_pins(&c, TFT_WR);
+  // Define the 8 consecutive pins that are used for data output
+  sm_config_set_out_pins(&c, TFT_D0, 8);
+  // Set clock divider and fractional divider
+  sm_config_set_clkdiv_int_frac(&c, clock_div, fract_div);
+  // Make a single 8 words FIFO from the 4 words TX and RX FIFOs
+  sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
+  // The OSR register shifts to the left, sm designed to send MS byte of a colour first
+  sm_config_set_out_shift(&c, false, false, 0);
+  // Now load the configuration
+  pio_sm_init(pio, pio_sm, program_offset + tft_io_offset_start_16, &c);
+
+  // Start the state machine.
+  pio_sm_set_enabled(pio, pio_sm, true);
+
+  // Create the pull stall bit mask
+  pull_stall_mask = 1u << (PIO_FDEBUG_TXSTALL_LSB + pio_sm);
+  
+  // Create the assembler instruction for the jump to byte send routine
+  pio_instr_jmp8  = pio_encode_jmp(program_offset + tft_io_offset_start_8);
+  //pio_instr_jmp32 = pio_encode_jmp(program_offset + tft_io_offset_start_32);
+  pio_instr_fill  = pio_encode_jmp(program_offset + tft_io_offset_block_fill);
+  pio_instr_addr  = pio_encode_jmp(program_offset + tft_io_offset_set_addr_window);
+  
+  pio_instr_set_dc = pio_encode_set((pio_src_dest)0, 1);
+  pio_instr_clr_dc = pio_encode_set((pio_src_dest)0, 0);
+}
+#endif
 
 /***************************************************************************************
 ** Function name:           pushBlock - for generic processor and parallel display
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
+#ifdef RP2040_PIO_PUSHBLOCK
+// PIO handles pixel block fill writes
+void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
+{
+  if (len) {
+    WAIT_FOR_STALL;
+    pio->sm[pio_sm].instr = pio_instr_fill;
+    
+    TX_FIFO = color;
+    TX_FIFO = --len; // Decrement first as PIO sends n+1
+  }
+}
+
+#else
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 
   while (len > 4) {
@@ -166,6 +262,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
     while (len--) TX_FIFO = color;
   }
 }
+#endif
 
 /***************************************************************************************
 ** Function name:           pushPixels - for generic processor and parallel display
@@ -424,7 +521,7 @@ bool TFT_eSPI::dmaBusy(void) {
 
   if (dma_channel_is_busy(dma_tx_channel)) return true;
 
-#if !defined (TFT_PARALLEL_8_BIT)
+#if !defined (RP2040_PIO_INTERFACE)
   // For SPI must also wait for FIFO to flush and reset format
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
@@ -441,7 +538,7 @@ void TFT_eSPI::dmaWait(void)
 {
   while (dma_channel_is_busy(dma_tx_channel));
 
-#if !defined (TFT_PARALLEL_8_BIT)
+#if !defined (RP2040_PIO_INTERFACE)
   // For SPI must also wait for FIFO to flush and reset format
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
@@ -460,7 +557,7 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 
   channel_config_set_bswap(&dma_tx_config, !_swapBytes);
 
-#if !defined (TFT_PARALLEL_8_BIT)
+#if !defined (RP2040_PIO_INTERFACE)
   dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(SPI_X)->dr, (uint16_t*)image, len, true);
 #else
   dma_channel_configure(dma_tx_channel, &dma_tx_config, &pio->txf[pio_sm], (uint16_t*)image, len, true);
@@ -513,7 +610,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   channel_config_set_bswap(&dma_tx_config, !_swapBytes);
 
-#if !defined (TFT_PARALLEL_8_BIT)
+#if !defined (RP2040_PIO_INTERFACE)
   dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(SPI_X)->dr, (uint16_t*)buffer, len, true);
 #else
   dma_channel_configure(dma_tx_channel, &dma_tx_config, &pio->txf[pio_sm], (uint16_t*)buffer, len, true);
@@ -534,8 +631,8 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
   dma_tx_config = dma_channel_get_default_config(dma_tx_channel);
   
   channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
-#if !defined (TFT_PARALLEL_8_BIT)
-  channel_config_set_dreq(&dma_tx_config, spi_get_index(SPI_X) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
+#if !defined (RP2040_PIO_INTERFACE)
+  channel_config_set_dreq(&dma_tx_config, spi_get_dreq(SPI_X, true));
 #else
   channel_config_set_dreq(&dma_tx_config, pio_get_dreq(pio, pio_sm, true));
 #endif

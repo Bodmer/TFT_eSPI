@@ -313,6 +313,9 @@
 //
 // ##################################################################################
 
+// For RP2040 processor and SPI displays, uncomment the following line to use the PIO interface.
+//#define RP2040_PIO_SPI // Leave commented out to use standard RP2040 SPI port interface
+
 // For the RP2040 processor define the SPI port channel used (default 0 if undefined)
 //#define TFT_SPI_PORT 1 // Set to 0 if SPI0 pins are used, or 1 if spi1 pins used
 

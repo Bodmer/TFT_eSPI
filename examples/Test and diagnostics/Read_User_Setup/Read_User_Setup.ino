@@ -153,6 +153,7 @@ void printProcessorName(void)
   if ( user.esp == 0x8266) Serial.println("ESP8266");
   if ( user.esp == 0x32)   Serial.println("ESP32");
   if ( user.esp == 0x32F)  Serial.println("STM32");
+  if ( user.esp == 0x2040) Serial.println("RP2040");
   if ( user.esp == 0x0000) Serial.println("Generic");
 }
 

@@ -37,6 +37,9 @@ TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
   _colorMap = nullptr;
 
   _psram_enable = true;
+  
+  // Ensure end_tft_write() does nothing in inherited functions.
+  lockTransaction = true;
 }
 
 

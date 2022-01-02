@@ -308,7 +308,7 @@
   // Mask for the 8 data bits to set pin directions (not used)
   #define dir_mask 0
 
-  #define CONSTRUCTOR_INIT_TFT_DATA_BUS // None
+  #define PARALLEL_INIT_TFT_DATA_BUS // None
 
   #define INIT_TFT_DATA_BUS // Setup built into TFT_eSPI.cpp
 

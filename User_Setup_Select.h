@@ -90,6 +90,7 @@
 //#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h>
 //#include <User_Setups/Setup103_RP2040_ILI9486_parallel.h>
 //#include <User_Setups/Setup104_RP2040_ST7796_parallel.h>
+//#include <User_Setups/Setup105_RP2040_ILI9341_PIO_SPI.h>    // Setup file for Raspberry Pi Pico with SPI PIO interface and ILI9341
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 

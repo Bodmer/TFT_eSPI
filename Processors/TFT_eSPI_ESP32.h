@@ -322,7 +322,7 @@ SPI3_HOST = 2
 
   // Create a bit set lookup table for data bus - wastes 1kbyte of RAM but speeds things up dramatically
   // can then use e.g. GPIO.out_w1ts = set_mask(0xFF); to set data bus to 0xFF
-  #define CONSTRUCTOR_INIT_TFT_DATA_BUS            \
+  #define PARALLEL_INIT_TFT_DATA_BUS               \
   for (int32_t c = 0; c<256; c++)                  \
   {                                                \
     xset_mask[c] = 0;                              \

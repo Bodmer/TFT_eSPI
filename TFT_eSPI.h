@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.4.2"
+#define TFT_ESPI_VERSION "2.4.21"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -723,6 +723,9 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // For SPI bus: begin lowers SPI clock rate, end reinstates transmit clock rate
   inline void begin_tft_read()  __attribute__((always_inline));
   inline void end_tft_read()    __attribute__((always_inline));
+
+           // Initialise the data bus GPIO and hardware interfaces
+  void     initBus(void);
 
            // Temporary  library development function  TODO: remove need for this
   void     pushSwapBytePixels(const void* data_in, uint32_t len);

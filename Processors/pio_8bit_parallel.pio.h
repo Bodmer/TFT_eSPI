@@ -4,34 +4,64 @@
 
 #pragma once
 
+#if !PICO_NO_HARDWARE
+#include "hardware/pio.h"
+#endif
+
 // ------ //
 // tft_io //
 // ------ //
 
-#define tft_io_wrap_target 0
-#define tft_io_wrap 8
+#define tft_io_wrap_target 13
+#define tft_io_wrap 31
 
-#define tft_io_offset_start_16 0u
-#define tft_io_offset_start_8 7u
+#define tft_io_offset_start_32 0u
+#define tft_io_offset_block_fill 4u
+#define tft_io_offset_start_16 13u
+#define tft_io_offset_start_8 18u
+#define tft_io_offset_set_addr_window 21u
 
 static const uint16_t tft_io_program_instructions[] = {
-            //     .wrap_target
     0x98a0, //  0: pull   block           side 1     
-    0x6028, //  1: out    x, 8                       
-    0x7108, //  2: out    pins, 8         side 0 [1] 
-    0xb842, //  3: nop                    side 1     
-    0xa0e1, //  4: mov    osr, x                     
-    0x7008, //  5: out    pins, 8         side 0     
-    0x0000, //  6: jmp    0                          
-    0x98a0, //  7: pull   block           side 1
-    0x7108, //  8: out    pins, 8         side 0 [1] 
+    0x7108, //  1: out    pins, 8         side 0 [1] 
+    0x19fc, //  2: jmp    !osre, 28       side 1 [1] 
+    0x000d, //  3: jmp    13                         
+    0x98a0, //  4: pull   block           side 1     
+    0xa027, //  5: mov    x, osr                     
+    0x80a0, //  6: pull   block                      
+    0xa047, //  7: mov    y, osr                     
+    0xb8e1, //  8: mov    osr, x          side 1     
+    0x7118, //  9: out    pins, 24        side 0 [1] 
+    0xb942, // 10: nop                    side 1 [1] 
+    0x7108, // 11: out    pins, 8         side 0 [1] 
+    0x1888, // 12: jmp    y--, 8          side 1     
+            //     .wrap_target
+    0x98a0, // 13: pull   block           side 1     
+    0x7118, // 14: out    pins, 24        side 0 [1] 
+    0xb942, // 15: nop                    side 1 [1] 
+    0x7108, // 16: out    pins, 8         side 0 [1] 
+    0x180d, // 17: jmp    13              side 1     
+    0x98a0, // 18: pull   block           side 1     
+    0x7100, // 19: out    pins, 32        side 0 [1] 
+    0x180d, // 20: jmp    13              side 1     
+    0xf822, // 21: set    x, 2            side 1     
+    0xe000, // 22: set    pins, 0                    
+    0x80a0, // 23: pull   block                      
+    0x7000, // 24: out    pins, 32        side 0     
+    0x003e, // 25: jmp    !x, 30                     
+    0x98a0, // 26: pull   block           side 1     
+    0xe001, // 27: set    pins, 1                    
+    0x7108, // 28: out    pins, 8         side 0 [1] 
+    0x19fc, // 29: jmp    !osre, 28       side 1 [1] 
+    0x1856, // 30: jmp    x--, 22         side 1     
+    0xe001, // 31: set    pins, 1                    
             //     .wrap
 };
 
 #if !PICO_NO_HARDWARE
 static const struct pio_program tft_io_program = {
     .instructions = tft_io_program_instructions,
-    .length = 9,
+    .length = 32,
     .origin = -1,
 };
 
