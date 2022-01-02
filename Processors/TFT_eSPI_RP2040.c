@@ -632,7 +632,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
   
   channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
 #if !defined (RP2040_PIO_INTERFACE)
-  channel_config_set_dreq(&dma_tx_config, spi_get_dreq(SPI_X, true));
+  cchannel_config_set_dreq(&dma_tx_config, spi_get_index(SPI_X) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
 #else
   channel_config_set_dreq(&dma_tx_config, pio_get_dreq(pio, pio_sm, true));
 #endif
