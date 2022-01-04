@@ -83,7 +83,8 @@
 
 //#include <User_Setups/Setup70_ESP32_S2_ILI9341.h>  // Setup file for ESP32 S2 with SPI ILI9341
 
-//#include <User_Setups/Setup71_ESP32_S2_ST7789.h>  // Setup file for ESP32 S2 with ST7789
+//#include <User_Setups/Setup71_ESP32_S2_ST7789.h>   // Setup file for ESP32 S2 with ST7789
+//#include <User_Setups/Setup72_TTGO_T_Display_S2.h> // Setup file for ESP32-S2 and TTGO T-Display S2 ST7789 SPI TFT 135x240
 
 //#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h>
 //#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h>
