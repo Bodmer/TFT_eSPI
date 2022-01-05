@@ -40,7 +40,7 @@ Optimised drivers are incorporated for the following processors:
 
 Generic (non-optimised Arduino function calls) are used by the library for other processors.
 
-"Four wire" SPI and 8 bit parallel interfaces are supported. Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32). The RP2040 has not been tested with parallel displays.
+"Four wire" SPI and 8 bit parallel interfaces are supported. Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
 
 Displays using the following controllers are supported:
 
@@ -49,7 +49,7 @@ Displays using the following controllers are supported:
 * ILI9341
 * ILI9481
 * ILI9486
-* ILI9488 (DMA not supported for this 18 bit display)
+* ILI9488 (DMA not supported with SPI)
 * HX8357D
 * S6D02A1
 * SSD1351
