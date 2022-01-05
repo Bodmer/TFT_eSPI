@@ -14,16 +14,6 @@
 // by waiting for the SM to be idle and setting its PC.
 // The default SM routine is a 16 bit transfer
 
-public start_32:
-   // Fetch the next 32 bit value from the TX FIFO and set TFT_WR high.
-   pull side 1
-   // Output byte, TFT_WR low.
-   out pins, 8 side 0 [1]
-   // Loop until 4 bytes sent, TFT_WR high.
-   jmp !osre, send_xy side 1 [1]
-   //Jump back to 16 bit
-   jmp start_16
-
 // Do a block fill of N+1 pixels.
 public block_fill:
    // Fetch colour value.

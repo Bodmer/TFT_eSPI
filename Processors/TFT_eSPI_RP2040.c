@@ -29,7 +29,7 @@
   // Board package specific differences
   #ifdef ARDUINO_ARCH_MBED
     // Not supported at the moment
-    #error The Arduino RP2040 MBED board package is not supported. Use the community package by Earle Philhower.
+    #error The Arduino RP2040 MBED board package is not supported when PIO is used. Use the community package by Earle Philhower.
   #endif
 
   // Community RP2040 board package by Earle Philhower
@@ -213,12 +213,12 @@ void pioinit(uint16_t clock_div, uint16_t fract_div) {
   // Create the pull stall bit mask
   pull_stall_mask = 1u << (PIO_FDEBUG_TXSTALL_LSB + pio_sm);
   
-  // Create the assembler instruction for the jump to byte send routine
+  // Create the instructions for the jumps to send routines
   pio_instr_jmp8  = pio_encode_jmp(program_offset + tft_io_offset_start_8);
-  //pio_instr_jmp32 = pio_encode_jmp(program_offset + tft_io_offset_start_32);
   pio_instr_fill  = pio_encode_jmp(program_offset + tft_io_offset_block_fill);
   pio_instr_addr  = pio_encode_jmp(program_offset + tft_io_offset_set_addr_window);
-  
+
+  // Create the instructions to set and clear the DC signal
   pio_instr_set_dc = pio_encode_set((pio_src_dest)0, 1);
   pio_instr_clr_dc = pio_encode_set((pio_src_dest)0, 0);
 }
