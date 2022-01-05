@@ -3,6 +3,8 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 1. The RP2040 8 bit parallel interface uses the PIO. The PIO now manages the "setWindow" and "block fill" actions, releasing the processor for other tasks when areas of the screen are being filled with a colour. The PIO can optionally be used for SPI interface displays if #define RP2040_PIO_SPI is put in the setup file. Touch screens and pixel read operations are not supported when the PIO interface is used.
 The RP2040 PIO features only work with [Earle Philhower's board package](https://github.com/earlephilhower/arduino-pico), NOT the Arduino Mbed version.
 
+The use of PIO for SPI allows the RP2040 to be over-clocked (up to 250MHz works on my boards) in Earle's board package whilst still maintaining high SPI clock rates.
+
 2. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with both 8 bit parallel and 16 bit colour SPI displays. See "Bouncy_Circles" sketch.
 
       ["Bouncing circles"](https://www.youtube.com/watch?v=njFXIzCTQ_Q&lc=UgymaUIwOIuihvYh-Qt4AaABAg)
