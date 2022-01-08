@@ -58,18 +58,14 @@
 ** Description:             Start SPI transaction for writes and select TFT
 ***************************************************************************************/
 inline void TFT_eSPI::begin_tft_write(void){
-#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
   if (locked) {
     locked = false; // Flag to show SPI access now unlocked
+#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
     spi.beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, TFT_SPI_MODE));
+#endif
     CS_L;
     SET_BUS_WRITE_MODE;  // Some processors (e.g. ESP32) allow recycling the tx buffer when rx is not used
   }
-#else
-  CS_L;
-  SET_BUS_WRITE_MODE;
-#endif
-
 }
 
 /***************************************************************************************
@@ -77,19 +73,17 @@ inline void TFT_eSPI::begin_tft_write(void){
 ** Description:             End transaction for write and deselect TFT
 ***************************************************************************************/
 inline void TFT_eSPI::end_tft_write(void){
-#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
   if(!inTransaction) {      // Flag to stop ending transaction during multiple graphics calls
     if (!locked) {          // Locked when beginTransaction has been called
       locked = true;        // Flag to show SPI access now locked
       SPI_BUSY_CHECK;       // Check send complete and clean out unused rx data
       CS_H;
+#if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
       spi.endTransaction();
+#endif
     }
     SET_BUS_READ_MODE;      // In case SPI has been configured for tx only
   }
-#else
-  if(!inTransaction) {SPI_BUSY_CHECK; CS_H; SET_BUS_READ_MODE;}
-#endif
 }
 
 /***************************************************************************************
@@ -3680,6 +3674,84 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
   setWindow(x, y, x + w - 1, y + h - 1);
 
   pushBlock(color, w * h);
+
+  end_tft_write();
+}
+
+
+/***************************************************************************************
+** Function name:           fillRectVGradient
+** Description:             draw a filled rectangle with a vertical colour gradient
+***************************************************************************************/
+void TFT_eSPI::fillRectVGradient(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color1, uint32_t color2)
+{
+  if (_vpOoB) return;
+
+  x+= _xDatum;
+  y+= _yDatum;
+
+  // Clipping
+  if ((x >= _vpW) || (y >= _vpH)) return;
+
+  if (x < _vpX) { w += x - _vpX; x = _vpX; }
+  if (y < _vpY) { h += y - _vpY; y = _vpY; }
+
+  if ((x + w) > _vpW) w = _vpW - x;
+  if ((y + h) > _vpH) h = _vpH - y;
+
+  if ((w < 1) || (h < 1)) return;
+
+  begin_tft_write();
+
+  setWindow(x, y, x + w - 1, y + h - 1);
+
+  float delta = -255.0/h;
+  float alpha = 255.0;
+  uint32_t color = color1;
+
+  while (h--) {
+    pushBlock(color, w);
+    alpha += delta;
+    color = alphaBlend((uint8_t)alpha, color1, color2);
+  }
+
+  end_tft_write();
+}
+
+
+/***************************************************************************************
+** Function name:           fillRectHGradient
+** Description:             draw a filled rectangle with a horizontal colour gradient
+***************************************************************************************/
+void TFT_eSPI::fillRectHGradient(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color1, uint32_t color2)
+{
+  if (_vpOoB) return;
+
+  x+= _xDatum;
+  y+= _yDatum;
+
+  // Clipping
+  if ((x >= _vpW) || (y >= _vpH)) return;
+
+  if (x < _vpX) { w += x - _vpX; x = _vpX; }
+  if (y < _vpY) { h += y - _vpY; y = _vpY; }
+
+  if ((x + w) > _vpW) w = _vpW - x;
+  if ((y + h) > _vpH) h = _vpH - y;
+
+  if ((w < 1) || (h < 1)) return;
+
+  begin_tft_write();
+  
+  float delta = -255.0/w;
+  float alpha = 255.0;
+  uint32_t color = color1;
+
+  while (w--) {
+    drawFastVLine(x++, y, h, color);
+    alpha += delta;
+    color = alphaBlend((uint8_t)alpha, color1, color2);
+  }
 
   end_tft_write();
 }

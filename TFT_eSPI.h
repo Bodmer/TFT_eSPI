@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.4.24"
+#define TFT_ESPI_VERSION "2.4.25"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -458,6 +458,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color),
            fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color);
 
+  void     fillRectVGradient(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color1, uint32_t color2);
+  void     fillRectHGradient(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color1, uint32_t color2);
 
   void     drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
            drawCircleHelper(int32_t x, int32_t y, int32_t r, uint8_t cornername, uint32_t color),
@@ -763,6 +765,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
   getColorCallback getColor = nullptr; // Smooth font callback function pointer
 
+  bool     locked, inTransaction, lockTransaction; // SPI transaction and mutex lock flags
+
  //-------------------------------------- protected ----------------------------------//
  protected:
 
@@ -794,7 +798,6 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     isDigits;   // adjust bounding box for numbers to reduce visual jiggling
   bool     textwrapX, textwrapY;  // If set, 'wrap' text at right and optionally bottom edge of display
   bool     _swapBytes; // Swap the byte order for TFT pushImage()
-  bool     locked, inTransaction, lockTransaction; // SPI transaction and mutex lock flags
 
   bool     _booted;    // init() or begin() has already run once
   
