@@ -64,21 +64,30 @@ void TFT_eSPI_Button::drawButton(bool inverted, String long_name) {
   _gfx->fillRoundRect(_x1, _y1, _w, _h, r, fill);
   _gfx->drawRoundRect(_x1, _y1, _w, _h, r, outline);
 
-  _gfx->setTextColor(text, fill);
-  _gfx->setTextSize(_textsize);
+  if (_gfx->textfont == 255) {
+    _gfx->setCursor(_x1 + (_w / 2) - (strlen(_label) * 3 * _textsize),
+                    _y1 + (_h / 2) - (4 * _textsize));
+    _gfx->setTextColor(text);
+    _gfx->setTextSize(_textsize);
+    _gfx->print(_label);
+  }
+  else {
+    _gfx->setTextColor(text, fill);
+    _gfx->setTextSize(_textsize);
 
-  uint8_t tempdatum = _gfx->getTextDatum();
-  _gfx->setTextDatum(_textdatum);
-  uint16_t tempPadding = _gfx->getTextPadding();
-  _gfx->setTextPadding(0);
+    uint8_t tempdatum = _gfx->getTextDatum();
+    _gfx->setTextDatum(_textdatum);
+    uint16_t tempPadding = _gfx->getTextPadding();
+    _gfx->setTextPadding(0);
 
-  if (long_name == "")
-    _gfx->drawString(_label, _x1 + (_w/2) + _xd, _y1 + (_h/2) - 4 + _yd);
-  else
-    _gfx->drawString(long_name, _x1 + (_w/2) + _xd, _y1 + (_h/2) - 4 + _yd);
+    if (long_name == "")
+      _gfx->drawString(_label, _x1 + (_w/2) + _xd, _y1 + (_h/2) - 4 + _yd);
+    else
+      _gfx->drawString(long_name, _x1 + (_w/2) + _xd, _y1 + (_h/2) - 4 + _yd);
 
-  _gfx->setTextDatum(tempdatum);
-  _gfx->setTextPadding(tempPadding);
+    _gfx->setTextDatum(tempdatum);
+    _gfx->setTextPadding(tempPadding);
+  }
 }
 
 bool TFT_eSPI_Button::contains(int16_t x, int16_t y) {
