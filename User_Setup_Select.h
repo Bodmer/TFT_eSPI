@@ -218,6 +218,7 @@
      #define  TFT_DRIVER 0x0000
 #else
      #define  TFT_DRIVER 0x0000
+     # error "####### NO TFT DRIVER DEFINED #######"
 #endif
 
 // These are the pins for ESP8266 boards
