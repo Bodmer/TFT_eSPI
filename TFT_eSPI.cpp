@@ -3095,7 +3095,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
       DC_C;
       #if !defined (SPI_18BIT_DRIVER)
         #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
-          spi_set_format(SPI_X,  16, (spi_cpol_t)(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(TFT_SPI_MODE & 0b01), SPI_MSB_FIRST);
+          spi_set_format(SPI_X,  16, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
         #else
           spi_set_format(SPI_X,  8, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
         #endif
