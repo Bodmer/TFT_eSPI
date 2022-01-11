@@ -271,10 +271,10 @@
 
       // This swaps to 8 bit mode, then back to 16 bit mode
       #define tft_Write_8(C)      while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {}; \
-                                  spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST); \
+                                  spi_set_format(SPI_X,  8, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST); \
                                   spi_get_hw(SPI_X)->dr = (uint32_t)(C); \
                                   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {}; \
-                                  spi_set_format(SPI_X, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
+                                  spi_set_format(SPI_X, 16, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST)
 
       // Note: the following macros do not wait for the end of transmission
 

@@ -3095,9 +3095,9 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
       DC_C;
       #if !defined (SPI_18BIT_DRIVER)
         #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
-          spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+          spi_set_format(SPI_X,  16, (spi_cpol_t)(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(TFT_SPI_MODE & 0b01), SPI_MSB_FIRST);
         #else
-          spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+          spi_set_format(SPI_X,  8, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
         #endif
       #endif
       spi_get_hw(SPI_X)->dr = (uint32_t)TFT_CASET;
@@ -3126,7 +3126,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 
       while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
       #if !defined (SPI_18BIT_DRIVER)
-        spi_set_format(SPI_X, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+        spi_set_format(SPI_X, 16, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
       #endif
       DC_D;
     #else
@@ -3182,7 +3182,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(RP2040_PIO_INTERFACE)
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
-  spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  spi_set_format(SPI_X,  8, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
   spi_get_hw(SPI_X)->dr = (uint32_t)TFT_CASET;
 
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
@@ -3208,7 +3208,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   spi_get_hw(SPI_X)->dr = (uint32_t)TFT_RAMRD;
 
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-  //spi_set_format(SPI_X, 8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  //spi_set_format(SPI_X, 8, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
   DC_D;
 
   // Flush the rx buffer and reset overflow flag
@@ -3303,9 +3303,9 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
 
     #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
-      spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+      spi_set_format(SPI_X,  16, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
     #else
-      spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+      spi_set_format(SPI_X,  8, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
     #endif
 
     if (addr_col != x) {

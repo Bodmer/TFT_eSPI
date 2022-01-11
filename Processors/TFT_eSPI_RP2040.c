@@ -420,7 +420,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
     uint32_t gb = g<<8 | b;
     // Must wait before changing to 16 bit
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-    spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    spi_set_format(SPI_X,  16, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
     while ( len > 1 ) {
       while (!spi_is_writable(SPI_X)){}; spi_get_hw(SPI_X)->dr = rg;
       while (!spi_is_writable(SPI_X)){}; spi_get_hw(SPI_X)->dr = br;
@@ -429,7 +429,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
     }
     // Must wait before changing back to 8 bit
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-    spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    spi_set_format(SPI_X,  8, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
   }
 
   // Mop up the remaining pixels
@@ -524,7 +524,7 @@ bool TFT_eSPI::dmaBusy(void) {
 #if !defined (RP2040_PIO_INTERFACE)
   // For SPI must also wait for FIFO to flush and reset format
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-  spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  spi_set_format(SPI_X,  16, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
 #endif
 
   return false;
@@ -541,7 +541,7 @@ void TFT_eSPI::dmaWait(void)
 #if !defined (RP2040_PIO_INTERFACE)
   // For SPI must also wait for FIFO to flush and reset format
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-  spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  spi_set_format(SPI_X,  16, (spi_cpol_t)(!!(TFT_SPI_MODE & 0b10)), (spi_cpha_t)(!!(TFT_SPI_MODE & 0b01)), SPI_MSB_FIRST);
 #endif
 }
 
