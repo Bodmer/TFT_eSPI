@@ -549,9 +549,9 @@ void TFT_eSPI::init(uint8_t tc)
 #else
   #if !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
     #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED)
-      spi.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
+      spi.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1); // This will set MISO to input
     #else
-      spi.begin();
+      spi.begin(); // This will set MISO to input
     #endif
   #endif
 #endif
@@ -562,8 +562,8 @@ void TFT_eSPI::init(uint8_t tc)
     INIT_TFT_DATA_BUS;
 
 
-#if defined (TFT_CS) && defined (ESP8266)
-  // Set to output once again in case ESP8266 D6 (MISO) is used for CS
+#if defined (TFT_CS)
+  // Set to output once again in case MISO is used for CS
   pinMode(TFT_CS, OUTPUT);
   digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
 #elif defined (ESP8266) && !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_SPI)
@@ -571,8 +571,8 @@ void TFT_eSPI::init(uint8_t tc)
 #endif
 
 
-  // Set to output once again in case ESP8266 D6 (MISO) is used for DC
-#if defined (TFT_DC) && defined (ESP8266)
+  // Set to output once again in case MISO is used for DC
+#if defined (TFT_DC)
     pinMode(TFT_DC, OUTPUT);
     digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
 #endif
@@ -583,6 +583,8 @@ void TFT_eSPI::init(uint8_t tc)
 
   // Toggle RST low to reset
 #ifdef TFT_RST
+  // Set to output once again in case MISO is used for TFT_RST
+  pinMode(TFT_RST, OUTPUT);
   if (TFT_RST >= 0) {
     digitalWrite(TFT_RST, HIGH);
     delay(5);
