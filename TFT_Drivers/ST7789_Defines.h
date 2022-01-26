@@ -104,6 +104,7 @@
 #define ST7789_TEOFF		0x34      // Tearing effect line off
 #define ST7789_TEON			0x35      // Tearing effect line on
 #define ST7789_MADCTL		0x36      // Memory data access control
+#define ST7789_VSCRSADD		0x37      // Vertical screoll address
 #define ST7789_IDMOFF		0x38      // Idle mode off
 #define ST7789_IDMON		0x39      // Idle mode on
 #define ST7789_RAMWRC		0x3C      // Memory write continue (ST7789V)

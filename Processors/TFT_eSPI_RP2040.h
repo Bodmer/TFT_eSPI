@@ -8,6 +8,11 @@
 #ifndef _TFT_eSPI_RP2040H_
 #define _TFT_eSPI_RP2040H_
 
+#ifndef ARDUINO_ARCH_MBED
+  #define FONT_FS_AVAILABLE
+  #define SPIFFS LittleFS
+#endif
+
 // Required for both the official and community board packages
 #include "hardware/dma.h"
 #include "hardware/pio.h"
@@ -37,7 +42,7 @@
   #endif
 
   // Processor specific code used by SPI bus transaction begin/end_tft_write functions
-  #define SET_BUS_WRITE_MODE spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
+  #define SET_BUS_WRITE_MODE spi_set_format(SPI_X,  8, (spi_cpol_t)(TFT_SPI_MODE >> 1), (spi_cpha_t)(TFT_SPI_MODE & 0x1), SPI_MSB_FIRST)
   #define SET_BUS_READ_MODE  // spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
 #else
   // Processor specific code used by SPI bus transaction begin/end_tft_write functions
@@ -98,7 +103,7 @@
 #ifdef SMOOTH_FONT
   // Call up the filing system for the anti-aliased fonts
   //#define FS_NO_GLOBALS
-  //#include <FS.h>
+  #include <FS.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -183,7 +188,7 @@
   #endif
 #else
   #ifdef TOUCH_CS
-    #error Touch screen not supported in parallel mode, use a separate library.
+    #error Touch screen not supported in parallel or SPI PIO mode, use a separate library.
   #endif
 #endif
 
@@ -271,10 +276,10 @@
 
       // This swaps to 8 bit mode, then back to 16 bit mode
       #define tft_Write_8(C)      while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {}; \
-                                  spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST); \
+                                  hw_write_masked(&spi_get_hw(SPI_X)->cr0, (8 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS); \
                                   spi_get_hw(SPI_X)->dr = (uint32_t)(C); \
                                   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {}; \
-                                  spi_set_format(SPI_X, 16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
+                                  hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS)
 
       // Note: the following macros do not wait for the end of transmission
 

@@ -154,12 +154,12 @@ void pioinit(uint32_t clock_freq) {
 
   // Create the pull stall bit mask
   pull_stall_mask = 1u << (PIO_FDEBUG_TXSTALL_LSB + pio_sm);
-  
+
   // Create the assembler instruction for the jump to byte send routine
   pio_instr_jmp8  = pio_encode_jmp(program_offset + tft_io_offset_start_8);
   pio_instr_fill  = pio_encode_jmp(program_offset + tft_io_offset_block_fill);
   pio_instr_addr  = pio_encode_jmp(program_offset + tft_io_offset_set_addr_window);
-  
+
   pio_instr_set_dc = pio_encode_set((pio_src_dest)0, 1);
   pio_instr_clr_dc = pio_encode_set((pio_src_dest)0, 0);
 }
@@ -212,7 +212,7 @@ void pioinit(uint16_t clock_div, uint16_t fract_div) {
 
   // Create the pull stall bit mask
   pull_stall_mask = 1u << (PIO_FDEBUG_TXSTALL_LSB + pio_sm);
-  
+
   // Create the instructions for the jumps to send routines
   pio_instr_jmp8  = pio_encode_jmp(program_offset + tft_io_offset_start_8);
   pio_instr_fill  = pio_encode_jmp(program_offset + tft_io_offset_block_fill);
@@ -235,7 +235,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
   if (len) {
     WAIT_FOR_STALL;
     pio->sm[pio_sm].instr = pio_instr_fill;
-    
+
     TX_FIFO = color;
     TX_FIFO = --len; // Decrement first as PIO sends n+1
   }
@@ -368,13 +368,13 @@ uint8_t TFT_eSPI::readByte(void)
   b |= digitalRead(TFT_D7) << 7;
 
   digitalWrite(TFT_RD, HIGH);
-  busDir(0, OUTPUT); 
+  busDir(0, OUTPUT);
 */
   return b;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif defined (RPI_WRITE_STROBE)  // For RPi TFT with write strobe                      
+#elif defined (RPI_WRITE_STROBE)  // For RPi TFT with write strobe
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -400,7 +400,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif defined (SPI_18BIT_DRIVER) // SPI 18 bit colour                         
+#elif defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -420,7 +420,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
     uint32_t gb = g<<8 | b;
     // Must wait before changing to 16 bit
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-    spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
     while ( len > 1 ) {
       while (!spi_is_writable(SPI_X)){}; spi_get_hw(SPI_X)->dr = rg;
       while (!spi_is_writable(SPI_X)){}; spi_get_hw(SPI_X)->dr = br;
@@ -429,7 +429,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
     }
     // Must wait before changing back to 8 bit
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-    spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+    hw_write_masked(&spi_get_hw(SPI_X)->cr0, (8 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
   }
 
   // Mop up the remaining pixels
@@ -458,7 +458,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#else //                   Standard SPI 16 bit colour TFT                               
+#else //                   Standard SPI 16 bit colour TFT
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -524,7 +524,7 @@ bool TFT_eSPI::dmaBusy(void) {
 #if !defined (RP2040_PIO_INTERFACE)
   // For SPI must also wait for FIFO to flush and reset format
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-  spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
 #endif
 
   return false;
@@ -541,7 +541,7 @@ void TFT_eSPI::dmaWait(void)
 #if !defined (RP2040_PIO_INTERFACE)
   // For SPI must also wait for FIFO to flush and reset format
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-  spi_set_format(SPI_X,  16, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST);
+  hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
 #endif
 }
 
@@ -624,12 +624,12 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 bool TFT_eSPI::initDMA(bool ctrl_cs)
 {
   if (DMA_Enabled) return false;
-  
+
   ctrl_cs = ctrl_cs; // stop unused parameter warning
 
   dma_tx_channel = dma_claim_unused_channel(true);
   dma_tx_config = dma_channel_get_default_config(dma_tx_channel);
-  
+
   channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
 #if !defined (RP2040_PIO_INTERFACE)
   channel_config_set_dreq(&dma_tx_config, spi_get_index(SPI_X) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
@@ -653,5 +653,5 @@ void TFT_eSPI::deInitDMA(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#endif // End of DMA FUNCTIONS    
+#endif // End of DMA FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////

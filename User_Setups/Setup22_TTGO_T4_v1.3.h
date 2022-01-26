@@ -12,7 +12,7 @@
 #define TFT_SCLK 18
 
 #define TFT_CS   27
-#define TFT_DC   32 // pin 26 for TTGO T4 v1.3 <<<<<<<<<<< Note
+#define TFT_DC   32 // pin 26 for TTGO T4 v1.1
 #define TFT_RST   5
 
 #define LOAD_GLCD

@@ -213,7 +213,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 ***************************************************************************************/
 /*
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
-  
+
   uint32_t color32 = (color<<8 | color >>8)<<16 | (color<<8 | color >>8);
   bool empty = true;
   volatile uint32_t* spi_w = (volatile uint32_t*)_spi_w;
@@ -262,7 +262,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 
   volatile uint32_t* spi_w = _spi_w;
-  uint32_t color32 = (color<<8 | color >>8)<<16 | (color<<8 | color >>8);  
+  uint32_t color32 = (color<<8 | color >>8)<<16 | (color<<8 | color >>8);
   uint32_t i = 0;
   uint32_t rem = len & 0x1F;
   len =  len - rem;
@@ -287,7 +287,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
   {
     while (*_spi_cmd&SPI_USR);
     *_spi_cmd = SPI_USR;
-      len -= 32;
+    len -= 32;
   }
 
   // Do not wait here
@@ -315,7 +315,7 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
         data+=4;
       }
       while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
-      WRITE_PERI_REG(SPI_W0_REG(SPI_PORT),  color[0]); 
+      WRITE_PERI_REG(SPI_W0_REG(SPI_PORT),  color[0]);
       WRITE_PERI_REG(SPI_W1_REG(SPI_PORT),  color[1]);
       WRITE_PERI_REG(SPI_W2_REG(SPI_PORT),  color[2]);
       WRITE_PERI_REG(SPI_W3_REG(SPI_PORT),  color[3]);
@@ -346,7 +346,7 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
     }
     while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
     WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 255);
-    WRITE_PERI_REG(SPI_W0_REG(SPI_PORT),  color[0]); 
+    WRITE_PERI_REG(SPI_W0_REG(SPI_PORT),  color[0]);
     WRITE_PERI_REG(SPI_W1_REG(SPI_PORT),  color[1]);
     WRITE_PERI_REG(SPI_W2_REG(SPI_PORT),  color[2]);
     WRITE_PERI_REG(SPI_W3_REG(SPI_PORT),  color[3]);
@@ -832,5 +832,5 @@ void TFT_eSPI::deInitDMA(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#endif // End of DMA FUNCTIONS    
+#endif // End of DMA FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////
