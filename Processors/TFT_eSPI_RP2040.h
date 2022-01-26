@@ -9,6 +9,7 @@
 #define _TFT_eSPI_RP2040H_
 
 #ifndef ARDUINO_ARCH_MBED
+  #include <LittleFS.h>
   #define FONT_FS_AVAILABLE
   #define SPIFFS LittleFS
 #endif
