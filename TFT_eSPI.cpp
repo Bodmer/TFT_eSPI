@@ -562,7 +562,7 @@ void TFT_eSPI::init(uint8_t tc)
     INIT_TFT_DATA_BUS;
 
 
-#if defined (TFT_CS)
+#if defined (TFT_CS) && !defined(RP2040_PIO_INTERFACE)
   // Set to output once again in case MISO is used for CS
   pinMode(TFT_CS, OUTPUT);
   digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
@@ -572,7 +572,7 @@ void TFT_eSPI::init(uint8_t tc)
 
 
   // Set to output once again in case MISO is used for DC
-#if defined (TFT_DC)
+#if defined (TFT_DC) && !defined(RP2040_PIO_INTERFACE)
     pinMode(TFT_DC, OUTPUT);
     digitalWrite(TFT_DC, HIGH); // Data/Command high = data mode
 #endif
@@ -583,8 +583,10 @@ void TFT_eSPI::init(uint8_t tc)
 
   // Toggle RST low to reset
 #ifdef TFT_RST
-  // Set to output once again in case MISO is used for TFT_RST
-  pinMode(TFT_RST, OUTPUT);
+  #if !defined(RP2040_PIO_INTERFACE)
+    // Set to output once again in case MISO is used for TFT_RST
+    pinMode(TFT_RST, OUTPUT);
+  #endif
   if (TFT_RST >= 0) {
     digitalWrite(TFT_RST, HIGH);
     delay(5);
