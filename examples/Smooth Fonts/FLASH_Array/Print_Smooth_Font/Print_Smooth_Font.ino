@@ -11,11 +11,11 @@
   The library supports 16 bit unicode characters:
   https://en.wikipedia.org/wiki/Unicode_font
 
-  The characters supported are in the in the Basic Multilingal Plane:
+  The characters supported are in the in the Basic Multilingual Plane:
   https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane
 
-  Make sure all the display driver and pin connenctions are correct by
-  editting the User_Setup.h file in the TFT_eSPI library folder.
+  Make sure all the display driver and pin connections are correct by
+  editing the User_Setup.h file in the TFT_eSPI library folder.
 */
 
 //  The font is stored in an array within a sketch tab.

@@ -38,7 +38,7 @@ inline void TFT_eSPI::end_touch_read_write(void){
   #else
     spi.setFrequency(SPI_FREQUENCY);
   #endif
-  SET_BUS_WRITE_MODE;
+  //SET_BUS_WRITE_MODE;
 }
 
 /***************************************************************************************

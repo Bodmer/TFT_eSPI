@@ -36,7 +36,7 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 uint32_t targetTime = 0;       // for next 1 second timeout
 
 byte omm = 99;
-boolean initial = 1;
+bool initial = 1;
 byte xcolon = 0;
 unsigned int colour = 0;
 

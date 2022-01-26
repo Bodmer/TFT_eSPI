@@ -84,7 +84,7 @@ void TFT_eSPI::end_SDA_Read(void)
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
-    // Loop unrolling improves speed dramtically graphics test  0.634s => 0.374s
+    // Loop unrolling improves speed dramatically graphics test  0.634s => 0.374s
     while (len>31) {
     #if !defined (SSD1963_DRIVER)
       // 32D macro writes 16 bits twice
@@ -165,6 +165,22 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
     if (mode == OUTPUT) GPIOB->MODER = (GPIOB->MODER & 0xFFFF0000) | 0x00005555;
     else GPIOB->MODER &= 0xFFFF0000;
   #endif
+#elif defined (STM_PORTC_DATA_BUS)
+  #if defined (STM32F1xx)
+    if (mode == OUTPUT) GPIOC->CRL = 0x33333333;
+    else GPIOC->CRL = 0x88888888;
+  #else
+    if (mode == OUTPUT) GPIOC->MODER = (GPIOC->MODER & 0xFFFF0000) | 0x00005555;
+    else GPIOC->MODER &= 0xFFFF0000;
+  #endif
+#elif defined (STM_PORTD_DATA_BUS)
+  #if defined (STM32F1xx)
+    if (mode == OUTPUT) GPIOD->CRL = 0x33333333;
+    else GPIOD->CRL = 0x88888888;
+  #else
+    if (mode == OUTPUT) GPIOD->MODER = (GPIOD->MODER & 0xFFFF0000) | 0x00005555;
+    else GPIOD->MODER &= 0xFFFF0000;
+  #endif
 #else
   if (mode == OUTPUT) {
     LL_GPIO_SetPinMode(D0_PIN_PORT, D0_PIN_MASK, LL_GPIO_MODE_OUTPUT);
@@ -222,6 +238,16 @@ uint8_t TFT_eSPI::readByte(void)
   b = GPIOB->IDR;
   b = GPIOB->IDR;
   b = (GPIOB->IDR) & 0xFF;
+#elif defined (STM_PORTC_DATA_BUS)
+  b = GPIOC->IDR;
+  b = GPIOC->IDR;
+  b = GPIOC->IDR;
+  b = (GPIOC->IDR) & 0xFF;
+#elif defined (STM_PORTD_DATA_BUS)
+  b = GPIOD->IDR;
+  b = GPIOD->IDR;
+  b = GPIOD->IDR;
+  b = (GPIOD->IDR) & 0xFF;
 #else
   b  = RD_TFT_D0 | RD_TFT_D0 | RD_TFT_D0 | RD_TFT_D0; //Delay for bits to settle
 
@@ -525,6 +551,9 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   #elif (TFT_SPI_PORT == 2)
     extern "C" void DMA1_Stream4_IRQHandler();
     void DMA1_Stream4_IRQHandler(void)
+  #elif (TFT_SPI_PORT == 3)
+    extern "C" void DMA1_Stream5_IRQHandler();
+    void DMA1_Stream5_IRQHandler(void)
   #endif
   {
     // Call the default end of buffer handler
@@ -546,8 +575,12 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     __HAL_RCC_DMA2_CLK_ENABLE();                           // Enable DMA2 clock
     dmaHal.Init.Channel = DMA_CHANNEL_3;                   // DMA channel 3 is for SPI1 TX
   #elif (TFT_SPI_PORT == 2)
-    __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA2 clock
+    __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA1 clock
     dmaHal.Init.Channel = DMA_CHANNEL_0;                   // DMA channel 0 is for SPI2 TX
+  #elif (TFT_SPI_PORT == 3)
+    __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA1 clock
+    dmaHal.Init.Channel = DMA_CHANNEL_0;                   // DMA channel 0 is for SPI3 TX
+  
   #endif
 
   dmaHal.Init.Mode =  DMA_NORMAL; //DMA_CIRCULAR;   //   // Normal = send buffer once
@@ -594,8 +627,10 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 ** Function name:           initDMA
 ** Description:             Initialise the DMA engine - returns true if init OK
 ***************************************************************************************/
-bool TFT_eSPI::initDMA(void)
+bool TFT_eSPI::initDMA(bool ctrl_cs)
 {
+  ctrl_cs = ctrl_cs; // Not used for STM32, so stop compiler warning
+
   __HAL_RCC_DMA1_CLK_ENABLE();                           // Enable DMA1 clock
 
   dmaHal.Init.Mode =  DMA_NORMAL; //DMA_CIRCULAR;   //   // Normal = send buffer once

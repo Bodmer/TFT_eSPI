@@ -19,7 +19,8 @@ void setup() {
   // Initialise the TFT screen
   tft.init();
 
-  // Set the rotation before we calibrate
+  // Set the rotation to the orientation you wish to use in your project before calibration
+  // (the touch coordinates returned then correspond to that rotation only)
   tft.setRotation(1);
 
   // Calibrate the touch screen and retrieve the scaling factors
@@ -43,7 +44,7 @@ void loop(void) {
   uint16_t x = 0, y = 0; // To store the touch coordinates
 
   // Pressed will be set true is there is a valid touch on the screen
-  boolean pressed = tft.getTouch(&x, &y);
+  bool pressed = tft.getTouch(&x, &y);
 
   // Draw a white spot at the detected coordinates
   if (pressed) {

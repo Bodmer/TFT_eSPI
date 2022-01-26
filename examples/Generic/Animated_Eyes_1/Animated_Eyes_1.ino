@@ -1,7 +1,14 @@
 // An adaption of the "UncannyEyes" sketch (see eye_functions tab)
 // for the TFT_eSPI library. As written the sketch is for driving
 // one (240x320 minimum) TFT display, showing 2 eyes. See example
-// Animated_Eyes_2 for a dual 128x128 TFT display configued sketch.
+// Animated_Eyes_2 for a dual 128x128 TFT display configured sketch.
+
+// The size of the displayed eye is determined by the screen size and
+// resolution. The eye image is 128 pixels wide. In humans the palpebral
+// fissure (open eye) width is about 30mm so a low resolution, large
+// pixel size display works best to show a scale eye image. Note that
+// display manufacturers usually quote the diagonal measurement, so a
+// 128 x 128 1.7" display or 128 x 160 2" display is about right.
 
 // Configuration settings for the eye, eye style, display count,
 // chip selects and x offsets can be defined in the sketch "config.h" tab.
@@ -9,7 +16,7 @@
 // Performance (frames per second = fps) can be improved by using
 // DMA (for SPI displays only) on ESP32 and STM32 processors. Use
 // as high a SPI clock rate as is supported by the display. 27MHz
-// minimum, some diplays can be operated at higher clock rates in
+// minimum, some displays can be operated at higher clock rates in
 // the range 40-80MHz.
 
 // Single defaultEye performance for different processors
@@ -22,7 +29,7 @@
 // STM32F446 55MHz SPI              83 fps    155 fps
 // STM32F767 55MHz SPI             136 fps    197 fps
 
-// DMA can be used with STM32 and ESP32 processors when the interface
+// DMA can be used with RP2040, STM32 and ESP32 processors when the interface
 // is SPI, uncomment the next line:
 //#define USE_DMA
 
@@ -95,7 +102,7 @@ void setup(void) {
   // User call for additional features
   user_setup();
 
-  // Initialiase the eye(s), this will set all chip selects low for the tft.init()
+  // Initialise the eye(s), this will set all chip selects low for the tft.init()
   initEyes();
 
   // Initialise TFT

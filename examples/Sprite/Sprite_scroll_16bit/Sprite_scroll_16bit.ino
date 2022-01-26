@@ -5,7 +5,7 @@
   https://github.com/Bodmer/TFT_eSPI
 
   The sketch has been tested on a 320x240 ILI9341 based TFT, it
-  coule be adapted for other screen sizes.
+  could be adapted for other screen sizes.
 
   A Sprite is notionally an invisible graphics screen that is
   kept in the processors RAM. Graphics can be drawn into the
@@ -16,7 +16,7 @@
 
   The Sprite occupies (2 * width * height) bytes.
 
-  On a ESP8266 Sprite sizes up to 128 x 160 can be accomodated,
+  On a ESP8266 Sprite sizes up to 128 x 160 can be accommodated,
   this size requires 128*160*2 bytes (40kBytes) of RAM, this must be
   available or the processor will crash. You need to make the sprite
   small enough to fit, with RAM spare for any "local variables" that

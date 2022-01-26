@@ -73,7 +73,7 @@ void loop() {
   uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
 
   // Get current touch state and coordinates
-  boolean pressed = tft.getTouch(&t_x, &t_y);
+  bool pressed = tft.getTouch(&t_x, &t_y);
 
   // Adjust press state of each key appropriately
   for (uint8_t b = 0; b < NUM_KEYS; b++) {
@@ -133,7 +133,7 @@ void touch_calibrate()
 
   // check file system exists
   if (!SPIFFS.begin()) {
-    Serial.println("Formating file system");
+    Serial.println("Formatting file system");
     SPIFFS.format();
     SPIFFS.begin();
   }

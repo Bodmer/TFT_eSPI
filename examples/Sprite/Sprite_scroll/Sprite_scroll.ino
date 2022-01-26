@@ -1,7 +1,7 @@
 /*
   Sketch to show scrolling of the graphics in sprites.
   Scrolling in this way moves the pixels in a defined rectangle
-  within the Sprite. By defalt the whole sprite is scrolled.
+  within the Sprite. By default the whole sprite is scrolled.
   The gap left by scrolling is filled with a defined colour.
 
   Example for library:
@@ -74,7 +74,7 @@ void loop() {
   // Draw number in stext1 sprite at 31,63 (bottom right datum set)
   stext1.drawNumber(graphVal, 31, 63, 2); // plot value in font 2
 
-  // Push the sprites onto the TFT at specied coordinates
+  // Push the sprites onto the TFT at specified coordinates
   graph1.pushSprite(0, 0);
   stext1.pushSprite(0, 64);
   stext2.pushSprite(40, 70);

@@ -118,8 +118,8 @@ void drawSdJpeg(const char *filename, int xpos, int ypos) {
   Serial.println("===========================");
 
   // Use one of the following methods to initialise the decoder:
-  boolean decoded = JpegDec.decodeSdFile(jpegFile);  // Pass the SD file handle to the decoder,
-  //boolean decoded = JpegDec.decodeSdFile(filename);  // or pass the filename (String or character array)
+  bool decoded = JpegDec.decodeSdFile(jpegFile);  // Pass the SD file handle to the decoder,
+  //bool decoded = JpegDec.decodeSdFile(filename);  // or pass the filename (String or character array)
 
   if (decoded) {
     // print information about the image to the serial port

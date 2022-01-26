@@ -21,7 +21,7 @@
 
   https://playground.arduino.cc/Code/UTF-8
 
-  To sumarise, UTF-8 characters are encoded as mor than 1 byte so care must
+  To summarise, UTF-8 characters are encoded as more than 1 byte so care must
   be taken:
 
      char c = 'µ';          // Wrong

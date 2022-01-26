@@ -74,15 +74,9 @@ if (user.r2_y_offset  != 0)  { Serial.print("R2 y offset = "); Serial.println(us
 if (user.r3_x_offset  != 0)  { Serial.print("R3 x offset = "); Serial.println(user.r3_x_offset); }
 if (user.r3_y_offset  != 0)  { Serial.print("R3 y offset = "); Serial.println(user.r3_y_offset); }
 
-#ifdef ESP32
-  if (user.pin_tft_mosi != -1) { Serial.print("MOSI    = "); Serial.print("GPIO "); Serial.println(user.pin_tft_mosi); }
-  if (user.pin_tft_miso != -1) { Serial.print("MISO    = "); Serial.print("GPIO "); Serial.println(user.pin_tft_miso); }
-  if (user.pin_tft_clk  != -1) { Serial.print("SCK     = "); Serial.print("GPIO "); Serial.println(user.pin_tft_clk); }
-#else
-  if (user.pin_tft_mosi != -1) { Serial.print("MOSI    = "); Serial.print("GPIO "); Serial.print(getPinName(user.pin_tft_mosi)); Serial.println(user.pin_tft_mosi); }
-  if (user.pin_tft_miso != -1) { Serial.print("MISO    = "); Serial.print("GPIO "); Serial.print(getPinName(user.pin_tft_miso)); Serial.println(user.pin_tft_miso); }
-  if (user.pin_tft_clk  != -1) { Serial.print("SCK     = "); Serial.print("GPIO "); Serial.print(getPinName(user.pin_tft_clk)); Serial.println(user.pin_tft_clk); }
-#endif
+if (user.pin_tft_mosi != -1) { Serial.print("MOSI    = "); Serial.print("GPIO "); Serial.println(getPinName(user.pin_tft_mosi)); }
+if (user.pin_tft_miso != -1) { Serial.print("MISO    = "); Serial.print("GPIO "); Serial.println(getPinName(user.pin_tft_miso)); }
+if (user.pin_tft_clk  != -1) { Serial.print("SCK     = "); Serial.print("GPIO "); Serial.println(getPinName(user.pin_tft_clk)); }
 
 #ifdef ESP8266
 if (user.overlap == true)
@@ -150,8 +144,7 @@ if (user.pin_tch_cs != -1) { Serial.print("Touch SPI frequency   = "); Serial.pr
 
 Serial.println("[/code]");
 
-while(1) yield();
-
+delay(3000);
 }
 
 void printProcessorName(void)
@@ -160,14 +153,15 @@ void printProcessorName(void)
   if ( user.esp == 0x8266) Serial.println("ESP8266");
   if ( user.esp == 0x32)   Serial.println("ESP32");
   if ( user.esp == 0x32F)  Serial.println("STM32");
+  if ( user.esp == 0x2040) Serial.println("RP2040");
   if ( user.esp == 0x0000) Serial.println("Generic");
 }
 
 // Get pin name
 int8_t getPinName(int8_t pin)
 {
-  // For ESP32 pin labels on boards use the GPIO number
-  if (user.esp == 0x32) return pin;
+  // For ESP32 and RP2040 pin labels on boards use the GPIO number
+  if (user.esp == 0x32 || user.esp == 0x2040) return pin;
 
   if (user.esp == 0x8266) {
     // For ESP8266 the pin labels are not the same as the GPIO number

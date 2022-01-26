@@ -1,6 +1,6 @@
 /*
   This sketch uses Smooth fonts stored in FLASH program memory. It uses a method
-  for rendering anti-aliased fonts on an arbitrary background. This is acheived
+  for rendering anti-aliased fonts on an arbitrary background. This is achieved
   by reading the pixel color at each point on the screen. The TFT must support
   reading the graphics RAM of the screen memory. This sketch has been tested with
   ILI9241 and ILI9481 serial and parallel screens.

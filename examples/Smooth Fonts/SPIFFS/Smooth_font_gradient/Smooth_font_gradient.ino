@@ -1,13 +1,13 @@
 /*
   This sketch is based on Font Demo 1. It introduces a method for rendering
-  anti-aliased fonts on a graded background. This is acheived by telling the
+  anti-aliased fonts on a graded background. This is achieved by telling the
   TFT_eSPI library the pixel color at each point on the screen. In this sketch
   a graded background is drawn, the color of each pixel can therefore be
   determined. The TFT does not need to support reading of the graphics memory.
   The sketch could be adapted so only part of the screen is gas a color gradient.
 
   The TFT_eSPI library must be given the name of the function in the sketch
-  that will return the pixel xolor at a position x,y on the TFT. In this
+  that will return the pixel color at a position x,y on the TFT. In this
   sketch that function is called gradientColor, so this line is included:
 
     tft.setCallback(gradientColor);
@@ -100,7 +100,7 @@ void setup(void) {
 
 void loop() {
 
-  // Select a font size comensurate with screen size
+  // Select a font size commensurate with screen size
   if (tft.width()>= 320)
     tft.loadFont(AA_FONT_LARGE);
   else

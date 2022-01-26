@@ -48,8 +48,8 @@ uint16_t xPos = 0;
 byte data = 0;
 
 // A few test variables used during debugging
-boolean change_colour = 1;
-boolean selected = 1;
+bool change_colour = 1;
+bool selected = 1;
 
 // We have to blank the top line each time the display is scrolled, but this takes up to 13 milliseconds
 // for a full width line, meanwhile the serial buffer may be filling... and overflowing

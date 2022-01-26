@@ -2,15 +2,14 @@
     http://tomeko.net/online_tools/file_to_hex.php?lang=en
 
     If needed, first resize and crop to an appropriate width and height
-    to suit your display with an image editting program such as IrfanView.
+    to suit your display with an image editing program such as IrfanView.
     
-    You can also change the image "guality" to reduce the file size.
+    You can also change the image "quality" to reduce the file size.
     
-    Paste the array into a new tabe, top and tail the array from the
+    Paste the array into a new tab, top and tail the array from the
     tool to look like the one below with:
 
-    #include <pgmspace.h>
-    const uint8_t name[] PROGMEM = {
+        const uint8_t name[] PROGMEM = {
 
     to start and and end with:
 
@@ -22,7 +21,6 @@
 
 */
 
-#include <pgmspace.h>
 const uint8_t panda[] PROGMEM = {
 0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x01, 0x00, 0xB4, 
 0x00, 0xB4, 0x00, 0x00, 0xFF, 0xDB, 0x00, 0x43, 0x00, 0x08, 0x06, 0x06, 0x07, 0x06, 0x05, 0x08, 

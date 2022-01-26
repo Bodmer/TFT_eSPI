@@ -51,7 +51,7 @@ void loop() {
 // colour = 16 bit colour value
 // Note if rx and ry are the same an arc of a circle is drawn
 
-int fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour)
+void fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour)
 {
 
   // Make the segment size 7 degrees to prevent gaps when drawing spirals

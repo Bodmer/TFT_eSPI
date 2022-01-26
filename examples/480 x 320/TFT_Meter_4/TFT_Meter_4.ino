@@ -3,7 +3,7 @@
 
  Needs Font 2 (also Font 4 if using large scale label)
 
- Make sure all the required fonts are loaded by editting the
+ Make sure all the required fonts are loaded by editing the
  User_Setup.h file in the TFT_HX8357_Due library folder.
 
   #########################################################################

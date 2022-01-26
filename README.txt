@@ -1,4 +1,4 @@
-This is a standalone library that contains both graphics functions
+This is a stand-alone library that contains both graphics functions
 and the TFT chip driver library. It supports the ESP8266, ESP32 and
 STM32 processors with performance optimised code. Other Arduino IDE
 compatible boards are also supported but the library then uses

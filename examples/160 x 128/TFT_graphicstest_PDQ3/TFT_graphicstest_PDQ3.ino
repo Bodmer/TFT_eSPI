@@ -3,8 +3,8 @@
 
  This sketch uses the GLCD font only.
 
- Make sure all the display driver and pin comnenctions are correct by
- editting the User_Setup.h file in the TFT_eSPI library folder.
+ Make sure all the display driver and pin connections are correct by
+ editing the User_Setup.h file in the TFT_eSPI library folder.
 
  Note that yield() or delay(0) must be called in long duration for/while
  loops to stop the ESP8266 watchdog triggering.
@@ -234,7 +234,7 @@ void loop(void)
 void printnice(int32_t v)
 {
   char  str[32] = { 0 };
-  sprintf(str, "%lu", v);
+  sprintf(str, "%d", v);
   for (char *p = (str+strlen(str))-3; p > str; p -= 3)
   {
     memmove(p+1, p, strlen(p)+1);

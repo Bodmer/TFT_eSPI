@@ -84,7 +84,7 @@ void setup() {
 
   fact = 180 / 3.14159259; // conversion from degrees to radians.
 
-  Xoff = 240; // Position the center of the 3d conversion space into the center of the TFT screen.
+  Xoff = 240; // Position the centre of the 3d conversion space into the centre of the TFT screen.
   Yoff = 160;
   Zoff = 550; // Z offset in 3D space (smaller = closer and bigger rendering)
 }
@@ -241,7 +241,7 @@ void ProcessLine(struct Line2d *ret, struct Line3d vec)
     ret->p1.x = rx2;
     ret->p1.y = ry2;
   }
-  // The ifs here are checks for out of bounds. needs a bit more code here to "safe" lines that will be way out of whack, so they dont get drawn and cause screen garbage.
+  // The ifs here are checks for out of bounds. needs a bit more code here to "safe" lines that will be way out of whack, so they don't get drawn and cause screen garbage.
 
 }
 

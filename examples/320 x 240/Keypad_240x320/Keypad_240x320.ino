@@ -108,7 +108,7 @@ void loop(void) {
   uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
 
   // Pressed will be set true is there is a valid touch on the screen
-  boolean pressed = tft.getTouch(&t_x, &t_y);
+  bool pressed = tft.getTouch(&t_x, &t_y);
 
   // / Check if any key coordinate boxes contain the touch coordinates
   for (uint8_t b = 0; b < 15; b++) {

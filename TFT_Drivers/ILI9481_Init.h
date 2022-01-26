@@ -5,11 +5,11 @@
 //
 // See ST7735_Setup.h file for an alternative format
 
-//#define ILI9481_INIT_1 // Original default
+#define ILI9481_INIT_1 // Original default
 //#define ILI9481_INIT_2 // CPT29
 //#define ILI9481_INIT_3 // PVI35
 //#define ILI9481_INIT_4 // AUO317
-#define ILI9481_INIT_5 // CMO35 *****
+//#define ILI9481_INIT_5 // CMO35 *****
 //#define ILI9481_INIT_6 // RGB
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@
     writedata(0x0A);
 
     writecommand(0x3A);
-    #ifdef TFT_PARALLEL_8_BIT
+    #if defined (TFT_PARALLEL_8_BIT) || defined (RPI_DISPLAY_TYPE)
       writedata(0x55);           // 16 bit colour interface
     #else
       writedata(0x66);           // 18 bit colour interface
@@ -150,7 +150,7 @@
     writedata(0x0A);
 
     writecommand(0x3A);
-    #ifdef TFT_PARALLEL_8_BIT
+    #if defined (TFT_PARALLEL_8_BIT) || defined (RPI_DISPLAY_TYPE)
       writedata(0x55);           // 16 bit colour interface
     #else
       writedata(0x66);           // 18 bit colour interface
@@ -239,7 +239,7 @@
     writedata(0x0A);
 
     writecommand(0x3A);
-    #ifdef TFT_PARALLEL_8_BIT
+    #if defined (TFT_PARALLEL_8_BIT) || defined (RPI_DISPLAY_TYPE)
       writedata(0x55);           // 16 bit colour interface
     #else
       writedata(0x66);           // 18 bit colour interface
@@ -324,7 +324,7 @@
     writedata(0x0A);
 
     writecommand(0x3A);
-    #ifdef TFT_PARALLEL_8_BIT
+    #if defined (TFT_PARALLEL_8_BIT) || defined (RPI_DISPLAY_TYPE)
       writedata(0x55);           // 16 bit colour interface
     #else
       writedata(0x66);           // 18 bit colour interface
@@ -412,7 +412,7 @@
     writedata(0x0A);
 
     writecommand(0x3A);
-    #ifdef TFT_PARALLEL_8_BIT
+    #if defined (TFT_PARALLEL_8_BIT) || defined (RPI_DISPLAY_TYPE)
       writedata(0x55);           // 16 bit colour interface
     #else
       writedata(0x66);           // 18 bit colour interface
@@ -524,7 +524,7 @@
     writedata(0x0A);
 
     writecommand(0x3A);
-    #ifdef TFT_PARALLEL_8_BIT
+    #if defined (TFT_PARALLEL_8_BIT) || defined (RPI_DISPLAY_TYPE)
       writedata(0x55);           // 16 bit colour interface
     #else
       writedata(0x66);           // 18 bit colour interface

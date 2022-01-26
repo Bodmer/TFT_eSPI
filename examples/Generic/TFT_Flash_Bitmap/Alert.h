@@ -1,5 +1,4 @@
 // We need this header file to use FLASH as storage with PROGMEM directive:
-#include <pgmspace.h>
 
 // Icon width and height
 const uint16_t alertWidth = 32;

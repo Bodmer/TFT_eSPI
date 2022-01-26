@@ -17,7 +17,7 @@
   int32_t h = tft.getViewportHeight(); // Always returns height of viewport
   bool    f = tft.getViewportDatum();  // Datum of the viewport (false = TFT corner, true = viewport corner)
   // To check if all or part of an area is in the viewport
-  checkViewport(x, y, w, h); // Retruns "true" if all or part of area is in viewport
+  checkViewport(x, y, w, h); // Returns "true" if all or part of area is in viewport
 
   // To draw a rectangular frame outside viewport of width W (when W is negative)
   tft.frameViewport(TFT_RED, -W); // Note setting the width to a large negative value will clear the screen

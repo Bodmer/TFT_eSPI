@@ -92,9 +92,9 @@ class TFT_eSprite : public TFT_eSPI {
   uint8_t  getRotation(void);
 
            // Push a rotated copy of Sprite to TFT with optional transparent colour
-  bool     pushRotated(int16_t angle, int32_t transp = -1);   // Using fixed point maths
+  bool     pushRotated(int16_t angle, uint32_t transp = 0x00FFFFFF);   // Using fixed point maths
            // Push a rotated copy of Sprite to another different Sprite with optional transparent colour
-  bool     pushRotated(TFT_eSprite *spr, int16_t angle, int32_t transp = -1);   // Using fixed point maths
+  bool     pushRotated(TFT_eSprite *spr, int16_t angle, uint32_t transp = 0x00FFFFFF);   // Using fixed point maths
 
            // Get the TFT bounding box for a rotated copy of this Sprite
   bool     getRotatedBounds(int16_t angle, int16_t *min_x, int16_t *min_y, int16_t *max_x, int16_t *max_y);

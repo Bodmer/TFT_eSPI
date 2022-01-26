@@ -237,7 +237,7 @@ void frame(uint16_t iScale) // Iris scale (0-1023)
   // Periodically initiates motion to a new random point, random speed,
   // holds there for random period until next motion.
 
-  static boolean  eyeInMotion      = false;
+  static bool  eyeInMotion      = false;
   static int16_t  eyeOldX = 512, eyeOldY = 512, eyeNewX = 512, eyeNewY = 512;
   static uint32_t eyeMoveStartTime = 0L;
   static int32_t  eyeMoveDuration  = 0L;

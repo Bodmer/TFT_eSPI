@@ -58,7 +58,7 @@
     writedata(0x48);          // MX, BGR
 
     writecommand(0x3A); // Pixel Interface Format
-#if defined (TFT_PARALLEL_8_BIT)
+#if defined (TFT_PARALLEL_8_BIT) || defined (RPI_DISPLAY_TYPE)
     writedata(0x55);  // 16 bit colour for parallel
 #else
     writedata(0x66);  // 18 bit colour for SPI

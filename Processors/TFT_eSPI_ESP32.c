@@ -8,21 +8,41 @@
 
 // Select the SPI port to use, ESP32 has 2 options
 #if !defined (TFT_PARALLEL_8_BIT)
-  #ifdef USE_HSPI_PORT
-    SPIClass spi = SPIClass(HSPI);
-  #else // use default VSPI port
-    //SPIClass& spi = SPI;
-    SPIClass spi = SPIClass(VSPI);
+  #ifdef CONFIG_IDF_TARGET_ESP32
+    #ifdef USE_HSPI_PORT
+      SPIClass spi = SPIClass(HSPI);
+    #else // use default VSPI port
+      //SPIClass& spi = SPI;
+      SPIClass spi = SPIClass(VSPI);
+    #endif
+  #else
+    #ifdef USE_HSPI_PORT
+      SPIClass spi = SPIClass(HSPI);
+    #else // use FSPI port
+      //SPIClass& spi = SPI;
+      SPIClass spi = SPIClass(FSPI);
+    #endif
   #endif
 #endif
 
 #ifdef ESP32_DMA
   // DMA SPA handle
   spi_device_handle_t dmaHAL;
-  #ifdef USE_HSPI_PORT
-    spi_host_device_t spi_host = HSPI_HOST;
+  #ifdef CONFIG_IDF_TARGET_ESP32
+    #define DMA_CHANNEL 1
+    #ifdef USE_HSPI_PORT
+      spi_host_device_t spi_host = HSPI_HOST;
+    #else // use VSPI port
+      spi_host_device_t spi_host = VSPI_HOST;
+    #endif
   #else
-    spi_host_device_t spi_host = VSPI_HOST;
+    #ifdef USE_HSPI_PORT
+      #define DMA_CHANNEL 2
+      spi_host_device_t spi_host = (spi_host_device_t) DMA_CHANNEL; // Draws once then freezes
+    #else // use FSPI port
+      #define DMA_CHANNEL 1
+      spi_host_device_t spi_host = (spi_host_device_t) DMA_CHANNEL; // Draws once then freezes
+    #endif
   #endif
 #endif
 
@@ -31,8 +51,8 @@
   volatile uint32_t* _spi_cmd       = (volatile uint32_t*)(SPI_CMD_REG(SPI_PORT));
   volatile uint32_t* _spi_user      = (volatile uint32_t*)(SPI_USER_REG(SPI_PORT));
   // Register writes only:
-           uint32_t* _spi_mosi_dlen =          (uint32_t*)(SPI_MOSI_DLEN_REG(SPI_PORT));
-           uint32_t* _spi_w         =          (uint32_t*)(SPI_W0_REG(SPI_PORT));
+  volatile uint32_t* _spi_mosi_dlen = (volatile uint32_t*)(SPI_MOSI_DLEN_REG(SPI_PORT));
+  volatile uint32_t* _spi_w         = (volatile uint32_t*)(SPI_W0_REG(SPI_PORT));
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -191,11 +211,12 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 ** Function name:           pushBlock - for ESP32
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
+/*
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
   
   uint32_t color32 = (color<<8 | color >>8)<<16 | (color<<8 | color >>8);
   bool empty = true;
-  uint32_t* spi_w   = (uint32_t*)_spi_w;
+  volatile uint32_t* spi_w = (volatile uint32_t*)_spi_w;
   if (len > 31)
   {
     *_spi_mosi_dlen =  511;
@@ -236,7 +257,43 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
   }
   while ((*_spi_cmd)&SPI_USR); // Move to later in code to use transmit time usefully?
 }
+//*/
+//*
+void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 
+  volatile uint32_t* spi_w = _spi_w;
+  uint32_t color32 = (color<<8 | color >>8)<<16 | (color<<8 | color >>8);  
+  uint32_t i = 0;
+  uint32_t rem = len & 0x1F;
+  len =  len - rem;
+
+  // Start with partial buffer pixels
+  if (rem)
+  {
+    while (*_spi_cmd&SPI_USR);
+    for (i=0; i < rem; i+=2) *spi_w++ = color32;
+    *_spi_mosi_dlen = (rem << 4) - 1;
+    *_spi_cmd = SPI_USR;
+    if (!len) return; //{while (*_spi_cmd&SPI_USR); return; }
+    i = i>>1; while(i++<16) *spi_w++ = color32;
+  }
+
+  while (*_spi_cmd&SPI_USR);
+  if (!rem) while (i++<16) *spi_w++ = color32;
+  *_spi_mosi_dlen =  511;
+
+  // End with full buffer to maximise useful time for downstream code
+  while(len)
+  {
+    while (*_spi_cmd&SPI_USR);
+    *_spi_cmd = SPI_USR;
+      len -= 32;
+  }
+
+  // Do not wait here
+  //while (*_spi_cmd&SPI_USR);
+}
+//*/
 /***************************************************************************************
 ** Function name:           pushSwapBytePixels - for ESP32
 ** Description:             Write a sequence of pixels with swapped bytes
@@ -476,7 +533,11 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
   #if defined (SSD1963_DRIVER)
     while (--len) {WR_L; WR_H; WR_L; WR_H; WR_L; WR_H;}
   #else
-    while (--len) {WR_L; WR_H; WR_L; WR_H;}
+    #ifdef PSEUDO_16_BIT
+      while (--len) {WR_L; WR_H;}
+    #else
+      while (--len) {WR_L; WR_H; WR_L; WR_H;}
+    #endif
   #endif
   }
   else while (len--) {tft_Write_16(color);}
@@ -589,6 +650,38 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 ** Function name:           pushImageDMA
 ** Description:             Push image to a window (w*h must be less than 65536)
 ***************************************************************************************/
+// Fixed const data assumed, will NOT clip or swap bytes
+void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t const* image)
+{
+  if ((w == 0) || (h == 0) || (!DMA_Enabled)) return;
+
+  uint32_t len = w*h;
+
+  dmaWait();
+
+  setAddrWindow(x, y, w, h);
+
+  esp_err_t ret;
+  static spi_transaction_t trans;
+
+  memset(&trans, 0, sizeof(spi_transaction_t));
+
+  trans.user = (void *)1;
+  trans.tx_buffer = image;   //Data pointer
+  trans.length = len * 16;   //Data length, in bits
+  trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
+
+  ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
+  assert(ret == ESP_OK);
+
+  spiBusyCheck++;
+}
+
+
+/***************************************************************************************
+** Function name:           pushImageDMA
+** Description:             Push image to a window (w*h must be less than 65536)
+***************************************************************************************/
 // This will clip and also swap bytes if setSwapBytes(true) was called by sketch
 void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t* image, uint16_t* buffer)
 {
@@ -640,7 +733,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
     }
   }
 
-  if (spiBusyCheck) dmaWait(); // Incase we did not wait earlier
+  if (spiBusyCheck) dmaWait(); // In case we did not wait earlier
 
   setAddrWindow(x, y, dw, dh);
 
@@ -716,7 +809,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .pre_cb = 0, //dc_callback, //Callback to handle D/C line
     .post_cb = 0
   };
-  ret = spi_bus_initialize(spi_host, &buscfg, 1);
+  ret = spi_bus_initialize(spi_host, &buscfg, DMA_CHANNEL);
   ESP_ERROR_CHECK(ret);
   ret = spi_bus_add_device(spi_host, &devcfg, &dmaHAL);
   ESP_ERROR_CHECK(ret);
