@@ -19,7 +19,7 @@
 
 // Only ONE line below should be uncommented.  Add extra lines and files as needed.
 
-//#include <User_Setup.h>           // Default setup is root library folder
+#include <User_Setup.h>           // Default setup is root library folder
 
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file configured for my ILI9341
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file configured for my ST7735
@@ -46,7 +46,7 @@
 //#include <User_Setups/Setup20_ILI9488.h>           // Setup file for ESP8266 and ILI9488 SPI bus TFT
 //#include <User_Setups/Setup21_ILI9488.h>           // Setup file for ESP32 and ILI9488 SPI bus TFT
 
-#include <User_Setups/Setup22_TTGO_T4.h>           // Setup file for ESP32 and TTGO T4 version 1.2
+//#include <User_Setups/Setup22_TTGO_T4.h>           // Setup file for ESP32 and TTGO T4 version 1.2
 //#include <User_Setups/Setup22_TTGO_T4_v1.3.h>      // Setup file for ESP32 and TTGO T4 version 1.3
 //#include <User_Setups/Setup23_TTGO_TM.h>           // Setup file for ESP32 and TTGO TM ST7789 SPI bus TFT
 //#include <User_Setups/Setup24_ST7789.h>            // Setup file configured for ST7789 240 x 240
@@ -105,11 +105,6 @@
 //#include <User_Setups/Setup202_SSD1351_128.h>      // Setup file for ESP32/ESP8266 based SSD1351 128x128 1.5inch OLED display
 
 //#include <User_Setups/SetupX_Template.h>
-
-
-//#include <User_Setups/Dustin_ILI9488.h>           // Setup file for Dustin Watts PCB with ILI9488
-//#include <User_Setups/Dustin_ST7796.h>           // Setup file for Dustin Watts PCB with ST7796
-
 
 
 #endif // USER_SETUP_LOADED
