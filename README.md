@@ -1,13 +1,16 @@
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
-1. Frank Boesing has created an extension library for TFT_eSPI that allows the a large range of read-built fonts to be used. Frank's library can be [downloaded here](https://github.com/FrankBoesing/TFT_eSPI_ext). More than 3300 additional Fonts are [available here.](https://github.com/FrankBoesing/fonts/tree/master/ofl). The TFT_eSPI_ext library contains examples that demonstrate the use of the fonts.
+1. Frank Boesing has created an extension library for TFT_eSPI that allows a large range of ready-built fonts to be used. Frank's library can be [downloaded here](https://github.com/FrankBoesing/TFT_eSPI_ext). More than 3300 additional Fonts are [available here](https://github.com/FrankBoesing/fonts/tree/master/ofl). The TFT_eSPI_ext library contains examples that demonstrate the use of the fonts.
 
-2. Users of PowerPoint experienced with running macros may be interested in the [pptm sketch generator here,](https://github.com/Bodmer/PowerPoint_to_sketch), this converts graphics and tables drawn in PowerPoint slides into a sketch that renders the graphics on a 480x320 TFT. This is based on VB macros [created by Kris Kasprzak here](https://github.com/KrisKasprzak/Powerpoint-ILI9341_t3).
+2. Users of PowerPoint experienced with running macros may be interested in the [pptm sketch generator here](https://github.com/Bodmer/PowerPoint_to_sketch), this converts graphics and tables drawn in PowerPoint slides into an Arduino sketch that renders the graphics on a 480x320 TFT. This is based on VB macros [created by Kris Kasprzak here](https://github.com/KrisKasprzak/Powerpoint-ILI9341_t3).
 
 3. The library contains two new functions for rectangles filled with a horizontal or vertical coloured gradient:
 
-  tft.fillRectHGradient(x, y, w, h, color1, color2);
-  tft.fillRectVGradient(x, y, w, h, color1, color2);
+      tft.fillRectHGradient(x, y, w, h, color1, color2);
+  
+      tft.fillRectVGradient(x, y, w, h, color1, color2);
+      
+      ![Gradient](https://i.imgur.com/atR0DmP.png)
 
 4. The RP2040 8 bit parallel interface uses the PIO. The PIO now manages the "setWindow" and "block fill" actions, releasing the processor for other tasks when areas of the screen are being filled with a colour. The PIO can optionally be used for SPI interface displays if #define RP2040_PIO_SPI is put in the setup file. Touch screens and pixel read operations are not supported when the PIO interface is used.
 The RP2040 PIO features only work with [Earle Philhower's board package](https://github.com/earlephilhower/arduino-pico), NOT the Arduino Mbed version.
