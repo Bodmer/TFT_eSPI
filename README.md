@@ -7,6 +7,7 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 3. The library contains two new functions for rectangles filled with a horizontal or vertical coloured gradient:
 
   tft.fillRectHGradient(x, y, w, h, color1, color2);
+  
   tft.fillRectVGradient(x, y, w, h, color1, color2);
 
 4. The RP2040 8 bit parallel interface uses the PIO. The PIO now manages the "setWindow" and "block fill" actions, releasing the processor for other tasks when areas of the screen are being filled with a colour. The PIO can optionally be used for SPI interface displays if #define RP2040_PIO_SPI is put in the setup file. Touch screens and pixel read operations are not supported when the PIO interface is used.
