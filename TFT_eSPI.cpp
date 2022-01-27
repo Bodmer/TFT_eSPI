@@ -941,10 +941,10 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   // Set masked pins D0- D7 to input
   busDir(dir_mask, INPUT);
 
-#if  !defined (SSD1963_DRIVER)
+  #if  !defined (SSD1963_DRIVER)
   // Dummy read to throw away don't care value
   readByte();
-#endif
+  #endif
 
   // Fetch the 16 bit BRG pixel
   //uint16_t rgb = (readByte() << 8) | readByte();
@@ -989,9 +989,9 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   uint16_t color = 0;
 
-  begin_tft_read();
+  begin_tft_read(); // Sets CS low
 
-  readAddrWindow(x0, y0, 1, 1); // Sets CS low
+  readAddrWindow(x0, y0, 1, 1);
 
   #ifdef TFT_SDA_READ
     begin_SDA_Read();
@@ -3171,6 +3171,10 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   addr_col = 0xFFFF;
   addr_row = 0xFFFF;
 
+#if defined (SSD1963_DRIVER)
+  if ((rotation & 0x1) == 0) { swap_coord(xs, ys); swap_coord(xe, ye); }
+#endif
+
 #ifdef CGRAM_OFFSET
   xs += colstart;
   xe += colstart;
@@ -3178,12 +3182,10 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   ye += rowstart;
 #endif
 
-#if defined (SSD1963_DRIVER)
-  if ((rotation & 0x1) == 0) { swap_coord(xs, ys); swap_coord(xe, ye); }
-#endif
-
   // Temporary solution is to include the RP2040 optimised code here
 #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(RP2040_PIO_INTERFACE)
+  // Use hardware SPI port, this code does not swap from 8 to 16 bit
+  // to avoid the spi_set_format() call overhead
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
   DC_C;
   hw_write_masked(&spi_get_hw(SPI_X)->cr0, (8 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);

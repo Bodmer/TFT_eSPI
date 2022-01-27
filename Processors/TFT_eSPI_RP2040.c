@@ -69,12 +69,16 @@ uint8_t TFT_eSPI::tft_Read_8(void)
 {
   uint8_t  ret = 0;
 
+  /*
   for (uint8_t i = 0; i < 8; i++) {  // read results
     ret <<= 1;
     SCLK_L;
     if (digitalRead(TFT_MOSI)) ret |= 1;
     SCLK_H;
   }
+  */
+  
+  ret = spi.transfer(0x00);
 
   return ret;
 }
