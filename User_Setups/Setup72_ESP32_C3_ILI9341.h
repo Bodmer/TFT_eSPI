@@ -5,11 +5,11 @@
 #define USE_HSPI_PORT
 
 #define TFT_MOSI 7
-#define TFT_MISO 5
+#define TFT_MISO 2
 #define TFT_SCLK 6
-#define TFT_CS   9 // Chip select control pin
-#define TFT_DC   19  // Data Command control pin
-#define TFT_RST  18  // Reset pin (could connect to RST pin)
+#define TFT_CS   10 // Chip select control pin
+#define TFT_DC   9  // Data Command control pin
+#define TFT_RST  4  // Reset pin (could connect to RST pin)
 
 // Optional - define for XPT2046 touch controller
 #define TOUCH_CS 8     // Chip select pin (T_CS) of touch screen

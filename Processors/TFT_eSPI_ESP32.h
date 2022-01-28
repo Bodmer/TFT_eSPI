@@ -60,22 +60,22 @@ SPI3_HOST = 2
 #ifdef USE_HSPI_PORT
   #ifdef CONFIG_IDF_TARGET_ESP32
     #define SPI_PORT HSPI  //HSPI is port 2 on ESP32
-  #else
-    #ifdef CONFIG_IDF_TARGET_ESP32C3
+  #endif
+
+  #ifdef CONFIG_IDF_TARGET_ESP32C3
       #define SPI_PORT 2    //HSPI is port 1 on the ESP32 c3
     #else
       #define SPI_PORT 3     //HSPI is port 3 on ESP32 S2
     #endif
-  #endif
 #else
   #ifdef CONFIG_IDF_TARGET_ESP32
     #define SPI_PORT VSPI
+  #endif
+
+  #ifdef CONFIG_IDF_TARGET_ESP32C3
+    #define SPI_PORT 2    //FSPI(ESP32 C3)
   #else
-    #ifdef CONFIG_IDF_TARGET_ESP32C3
-      #define SPI_PORT 2    //FSPI(ESP32 C3)
-    #else
-      #define SPI_PORT 2 //FSPI(ESP32 S2)
-    #endif
+    #define SPI_PORT 2 //FSPI(ESP32 S2)
   #endif
 #endif
 
