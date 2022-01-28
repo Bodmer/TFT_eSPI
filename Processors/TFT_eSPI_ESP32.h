@@ -46,8 +46,8 @@ HSPI = 2, uses SPI3
 VSPI not defined
 
 ESP32 C3:
-FSPI = 0, uses SPI2 ???? To be checked
-HSPI = 1, uses SPI3 ???? To be checked
+FSPI = 0, uses SPI2
+HSPI = 1, uses SPI2
 VSPI not defined
 
 For ESP32/S2/C3:
@@ -61,13 +61,21 @@ SPI3_HOST = 2
   #ifdef CONFIG_IDF_TARGET_ESP32
     #define SPI_PORT HSPI  //HSPI is port 2 on ESP32
   #else
-    #define SPI_PORT 3     //HSPI is port 3 on ESP32 S2
+    #ifdef CONFIG_IDF_TARGET_ESP32C3
+      #define SPI_PORT 2    //HSPI is port 1 on the ESP32 c3
+    #else
+      #define SPI_PORT 3     //HSPI is port 3 on ESP32 S2
+    #endif
   #endif
 #else
   #ifdef CONFIG_IDF_TARGET_ESP32
     #define SPI_PORT VSPI
   #else
-    #define SPI_PORT 2 //FSPI(ESP32 S2)
+    #ifdef CONFIG_IDF_TARGET_ESP32C3
+      #define SPI_PORT 2    //FSPI(ESP32 C3)
+    #else
+      #define SPI_PORT 2 //FSPI(ESP32 S2)
+    #endif
   #endif
 #endif
 
@@ -322,7 +330,7 @@ SPI3_HOST = 2
 
   // Create a bit set lookup table for data bus - wastes 1kbyte of RAM but speeds things up dramatically
   // can then use e.g. GPIO.out_w1ts = set_mask(0xFF); to set data bus to 0xFF
-  #define PARALLEL_INIT_TFT_DATA_BUS               \
+  #define CONSTRUCTOR_INIT_TFT_DATA_BUS            \
   for (int32_t c = 0; c<256; c++)                  \
   {                                                \
     xset_mask[c] = 0;                              \
