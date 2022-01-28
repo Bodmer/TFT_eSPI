@@ -1,5 +1,4 @@
 // LilyGo T-Display RP2040 (ST7789 135 x 240 display)
-// Warning: Ensure all #define XXX_DRIVER lines in User_Setup.h are commented out!
 
 #define ST7789_DRIVER     // Configure all registers
 
@@ -14,10 +13,8 @@
 #define TFT_RST  0  // Reset pin
 #define TFT_MOSI 3
 #define TFT_SCLK 2
-// Don't uncomment next line if you want fine control of backlight
+// Don't uncomment next line if you want PWM control of the backlight in the sketch
 //#define TFT_BL 4
-// LilyGo T-Display RP2040 allows you to use analogWrite on this pin (0=>off, 255=>full brightness)
-#define TFT_ANALOG_BL 4
 
 #define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
 #define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
