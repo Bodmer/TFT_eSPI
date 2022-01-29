@@ -47,7 +47,7 @@ VSPI not defined
 
 ESP32 C3:
 FSPI = 0, uses SPI2 ???? To be checked
-HSPI = 1, uses SPI3 ???? To be checked
+HSPI = 1, uses SPI3 ???? To be checked (General purpose SPI)
 VSPI not defined
 
 For ESP32/S2/C3:
