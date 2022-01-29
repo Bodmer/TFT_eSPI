@@ -21,7 +21,7 @@ The use of PIO for SPI allows the RP2040 to be over-clocked (up to 250MHz works 
 
       ["Bouncing circles"](https://www.youtube.com/watch?v=njFXIzCTQ_Q&lc=UgymaUIwOIuihvYh-Qt4AaABAg)
 
-6. Support hase been added for the ESP32 S2 processor variant. A [new user setup](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h) file has been added as an example setup with an ILI9341 TFT. You will need to load ESP32 Arduino board package 2.0.0 or later to use the updated library with an ESP32.
+6. Support hase been added for the ESP32 S2 processor variant. A [new user setup](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h) file has been added as an example setup with an ILI9341 TFT.
 
 7. The library now supports the Raspberry Pi Pico with both the [official Arduino board package](https://github.com/arduino/ArduinoCore-mbed) and the one provided by [Earle Philhower](https://github.com/earlephilhower/arduino-pico). The setup file "Setup60_RP2040_ILI9341.h" has been used for tests with an ILI9341 display. At the moment only SPI interface displays have been tested. SPI port 0 is the default but SPI port 1 can be specifed in the setup file if those SPI pins are used.
 
