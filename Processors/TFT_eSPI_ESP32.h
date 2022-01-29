@@ -12,6 +12,10 @@
 #include "soc/spi_reg.h"
 #include "driver/spi_master.h"
 
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32)
+  #define CONFIG_IDF_TARGET_ESP32
+#endif
+
 // Fix IDF problems with ESP32C3
 #if CONFIG_IDF_TARGET_ESP32C3
   // Fix ESP32C3 IDF bug for missing definition
@@ -47,7 +51,7 @@ VSPI not defined
 
 ESP32 C3:
 FSPI = 0, uses SPI2 ???? To be checked
-HSPI = 1, uses SPI3 ???? To be checked (General purpose SPI)
+HSPI = 1, uses SPI3 ???? To be checked
 VSPI not defined
 
 For ESP32/S2/C3:
