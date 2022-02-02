@@ -11,16 +11,18 @@
   #ifdef CONFIG_IDF_TARGET_ESP32
     #ifdef USE_HSPI_PORT
       SPIClass spi = SPIClass(HSPI);
+    #elif defined(USE_FSPI_PORT)
+      SPIClass spi = SPIClass(FSPI);
     #else // use default VSPI port
-      //SPIClass& spi = SPI;
       SPIClass spi = SPIClass(VSPI);
     #endif
   #else
     #ifdef USE_HSPI_PORT
       SPIClass spi = SPIClass(HSPI);
-    #else // use FSPI port
-      //SPIClass& spi = SPI;
+    #elif defined(USE_FSPI_PORT)
       SPIClass spi = SPIClass(FSPI);
+    #else // use FSPI port
+      SPIClass& spi = SPI;
     #endif
   #endif
 #endif
@@ -32,6 +34,8 @@
     #define DMA_CHANNEL 1
     #ifdef USE_HSPI_PORT
       spi_host_device_t spi_host = HSPI_HOST;
+    #elif defined(USE_FSPI_PORT)
+      spi_host_device_t spi_host = SPI_HOST;
     #else // use VSPI port
       spi_host_device_t spi_host = VSPI_HOST;
     #endif
