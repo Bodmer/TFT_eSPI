@@ -160,8 +160,20 @@
 // Make sure TFT_RD is defined if not used to avoid an error message
 ////////////////////////////////////////////////////////////////////////////////////////
 // At the moment read is not supported for parallel mode, tie TFT signal high
-#ifndef TFT_RD
+#ifdef TFT_RD
+  #if (TFT_RD >= 0)
+    #define RD_L sio_hw->gpio_clr = (1ul << TFT_RD)
+    //#define RD_L digitalWrite(TFT_WR, LOW)
+    #define RD_H sio_hw->gpio_set = (1ul << TFT_RD)
+    //#define RD_H digitalWrite(TFT_WR, HIGH)
+  #else
+    #define RD_L
+    #define RD_H
+  #endif
+#else
   #define TFT_RD -1
+  #define RD_L
+  #define RD_H
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////

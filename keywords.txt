@@ -27,6 +27,15 @@ getViewportHeight	KEYWORD2
 getViewportDatum	KEYWORD2
 frameViewport	KEYWORD2
 
+# Smooth (anti-aliased) graphics functions
+fillRectHGradient	KEYWORD2
+fillRectVGradient	KEYWORD2
+fillSmoothCircle	KEYWORD2
+fillSmoothRoundRect	KEYWORD2
+drawSpot	KEYWORD2
+drawWideLine	KEYWORD2
+drawWedgeLine	KEYWORD2
+
 pushColor	KEYWORD2
 pushColors	KEYWORD2
 pushBlock	KEYWORD2

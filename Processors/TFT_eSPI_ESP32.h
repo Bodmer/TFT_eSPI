@@ -426,6 +426,10 @@ SPI3_HOST = 2
       #define RD_L
       #define RD_H
     #endif
+  #else
+    #define TFT_RD -1
+    #define RD_L
+    #define RD_H
   #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -1292,7 +1292,7 @@ void TFT_eSprite::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 ** Function name:           pushColor
 ** Description:             Send a new pixel to the set window
 ***************************************************************************************/
-void TFT_eSprite::pushColor(uint32_t color)
+void TFT_eSprite::pushColor(uint16_t color)
 {
   if (!_created ) return;
 
@@ -1334,7 +1334,7 @@ void TFT_eSprite::pushColor(uint32_t color)
 ** Function name:           pushColor
 ** Description:             Send a "len" new pixels to the set window
 ***************************************************************************************/
-void TFT_eSprite::pushColor(uint32_t color, uint16_t len)
+void TFT_eSprite::pushColor(uint16_t color, uint32_t len)
 {
   if (!_created ) return;
 
