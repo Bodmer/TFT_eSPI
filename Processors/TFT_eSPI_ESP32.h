@@ -67,6 +67,8 @@ SPI3_HOST = 2
   #else
     #define SPI_PORT 3     //HSPI is port 3 on ESP32 S2
   #endif
+#elif defined(USE_FSPI_PORT)
+    #define SPI_PORT 2 //FSPI(ESP32 S2)
 #else
   #ifdef CONFIG_IDF_TARGET_ESP32
     #define SPI_PORT VSPI
