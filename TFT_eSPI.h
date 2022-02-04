@@ -9,14 +9,14 @@
   The built-in fonts 4, 6, 7 and 8 are Run Length
   Encoded (RLE) to reduce the FLASH footprint.
 
-  Last review/edit by Bodmer: 05/01/22
+  Last review/edit by Bodmer: 04/02/22
  ****************************************************/
 
 // Stop fonts etc being loaded multiple times
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.4.33"
+#define TFT_ESPI_VERSION "2.4.34"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability

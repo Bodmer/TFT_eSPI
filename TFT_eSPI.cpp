@@ -3697,11 +3697,11 @@ void TFT_eSPI::fillSmoothCircle(int32_t x, int32_t y, int32_t r, uint32_t color,
     {
       float deltaX = r - cx;
       float deltaY = r - cy;
-      float weight = r - sqrtf(deltaX * deltaX + deltaY * deltaY);
-      if (weight > 1.0) continue;
+      float alphaf = r - sqrtf(deltaX * deltaX + deltaY * deltaY);
+      if (alphaf > 1.0) continue;
       xs = cx;
-      if (weight < LoAlphaTheshold) continue;
-      uint8_t alpha = weight * 255;
+      if (alphaf < LoAlphaTheshold) continue;
+      uint8_t alpha = alphaf * 255;
       drawPixel(x + cx - r, y + cy - r, color, alpha, bg_color);
       drawPixel(x - cx + r, y + cy - r, color, alpha, bg_color);
       drawPixel(x - cx + r, y - cy + r, color, alpha, bg_color);
@@ -3779,7 +3779,6 @@ void TFT_eSPI::drawWideLine(float ax, float ay, float bx, float by, float wd, ui
 ** Function name:           drawWedgeLine
 ** Description:             draw an anti-aliased line with different width radiused ends
 ***************************************************************************************/
-// For sprites and  TFT screens where the background pixel colour is fixed
 void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, float br, uint32_t fg_color, uint32_t bg_color)
 {
   if ( (abs(ax - bx) < 0.01f) && (abs(ay - by) < 0.01f) ) bx += 0.01f;  // Avoid divide by zero
@@ -3792,47 +3791,73 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
 
   if (!clipWindow(&x0, &y0, &x1, &y1)) return;
 
-  // Establish slope direction
-  int32_t xs = x0, yp = y1, yinc = -1;
-  if (((ax-ar)>(bx-br) && (ay>by)) || ((ax-ar)<(bx-br) && ay<by)) { yp = y0; yinc = 1; }
+  // Establish x start and y start
+  int32_t ys = ay;
+  if ((ax-ar)>(bx-br)) ys = by;
 
-  br = ar - br; // Radius delta
+  float rdt = ar - br; // Radius delta
   float alpha = 1.0f;
   ar += 0.5;
-  uint32_t ri = (uint32_t)(ar);
+
   uint16_t bg = bg_color;
   float xpax, ypay, bax = bx - ax, bay = by - ay;
 
   begin_nin_write();
   inTransaction = true;
 
-  // Scan bounding box, calculate pixel intensity from distance to line
-  for (int32_t y = y0; y <= y1; y++) {
+  int32_t xs = x0;
+  // Scan bounding box from ys down, calculate pixel intensity from distance to line
+  for (int32_t yp = ys; yp <= y1; yp++) {
     bool swin = true;  // Flag to start new window area
     bool endX = false; // Flag to skip pixels
     ypay = yp - ay;
     for (int32_t xp = xs; xp <= x1; xp++) {
-      if (endX) if (alpha <= LoAlphaTheshold) break;  // Skip right side of drawn line
+      if (endX) if (alpha <= LoAlphaTheshold) break;  // Skip right side
       xpax = xp - ax;
-      alpha = ar - wedgeLineDistance(xpax, ypay, bax, bay, br);
+      alpha = ar - wedgeLineDistance(xpax, ypay, bax, bay, rdt);
       if (alpha <= LoAlphaTheshold ) continue;
-      // Track left line segment boundary
-      if (!endX) { endX = true; if ((y > (y0+ri)) && (xp > xs)) xs = xp; }
+      // Track edge to minimise calculations
+      if (!endX) { endX = true; xs = xp; }
       if (alpha > HiAlphaTheshold) {
-        //drawPixel(xp, yp, fg_color);
         if (swin) { setWindow(xp, yp, width()-1, yp); swin = false; }
-        pushColor(fg_color); // 778960 .v. 1337554
+        pushColor(fg_color);
         continue;
       }
       //Blend color with background and plot
       if (bg_color == 0x00FFFFFF) {
         bg = readPixel(xp, yp); swin = true;
       }
-      //drawPixel(xp, yp, alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
       if (swin) { setWindow(xp, yp, width()-1, yp); swin = false; }
       pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
     }
-    yp+=yinc;
+  }
+
+  // Reset x start to left side of box
+  xs = x0;
+  // Scan bounding box from ys-1 up, calculate pixel intensity from distance to line
+  for (int32_t yp = ys-1; yp >= y0; yp--) {
+    bool swin = true;  // Flag to start new window area
+    bool endX = false; // Flag to skip pixels
+    ypay = yp - ay;
+    for (int32_t xp = xs; xp <= x1; xp++) {
+      if (endX) if (alpha <= LoAlphaTheshold) break;  // Skip right side of drawn line
+      xpax = xp - ax;
+      alpha = ar - wedgeLineDistance(xpax, ypay, bax, bay, rdt);
+      if (alpha <= LoAlphaTheshold ) continue;
+      // Track line boundary
+      if (!endX) { endX = true; xs = xp; }
+      if (alpha > HiAlphaTheshold) {
+        if (swin) { setWindow(xp, yp, width()-1, yp); swin = false; }
+        pushColor(fg_color);
+        continue;
+      }
+      //Blend color with background and plot
+      if (bg_color == 0x00FFFFFF) {
+        bg = readPixel(xp, yp); swin = true;
+      }
+      if (swin) { setWindow(xp, yp, width()-1, yp); swin = false; }
+      pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
+    }
   }
 
   inTransaction = lockTransaction;
