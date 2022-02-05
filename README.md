@@ -59,7 +59,7 @@ Displays using the following controllers are supported:
 * ILI9225
 * ILI9341
 * ILI9481
-* ILI9486
+* ILI9486 (DMA not supported with SPI)
 * ILI9488 (DMA not supported with SPI)
 * HX8357D
 * S6D02A1
