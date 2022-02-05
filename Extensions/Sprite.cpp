@@ -785,7 +785,7 @@ bool TFT_eSprite::pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y, uint16_t
           ox += pixel_count;
           pixel_count = 0;
         }
-        else ox++;
+        ox++;
       }
       else {
         sline_buffer[pixel_count++] = rp;
