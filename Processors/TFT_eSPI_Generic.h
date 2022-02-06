@@ -36,7 +36,9 @@
   //#include <FS.h>
 #endif
 
-#define tft_Write_16N tft_Write_16
+#ifndef tft_Write_16N(C)
+  #define tft_Write_16N(C) tft_Write_16(C)
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the DC (TFT Data/Command or Register Select (RS))pin drive code
