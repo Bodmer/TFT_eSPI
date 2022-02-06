@@ -38,6 +38,10 @@
   #define SUPPORT_TRANSACTIONS
 #endif
 
+#ifndef tft_Write_16N(C)
+  #define tft_Write_16N(C) tft_Write_16(C)
+#endif
+
 /*
 ESP32:
 FSPI not defined
