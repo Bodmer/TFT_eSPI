@@ -20,7 +20,7 @@
 #if CONFIG_IDF_TARGET_ESP32C3
   // Fix ESP32C3 IDF bug for missing definition
   #ifndef REG_SPI_BASE
-    #define REG_SPI_BASE(i)     (DR_REG_SPI1_BASE + (((i)>1) ? (((i)* 0x1000) + 0x20000) : (((~(i)) & 1)* 0x1000 )))
+    #define REG_SPI_BASE(i)   DR_REG_SPI2_BASE
   #endif
 
   // Fix ESP32C3 IDF bug for name change
@@ -76,8 +76,10 @@ SPI3_HOST = 2
 #else
   #ifdef CONFIG_IDF_TARGET_ESP32
     #define SPI_PORT VSPI
-  #else
+  #elif CONFIG_IDF_TARGET_ESP32S2
     #define SPI_PORT 2 //FSPI(ESP32 S2)
+  #elif CONFIG_IDF_TARGET_ESP32C3
+    #define SPI_PORT FSPI //FSPI(ESP32 c3)
   #endif
 #endif
 
@@ -535,7 +537,9 @@ SPI3_HOST = 2
 //* Replacement slimmer macros
   #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;    \
                                *_spi_w = D;             \
-                               *_spi_cmd = SPI_USR;      \
+                               *_spi_cmd = SPI_UPDATE;      \
+                        while (*_spi_cmd & SPI_UPDATE);    \                                  
+                               *_spi_cmd = SPI_USR;    \
                         while (*_spi_cmd & SPI_USR);
 
   // Write 8 bits
@@ -547,7 +551,11 @@ SPI3_HOST = 2
   // Future option for transfer without wait
   #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;       \
                            *_spi_w = ((C)<<8 | (C)>>8); \
-                           *_spi_cmd = SPI_USR;
+                           *_spi_cmd = SPI_UPDATE;       \
+                        while (*_spi_cmd & SPI_UPDATE); \
+                           *_spi_cmd = SPI_USR;    \ 
+                        while (*_spi_cmd & SPI_USR);
+
 
   // Write 16 bits
   #define tft_Write_16S(C) TFT_WRITE_BITS(C, 16)
