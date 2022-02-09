@@ -36,8 +36,8 @@
   //#include <FS.h>
 #endif
 
-#ifndef tft_Write_16N(C)
-  #define tft_Write_16N(C) tft_Write_16(C)
+#ifndef tft_Write_16N
+  #define tft_Write_16N tft_Write_16
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
