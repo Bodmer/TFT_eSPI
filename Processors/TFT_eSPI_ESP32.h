@@ -38,10 +38,6 @@
   #define SUPPORT_TRANSACTIONS
 #endif
 
-#ifndef tft_Write_16N
-  #define tft_Write_16N tft_Write_16
-#endif
-
 /*
 ESP32:
 FSPI not defined
@@ -562,6 +558,10 @@ SPI3_HOST = 2
   #define tft_Write_32D(C) TFT_WRITE_BITS((uint16_t)((C)<<8 | (C)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
 
 //*/
+#endif
+
+#ifndef tft_Write_16N
+  #define tft_Write_16N tft_Write_16
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
