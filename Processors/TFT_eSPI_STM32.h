@@ -22,10 +22,6 @@
   #define SUPPORT_TRANSACTIONS
 #endif
 
-#ifndef tft_Write_16N
-  #define tft_Write_16N tft_Write_16
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the parallel bus interface chip pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1064,6 +1060,10 @@
   { spiBuffer[0] = spiBuffer[2] = (C)>>8; spiBuffer[1] = spiBuffer[3] = C; \
   HAL_SPI_Transmit(&spiHal, spiBuffer, 4, 10); }
 
+#endif
+
+#ifndef tft_Write_16N
+  #define tft_Write_16N tft_Write_16
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
