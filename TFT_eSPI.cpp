@@ -5105,6 +5105,7 @@ int16_t TFT_eSPI::drawFloat(float floatNumber, uint8_t dp, int32_t poX, int32_t 
   uint8_t ptr = 0;            // Initialise pointer for array
   int8_t  digits = 1;         // Count the digits to avoid array overflow
   float rounding = 0.5;       // Round up down delta
+  bool negative = false;
 
   if (dp > 7) dp = 7; // Limit the size of decimal portion
 
@@ -5116,9 +5117,15 @@ int16_t TFT_eSPI::drawFloat(float floatNumber, uint8_t dp, int32_t poX, int32_t 
     str[ptr] = 0; // Put a null in the array as a precaution
     digits = 0;   // Set digits to 0 to compensate so pointer value can be used later
     floatNumber = -floatNumber; // Make positive
+    negative = true;
   }
 
   floatNumber += rounding; // Round up or down
+
+  if (dp == 0) {
+    if (negative) floatNumber = -floatNumber;
+    return drawNumber((long)floatNumber, poX, poY, font);
+  }
 
   // For error put ... in string and return (all TFT_eSPI library fonts contain . character)
   if (floatNumber >= 2147483647) {
