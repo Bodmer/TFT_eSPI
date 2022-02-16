@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.4.37"
+#define TFT_ESPI_VERSION "2.4.38"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -611,7 +611,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
            // Support function to UTF8 decode and draw characters piped through print stream
   size_t   write(uint8_t);
-  size_t   write(const uint8_t *buf, size_t len);
+  // size_t   write(const uint8_t *buf, size_t len);
 
            // Used by Smooth font class to fetch a pixel colour for the anti-aliasing
   void     setCallback(getColorCallback getCol);
