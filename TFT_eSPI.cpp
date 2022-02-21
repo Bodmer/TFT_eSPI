@@ -5191,7 +5191,7 @@ void TFT_eSPI::setFreeFont(const GFXfont *f)
   uint16_t numChars = pgm_read_word(&gfxFont->last) - pgm_read_word(&gfxFont->first);
 
   // Find the biggest above and below baseline offsets
-  for (uint8_t c = 0; c < numChars; c++) {
+  for (uint16_t c = 0; c < numChars; c++) {
     GFXglyph *glyph1  = &(((GFXglyph *)pgm_read_dword(&gfxFont->glyph))[c]);
     int8_t ab = -pgm_read_byte(&glyph1->yOffset);
     if (ab > glyph_ab) glyph_ab = ab;
