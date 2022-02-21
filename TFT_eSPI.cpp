@@ -3453,13 +3453,14 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
 #else
 
-  #if defined (SSD1351_DRIVER) || defined (SSD1963_DRIVER)
+  #if defined (SSD1963_DRIVER)
     if ((rotation & 0x1) == 0) { swap_coord(x, y); }
   #endif
 
     SPI_BUSY_CHECK;
 
   #if defined (SSD1351_DRIVER)
+    if (rotation & 0x1) { swap_coord(x, y); }
     // No need to send x if it has not changed (speeds things up)
     if (addr_col != x) {
       DC_C; tft_Write_8(TFT_CASET);
