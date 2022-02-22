@@ -3214,7 +3214,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     #else
       // This is for the RP2040 and PIO interface (SPI or parallel)
       WAIT_FOR_STALL;
-      pio->sm[pio_sm].instr = pio_instr_addr;
+      tft_pio->sm[pio_sm].instr = pio_instr_addr;
 
       TX_FIFO = TFT_CASET;
       TX_FIFO = (x0<<16) | x1;
@@ -3441,14 +3441,15 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   #else
     // This is for the RP2040 and PIO interface (SPI or parallel)
     WAIT_FOR_STALL;
-    pio->sm[pio_sm].instr = pio_instr_addr;
+    tft_pio->sm[pio_sm].instr = pio_instr_addr;
     TX_FIFO = TFT_CASET;
     TX_FIFO = (x<<16) | x;
     TX_FIFO = TFT_PASET;
     TX_FIFO = (y<<16) | y;
     TX_FIFO = TFT_RAMWR;
     //DC set high by PIO
-    tft_Write_16((uint16_t)color);
+    TX_FIFO = color;
+
   #endif
 
 #else
@@ -3667,7 +3668,7 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 ** Description:  Constants for anti-aliased line drawing on TFT and in Sprites
 ***************************************************************************************/
 constexpr float PixelAlphaGain   = 255.0;
-constexpr float LoAlphaTheshold  = 1.0/31.0;
+constexpr float LoAlphaTheshold  = 1.0/32.0;
 constexpr float HiAlphaTheshold  = 1.0 - LoAlphaTheshold;
 
 /***************************************************************************************
@@ -3677,9 +3678,9 @@ constexpr float HiAlphaTheshold  = 1.0 - LoAlphaTheshold;
 uint16_t TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color, uint8_t alpha, uint32_t bg_color)
 {
   if (bg_color == 0x00FFFFFF) bg_color = readPixel(x, y);
-  bg_color = alphaBlend(alpha, color, bg_color);
-  drawPixel(x, y, bg_color);
-  return bg_color;
+  color = alphaBlend(alpha, color, bg_color);
+  drawPixel(x, y, color);
+  return color;
 }
 
 /***************************************************************************************
@@ -3688,27 +3689,45 @@ uint16_t TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color, uint8_t alpha
 ***************************************************************************************/
 void TFT_eSPI::fillSmoothCircle(int32_t x, int32_t y, int32_t r, uint32_t color, uint32_t bg_color)
 {
+  if (r <= 0) return;
+  
   inTransaction = true;
-  int16_t xs = 0;
-  int16_t cx;
+
+  drawFastHLine(x - r, y, 2 * r + 1, color);
+  int32_t xs = 1;
+  int32_t cx = 0;
+
+  int32_t r1 = r * r;
   r++;
-  for (int16_t cy = r; cy > 0; cy--)
+  int32_t r2 = r * r;
+  
+  for (int32_t cy = r - 1; cy > 0; cy--)
   {
-    for (cx = xs; cx <= xs + 1 && cx < r; cx++)
+    int32_t dy2 = (r - cy) * (r - cy);
+    for (cx = xs; cx < r; cx++)
     {
-      float deltaX = r - cx;
-      float deltaY = r - cy;
-      float alphaf = r - sqrtf(deltaX * deltaX + deltaY * deltaY);
-      if (alphaf > 1.0) continue;
+      int32_t hyp2 = (r - cx) * (r - cx) + dy2;
+      if (hyp2 <= r1) break;
+      if (hyp2 >= r2) continue;
+      float alphaf = (float)r - sqrtf(hyp2);
+      if (alphaf > HiAlphaTheshold) break;
       xs = cx;
       if (alphaf < LoAlphaTheshold) continue;
       uint8_t alpha = alphaf * 255;
-      drawPixel(x + cx - r, y + cy - r, color, alpha, bg_color);
-      drawPixel(x - cx + r, y + cy - r, color, alpha, bg_color);
-      drawPixel(x - cx + r, y - cy + r, color, alpha, bg_color);
-      drawPixel(x + cx - r, y - cy + r, color, alpha, bg_color);
+
+      if (bg_color == 0x00FFFFFF) {
+        drawPixel(x + cx - r, y + cy - r, color, alpha, bg_color);
+        drawPixel(x - cx + r, y + cy - r, color, alpha, bg_color);
+        drawPixel(x - cx + r, y - cy + r, color, alpha, bg_color);
+        drawPixel(x + cx - r, y - cy + r, color, alpha, bg_color);
+      }
+      else {
+        uint16_t pcol = drawPixel(x + cx - r, y + cy - r, color, alpha, bg_color);
+        drawPixel(x - cx + r, y + cy - r, pcol);
+        drawPixel(x - cx + r, y - cy + r, pcol);
+        drawPixel(x + cx - r, y - cy + r, pcol);
+      }
     }
-    cx--;
     drawFastHLine(x + cx - r, y + cy - r, 2 * (r - cx) + 1, color);
     drawFastHLine(x + cx - r, y - cy + r, 2 * (r - cx) + 1, color);
   }
@@ -3716,40 +3735,45 @@ void TFT_eSPI::fillSmoothCircle(int32_t x, int32_t y, int32_t r, uint32_t color,
   end_tft_write();
 }
 
+
 /***************************************************************************************
-** Function name:           fillSmoothCircle
-** Description:             Draw a filled anti-aliased circle
+** Function name:           fillSmoothRoundRect
+** Description:             Draw a filled anti-aliased rounded corner rectangle
 ***************************************************************************************/
 void TFT_eSPI::fillSmoothRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint32_t color, uint32_t bg_color)
 {
   inTransaction = true;
-  int16_t xs = 0;
-  int16_t cx;
+  int32_t xs = 0;
+  int32_t cx = 0;
 
   y += r;
   h -= 2*r;
-  fillRect(x, y, w, h, color);
+  fillRect(x, y, w, h + 1, color);
   x += r;
   w -= 2*r+1;
+  int32_t r1 = r * r;
   r++;
+  int32_t r2 = r * r;
 
-  for (int16_t cy = r; cy > 0; cy--)
+  for (int32_t cy = r - 1; cy > 0; cy--)
   {
-    for (cx = xs; cx <= xs + 1 && cx < r; cx++)
+    int32_t dy2 = (r - cy) * (r - cy);
+    for (cx = xs; cx < r; cx++)
     {
-      float deltaX = r - cx;
-      float deltaY = r - cy;
-      float weight = r - sqrtf(deltaX * deltaX + deltaY * deltaY);
-      if (weight > 1.0) continue;
+      int32_t hyp2 = (r - cx) * (r - cx) + dy2;
+      if (hyp2 <= r1) break;
+      if (hyp2 >= r2) continue;
+      float alphaf = (float)r - sqrtf(hyp2);
+      if (alphaf > HiAlphaTheshold) break;
       xs = cx;
-      if (weight < LoAlphaTheshold) continue;
-      uint8_t alpha = weight * 255;
+      if (alphaf < LoAlphaTheshold) continue;
+      uint8_t alpha = alphaf * 255;
+
       drawPixel(x + cx - r, y + cy - r, color, alpha, bg_color);
       drawPixel(x - cx + r + w, y + cy - r, color, alpha, bg_color);
       drawPixel(x - cx + r + w, y - cy + r + h, color, alpha, bg_color);
       drawPixel(x + cx - r, y - cy + r + h, color, alpha, bg_color);
     }
-    cx--;
     drawFastHLine(x + cx - r, y + cy - r, 2 * (r - cx) + 1 + w, color);
     drawFastHLine(x + cx - r, y - cy + r + h, 2 * (r - cx) + 1 + w, color);
   }

@@ -33,7 +33,7 @@
   #endif
 
   // Community RP2040 board package by Earle Philhower
-  PIO pio = pio0;     // Code will try both pio's to find a free SM
+  PIO tft_pio = pio0;     // Code will try both pio's to find a free SM
   int8_t pio_sm = 0;  // pioinit will claim a free one
   // Updated later with the loading offset of the PIO program.
   uint32_t program_offset  = 0;
@@ -53,7 +53,7 @@
 #endif
 
 #ifdef RP2040_DMA
-  uint32_t           dma_tx_channel;
+  int32_t            dma_tx_channel;
   dma_channel_config dma_tx_config;
 #endif
 
@@ -114,26 +114,41 @@ void TFT_eSPI::end_SDA_Read(void)
 void pioinit(uint32_t clock_freq) {
 
   // Find a free SM on one of the PIO's
-  pio = pio0;
-  pio_sm = pio_claim_unused_sm(pio, false); // false means don't panic
+  tft_pio = pio0;
+  
+  /*
+  pio_sm = pio_claim_unused_sm(tft_pio, false); // false means don't panic
   // Try pio1 if SM not found
   if (pio_sm < 0) {
-    pio = pio1;
-    pio_sm = pio_claim_unused_sm(pio, true); // panic this time if no SM is free
+    tft_pio = pio1;
+    pio_sm = pio_claim_unused_sm(tft_pio, true); // panic this time if no SM is free
+  }
+  */
+
+  // Find enough free space on one of the PIO's
+  tft_pio = pio0;
+  if (!pio_can_add_program(tft_pio, &tft_io_program)) {
+    tft_pio = pio1;
+    if (!pio_can_add_program(tft_pio, &tft_io_program)) {
+      Serial.println("No room for PIO program!");
+      return;
+    }
   }
 
+  pio_sm = pio_claim_unused_sm(tft_pio, false);
+
   // Load the PIO program
-  program_offset = pio_add_program(pio, &tft_io_program);
+  program_offset = pio_add_program(tft_pio, &tft_io_program);
 
   // Associate pins with the PIO
-  pio_gpio_init(pio, TFT_DC);
-  pio_gpio_init(pio, TFT_SCLK);
-  pio_gpio_init(pio, TFT_MOSI);
+  pio_gpio_init(tft_pio, TFT_DC);
+  pio_gpio_init(tft_pio, TFT_SCLK);
+  pio_gpio_init(tft_pio, TFT_MOSI);
 
   // Configure the pins to be outputs
-  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_DC, 1, true);
-  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_SCLK, 1, true);
-  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_MOSI, 1, true);
+  pio_sm_set_consecutive_pindirs(tft_pio, pio_sm, TFT_DC, 1, true);
+  pio_sm_set_consecutive_pindirs(tft_pio, pio_sm, TFT_SCLK, 1, true);
+  pio_sm_set_consecutive_pindirs(tft_pio, pio_sm, TFT_MOSI, 1, true);
 
   // Configure the state machine
   pio_sm_config c = tft_io_program_get_default_config(program_offset);
@@ -151,10 +166,10 @@ void pioinit(uint32_t clock_freq) {
   // The OSR register shifts to the left, sm designed to send MS byte of a colour first, autopull off
   sm_config_set_out_shift(&c, false, false, 0);
   // Now load the configuration
-  pio_sm_init(pio, pio_sm, program_offset + tft_io_offset_start_16, &c);
+  pio_sm_init(tft_pio, pio_sm, program_offset + tft_io_offset_start_16, &c);
 
   // Start the state machine.
-  pio_sm_set_enabled(pio, pio_sm, true);
+  pio_sm_set_enabled(tft_pio, pio_sm, true);
 
   // Create the pull stall bit mask
   pull_stall_mask = 1u << (PIO_FDEBUG_TXSTALL_LSB + pio_sm);
@@ -171,28 +186,40 @@ void pioinit(uint32_t clock_freq) {
 void pioinit(uint16_t clock_div, uint16_t fract_div) {
 
   // Find a free SM on one of the PIO's
-  pio = pio0;
-  pio_sm = pio_claim_unused_sm(pio, false); // false means don't panic
+  tft_pio = pio0;
+  pio_sm = pio_claim_unused_sm(tft_pio, false); // false means don't panic
   // Try pio1 if SM not found
   if (pio_sm < 0) {
-    pio = pio1;
-    pio_sm = pio_claim_unused_sm(pio, true); // panic this time if no SM is free
+    tft_pio = pio1;
+    pio_sm = pio_claim_unused_sm(tft_pio, true); // panic this time if no SM is free
   }
+/*
+  // Find enough free space on one of the PIO's
+  tft_pio = pio0;
+  if (!pio_can_add_program(tft_pio, &tft_io_program) {
+    tft_pio = pio1;
+    if (!pio_can_add_program(tft_pio, &tft_io_program) {
+      Serial.println("No room for PIO program!");
+      while(1) delay(100);
+      return;
+    }
+  }
+*/
 
   // Load the PIO program
-  program_offset = pio_add_program(pio, &tft_io_program);
+  program_offset = pio_add_program(tft_pio, &tft_io_program);
 
   // Associate pins with the PIO
-  pio_gpio_init(pio, TFT_DC);
-  pio_gpio_init(pio, TFT_WR);
+  pio_gpio_init(tft_pio, TFT_DC);
+  pio_gpio_init(tft_pio, TFT_WR);
   for (int i = 0; i < 8; i++) {
-    pio_gpio_init(pio, TFT_D0 + i);
+    pio_gpio_init(tft_pio, TFT_D0 + i);
   }
 
   // Configure the pins to be outputs
-  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_DC, 1, true);
-  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_WR, 1, true);
-  pio_sm_set_consecutive_pindirs(pio, pio_sm, TFT_D0, 8, true);
+  pio_sm_set_consecutive_pindirs(tft_pio, pio_sm, TFT_DC, 1, true);
+  pio_sm_set_consecutive_pindirs(tft_pio, pio_sm, TFT_WR, 1, true);
+  pio_sm_set_consecutive_pindirs(tft_pio, pio_sm, TFT_D0, 8, true);
 
   // Configure the state machine
   pio_sm_config c = tft_io_program_get_default_config(program_offset);
@@ -209,10 +236,10 @@ void pioinit(uint16_t clock_div, uint16_t fract_div) {
   // The OSR register shifts to the left, sm designed to send MS byte of a colour first
   sm_config_set_out_shift(&c, false, false, 0);
   // Now load the configuration
-  pio_sm_init(pio, pio_sm, program_offset + tft_io_offset_start_16, &c);
+  pio_sm_init(tft_pio, pio_sm, program_offset + tft_io_offset_start_16, &c);
 
   // Start the state machine.
-  pio_sm_set_enabled(pio, pio_sm, true);
+  pio_sm_set_enabled(tft_pio, pio_sm, true);
 
   // Create the pull stall bit mask
   pull_stall_mask = 1u << (PIO_FDEBUG_TXSTALL_LSB + pio_sm);
@@ -238,7 +265,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
 {
   if (len) {
     WAIT_FOR_STALL;
-    pio->sm[pio_sm].instr = pio_instr_fill;
+    tft_pio->sm[pio_sm].instr = pio_instr_fill;
 
     TX_FIFO = color;
     TX_FIFO = --len; // Decrement first as PIO sends n+1
@@ -564,7 +591,7 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 #if !defined (RP2040_PIO_INTERFACE)
   dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(SPI_X)->dr, (uint16_t*)image, len, true);
 #else
-  dma_channel_configure(dma_tx_channel, &dma_tx_config, &pio->txf[pio_sm], (uint16_t*)image, len, true);
+  dma_channel_configure(dma_tx_channel, &dma_tx_config, &tft_pio->txf[pio_sm], (uint16_t*)image, len, true);
 #endif
 }
 
@@ -617,7 +644,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 #if !defined (RP2040_PIO_INTERFACE)
   dma_channel_configure(dma_tx_channel, &dma_tx_config, &spi_get_hw(SPI_X)->dr, (uint16_t*)buffer, len, true);
 #else
-  dma_channel_configure(dma_tx_channel, &dma_tx_config, &pio->txf[pio_sm], (uint16_t*)buffer, len, true);
+  dma_channel_configure(dma_tx_channel, &dma_tx_config, &tft_pio->txf[pio_sm], (uint16_t*)buffer, len, true);
 #endif
 }
 
@@ -631,14 +658,17 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 
   ctrl_cs = ctrl_cs; // stop unused parameter warning
 
-  dma_tx_channel = dma_claim_unused_channel(true);
+  dma_tx_channel = dma_claim_unused_channel(false);
+  
+  if (dma_tx_channel < 0) return false;
+
   dma_tx_config = dma_channel_get_default_config(dma_tx_channel);
 
   channel_config_set_transfer_data_size(&dma_tx_config, DMA_SIZE_16);
 #if !defined (RP2040_PIO_INTERFACE)
   channel_config_set_dreq(&dma_tx_config, spi_get_index(SPI_X) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
 #else
-  channel_config_set_dreq(&dma_tx_config, pio_get_dreq(pio, pio_sm, true));
+  channel_config_set_dreq(&dma_tx_config, pio_get_dreq(tft_pio, pio_sm, true));
 #endif
 
   DMA_Enabled = true;

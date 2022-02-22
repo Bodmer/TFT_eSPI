@@ -15,16 +15,11 @@
 // 8 bit transfer
 public start_8:
    // Pull the next 32 bit value from the TX FIFO. 
-   // Lose the top 24 bits
    pull side 0
+   // Lose the top 24 bits
    out null, 24
-spi_out_8:
-   // Output the next 8 bits
-   out pins, 1 side 0
-   // Set TFT_SCLK high and jump for next bit
-   jmp !osre, spi_out_8 side 1
-   // Return to start
-   jmp start_16 side 0
+   // Now send remaining bits
+   jmp spi_out side 0
 
 public set_addr_window:
    // Loop count in x for caset, paset and ramwr
@@ -34,7 +29,8 @@ pull_cmd:
    set pins, 0
    // Fetch and output LS byte (caset, paset or ramwr), discarding top 24 bits, set WR low
    pull side 0
-   out null, 24
+   out pins, 25
+   nop side 1
 next_cmd_bit:
    out pins, 1 side 0
    jmp !osre, next_cmd_bit side 1
@@ -79,13 +75,15 @@ next_bit:
 .wrap_target
 public start_16:
    // Pull the next 32 bit value from the TX FIFO. 
-   // Write the top 16 bits
+   // Send the bottom 16 bits
    pull side 0
-   out null, 16
-spi_out_16:
-   // Output the next 16 bits
+   // Drop the first 16 bits, write first bit
+   out pins, 17 side 0
+   nop side 1
+spi_out:
+   // Output the next 15 bits
    out pins, 1 side 0
    // Set TFT_SCLK high and jump for next bit
-   jmp !osre, spi_out_16 side 1
+   jmp !osre, spi_out side 1
    // Return to start
 .wrap

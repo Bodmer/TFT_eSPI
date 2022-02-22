@@ -101,7 +101,7 @@
 
 
 // If smooth fonts are enabled the filing system may need to be loaded
-#ifdef SMOOTH_FONT
+#if defined (SMOOTH_FONT) && !defined (ARDUINO_ARCH_MBED)
   // Call up the filing system for the anti-aliased fonts
   //#define FS_NO_GLOBALS
   #include <FS.h>
@@ -128,10 +128,10 @@
     // PIO takes control of TFT_DC
     // Must wait for data to flush through before changing DC line
     #define DC_C  WAIT_FOR_STALL; \
-                  pio->sm[pio_sm].instr = pio_instr_clr_dc
+                  tft_pio->sm[pio_sm].instr = pio_instr_clr_dc
 
     // Flush has happened before this and mode changed back to 16 bit
-    #define DC_D  pio->sm[pio_sm].instr = pio_instr_set_dc
+    #define DC_D  tft_pio->sm[pio_sm].instr = pio_instr_set_dc
   #endif
 #endif
 
@@ -315,22 +315,22 @@
 
   // Wait for the PIO to stall (SM pull request finds no data in TX FIFO)
   // This is used to detect when the SM is idle and hence ready for a jump instruction
-  #define WAIT_FOR_STALL  pio->fdebug = pull_stall_mask; while (!(pio->fdebug & pull_stall_mask))
+  #define WAIT_FOR_STALL  tft_pio->fdebug = pull_stall_mask; while (!(tft_pio->fdebug & pull_stall_mask))
 
   // Wait until at least "S" locations free
-  #define WAIT_FOR_FIFO_FREE(S) while (((pio->flevel >> (pio_sm * 8)) & 0x000F) > (8-S)){}
+  #define WAIT_FOR_FIFO_FREE(S) while (((tft_pio->flevel >> (pio_sm * 8)) & 0x000F) > (8-S)){}
 
   // Wait until at least 5 locations free
-  #define WAIT_FOR_FIFO_5_FREE while ((pio->flevel) & (0x000c << (pio_sm * 8))){}
+  #define WAIT_FOR_FIFO_5_FREE while ((tft_pio->flevel) & (0x000c << (pio_sm * 8))){}
 
   // Wait until at least 1 location free
-  #define WAIT_FOR_FIFO_1_FREE while ((pio->flevel) & (0x0008 << (pio_sm * 8))){}
+  #define WAIT_FOR_FIFO_1_FREE while ((tft_pio->flevel) & (0x0008 << (pio_sm * 8))){}
 
   // Wait for FIFO to empty (use before swapping to 8 bits)
-  #define WAIT_FOR_FIFO_EMPTY  while(!(pio->fstat & (1u << (PIO_FSTAT_TXEMPTY_LSB + pio_sm))))
+  #define WAIT_FOR_FIFO_EMPTY  while(!(tft_pio->fstat & (1u << (PIO_FSTAT_TXEMPTY_LSB + pio_sm))))
 
   // The write register of the TX FIFO.
-  #define TX_FIFO  pio->txf[pio_sm]
+  #define TX_FIFO  tft_pio->txf[pio_sm]
 
   // Temporary - to be deleted
   #define dir_mask 0
@@ -339,7 +339,7 @@
       // This writes 8 bits, then switches back to 16 bit mode automatically
       // Have already waited for pio stalled (last data write complete) when DC switched to command mode
       // The wait for stall allows DC to be changed immediately afterwards
-      #define tft_Write_8(C)      pio->sm[pio_sm].instr = pio_instr_jmp8; \
+      #define tft_Write_8(C)      tft_pio->sm[pio_sm].instr = pio_instr_jmp8; \
                                   TX_FIFO = (C); \
                                   WAIT_FOR_STALL
 

@@ -191,6 +191,11 @@
   SPI1CMD |= SPIBUSY; \
   while(SPI1CMD & SPIBUSY) {;}
 
+  #define tft_Write_16N(C) \
+  SPI1U1 = (15 << SPILMOSI) | (15 << SPILMISO); \
+  SPI1W0 = ((C)<<8 | (C)>>8); \
+  SPI1CMD |= SPIBUSY
+
   #define tft_Write_16S(C) \
   SPI1U1 = (15 << SPILMOSI) | (15 << SPILMISO); \
   SPI1W0 = C; \
