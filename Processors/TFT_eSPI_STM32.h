@@ -161,21 +161,21 @@
       #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1; \
                                 dmaHal.Instance = DMA2_Stream3
       // The DMA hard-coding for SPI1 is in TFT_eSPI_STM32.c as follows:
-      //     DMA_CHANNEL_3 
+      //     DMA_CHANNEL_3
       //     DMA2_Stream3_IRQn and DMA2_Stream3_IRQHandler()
     #elif (TFT_SPI_PORT == 2)
       // Initialise processor specific SPI and DMA instances - used by init()
       #define INIT_TFT_DATA_BUS spiHal.Instance = SPI2; \
                                 dmaHal.Instance = DMA1_Stream4
       // The DMA hard-coding for SPI2 is in TFT_eSPI_STM32.c as follows:
-      //     DMA_CHANNEL_4 
+      //     DMA_CHANNEL_4
       //     DMA1_Stream4_IRQn and DMA1_Stream4_IRQHandler()
     #elif (TFT_SPI_PORT == 3)
       // Initialise processor specific SPI and DMA instances - used by init()
       #define INIT_TFT_DATA_BUS spiHal.Instance = SPI3; \
                                 dmaHal.Instance = DMA1_Stream5
       // The DMA hard-coding for SPI3 is in TFT_eSPI_STM32.c as follows:
-      //     DMA_CHANNEL_4 
+      //     DMA_CHANNEL_4
       //     DMA1_Stream5_IRQn and DMA1_Stream5_IRQHandler()
     #endif
 
@@ -418,56 +418,54 @@
                              GPIOB->BSRR = D3_BSR_MASK(C) | D4_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
                              WR_STB // Need to slow down strobe
 
-  #if defined (SSD1963_DRIVER)
+    #if defined (SSD1963_DRIVER)
 
-    // Write 18 bit color to TFT (untested)
-    uint8_t r6, g6, b6;
-    #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
-                             GPIOA->BSRR = D0_BSR_MASK(r6) | D2_BSR_MASK(r6) | D7_BSR_MASK(r6); \
-                             WR_L; \
-                             GPIOC->BSRR = D1_BSR_MASK(r6); \
-                             GPIOB->BSRR = D3_BSR_MASK(r6) | D4_BSR_MASK(r6) | D5_BSR_MASK(r6) | D6_BSR_MASK(r6); \
-                             WR_STB; \
-                             GPIOA->BSRR = D0_BSR_MASK(g6) | D2_BSR_MASK(g6) | D7_BSR_MASK(g6); \
-                             WR_L; \
-                             GPIOC->BSRR = D1_BSR_MASK(g6); \
-                             GPIOB->BSRR = D3_BSR_MASK(g6) | D4_BSR_MASK(g6) | D5_BSR_MASK(g6) | D6_BSR_MASK(g6); \
-                             WR_STB; \
-                             GPIOA->BSRR = D0_BSR_MASK(b6) | D2_BSR_MASK(b6) | D7_BSR_MASK(b6); \
-                             WR_L; \
-                             GPIOC->BSRR = D1_BSR_MASK(b6); \
-                             GPIOB->BSRR = D3_BSR_MASK(b6) | D4_BSR_MASK(b6) | D5_BSR_MASK(b6) | D6_BSR_MASK(b6); \
-                             WR_STB // Need to slow down strobe
+      // Write 18 bit color to TFT (untested)
+      #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
+                               GPIOA->BSRR = D0_BSR_MASK(r6) | D2_BSR_MASK(r6) | D7_BSR_MASK(r6); \
+                               WR_L; \
+                               GPIOC->BSRR = D1_BSR_MASK(r6); \
+                               GPIOB->BSRR = D3_BSR_MASK(r6) | D4_BSR_MASK(r6) | D5_BSR_MASK(r6) | D6_BSR_MASK(r6); \
+                               WR_STB; \
+                               GPIOA->BSRR = D0_BSR_MASK(g6) | D2_BSR_MASK(g6) | D7_BSR_MASK(g6); \
+                               WR_L; \
+                               GPIOC->BSRR = D1_BSR_MASK(g6); \
+                               GPIOB->BSRR = D3_BSR_MASK(g6) | D4_BSR_MASK(g6) | D5_BSR_MASK(g6) | D6_BSR_MASK(g6); \
+                               WR_STB; \
+                               GPIOA->BSRR = D0_BSR_MASK(b6) | D2_BSR_MASK(b6) | D7_BSR_MASK(b6); \
+                               WR_L; \
+                               GPIOC->BSRR = D1_BSR_MASK(b6); \
+                               GPIOB->BSRR = D3_BSR_MASK(b6) | D4_BSR_MASK(b6) | D5_BSR_MASK(b6) | D6_BSR_MASK(b6); \
+                               WR_STB // Need to slow down strobe
 
-    // 18 bit color write with swapped bytes
-    #define tft_Write_16S(C) uint16_t Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
+      // 18 bit color write with swapped bytes
+      #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
-  #else
- 
-    // Write 16 bits to TFT
-    #define tft_Write_16(C)  GPIOA->BSRR = D8_BSR_MASK(C) | D10_BSR_MASK(C) | D15_BSR_MASK(C); \
-                             WR_L; \
-                             GPIOC->BSRR = D9_BSR_MASK(C); \
-                             GPIOB->BSRR = D11_BSR_MASK(C) | D12_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
-                             WR_STB; \
-                             GPIOA->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D7_BSR_MASK(C); \
-                             WR_L; \
-                             GPIOC->BSRR = D1_BSR_MASK(C); \
-                             GPIOB->BSRR = D3_BSR_MASK(C) | D4_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
-                             WR_STB // Need to slow down strobe
+    #else
+      // Write 16 bits to TFT
+      #define tft_Write_16(C)  GPIOA->BSRR = D8_BSR_MASK(C) | D10_BSR_MASK(C) | D15_BSR_MASK(C); \
+                               WR_L; \
+                               GPIOC->BSRR = D9_BSR_MASK(C); \
+                               GPIOB->BSRR = D11_BSR_MASK(C) | D12_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
+                               WR_STB; \
+                               GPIOA->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D7_BSR_MASK(C); \
+                               WR_L; \
+                               GPIOC->BSRR = D1_BSR_MASK(C); \
+                               GPIOB->BSRR = D3_BSR_MASK(C) | D4_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
+                               WR_STB // Need to slow down strobe
 
-    // 16 bit write with swapped bytes
-    #define tft_Write_16S(C) GPIOA->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D7_BSR_MASK(C); \
-                             WR_L; \
-                             GPIOC->BSRR = D1_BSR_MASK(C); \
-                             GPIOB->BSRR = D3_BSR_MASK(C) | D4_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
-                             WR_STB; \
-                             GPIOA->BSRR = D8_BSR_MASK(C) | D10_BSR_MASK(C) | D15_BSR_MASK(C); \
-                             WR_L; \
-                             GPIOC->BSRR = D9_BSR_MASK(C); \
-                             GPIOB->BSRR = D11_BSR_MASK(C) | D12_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
-                             WR_STB
-  #endif
+      // 16 bit write with swapped bytes
+      #define tft_Write_16S(C) GPIOA->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D7_BSR_MASK(C); \
+                               WR_L; \
+                               GPIOC->BSRR = D1_BSR_MASK(C); \
+                               GPIOB->BSRR = D3_BSR_MASK(C) | D4_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
+                               WR_STB; \
+                               GPIOA->BSRR = D8_BSR_MASK(C) | D10_BSR_MASK(C) | D15_BSR_MASK(C); \
+                               WR_L; \
+                               GPIOC->BSRR = D9_BSR_MASK(C); \
+                               GPIOB->BSRR = D11_BSR_MASK(C) | D12_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
+                               WR_STB
+    #endif
 
     #define tft_Write_32(C)    tft_Write_16((uint16_t)((C)>>16)); tft_Write_16((uint16_t)(C))
 
@@ -561,57 +559,56 @@
                                GPIOE->BSRR = D3_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
                                WR_STB
 
-  #if defined (SSD1963_DRIVER)
+      #if defined (SSD1963_DRIVER)
 
-    // Write 18 bit color to TFT (untested)
-    uint8_t r6, g6, b6;
-    #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
-                             GPIOF->BSRR = D0_BSR_MASK(r6) | D2_BSR_MASK(r6) | D4_BSR_MASK(r6) | D7_BSR_MASK(r6); \
-                             WR_L; \
-                             GPIOD->BSRR = D1_BSR_MASK(r6); \
-                             GPIOE->BSRR = D3_BSR_MASK(r6) | D5_BSR_MASK(r6) | D6_BSR_MASK(r6); \
-                             WR_STB; \
-                             GPIOF->BSRR = D0_BSR_MASK(g6) | D2_BSR_MASK(g6) | D4_BSR_MASK(g6) | D7_BSR_MASK(g6); \
-                             WR_L; \
-                             GPIOD->BSRR = D1_BSR_MASK(g6); \
-                             GPIOE->BSRR = D3_BSR_MASK(g6) | D5_BSR_MASK(g6) | D6_BSR_MASK(g6); \
-                             WR_STB; \
-                             GPIOF->BSRR = D0_BSR_MASK(b6) | D2_BSR_MASK(b6) | D4_BSR_MASK(b6) | D7_BSR_MASK(b6); \
-                             WR_L; \
-                             GPIOD->BSRR = D1_BSR_MASK(b6); \
-                             GPIOE->BSRR = D3_BSR_MASK(b6) | D5_BSR_MASK(b6) | D6_BSR_MASK(b6); \
-                             WR_STB // Need to slow down strobe
+        // Write 18 bit color to TFT (untested)
+        #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
+                                 GPIOF->BSRR = D0_BSR_MASK(r6) | D2_BSR_MASK(r6) | D4_BSR_MASK(r6) | D7_BSR_MASK(r6); \
+                                 WR_L; \
+                                 GPIOD->BSRR = D1_BSR_MASK(r6); \
+                                 GPIOE->BSRR = D3_BSR_MASK(r6) | D5_BSR_MASK(r6) | D6_BSR_MASK(r6); \
+                                 WR_STB; \
+                                 GPIOF->BSRR = D0_BSR_MASK(g6) | D2_BSR_MASK(g6) | D4_BSR_MASK(g6) | D7_BSR_MASK(g6); \
+                                 WR_L; \
+                                 GPIOD->BSRR = D1_BSR_MASK(g6); \
+                                 GPIOE->BSRR = D3_BSR_MASK(g6) | D5_BSR_MASK(g6) | D6_BSR_MASK(g6); \
+                                 WR_STB; \
+                                 GPIOF->BSRR = D0_BSR_MASK(b6) | D2_BSR_MASK(b6) | D4_BSR_MASK(b6) | D7_BSR_MASK(b6); \
+                                 WR_L; \
+                                 GPIOD->BSRR = D1_BSR_MASK(b6); \
+                                 GPIOE->BSRR = D3_BSR_MASK(b6) | D5_BSR_MASK(b6) | D6_BSR_MASK(b6); \
+                                 WR_STB // Need to slow down strobe
 
-    // 18 bit color write with swapped bytes
-    #define tft_Write_16S(C) uint16_t Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
+        // 18 bit color write with swapped bytes
+        #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
-  #else
+      #else
 
-      // Write 16 bits to TFT
-      #define tft_Write_16(C)  GPIOF->BSRR = D8_BSR_MASK(C) | D10_BSR_MASK(C) | D12_BSR_MASK(C) | D15_BSR_MASK(C); \
-                               WR_L; \
-                               GPIOD->BSRR = D9_BSR_MASK(C); \
-                               GPIOE->BSRR = D11_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
-                               WR_STB;\
-                               GPIOF->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D4_BSR_MASK(C) | D7_BSR_MASK(C); \
-                               WR_L; \
-                               GPIOD->BSRR = D1_BSR_MASK(C); \
-                               GPIOE->BSRR = D3_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
-                               WR_STB
+        // Write 16 bits to TFT
+        #define tft_Write_16(C)  GPIOF->BSRR = D8_BSR_MASK(C) | D10_BSR_MASK(C) | D12_BSR_MASK(C) | D15_BSR_MASK(C); \
+                                 WR_L; \
+                                 GPIOD->BSRR = D9_BSR_MASK(C); \
+                                 GPIOE->BSRR = D11_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
+                                 WR_STB;\
+                                 GPIOF->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D4_BSR_MASK(C) | D7_BSR_MASK(C); \
+                                 WR_L; \
+                                 GPIOD->BSRR = D1_BSR_MASK(C); \
+                                 GPIOE->BSRR = D3_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
+                                 WR_STB
 
-      // 16 bit write with swapped bytes
-      #define tft_Write_16S(C) GPIOF->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D4_BSR_MASK(C) | D7_BSR_MASK(C); \
-                               WR_L; \
-                               GPIOD->BSRR = D1_BSR_MASK(C); \
-                               GPIOE->BSRR = D3_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
-                               WR_STB; \
-                               GPIOF->BSRR = D8_BSR_MASK(C) | D10_BSR_MASK(C) | D12_BSR_MASK(C) | D15_BSR_MASK(C); \
-                               WR_L; \
-                               GPIOD->BSRR = D9_BSR_MASK(C); \
-                               GPIOE->BSRR = D11_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
-                               WR_STB
+        // 16 bit write with swapped bytes
+        #define tft_Write_16S(C) GPIOF->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D4_BSR_MASK(C) | D7_BSR_MASK(C); \
+                                 WR_L; \
+                                 GPIOD->BSRR = D1_BSR_MASK(C); \
+                                 GPIOE->BSRR = D3_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
+                                 WR_STB; \
+                                 GPIOF->BSRR = D8_BSR_MASK(C) | D10_BSR_MASK(C) | D12_BSR_MASK(C) | D15_BSR_MASK(C); \
+                                 WR_L; \
+                                 GPIOD->BSRR = D9_BSR_MASK(C); \
+                                 GPIOE->BSRR = D11_BSR_MASK(C) | D13_BSR_MASK(C) | D14_BSR_MASK(C); \
+                                 WR_STB
 
-  #endif
+      #endif
 
       #define tft_Write_32(C)    tft_Write_16((uint16_t)((C)>>16)); tft_Write_16((uint16_t)(C))
 
@@ -740,21 +737,21 @@
       #elif defined (STM_PORTD_DATA_BUS)
         #define GPIOX GPIOD
       #endif
-      
+
       // Write 8 bits to TFT
       #define tft_Write_8(C)   GPIOX->BSRR = (0x00FF0000 | (uint8_t)(C)); WR_L; WR_STB
 
       #if defined (SSD1963_DRIVER)
 
         // Write 18 bit color to TFT (untested)
-        uint8_t r6, g6, b6;
+
         #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
                              GPIOX->BSRR = (0x00FF0000 | (uint8_t)(r6)); WR_L; WR_STB; \
                              GPIOX->BSRR = (0x00FF0000 | (uint8_t)(g6)); WR_L; WR_STB; \
                              GPIOX->BSRR = (0x00FF0000 | (uint8_t)(b6)); WR_L; WR_STB
 
         // 18 bit color write with swapped bytes
-        #define tft_Write_16S(C) uint16_t Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
+        #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
       #else
 
@@ -858,91 +855,90 @@
                                D7_PIN_PORT->BSRR = D7_BSR_MASK(C); \
                                WR_STB
 
-  #if defined (SSD1963_DRIVER)
+      #if defined (SSD1963_DRIVER)
 
-    // Write 18 bit color to TFT (untested)
-    uint8_t r6, g6, b6;
-    #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
-                             D0_PIN_PORT->BSRR = D8_BSR_MASK(r6);  \
-                             D1_PIN_PORT->BSRR = D9_BSR_MASK(r6);  \
-                             D2_PIN_PORT->BSRR = D10_BSR_MASK(r6); \
-                             D3_PIN_PORT->BSRR = D11_BSR_MASK(r6); \
-                             WR_L; \
-                             D4_PIN_PORT->BSRR = D12_BSR_MASK(r6); \
-                             D5_PIN_PORT->BSRR = D13_BSR_MASK(r6); \
-                             D6_PIN_PORT->BSRR = D14_BSR_MASK(r6); \
-                             D7_PIN_PORT->BSRR = D15_BSR_MASK(r6); \
-                             WR_STB;\
-                             D0_PIN_PORT->BSRR = D8_BSR_MASK(g6);  \
-                             D1_PIN_PORT->BSRR = D9_BSR_MASK(g6);  \
-                             D2_PIN_PORT->BSRR = D10_BSR_MASK(g6); \
-                             D3_PIN_PORT->BSRR = D11_BSR_MASK(g6); \
-                             WR_L; \
-                             D4_PIN_PORT->BSRR = D12_BSR_MASK(g6); \
-                             D5_PIN_PORT->BSRR = D13_BSR_MASK(g6); \
-                             D6_PIN_PORT->BSRR = D14_BSR_MASK(g6); \
-                             D7_PIN_PORT->BSRR = D15_BSR_MASK(g6); \
-                             WR_STB;\
-                             D0_PIN_PORT->BSRR = D0_BSR_MASK(b6); \
-                             D1_PIN_PORT->BSRR = D1_BSR_MASK(b6); \
-                             D2_PIN_PORT->BSRR = D2_BSR_MASK(b6); \
-                             D3_PIN_PORT->BSRR = D3_BSR_MASK(b6); \
-                             WR_L; \
-                             D4_PIN_PORT->BSRR = D4_BSR_MASK(b6); \
-                             D5_PIN_PORT->BSRR = D5_BSR_MASK(b6); \
-                             D6_PIN_PORT->BSRR = D6_BSR_MASK(b6); \
-                             D7_PIN_PORT->BSRR = D7_BSR_MASK(b6); \
-                             WR_STB
+        // Write 18 bit color to TFT (untested)
+        #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
+                                 D0_PIN_PORT->BSRR = D8_BSR_MASK(r6);  \
+                                 D1_PIN_PORT->BSRR = D9_BSR_MASK(r6);  \
+                                 D2_PIN_PORT->BSRR = D10_BSR_MASK(r6); \
+                                 D3_PIN_PORT->BSRR = D11_BSR_MASK(r6); \
+                                 WR_L; \
+                                 D4_PIN_PORT->BSRR = D12_BSR_MASK(r6); \
+                                 D5_PIN_PORT->BSRR = D13_BSR_MASK(r6); \
+                                 D6_PIN_PORT->BSRR = D14_BSR_MASK(r6); \
+                                 D7_PIN_PORT->BSRR = D15_BSR_MASK(r6); \
+                                 WR_STB;\
+                                 D0_PIN_PORT->BSRR = D8_BSR_MASK(g6);  \
+                                 D1_PIN_PORT->BSRR = D9_BSR_MASK(g6);  \
+                                 D2_PIN_PORT->BSRR = D10_BSR_MASK(g6); \
+                                 D3_PIN_PORT->BSRR = D11_BSR_MASK(g6); \
+                                 WR_L; \
+                                 D4_PIN_PORT->BSRR = D12_BSR_MASK(g6); \
+                                 D5_PIN_PORT->BSRR = D13_BSR_MASK(g6); \
+                                 D6_PIN_PORT->BSRR = D14_BSR_MASK(g6); \
+                                 D7_PIN_PORT->BSRR = D15_BSR_MASK(g6); \
+                                 WR_STB;\
+                                 D0_PIN_PORT->BSRR = D0_BSR_MASK(b6); \
+                                 D1_PIN_PORT->BSRR = D1_BSR_MASK(b6); \
+                                 D2_PIN_PORT->BSRR = D2_BSR_MASK(b6); \
+                                 D3_PIN_PORT->BSRR = D3_BSR_MASK(b6); \
+                                 WR_L; \
+                                 D4_PIN_PORT->BSRR = D4_BSR_MASK(b6); \
+                                 D5_PIN_PORT->BSRR = D5_BSR_MASK(b6); \
+                                 D6_PIN_PORT->BSRR = D6_BSR_MASK(b6); \
+                                 D7_PIN_PORT->BSRR = D7_BSR_MASK(b6); \
+                                 WR_STB
 
-    // 18 bit color write with swapped bytes
-    #define tft_Write_16S(C) uint16_t Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
+        // 18 bit color write with swapped bytes
+        #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
-  #else
+      #else
 
-      // Write 16 bits to TFT
-      #define tft_Write_16(C)  D0_PIN_PORT->BSRR = D8_BSR_MASK(C);  \
-                               D1_PIN_PORT->BSRR = D9_BSR_MASK(C);  \
-                               D2_PIN_PORT->BSRR = D10_BSR_MASK(C); \
-                               D3_PIN_PORT->BSRR = D11_BSR_MASK(C); \
-                               WR_L; \
-                               D4_PIN_PORT->BSRR = D12_BSR_MASK(C); \
-                               D5_PIN_PORT->BSRR = D13_BSR_MASK(C); \
-                               D6_PIN_PORT->BSRR = D14_BSR_MASK(C); \
-                               D7_PIN_PORT->BSRR = D15_BSR_MASK(C); \
-                               WR_STB;\
-                               D0_PIN_PORT->BSRR = D0_BSR_MASK(C); \
-                               D1_PIN_PORT->BSRR = D1_BSR_MASK(C); \
-                               D2_PIN_PORT->BSRR = D2_BSR_MASK(C); \
-                               D3_PIN_PORT->BSRR = D3_BSR_MASK(C); \
-                               WR_L; \
-                               D4_PIN_PORT->BSRR = D4_BSR_MASK(C); \
-                               D5_PIN_PORT->BSRR = D5_BSR_MASK(C); \
-                               D6_PIN_PORT->BSRR = D6_BSR_MASK(C); \
-                               D7_PIN_PORT->BSRR = D7_BSR_MASK(C); \
-                               WR_STB
+        // Write 16 bits to TFT
+        #define tft_Write_16(C)  D0_PIN_PORT->BSRR = D8_BSR_MASK(C);  \
+                                 D1_PIN_PORT->BSRR = D9_BSR_MASK(C);  \
+                                 D2_PIN_PORT->BSRR = D10_BSR_MASK(C); \
+                                 D3_PIN_PORT->BSRR = D11_BSR_MASK(C); \
+                                 WR_L; \
+                                 D4_PIN_PORT->BSRR = D12_BSR_MASK(C); \
+                                 D5_PIN_PORT->BSRR = D13_BSR_MASK(C); \
+                                 D6_PIN_PORT->BSRR = D14_BSR_MASK(C); \
+                                 D7_PIN_PORT->BSRR = D15_BSR_MASK(C); \
+                                 WR_STB;\
+                                 D0_PIN_PORT->BSRR = D0_BSR_MASK(C); \
+                                 D1_PIN_PORT->BSRR = D1_BSR_MASK(C); \
+                                 D2_PIN_PORT->BSRR = D2_BSR_MASK(C); \
+                                 D3_PIN_PORT->BSRR = D3_BSR_MASK(C); \
+                                 WR_L; \
+                                 D4_PIN_PORT->BSRR = D4_BSR_MASK(C); \
+                                 D5_PIN_PORT->BSRR = D5_BSR_MASK(C); \
+                                 D6_PIN_PORT->BSRR = D6_BSR_MASK(C); \
+                                 D7_PIN_PORT->BSRR = D7_BSR_MASK(C); \
+                                 WR_STB
 
-      // 16 bit write with swapped bytes
-      #define tft_Write_16S(C) D0_PIN_PORT->BSRR = D0_BSR_MASK(C); \
-                               D1_PIN_PORT->BSRR = D1_BSR_MASK(C); \
-                               D2_PIN_PORT->BSRR = D2_BSR_MASK(C); \
-                               D3_PIN_PORT->BSRR = D3_BSR_MASK(C); \
-                               WR_L; \
-                               D4_PIN_PORT->BSRR = D4_BSR_MASK(C); \
-                               D5_PIN_PORT->BSRR = D5_BSR_MASK(C); \
-                               D6_PIN_PORT->BSRR = D6_BSR_MASK(C); \
-                               D7_PIN_PORT->BSRR = D7_BSR_MASK(C); \
-                               WR_STB; \
-                               D0_PIN_PORT->BSRR = D8_BSR_MASK(C);  \
-                               D1_PIN_PORT->BSRR = D9_BSR_MASK(C);  \
-                               D2_PIN_PORT->BSRR = D10_BSR_MASK(C); \
-                               D3_PIN_PORT->BSRR = D11_BSR_MASK(C); \
-                               WR_L; \
-                               D4_PIN_PORT->BSRR = D12_BSR_MASK(C); \
-                               D5_PIN_PORT->BSRR = D13_BSR_MASK(C); \
-                               D6_PIN_PORT->BSRR = D14_BSR_MASK(C); \
-                               D7_PIN_PORT->BSRR = D15_BSR_MASK(C); \
-                               WR_STB
-  #endif
+        // 16 bit write with swapped bytes
+        #define tft_Write_16S(C) D0_PIN_PORT->BSRR = D0_BSR_MASK(C); \
+                                 D1_PIN_PORT->BSRR = D1_BSR_MASK(C); \
+                                 D2_PIN_PORT->BSRR = D2_BSR_MASK(C); \
+                                 D3_PIN_PORT->BSRR = D3_BSR_MASK(C); \
+                                 WR_L; \
+                                 D4_PIN_PORT->BSRR = D4_BSR_MASK(C); \
+                                 D5_PIN_PORT->BSRR = D5_BSR_MASK(C); \
+                                 D6_PIN_PORT->BSRR = D6_BSR_MASK(C); \
+                                 D7_PIN_PORT->BSRR = D7_BSR_MASK(C); \
+                                 WR_STB; \
+                                 D0_PIN_PORT->BSRR = D8_BSR_MASK(C);  \
+                                 D1_PIN_PORT->BSRR = D9_BSR_MASK(C);  \
+                                 D2_PIN_PORT->BSRR = D10_BSR_MASK(C); \
+                                 D3_PIN_PORT->BSRR = D11_BSR_MASK(C); \
+                                 WR_L; \
+                                 D4_PIN_PORT->BSRR = D12_BSR_MASK(C); \
+                                 D5_PIN_PORT->BSRR = D13_BSR_MASK(C); \
+                                 D6_PIN_PORT->BSRR = D14_BSR_MASK(C); \
+                                 D7_PIN_PORT->BSRR = D15_BSR_MASK(C); \
+                                 WR_STB
+      #endif
 
       #define tft_Write_32(C)    tft_Write_16((uint16_t)((C)>>16)); tft_Write_16((uint16_t)(C))
 

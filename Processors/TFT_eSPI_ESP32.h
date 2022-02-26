@@ -374,7 +374,7 @@ SPI3_HOST = 2
                             GPIO.out_w1tc = clr_mask; GPIO.out_w1ts = set_mask((uint8_t) (((C) & 0x001F)<< 3)); WR_H
 
     // 18 bit color write with swapped bytes
-    #define tft_Write_16S(C) uint16_t Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
+    #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
   #else
 
