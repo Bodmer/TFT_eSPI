@@ -105,6 +105,8 @@
 
 //#include <User_Setups/Setup202_SSD1351_128.h>      // Setup file for ESP32/ESP8266 based SSD1351 128x128 1.5inch OLED display
 
+//#include <User_Setups/Setup203_ST7789.h>     // Setup file for ESP32/ESP8266 based ST7789 240X280 1.69inch TFT 
+
 //#include <User_Setups/SetupX_Template.h>
 
 
