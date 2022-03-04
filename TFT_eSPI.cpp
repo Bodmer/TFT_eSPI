@@ -99,11 +99,11 @@ inline void TFT_eSPI::end_tft_write(void){
       locked = true;        // Flag to show SPI access now locked
       SPI_BUSY_CHECK;       // Check send complete and clean out unused rx data
       CS_H;
+      SET_BUS_READ_MODE;    // In case bus has been configured for tx only
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
       spi.endTransaction();
 #endif
     }
-    SET_BUS_READ_MODE;      // In case SPI has been configured for tx only
   }
 }
 
@@ -114,11 +114,11 @@ inline void TFT_eSPI::end_nin_write(void){
       locked = true;        // Flag to show SPI access now locked
       SPI_BUSY_CHECK;       // Check send complete and clean out unused rx data
       CS_H;
+      SET_BUS_READ_MODE;    // In case SPI has been configured for tx only
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
       spi.endTransaction();
 #endif
     }
-    SET_BUS_READ_MODE;      // In case SPI has been configured for tx only
   }
 }
 
