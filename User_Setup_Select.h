@@ -85,7 +85,8 @@
 
 //#include <User_Setups/Setup70_ESP32_S2_ILI9341.h>  // Setup file for ESP32 S2 with SPI ILI9341
 
-//#include <User_Setups/Setup71_ESP32_S2_ST7789.h>  // Setup file for ESP32 S2 with ST7789
+//#include <User_Setups/Setup71_ESP32_S2_ST7789.h>       // Setup file for ESP32 S2 with ST7789
+//#include <User_Setups/Setup72_ESP32_ST7789_172x320.h>  // Setup file for ESP32 with ST7789 1.47" 172x320
 
 //#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h>
 //#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h>
