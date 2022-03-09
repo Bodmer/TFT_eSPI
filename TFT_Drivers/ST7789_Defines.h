@@ -20,6 +20,13 @@
   #endif
 #endif
 
+// 1.47" 172x320 Round Rectangle Color IPS TFT Display
+#if (TFT_HEIGHT == 320) && (TFT_WIDTH == 172)
+  #ifndef CGRAM_OFFSET
+    #define CGRAM_OFFSET
+  #endif
+#endif
+
 // Delay between some initialisation commands
 #define TFT_INIT_DELAY 0x80 // Not used unless commandlist invoked
 
