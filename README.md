@@ -139,7 +139,7 @@ Anti-aliased fonts can also be drawn over a gradient background with a callback 
 
 Anti-aliased fonts cannot be scaled with setTextSize so you need to create a font for each size you need. See examples.
 
-# 8 bit parallel supportset
+# 8 bit parallel support
 
 The common 8 bit "Mcufriend" shields are supported for the STM Nucleo 64/144 boards and ESP32 UNO style board. The STM32 "Blue/Black Pill" boards can also be used with 8 bit parallel displays.
 
