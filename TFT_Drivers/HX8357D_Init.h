@@ -97,7 +97,7 @@
     writedata(0x55);  // 16 bit
     
     writecommand(HX8357_MADCTL);  
-    writedata(0xC0); 
+    writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_COLOR_ORDER); 
     
     writecommand(HX8357_TEON);  // TE off
     writedata(0x00); 
