@@ -5422,8 +5422,9 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifdef TOUCH_CS
   #include "Extensions/Touch.cpp"
-  #include "Extensions/Button.cpp"
 #endif
+
+#include "Extensions/Button.cpp"
 
 #include "Extensions/Sprite.cpp"
 
