@@ -8,6 +8,13 @@ TFT_eSPI_Button::TFT_eSPI_Button(void) {
   _yd        = 0;
   _textdatum = MC_DATUM;
   _label[9]  = '\0';
+  _actionFunction = NULL;
+}
+
+// Set custom callback allowing arbitrary effects
+void TFT_eSPI_Button::setButtonAction(ButtonActionFunction buttonActionFunction)
+{
+  _actionFunction = buttonActionFunction;
 }
 
 // Classic initButton() function: pass center & size
@@ -103,3 +110,10 @@ void TFT_eSPI_Button::press(bool p) {
 bool TFT_eSPI_Button::isPressed()    { return currstate; }
 bool TFT_eSPI_Button::justPressed()  { return (currstate && !laststate); }
 bool TFT_eSPI_Button::justReleased() { return (!currstate && laststate); }
+
+
+void TFT_eSPI_Button::action() {
+  if (_actionFunction != NULL) {
+    _actionFunction();
+  }
+}

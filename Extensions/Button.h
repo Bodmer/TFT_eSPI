@@ -6,6 +6,8 @@
 // within button
 ***************************************************************************************/
 
+typedef void (*ButtonActionFunction)(void);
+
 class TFT_eSPI_Button : public TFT_eSPI {
 
  public:
@@ -26,6 +28,10 @@ class TFT_eSPI_Button : public TFT_eSPI {
   void     drawButton(bool inverted = false, String long_name = "");
   bool     contains(int16_t x, int16_t y);
 
+  // Set custom callback allowing arbitrary effects
+  void     setButtonAction(ButtonActionFunction actionFunction);
+  void     action(void);
+
   void     press(bool p);
   bool     isPressed();
   bool     justPressed();
@@ -41,4 +47,6 @@ class TFT_eSPI_Button : public TFT_eSPI {
   char     _label[10]; // Button text is 9 chars maximum unless long_name used
 
   bool  currstate, laststate; // Button states
+
+  ButtonActionFunction _actionFunction; // Action callback
 };
