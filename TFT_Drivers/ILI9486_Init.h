@@ -8,8 +8,8 @@
 {
 // From https://github.com/notro/fbtft/blob/master/fb_ili9486.c
 
-    //writecommand(0x01); // SW reset
-    //delay(120);
+    writecommand(0x01); // SW reset
+    delay(120);
 	
     writecommand(0x11); // Sleep out, also SW reset
     delay(120);
