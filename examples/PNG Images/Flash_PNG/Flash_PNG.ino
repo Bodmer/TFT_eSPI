@@ -2,9 +2,6 @@
 // This example renders a png file that is stored in a FLASH array
 // using the PNGdec library (available via library manager).
 
-#include <LittleFS.h>
-#define FileSys LittleFS
-
 // Include the PNG decoder library
 #include <PNGdec.h>
 #include "panda_png.h" // Image is stored here in an 8 bit array
