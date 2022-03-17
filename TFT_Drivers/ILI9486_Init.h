@@ -10,7 +10,7 @@
 
     writecommand(0x01); // SW reset
     delay(120);
-	
+
     writecommand(0x11); // Sleep out, also SW reset
     delay(120);
 

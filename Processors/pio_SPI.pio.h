@@ -22,8 +22,8 @@
 
 static const uint16_t tft_io_program_instructions[] = {
     0x90a0, //  0: pull   block           side 0     
-    0x6078, //  1: out    null, 24                   
-    0x101e, //  2: jmp    30              side 0     
+    0x6019, //  1: out    pins, 25                   
+    0x181e, //  2: jmp    30              side 1     
     0xf022, //  3: set    x, 2            side 0     
     0xe000, //  4: set    pins, 0                    
     0x90a0, //  5: pull   block           side 0     

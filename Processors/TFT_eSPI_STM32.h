@@ -1010,8 +1010,8 @@
   HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
 
   #define tft_Write_32(C) \
-  { spiBuffer[1] = ((C)>>24); spiBuffer[3] = ((C)>>16); spiBuffer[5] = ((C)>>8); spiBuffer[7] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 8, 10); }
+  { spiBuffer[0] = (C)>>24; spiBuffer[1] = (C)>>16; spiBuffer[2] = (C)>>8; spiBuffer[3] = C; \
+  HAL_SPI_Transmit(&spiHal, spiBuffer, 4, 10); }
 
   #define tft_Write_32C(C,D) \
   { spiBuffer[1] = ((C)>>8); spiBuffer[3] = (C); spiBuffer[5] = ((D)>>8); spiBuffer[7] = D; \

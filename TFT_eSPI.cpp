@@ -737,6 +737,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Init.h"
 
+#elif defined (RM68120_DRIVER)
+     #include "TFT_Drivers/RM68120_Init.h"
+
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -825,6 +828,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Rotation.h"
 
+#elif defined (RM68120_DRIVER)
+     #include "TFT_Drivers/RM68120_Rotation.h"
+
 #endif
 
   delayMicroseconds(10);
@@ -889,6 +895,7 @@ void TFT_eSPI::spiwrite(uint8_t c)
 ** Function name:           writecommand
 ** Description:             Send an 8 bit command to the TFT
 ***************************************************************************************/
+#ifndef RM68120_DRIVER
 void TFT_eSPI::writecommand(uint8_t c)
 {
   begin_tft_write();
@@ -902,7 +909,36 @@ void TFT_eSPI::writecommand(uint8_t c)
   end_tft_write();
 
 }
+#else
+void TFT_eSPI::writecommand(uint16_t c)
+{
+  begin_tft_write();
 
+  DC_C;
+
+  tft_Write_16(c);
+
+  DC_D;
+
+  end_tft_write();
+
+}
+void TFT_eSPI::writeRegister(uint16_t c, uint8_t d)
+{
+  begin_tft_write();
+
+  DC_C;
+
+  tft_Write_16(c);
+
+  DC_D;
+
+  tft_Write_8(d);
+
+  end_tft_write();
+
+}
+#endif
 
 /***************************************************************************************
 ** Function name:           writedata

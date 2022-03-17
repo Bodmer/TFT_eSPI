@@ -16,10 +16,10 @@
 public start_8:
    // Pull the next 32 bit value from the TX FIFO. 
    pull side 0
-   // Lose the top 24 bits
-   out null, 24
+   // Lose the top 24 bits, send 1st bit
+   out pins, 25
    // Now send remaining bits
-   jmp spi_out side 0
+   jmp spi_out side 1
 
 public set_addr_window:
    // Loop count in x for caset, paset and ramwr
