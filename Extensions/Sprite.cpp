@@ -405,7 +405,7 @@ bool TFT_eSprite::pushRotated(int16_t angle, uint32_t transp)
   int32_t yt = min_y - _tft->_yPivot;
   uint32_t xe = _dwidth << FP_SCALE;
   uint32_t ye = _dheight << FP_SCALE;
-  uint32_t tpcolor = transp;
+  uint16_t tpcolor = (uint16_t)transp;
 
   if (transp != 0x00FFFFFF) {
     if (_bpp == 4) tpcolor = _colorMap[transp & 0x0F];
@@ -479,7 +479,7 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, uint32_t transp)
   int32_t yt = min_y - spr->_yPivot;
   uint32_t xe = _dwidth << FP_SCALE;
   uint32_t ye = _dheight << FP_SCALE;
-  uint32_t tpcolor = transp;
+  uint16_t tpcolor = (uint16_t)transp;
   
   if (transp != 0x00FFFFFF) {
     if (_bpp == 4) tpcolor = _colorMap[transp & 0x0F];
