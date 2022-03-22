@@ -16,7 +16,7 @@
 #define tft_io_wrap 27
 
 #define tft_io_offset_block_fill 0u
-#define tft_io_offset_start_16 9u
+#define tft_io_offset_start_tx 9u
 #define tft_io_offset_start_8 14u
 #define tft_io_offset_set_addr_window 17u
 

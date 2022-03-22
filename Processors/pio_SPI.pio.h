@@ -18,7 +18,7 @@
 #define tft_io_offset_start_8 0u
 #define tft_io_offset_set_addr_window 3u
 #define tft_io_offset_block_fill 17u
-#define tft_io_offset_start_16 27u
+#define tft_io_offset_start_tx 27u
 
 static const uint16_t tft_io_program_instructions[] = {
     0x90a0, //  0: pull   block           side 0     

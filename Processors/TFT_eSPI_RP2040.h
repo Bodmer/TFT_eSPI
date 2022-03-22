@@ -335,7 +335,34 @@
   // Temporary - to be deleted
   #define dir_mask 0
 
+  #if  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+      // This writes 8 bits, then switches back to 16 bit mode automatically
+      // Have already waited for pio stalled (last data write complete) when DC switched to command mode
+      // The wait for stall allows DC to be changed immediately afterwards
+      #define tft_Write_8(C)      tft_pio->sm[pio_sm].instr = pio_instr_jmp8; \
+                                  TX_FIFO = (C); \
+                                  WAIT_FOR_STALL
 
+      // Used to send last byte for 32 bit macros below since PIO sends 24 bits
+      #define tft_Write_8L(C)     WAIT_FOR_STALL; \
+                                  tft_pio->sm[pio_sm].instr = pio_instr_jmp8; \
+                                  TX_FIFO = (C)
+
+      // Note: the following macros do not wait for the end of transmission
+
+      #define tft_Write_16(C)     WAIT_FOR_FIFO_FREE(1); TX_FIFO = ((((uint32_t)(C) & 0xF800)<<8) | (((C) & 0x07E0)<<5) | (((C) & 0x001F)<<3))
+
+      #define tft_Write_16N(C)    WAIT_FOR_FIFO_FREE(1); TX_FIFO = ((((uint32_t)(C) & 0xF800)<<8) | (((C) & 0x07E0)<<5) | (((C) & 0x001F)<<3))
+
+      #define tft_Write_16S(C)    WAIT_FOR_FIFO_FREE(1); TX_FIFO = ((((uint32_t)(C) & 0xF8) << 16) | (((C) & 0xE000)>>3) | (((C) & 0x07)<<13) | (((C) & 0x1F00)>>5))
+
+      #define tft_Write_32(C)     WAIT_FOR_FIFO_FREE(2); TX_FIFO = ((C)>>8); WAIT_FOR_STALL; tft_Write_8(C)
+
+      #define tft_Write_32C(C,D)  WAIT_FOR_FIFO_FREE(2); TX_FIFO = (((C)<<8) | ((D)>>8)); tft_Write_8L(D)
+
+      #define tft_Write_32D(C)    WAIT_FOR_FIFO_FREE(2); TX_FIFO = (((C)<<8) | ((C)>>8)); tft_Write_8L(C)
+
+  #else
       // This writes 8 bits, then switches back to 16 bit mode automatically
       // Have already waited for pio stalled (last data write complete) when DC switched to command mode
       // The wait for stall allows DC to be changed immediately afterwards
@@ -356,7 +383,7 @@
       #define tft_Write_32C(C,D)  WAIT_FOR_FIFO_FREE(2); TX_FIFO = (C); TX_FIFO = (D)
 
       #define tft_Write_32D(C)    WAIT_FOR_FIFO_FREE(2); TX_FIFO = (C); TX_FIFO = (C)
-
+  #endif
 #endif
 
 #ifndef tft_Write_16N

@@ -685,7 +685,7 @@ void TFT_eSPI::init(uint8_t tc)
   tc = tc; // Suppress warning
 
   // This loads the driver specific initialisation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
-#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER)
+#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER) || defined (ILI9342_DRIVER)
     #include "TFT_Drivers/ILI9341_Init.h"
 
 #elif defined (ST7735_DRIVER)
@@ -777,7 +777,7 @@ void TFT_eSPI::setRotation(uint8_t m)
   begin_tft_write();
 
     // This loads the driver specific rotation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
-#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER)
+#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER) || defined (ILI9342_DRIVER)
     #include "TFT_Drivers/ILI9341_Rotation.h"
 
 #elif defined (ST7735_DRIVER)
@@ -3484,7 +3484,11 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
     TX_FIFO = (y<<16) | y;
     TX_FIFO = TFT_RAMWR;
     //DC set high by PIO
-    TX_FIFO = color;
+    #if  defined (SPI_18BIT_DRIVER)
+      TX_FIFO = ((color & 0xF800)<<8) | ((color & 0x07E0)<<5) | ((color & 0x001F)<<3);
+    #else
+      TX_FIFO = color;
+    #endif
 
   #endif
 

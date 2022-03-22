@@ -37,7 +37,7 @@ next_cmd_bit:
    // Set DC high
    set pins, 1 side 0
    // Finish if 3rd cmd byte ramwr sent (x == 0)
-   jmp !x, start_16
+   jmp !x, start_tx
    pull
 next_xy:
    // send 32 bit start and end coordinates
@@ -46,7 +46,7 @@ next_xy:
    // Loop back for next command
    jmp x--, pull_cmd side 0
    // End
-   jmp start_16
+   jmp start_tx
 
 public block_fill:
    // Fetch colour value
@@ -73,7 +73,7 @@ next_bit:
    // Now drop back to 16 bit output
 
 .wrap_target
-public start_16:
+public start_tx:
    // Pull the next 32 bit value from the TX FIFO. 
    // Send the bottom 16 bits
    pull side 0
