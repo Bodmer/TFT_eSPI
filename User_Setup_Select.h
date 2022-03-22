@@ -153,7 +153,7 @@
 #endif
 
 // Load the right driver definition - do not tinker here !
-#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER)
+#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER) || defined (ILI9342_DRIVER)
      #include <TFT_Drivers/ILI9341_Defines.h>
      #define  TFT_DRIVER 0x9341
 #elif defined (ST7735_DRIVER)
@@ -216,6 +216,9 @@
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Defines.h"
      #define  TFT_DRIVER 0x9225
+#elif defined (RM68120_DRIVER)
+     #include "TFT_Drivers/RM68120_Defines.h"
+     #define  TFT_DRIVER 0x6812
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
                               // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp
 #elif defined (XYZZY_DRIVER)
