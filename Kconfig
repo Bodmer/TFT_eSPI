@@ -24,8 +24,8 @@ menu "TFT_eSPI"
                 Define additional parameters below for this display
         config TFT_S6D02A1_DRIVER
             bool "S6D02A1"
-        config TFT_ST7796_DRIVER
-            bool "ST7796"
+        config TFT_HX8357D_DRIVER
+            bool "HX8357D"
         config TFT_ILI9481_DRIVER
             bool "ILI9481"
         config TFT_ILI9486_DRIVER
@@ -35,7 +35,46 @@ menu "TFT_eSPI"
             help
                 WARNING: Do not connect ILI9488 display SDO to MISO if other devices 
                 share the SPI bus (TFT SDO does NOT tristate when CS is high)
+        config TFT_ST7789_DRIVER
+            bool "ST7789 - 1"
+            help
+                Full configuration option, define additional parameters below for this display
+        config TFT_ST7789_2_DRIVER
+            bool "ST7789 - 2"
+            help
+                Minimal configuration option, define additional parameters below for this display
+        config TFT_R61581_DRIVER
+            bool "R61581"
+        config TFT_RM68140_DRIVER
+            bool "RM68140"
+        config TFT_ST7796_DRIVER
+            bool "ST7796"
+        config TFT_SSD1351_DRIVER
+            bool "SSD1351"
+        config TFT_SSD1963_480_DRIVER
+            bool "SSD1963_480"
+        config TFT_SSD1963_800_DRIVER
+            bool "SSD1963_800"
+        config TFT_SSD1963_800ALT_DRIVER
+            bool "SSD1963_800ALT"
+        config TFT_ILI9225_DRIVER
+            bool "ILI9225"
+        config TFT_GC9A01_DRIVER
+            bool "GC9A01"
     endchoice
+
+    if TFT_ST7735_DRIVER || TFT_ST7789_DRIVER || TFT_ST7789_2_DRIVER || TFT_ILI9341_DRIVER || TFT_ILI9341_2_DRIVER
+        choice COLOR_ORDER
+            prompt "Define the colour order"
+            help
+                Define the colour order IF the blue and red are swapped on your display
+
+            config TFT_RGB_ORDER
+                bool "RGB"
+            config TFT_BGR_ORDER
+                bool "BGR"
+        endchoice
+    endif
 
     config TFT_PARALLEL_8_BIT
         bool "Enable 8-bit parallel mode (otherwise SPI is assumed)"
