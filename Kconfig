@@ -64,7 +64,7 @@ menu "TFT_eSPI"
     endchoice
 
     if TFT_ST7735_DRIVER || TFT_ST7789_DRIVER || TFT_ST7789_2_DRIVER || TFT_ILI9341_DRIVER || TFT_ILI9341_2_DRIVER
-        choice COLOR_ORDER
+        choice TFT_COLOR_ORDER
             prompt "Define the colour order"
             help
                 Define the colour order IF the blue and red are swapped on your display
@@ -75,6 +75,72 @@ menu "TFT_eSPI"
                 bool "BGR"
         endchoice
     endif
+
+    config TFT_M5STACK
+        bool "M5Stack"
+        depends on TFT_ILI9341_DRIVER || TFT_ILI9341_2_DRIVER
+        help
+            Enable if using M5Stack module with integrated ILI9341
+
+    if TFT_ST7735_DRIVER || TFT_ST7789_DRIVER || TFT_ST7789_2_DRIVER || TFT_ILI9163_DRIVER || TFT_GC9A01_DRIVER
+        config TFT_WIDTH
+            int "LCD pixel width in portrait orientation"
+            default 128
+            range 0 1024
+
+        config TFT_HEIGHT
+            int "LCD pixel height in portrait orientation"
+            default 240
+            range 0 1024
+    endif
+
+    if TFT_ST7735_DRIVER
+        choice TFT_ST7735_TYPE
+            prompt "Define the type of display"
+            help
+                Try out the different options below if the screen does not display graphics
+                correctly,e.g. colours wrong, mirror images, or stray pixels at the edges.
+
+            config TFT_ST7735_INITB
+                bool "INITB"
+            config TFT_ST7735_GREENTAB
+                bool "GREENTAB"
+            config TFT_ST7735_GREENTAB2
+                bool "GREENTAB2"
+            config TFT_ST7735_GREENTAB3
+                bool "GREENTAB3"
+            config TFT_ST7735_GREENTAB128
+                bool "GREENTAB128"
+                help
+                    For 128 x 128 display
+            config TFT_ST7735_GREENTAB160x80
+                bool "GREENTAB160x80"
+                help
+                    For 160 x 80 display (BGR, inverted, 26 offset)
+            config TFT_ST7735_REDTAB
+                bool "REDTAB"
+            config TFT_ST7735_BLACKTAB
+                bool "BLACKTAB"
+            config TFT_ST7735_REDTAB160x80
+                bool "REDTAB160x80"
+                help
+                    For 160 x 80 display with 24 pixel offset
+        endchoice
+    endif
+
+    choice TFT_COLOR_INVERSION
+        prompt "Color inversion correction"
+        help 
+            If colours are inverted (white shows as black) then try changing this option."
+
+        config TFT_INVERSION_DISABLE
+            bool "None"
+        config TFT_INVERSION_ON
+            bool "On"
+        config TFT_INVERSION_OFF
+            bool "Off"
+            
+    endchoice
 
     config TFT_PARALLEL_8_BIT
         bool "Enable 8-bit parallel mode (otherwise SPI is assumed)"
