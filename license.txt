@@ -96,16 +96,16 @@ sketch.
 
 In 2019 the library was adapted to be able to use it with any 32 bit Arduino
 compatible processor. It will run on 8 bit and 16 bit processors but will be
-slow due to extensive use of 32 bit varaibles.
+slow due to extensive use of 32 bit variables.
 
-Many of the example sketches are original work, that contain code created
+Many of the example sketches are original work that contain code created
 for my own projects. For all the original code the FreeBSD licence applies
 and is compatible with the GNU GPL.
 
 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvStartvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 Software License Agreement (FreeBSD License)
 
-Copyright (c) 2020 Bodmer (https://github.com/Bodmer)
+Copyright (c) 2022 Bodmer (https://github.com/Bodmer)
 
 All rights reserved.
 

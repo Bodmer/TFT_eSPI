@@ -1,7 +1,7 @@
 // Change the width and height if required (defined in portrait mode)
 // or use the constructor to over-ride defaults
 
-#if defined (ILI9341_DRIVER) || ILI9341_2_DRIVER
+#if defined (ILI9341_DRIVER) || defined (ILI9341_2_DRIVER)
   #define TFT_WIDTH  240
   #define TFT_HEIGHT 320
 #elif defined (ILI9342_DRIVER)

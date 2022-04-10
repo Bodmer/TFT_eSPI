@@ -22,6 +22,11 @@
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x2040
 
+// Transactions always supported
+#ifndef SUPPORT_TRANSACTIONS
+  #define SUPPORT_TRANSACTIONS
+#endif
+
 // Include processor specific header
 // None
 
@@ -284,6 +289,25 @@
         spi.transfer(0); spi.transfer((C)>>0); \
         spi.transfer(0); spi.transfer((C)>>8); \
         spi.transfer(0); spi.transfer((C)>>0)
+
+    #elif  defined (ILI9225_DRIVER) // Needs gaps between commands + data bytes, so use slower transfer functions
+
+      // These all end in 8 bit mode
+      #define tft_Write_8(C)      spi.transfer(C);
+
+      // Note: the following macros do not wait for the end of transmission
+
+      #define tft_Write_16(C)     spi.transfer16(C)
+
+      #define tft_Write_16N(C)    spi.transfer16(C)
+
+      #define tft_Write_16S(C)    spi.transfer16((C)<<8 | (C)>>8)
+
+      #define tft_Write_32(C)     spi.transfer16((C)>>16); spi.transfer16(C)
+
+      #define tft_Write_32C(C,D)  spi.transfer16(C); spi.transfer16(D)
+
+      #define tft_Write_32D(C)    spi.transfer16(C); spi.transfer16(C)
 
     #else
 
