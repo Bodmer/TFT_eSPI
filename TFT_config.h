@@ -3,7 +3,7 @@
  * @author Ricard Bitriá Ribes (https://github.com/dracir9)
  * Created Date: 22-01-2022
  * -----
- * Last Modified: 10-04-2022
+ * Last Modified: 11-04-2022
  * Modified By: Ricard Bitriá Ribes
  * -----
  * @copyright (c) 2022 Ricard Bitriá Ribes
@@ -23,26 +23,93 @@
 /***************************************************************************************
 **                         Section 1: Load TFT driver
 ***************************************************************************************/
-#if defined (CONFIG_TFT_ILI9163_DRIVER)
-    #define ILI9163_DRIVER
-#elif defined(CONFIG_TFT_ILI9341_DRIVER)
+#if defined (CONFIG_TFT_ILI9341_DRIVER)
     #define ILI9341_DRIVER
-#elif defined(CONFIG_TFT_ILI9341_2_DRIVER)
+#elif defined (CONFIG_TFT_ILI9341_2_DRIVER)
     #define ILI9341_2_DRIVER
+#elif defined (CONFIG_TFT_ST7735_DRIVER)
+    #define ST7735_DRIVER
+#elif defined (CONFIG_TFT_ILI9163_DRIVER)
+    #define ILI9163_DRIVER
+#elif defined (CONFIG_TFT_S6D02A1_DRIVER)
+    #define S6D02A1_DRIVER
+#elif defined (CONFIG_TFT_HX8357D_DRIVER)
+    #define HX8357D_DRIVER
 #elif defined (CONFIG_TFT_ILI9481_DRIVER)
     #define ILI9481_DRIVER
 #elif defined (CONFIG_TFT_ILI9486_DRIVER)
     #define ILI9486_DRIVER
 #elif defined (CONFIG_TFT_ILI9488_DRIVER)
     #define ILI9488_DRIVER
-#elif defined (CONFIG_TFT_ST7735_DRIVER)
-    #define ST7735_DRIVER
-#elif defined (CONFIG_TFT_S6D02A1_DRIVER)
-    #define S6D02A1_DRIVER
+#elif defined (CONFIG_TFT_ST7789_DRIVER)
+    #define ST7789_DRIVER
+#elif defined (CONFIG_TFT_ST7789_2_DRIVER)
+    #define ST7789_2_DRIVER
+#elif defined (CONFIG_TFT_R61581_DRIVER)
+    #define R61581_DRIVER
+#elif defined (CONFIG_TFT_RM68140_DRIVER)
+    #define RM68140_DRIVER
 #elif defined (CONFIG_TFT_ST7796_DRIVER)
     #define ST7796_DRIVER
+#elif defined (CONFIG_TFT_SSD1351_DRIVER)
+    #define SSD1351_DRIVER
+#elif defined (CONFIG_TFT_SSD1963_480_DRIVER)
+    #define SSD1963_480_DRIVER
+#elif defined (CONFIG_TFT_SSD1963_800_DRIVER)
+    #define SSD1963_800_DRIVER
+#elif defined (CONFIG_TFT_SSD1963_800ALT_DRIVER)
+    #define SSD1963_800ALT_DRIVER
+#elif defined (CONFIG_TFT_ILI9225_DRIVER)
+    #define ILI9225_DRIVER
+#elif defined (CONFIG_TFT_GC9A01_DRIVER)
+    #define GC9A01_DRIVER
 #endif
 
+#ifdef CONFIG_TFT_RGB_ORDER
+    #define TFT_RGB_ORDER TFT_RGB
+#endif
+
+#ifdef CONFIG_TFT_RGB_ORDER
+    #define TFT_RGB_ORDER TFT_BGR
+#endif
+
+#ifdef CONFIG_TFT_M5STACK
+    #define M5STACK
+#endif
+
+#ifdef CONFIG_TFT_WIDTH
+    #define TFT_WIDTH   CONFIG_TFT_WIDTH
+#endif
+
+#ifdef CONFIG_TFT_HEIGHT
+    #define TFT_HEIGHT   CONFIG_TFT_HEIGHT
+#endif
+
+#if defined (CONFIG_TFT_ST7735_INITB)
+    #define ST7735_INITB
+#elif defined (CONFIG_TFT_ST7735_GREENTAB)
+    #define ST7735_GREENTAB
+#elif defined (CONFIG_TFT_ST7735_GREENTAB2)
+    #define ST7735_GREENTAB2
+#elif defined (CONFIG_TFT_ST7735_GREENTAB3)
+    #define ST7735_GREENTAB3
+#elif defined (CONFIG_TFT_ST7735_GREENTAB128)
+    #define ST7735_GREENTAB128
+#elif defined (CONFIG_TFT_ST7735_GREENTAB160x80)
+    #define ST7735_GREENTAB160x80
+#elif defined (CONFIG_TFT_ST7735_REDTAB)
+    #define ST7735_REDTAB
+#elif defined (CONFIG_TFT_ST7735_BLACKTAB)
+    #define ST7735_BLACKTAB
+#elif defined (CONFIG_TFT_ST7735_REDTAB160x80)
+    #define ST7735_REDTAB160x80
+#endif
+
+#if defined (CONFIG_TFT_INVERSION_ON)
+    #define TFT_INVERSION_ON
+#elif defined (CONFIG_TFT_INVERSION_OFF)
+    #define TFT_INVERSION_OFF
+#endif
 
 /***************************************************************************************
 **                         Section 2: General Pin configuration
