@@ -27,6 +27,10 @@
 ***************************************************************************************/
 
 //Standard support
+#ifdef TFT_eSPI_COMPONENT
+#include "TFT_config.h"
+#endif
+
 #include <Arduino.h>
 #include <Print.h>
 #include <SPI.h>
