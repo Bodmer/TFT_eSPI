@@ -336,6 +336,18 @@ int8_t TFT_eSprite::getColorDepth(void)
 
 
 /***************************************************************************************
+** Function name:           setBitmapColor
+** Description:             Set the 1bpp foreground foreground and background colour
+***************************************************************************************/
+void TFT_eSprite::setBitmapColor(uint16_t c, uint16_t b)
+{
+  if (c == b) b = ~c;
+  _tft->bitmap_fg = c;
+  _tft->bitmap_bg = b;
+}
+
+
+/***************************************************************************************
 ** Function name:           setPaletteColor
 ** Description:             Set the 4bpp palette color at the given index
 ***************************************************************************************/
