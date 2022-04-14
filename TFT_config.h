@@ -1,9 +1,9 @@
 /**
- * @file   utility.h
+ * @file   TFT_config.h
  * @author Ricard Bitriá Ribes (https://github.com/dracir9)
  * Created Date: 22-01-2022
  * -----
- * Last Modified: 11-04-2022
+ * Last Modified: 14-04-2022
  * Modified By: Ricard Bitriá Ribes
  * -----
  * @copyright (c) 2022 Ricard Bitriá Ribes
@@ -134,8 +134,13 @@
 #endif
 
 // Backlight config
-#if CONFIG_TFT_BL != -1
-    #define TFT_BL          CONFIG_TFT_BL
+#ifdef CONFIG_ENABLE_BL
+    #if CONFIG_TFT_BL == -1
+        #error "Invalid backlight control pin. Check TFT_eSPI configuration"
+    #else
+        #define TFT_BL      CONFIG_TFT_BL
+    #endif
+
     #define TFT_BACKLIGHT_ON CONFIG_TFT_BACKLIGHT_ON
 #endif
 
@@ -209,7 +214,6 @@
 
 // SPI BUS
 #else
-
     #if CONFIG_TFT_MISO == -1
         #error "Invalid MISO pin. Check TFT_eSPI configuration"
     #else
@@ -280,8 +284,14 @@
 **                         Section 5: Touchscreen configuration
 ***************************************************************************************/
 
-#define TOUCH_CS            CONFIG_TOUCH_CS
+#ifdef CONFIG_ENABLE_TOUCH
+    #if CONFIG_TOUCH_CS == -1
+        #error "Invalid Touch Chip Select pin. Check TFT_eSPI configuration"
+    #else
+        #define TOUCH_CS            CONFIG_TOUCH_CS
+    #endif
 
-#define SPI_TOUCH_FREQUENCY CONFIG_SPI_TOUCH_FREQUENCY
+    #define SPI_TOUCH_FREQUENCY CONFIG_SPI_TOUCH_FREQUENCY
+#endif
 
 #endif // TFT_CONFIG_H

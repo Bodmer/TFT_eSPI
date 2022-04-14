@@ -1,4 +1,12 @@
 menu "TFT_eSPI"
+
+    menu "Hidden menu"
+        visible if false
+
+        config TFT_eSPI_ESPIDF
+            bool "Enable Configuration"
+            default y
+    endmenu
         
     choice TFT_DRIVER
         prompt "Select TFT driver"
@@ -149,7 +157,7 @@ menu "TFT_eSPI"
             Use 8-bit parallel bus to send data to the LCD. If not set SPI will be used.
     
     menu "Display Data pins"
-        visible if TFT_PARALLEL_8_BIT
+        depends on TFT_PARALLEL_8_BIT
         config TFT_D0
             int "Data 0 pin"
             default -1
@@ -202,7 +210,7 @@ menu "TFT_eSPI"
     endmenu
 
     menu "Display SPI config"
-        visible if !TFT_PARALLEL_8_BIT
+        depends on !TFT_PARALLEL_8_BIT
         config TFT_MISO
             int "TFT MISO pin"
             default -1
@@ -271,16 +279,19 @@ menu "TFT_eSPI"
             int "TFT Reset pin"
             default -1
             range -1 33
+
+        config ENABLE_BL
+            bool "Enable backlight control"
+            default y
         
-        config TFT_BL
-            int "TFT Backlight pin"
-            default -1
-            range -1 33
-            help
-                Pin for the backlight control signal
-                Set to -1 to disable
-    
-        if TFT_BL >= 0
+        if ENABLE_BL
+            config TFT_BL
+                int "TFT Backlight pin"
+                default -1
+                range -1 33
+                help
+                    Pin for the backlight control signal
+        
             choice TFT_BACKLIGHT_ON
                 bool "Pin state to activate backlight"
                 default TFT_BACKLIGHT_ON_HIGH
@@ -336,15 +347,21 @@ menu "TFT_eSPI"
     endmenu
     
     menu "Touch screen configuration"
-        config TOUCH_CS
-            int "Touch chip select pin"
-            default -1
-            range -1 33
+        config ENABLE_TOUCH
+            bool "Enable Touch"
+            default n
 
-        config SPI_TOUCH_FREQUENCY
-            int "SPI frequency for XPT2046 chip (Hz)"
-            default 2500000
-            range 1 80000000
+        if ENABLE_TOUCH
+            config TOUCH_CS
+                int "Touch chip select pin"
+                default -1
+                range -1 33
+
+            config SPI_TOUCH_FREQUENCY
+                int "SPI frequency for XPT2046 chip (Hz)"
+                default 2500000
+                range 1 80000000
+        endif
     endmenu
 
 endmenu
