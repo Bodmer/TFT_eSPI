@@ -29,7 +29,7 @@
   #define TFT_WR   16    // Write strobe pin
   #define TFT_DC   17    // Data Command control pin
 
-  // PIO requires these to be sequentially increasing - do not change
+  // PIO requires these to be sequentially increasing
   #define TFT_D0    0
   #define TFT_D1    1
   #define TFT_D2    2
