@@ -30,7 +30,7 @@
 // Include processor specific header
 // None
 
-#if defined (TFT_PARALLEL_8_BIT) || defined (RP2040_PIO_SPI)
+#if defined (TFT_PARALLEL_8_BIT) || defined (TFT_PARALLEL_16_BIT) || defined (RP2040_PIO_SPI)
   #define RP2040_PIO_INTERFACE
   #define RP2040_PIO_PUSHBLOCK
 #endif
@@ -80,18 +80,33 @@
   #endif
 #else
 
-  // ILI9481 needs a slower cycle time
-  // Byte rate = (CPU clock/(4 * divider))
-  #ifdef ILI9481_DRIVER
-    #define DIV_UNITS 1
-    #define DIV_FRACT 160
-  #else
-    #define DIV_UNITS 1
-    #define DIV_FRACT 0
+  // Different controllers have different minimum write cycle periods, so the PIO clock is changed accordingly
+  // The PIO clock is a division of the CPU clock so scales when the processor is overclocked
+  // PIO write frequency = (CPU clock/(4 * DIV_UNITS))
+  #if defined (TFT_PARALLEL_8_BIT) || defined (TFT_PARALLEL_16_BIT) || defined (RP2040_PIO_SPI)
+    #if defined (TFT_PARALLEL_16_BIT)
+      // Different display drivers have different minimum write cycle times
+      #if defined (HX8357C_DRIVER) || defined (SSD1963_DRIVER)
+        #define DIV_UNITS 1 // 32ns write cycle time SSD1963, HX8357C (maybe HX8357D?)
+      #elif defined (ILI9486_DRIVER) || defined (HX8357B_DRIVER) || defined (HX8357D_DRIVER)
+        #define DIV_UNITS 2 // 64ns write cycle time ILI9486, HX8357D, HX8357B
+      #else // ILI9481 needs a slower cycle time
+        #define DIV_UNITS 3 // 96ns write cycle time
+      #endif
+      #define DIV_FRACT 0
+    #else // 8 bit parallel mode
+      #ifdef ILI9481_DRIVER
+        #define DIV_UNITS 1
+        #define DIV_FRACT 160 // Note: Fractional values done with clock period dithering
+      #else
+        #define DIV_UNITS 1
+        #define DIV_FRACT 0
+      #endif
+    #endif
   #endif
 
   // Initialise TFT data bus
-  #if defined (TFT_PARALLEL_8_BIT)
+  #if defined (TFT_PARALLEL_8_BIT) || defined (TFT_PARALLEL_16_BIT)
     #define INIT_TFT_DATA_BUS pioinit(DIV_UNITS, DIV_FRACT);
   #elif defined (RP2040_PIO_SPI)
     #define INIT_TFT_DATA_BUS pioinit(SPI_FREQUENCY);
@@ -184,7 +199,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the WR (TFT Write) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined (TFT_PARALLEL_8_BIT) // SPI
+#if !defined (TFT_PARALLEL_8_BIT) && !defined (TFT_PARALLEL_16_BIT) // SPI
   #ifdef TFT_WR
     #define WR_L digitalWrite(TFT_WR, LOW)
     #define WR_H digitalWrite(TFT_WR, HIGH)
