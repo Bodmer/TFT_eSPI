@@ -5009,10 +5009,15 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8
   if(fontLoaded) {
     setCursor(poX, poY);
 
+    bool fillbg = _fillbg;
+    // If padding is requested then fill the text background
+    if (padX && !_fillbg) _fillbg = true;
+
     while (n < len) {
       uint16_t uniCode = decodeUTF8((uint8_t*)string, &n, len - n);
       drawGlyph(uniCode);
     }
+    _fillbg = fillbg; // restore state
     sumX += cwidth;
     //fontFile.close();
   }
