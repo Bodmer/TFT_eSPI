@@ -94,7 +94,7 @@
 //#include <User_Setups/Setup103_RP2040_ILI9486_parallel.h>
 //#include <User_Setups/Setup104_RP2040_ST7796_parallel.h>
 //#include <User_Setups/Setup105_RP2040_ILI9341_PIO_SPI.h>    // Setup file for Raspberry Pi Pico with SPI PIO interface and ILI9341
-//#include <User_Setups/Setup107_RP2040_ILI9481_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
+//#include <User_Setups/Setup106_RP2040_ILI9481_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
 #include <User_Setups/Setup107_RP2040_ILI9341_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
