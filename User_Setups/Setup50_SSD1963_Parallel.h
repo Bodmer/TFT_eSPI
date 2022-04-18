@@ -6,7 +6,7 @@
 //
 //   If this file is edited correctly then all the library example sketches should
 //   run without the need to make any more changes for a particular hardware setup!
-
+#define USER_SETUP_ID 50
 // ##################################################################################
 //
 // Section 0. Call up the right driver file and any options for it

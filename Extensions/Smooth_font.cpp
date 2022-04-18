@@ -58,7 +58,7 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
 
     The bitmaps start next at 24 + (28 * gCount) bytes from the start of the file.
     Each pixel is 1 byte, an 8 bit Alpha value which represents the transparency from
-    0xFF foreground colour, 0x00 background. The sketch uses a linear interpolation
+    0xFF foreground colour, 0x00 background. The library uses a linear interpolation
     between the foreground and background RGB component colours. e.g.
         pixelRed = ((fgRed * alpha) + (bgRed * (255 - alpha))/255
     To gain a performance advantage fixed point arithmetic is used with rounding and
@@ -86,7 +86,7 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
     // | gHeight ....@@@@@..@@  +  +    <-- baseline
     // |   |     ...........@@     |
     // |   |     ...........@@     |   gdY is the offset to the top edge of the bitmap
-    // |   |     .@@.......@@. descent plot top edge of bitmap at (cursorY + yAdvance - gdY)
+    // |   |     .@@.......@@. descent plot top edge of bitmap at (cursorY + ascent - gdY)
     // |   +     x..@@@@@@@..x     |   x marks the corner pixels of the bitmap
     // |                           |
     // +---------------------------+   yAdvance is y delta for the next line, font size or (ascent + descent)
@@ -206,7 +206,7 @@ void TFT_eSPI::loadMetrics(void)
 
     // Different glyph sets have different ascent values not always based on "d", so we could get
     // the maximum glyph ascent by checking all characters. BUT this method can generate bad values
-    // for non-existant glyphs, so we will reply on processing for the value and disable this code for now...
+    // for non-existent glyphs, so we will reply on processing for the value and disable this code for now...
     /*
     if (gdY[gNum] > gFont.maxAscent)
     {
@@ -316,7 +316,7 @@ uint32_t TFT_eSPI::readInt32(void)
 
 #ifdef FONT_FS_AVAILABLE
   if (fs_font) {
-    val |= fontFile.read() << 24;
+    val  = fontFile.read() << 24;
     val |= fontFile.read() << 16;
     val |= fontFile.read() << 8;
     val |= fontFile.read();
@@ -324,7 +324,7 @@ uint32_t TFT_eSPI::readInt32(void)
   else
 #endif
   {
-    val |= pgm_read_byte(fontPtr++) << 24;
+    val  = pgm_read_byte(fontPtr++) << 24;
     val |= pgm_read_byte(fontPtr++) << 16;
     val |= pgm_read_byte(fontPtr++) << 8;
     val |= pgm_read_byte(fontPtr++);
@@ -362,16 +362,27 @@ void TFT_eSPI::drawGlyph(uint16_t code)
   uint16_t fg = textcolor;
   uint16_t bg = textbgcolor;
 
+  // Check if cursor has moved
+  if (last_cursor_x != cursor_x)
+  {
+    bg_cursor_x = cursor_x;
+    last_cursor_x = cursor_x;
+  }
+
   if (code < 0x21)
   {
     if (code == 0x20) {
-      //if (fg!=bg) fillRect(cursor_x, cursor_y, gFont.spaceWidth, gFont.yAdvance, bg);
+      if (_fillbg) fillRect(bg_cursor_x, cursor_y, (cursor_x + gFont.spaceWidth) - bg_cursor_x, gFont.yAdvance, bg);
       cursor_x += gFont.spaceWidth;
+      bg_cursor_x = cursor_x;
+      last_cursor_x = cursor_x;
       return;
     }
 
     if (code == '\n') {
       cursor_x = 0;
+      bg_cursor_x = 0;
+      last_cursor_x = 0;
       cursor_y += gFont.yAdvance;
       if (textwrapY && (cursor_y >= height())) cursor_y = 0;
       return;
@@ -388,6 +399,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     {
       cursor_y += gFont.yAdvance;
       cursor_x = 0;
+      bg_cursor_x = 0;
     }
     if (textwrapY && ((cursor_y + gFont.yAdvance) >= height())) cursor_y = 0;
     if (cursor_x == 0) cursor_x -= gdX[gNum];
@@ -398,7 +410,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 #ifdef FONT_FS_AVAILABLE
     if (fs_font)
     {
-      fontFile.seek(gBitmap[gNum], fs::SeekSet); // This is taking >30ms for a significant position shift
+      fontFile.seek(gBitmap[gNum], fs::SeekSet);
       pbuffer =  (uint8_t*)malloc(gWidth[gNum]);
     }
 #endif
@@ -406,15 +418,46 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     int16_t cy = cursor_y + gFont.maxAscent - gdY[gNum];
     int16_t cx = cursor_x + gdX[gNum];
 
-    int16_t  xs = cx;
-    uint32_t dl = 0;
+    //  if (cx > width() && bg_cursor_x > width()) return;
+    //  if (cursor_y > height()) return;
+
+    int16_t  fxs = cx;
+    uint32_t fl = 0;
+    int16_t  bxs = cx;
+    uint32_t bl = 0;
+    int16_t  bx = 0;
     uint8_t pixel;
 
     startWrite(); // Avoid slow ESP32 transaction overhead for every pixel
 
-    //if (fg!=bg) fillRect(cursor_x, cursor_y, gxAdvance[gNum], gFont.yAdvance, bg);
+    int16_t fillwidth   = 0;
+    uint16_t fillheight = 0;
 
-    for (int y = 0; y < gHeight[gNum]; y++)
+    // Fill area above glyph
+    if (_fillbg) {
+      fillwidth  = (cursor_x + gxAdvance[gNum]) - bg_cursor_x;
+      if (fillwidth > 0) {
+        fillheight = gFont.maxAscent - gdY[gNum];
+        if (fillheight > 0) {
+          fillRect(bg_cursor_x, cursor_y, fillwidth, fillheight, textbgcolor);
+        }
+      }
+      else {
+        // Could be negative
+        fillwidth = 0;
+      }
+
+      // Fill any area to left of glyph                              
+      if (bg_cursor_x < cx) fillRect(bg_cursor_x, cy, cx - bg_cursor_x, gHeight[gNum], textbgcolor);
+      // Set x position in glyph area where background starts
+      if (bg_cursor_x > cx) bx = bg_cursor_x - cx;
+      // Fill any area to right of glyph
+      if (cx + gWidth[gNum] < cursor_x + gxAdvance[gNum]) {
+        fillRect(cx + gWidth[gNum], cy, (cursor_x + gxAdvance[gNum]) - (cx + gWidth[gNum]), gHeight[gNum], textbgcolor);
+      }
+    }
+
+    for (int32_t y = 0; y < gHeight[gNum]; y++)
     {
 #ifdef FONT_FS_AVAILABLE
       if (fs_font) {
@@ -432,7 +475,8 @@ void TFT_eSPI::drawGlyph(uint16_t code)
         }
       }
 #endif
-      for (int x = 0; x < gWidth[gNum]; x++)
+
+      for (int32_t x = 0; x < gWidth[gNum]; x++)
       {
 #ifdef FONT_FS_AVAILABLE
         if (fs_font) pixel = pbuffer[x];
@@ -442,28 +486,44 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
         if (pixel)
         {
+          if (bl) { drawFastHLine( bxs, y + cy, bl, bg); bl = 0; }
           if (pixel != 0xFF)
           {
-            if (dl) {
-              if (dl==1) drawPixel(xs, y + cy, fg);
-              else drawFastHLine( xs, y + cy, dl, fg);
-              dl = 0;
+            if (fl) {
+              if (fl==1) drawPixel(fxs, y + cy, fg);
+              else drawFastHLine( fxs, y + cy, fl, fg);
+              fl = 0;
             }
             if (getColor) bg = getColor(x + cx, y + cy);
             drawPixel(x + cx, y + cy, alphaBlend(pixel, fg, bg));
           }
           else
           {
-            if (dl==0) xs = x + cx;
-            dl++;
+            if (fl==0) fxs = x + cx;
+            fl++;
           }
         }
         else
         {
-          if (dl) { drawFastHLine( xs, y + cy, dl, fg); dl = 0; }
+          if (fl) { drawFastHLine( fxs, y + cy, fl, fg); fl = 0; }
+          if (_fillbg) {
+            if (x >= bx) {
+              if (bl==0) bxs = x + cx;
+              bl++;
+            }
+          }
         }
       }
-      if (dl) { drawFastHLine( xs, y + cy, dl, fg); dl = 0; }
+      if (fl) { drawFastHLine( fxs, y + cy, fl, fg); fl = 0; }
+      if (bl) { drawFastHLine( bxs, y + cy, bl, bg); bl = 0; }
+    }
+
+    // Fill area below glyph
+    if (fillwidth > 0) {
+      fillheight = (cursor_y + gFont.yAdvance) - (cy + gHeight[gNum]);
+      if (fillheight > 0) {
+        fillRect(bg_cursor_x, cy + gHeight[gNum], fillwidth, fillheight, textbgcolor);
+      }
     }
 
     if (pbuffer) free(pbuffer);
@@ -472,10 +532,12 @@ void TFT_eSPI::drawGlyph(uint16_t code)
   }
   else
   {
-    // Not a Unicode in font so draw a rectangle and move on cursor
+    // Point code not in font so draw a rectangle and move on cursor
     drawRect(cursor_x, cursor_y + gFont.maxAscent - gFont.ascent, gFont.spaceWidth, gFont.ascent, fg);
     cursor_x += gFont.spaceWidth + 1;
   }
+  bg_cursor_x = cursor_x;
+  last_cursor_x = cursor_x;
 }
 
 /***************************************************************************************
@@ -511,12 +573,9 @@ void TFT_eSPI::showFont(uint32_t td)
     setCursor(cursorX, cursorY);
     drawGlyph(gUnicode[i]);
     cursorX += gxAdvance[i];
-    //cursorX +=  printToSprite( cursorX, cursorY, i );
     yield();
   }
 
   delay(timeDelay);
   fillScreen(textbgcolor);
-  //fontFile.close();
-
 }

@@ -1,5 +1,7 @@
 // For ESP32
 // See SetupX_Template.h for all options available
+#define USER_SETUP_ID 11
+
 #define RPI_DISPLAY_TYPE
 #define ILI9486_DRIVER
 

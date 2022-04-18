@@ -1,4 +1,5 @@
 // See SetupX_Template.h for all options available
+#define USER_SETUP_ID 15
 
 #define HX8357D_DRIVER
 

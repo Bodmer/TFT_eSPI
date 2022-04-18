@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.4.45"
+#define TFT_ESPI_VERSION "2.4.50"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -28,7 +28,7 @@
 
 //Standard support
 #ifdef TFT_eSPI_COMPONENT
-#include "TFT_config.h"
+  #include "TFT_config.h"
 #endif
 
 #include <Arduino.h>
@@ -95,10 +95,12 @@
 #endif
 
 // Some ST7789 boards do not work with Mode 0
-#if defined(ST7789_DRIVER) || defined(ST7789_2_DRIVER)
-  #define TFT_SPI_MODE SPI_MODE3
-#else
-  #define TFT_SPI_MODE SPI_MODE0
+#ifndef TFT_SPI_MODE 
+  #if defined(ST7789_DRIVER) || defined(ST7789_2_DRIVER)
+    #define TFT_SPI_MODE SPI_MODE3
+  #else
+    #define TFT_SPI_MODE SPI_MODE0
+  #endif
 #endif
 
 // If the XPT2046 SPI frequency is not defined, set a default
@@ -317,23 +319,15 @@ static const uint16_t default_4bit_palette[] PROGMEM = {
 typedef struct
 {
 String  version = TFT_ESPI_VERSION;
+String  setup_info;  // Setup reference name available to use in a user setup
+uint32_t setup_id;   // ID available to use in a user setup
 int32_t esp;         // Processor code
 uint8_t trans;       // SPI transaction support
 uint8_t serial;      // Serial (SPI) or parallel
+uint8_t  port;       // SPI port
 uint8_t overlap;     // ESP8266 overlap mode
-/*
-#if defined (ESP32)  // TODO: make generic for other processors
-  #if defined (USE_HSPI_PORT)
-    uint8_t  port = HSPI;
-  #else
-    #ifdef CONFIG_IDF_TARGET_ESP32
-      uint8_t  port = VSPI;
-    #else
-      uint8_t  port = FSPI;
-    #endif
-  #endif
-#endif
-*/
+uint8_t interface;   // Interface type
+
 uint16_t tft_driver; // Hexadecimal code
 uint16_t tft_width;  // Rotation 0 width and height
 uint16_t tft_height;
@@ -583,7 +577,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            getCursorY(void);                                // Read current cursor y position
            
   void     setTextColor(uint16_t color),                    // Set character (glyph) color only (background not over-written)
-           setTextColor(uint16_t fgcolor, uint16_t bgcolor),// Set character (glyph) foreground and backgorund colour
+           setTextColor(uint16_t fgcolor, uint16_t bgcolor, bool bgfill = false),  // Set character (glyph) foreground and background colour, optional background fill for smooth fonts
            setTextSize(uint8_t size);                       // Set character size multiplier (this increases pixel size)
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
@@ -733,6 +727,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
            // Used for diagnostic sketch to see library setup adopted by compiler, see Section 7 above
   void     getSetup(setup_t& tft_settings); // Sketch provides the instance to populate
+  bool     verifySetupID(uint32_t id);
 
   // Global variables
   static   SPIClass& getSPIinstance(void); // Get SPI class handle
@@ -835,6 +830,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     _vpOoB;
 
   int32_t  cursor_x, cursor_y, padX;       // Text cursor x,y and padding setting
+  int32_t  bg_cursor_x;                    // Background fill cursor
+  int32_t  last_cursor_x;                  // Previous text cursor position when fill used
 
   uint32_t fontsloaded;               // Bit field of fonts loaded
 
@@ -854,6 +851,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
   uint32_t _lastColor; // Buffered value of last colour used
 
+  bool     _fillbg;    // Fill background flag (just for for smooth fonts at the moment)
+
 #if defined (SSD1963_DRIVER) 
   uint16_t Cswap;      // Swap buffer for SSD1963
   uint8_t r6, g6, b6;  // RGB buffer for SSD1963
@@ -868,7 +867,13 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 ***************************************************************************************/
 // Load the Touch extension
 #ifdef TOUCH_CS
-  #include "Extensions/Touch.h"        // Loaded if TOUCH_CS is defined by user
+  #if defined (TFT_PARALLEL_8_BIT) || defined (RP2040_PIO_INTERFACE)
+    #error >>>>------>> Touch functions not supported in 8 bit parallel mode or with RP2040 PIO.
+  #else
+    #include "Extensions/Touch.h"        // Loaded if TOUCH_CS is defined by user
+  #endif
+#else
+    #warning >>>>------>> TOUCH_CS pin not defined, TFT_eSPI touch functions will not be available!
 #endif
 
 // Load the Anti-aliased font extension

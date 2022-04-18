@@ -1,3 +1,5 @@
+#define USER_SETUP_ID 26
+
 #define ST7735_DRIVER
 
 #define TFT_WIDTH  80

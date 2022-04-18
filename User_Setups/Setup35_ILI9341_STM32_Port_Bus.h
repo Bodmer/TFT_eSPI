@@ -1,7 +1,7 @@
         //////////////////////////////////////////////////////////////
         //           Setup for STM32 and ILI9341 display            //
         //////////////////////////////////////////////////////////////
-
+#define USER_SETUP_ID 35
 // Last update by Bodmer: 28/3/20
 
 // Define STM32 to invoke STM32 optimised driver

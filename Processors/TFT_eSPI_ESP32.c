@@ -133,17 +133,7 @@ uint8_t TFT_eSPI::readByte(void)
 ***************************************************************************************/
 void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 {
-  gpioMode(TFT_D0, mode);
-  gpioMode(TFT_D1, mode);
-  gpioMode(TFT_D2, mode);
-  gpioMode(TFT_D3, mode);
-  gpioMode(TFT_D4, mode);
-  gpioMode(TFT_D5, mode);
-  gpioMode(TFT_D6, mode);
-  gpioMode(TFT_D7, mode);
-  return;
-  /*
-  // Arduino generic native function, but slower
+  // Arduino generic native function
   pinMode(TFT_D0, mode);
   pinMode(TFT_D1, mode);
   pinMode(TFT_D2, mode);
@@ -152,7 +142,7 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
   pinMode(TFT_D5, mode);
   pinMode(TFT_D6, mode);
   pinMode(TFT_D7, mode);
-  return; //*/
+  return;
 }
 
 /***************************************************************************************
@@ -161,14 +151,8 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 ***************************************************************************************/
 void TFT_eSPI::gpioMode(uint8_t gpio, uint8_t mode)
 {
-  if(mode == INPUT) GPIO.enable_w1tc = ((uint32_t)1 << gpio);
-  else GPIO.enable_w1ts = ((uint32_t)1 << gpio);
-
-  ESP_REG(DR_REG_IO_MUX_BASE + esp32_gpioMux[gpio].reg) // Register lookup
-    = ((uint32_t)2 << FUN_DRV_S)                        // Set drive strength 2
-    | (FUN_IE)                                          // Input enable
-    | ((uint32_t)2 << MCU_SEL_S);                       // Function select 2
-  GPIO.pin[gpio].val = 1;                               // Set pin HIGH
+  pinMode(pin, mode);
+  digitalWrite(pin, HIGH);
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 #endif // #ifdef TFT_PARALLEL_8_BIT

@@ -1,6 +1,6 @@
 // Setup for the ESP32 S2 with ILI9341 display
 // Note SPI DMA with ESP32 S2 is not currently supported
-
+#define USER_SETUP_ID 70
 // See SetupX_Template.h for all options available
 #define ILI9341_DRIVER
 

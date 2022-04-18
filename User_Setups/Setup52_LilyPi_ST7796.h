@@ -1,3 +1,5 @@
+#define USER_SETUP_ID 52
+
 #define ST7796_DRIVER
 
 #define TFT_BL   12				// LED back-light control pin

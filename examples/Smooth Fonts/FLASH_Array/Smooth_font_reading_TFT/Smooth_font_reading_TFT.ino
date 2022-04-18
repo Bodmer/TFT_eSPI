@@ -3,7 +3,7 @@
   for rendering anti-aliased fonts on an arbitrary background. This is achieved
   by reading the pixel color at each point on the screen. The TFT must support
   reading the graphics RAM of the screen memory. This sketch has been tested with
-  ILI9241 and ILI9481 serial and parallel screens.
+  ILI9341 and ILI9481 serial and parallel screens.
 
   The TFT_eSPI library must be given the name of the function in the sketch
   that will return the pixel color at a position x,y on the TFT. In this

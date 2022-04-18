@@ -1,3 +1,4 @@
+#define USER_SETUP_ID 44
 
 #define ST7789_DRIVER
 
