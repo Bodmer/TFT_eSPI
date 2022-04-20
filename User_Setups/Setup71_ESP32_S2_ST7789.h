@@ -1,6 +1,6 @@
 // Setup for the ESP32 S2 with ST7789 display
 // Note SPI DMA with ESP32 S2 is not currently supported
-
+#define USER_SETUP_ID 71
 // See SetupX_Template.h for all options available
 
 #define ST7789_DRIVER     // Configure all registers

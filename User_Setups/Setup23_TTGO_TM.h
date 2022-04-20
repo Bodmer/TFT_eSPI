@@ -1,4 +1,5 @@
 // Setup for the TTGO TM (Music) ESP32 board with 2.4" ST7789V display
+#define USER_SETUP_ID 23
 
 // See SetupX_Template.h for all options available
 
@@ -13,6 +14,8 @@
 #define TFT_CS   05
 #define TFT_DC   16
 #define TFT_RST  17
+
+#define TOUCH_CS -1
 
 #define TFT_WIDTH  240
 #define TFT_HEIGHT 320

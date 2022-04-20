@@ -292,10 +292,8 @@
 
     #elif  defined (ILI9225_DRIVER) // Needs gaps between commands + data bytes, so use slower transfer functions
 
-      // These all end in 8 bit mode
+      // Warning: these all end in 8 bit SPI mode!
       #define tft_Write_8(C)      spi.transfer(C);
-
-      // Note: the following macros do not wait for the end of transmission
 
       #define tft_Write_16(C)     spi.transfer16(C)
 

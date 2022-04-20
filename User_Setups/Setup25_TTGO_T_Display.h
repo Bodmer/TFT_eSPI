@@ -1,4 +1,5 @@
 // Setup for the TTGO T Display
+#define USER_SETUP_ID 25
 
 // See SetupX_Template.h for all options available
 
@@ -17,6 +18,8 @@
 #define TFT_CS              5
 #define TFT_DC              16
 #define TFT_RST             23
+
+#define TOUCH_CS            -1
 
 #define TFT_BL          4  // Display backlight control pin
 

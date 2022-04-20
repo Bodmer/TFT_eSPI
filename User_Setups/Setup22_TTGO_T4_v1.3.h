@@ -1,4 +1,5 @@
 // Setup for the TTGO T4 v1.3 ESP32 board with 2.2" ILI9341 display
+#define USER_SETUP_ID 99922
 
 // See SetupX_Template.h for all options available
 
@@ -12,7 +13,7 @@
 #define TFT_SCLK 18
 
 #define TFT_CS   27
-#define TFT_DC   32 // pin 26 for TTGO T4 v1.1
+#define TFT_DC   32 // pin 26 for TTGO T4 v1.3
 #define TFT_RST   5
 
 #define LOAD_GLCD

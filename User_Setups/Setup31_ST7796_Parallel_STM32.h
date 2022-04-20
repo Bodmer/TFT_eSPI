@@ -1,7 +1,7 @@
         ////////////////////////////////////////////////////
         // Setup for Nucleo 64 or 144 and ILI9341 display //
         ////////////////////////////////////////////////////
-
+#define USER_SETUP_ID 31
         
 // See SetupX_Template.h for all options available
 

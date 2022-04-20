@@ -8,6 +8,8 @@
 //   run without the need to make any more changes for a particular hardware setup!
 //   Note that some sketches are designed for a particular TFT pixel width/height
 
+// User defined information reported by "Read_User_Setup" test & diagnostics example
+#define USER_SETUP_INFO "User_Setup"
 
 // ##################################################################################
 //

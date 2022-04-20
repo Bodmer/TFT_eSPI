@@ -10,7 +10,7 @@
 
   This sketch uses method 3, the font characters are first plotted in a Sprite, then the
   Sprite is pushed to the screen. This method is very flexible and the Sprite can be
-  created, deleted, resized as needed. To render anit-aliased fonts well the Sprite
+  created, deleted, resized as needed. To render anti-aliased fonts well the Sprite
   needs to be 16 bit.  The fonts will render in 1 bit per pixel sprites but there
   will then be no anti-aliasing. Using 1 bit per pixel Sprites is however useful
   to use the extended Unicode range in fonts on mono displays like ePaper.

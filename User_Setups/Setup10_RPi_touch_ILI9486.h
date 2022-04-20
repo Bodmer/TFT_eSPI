@@ -1,5 +1,6 @@
 // For ESP8266
 // See SetupX_Template.h for all options available
+#define USER_SETUP_ID 10
 
 #define RPI_DISPLAY_TYPE
 #define ILI9486_DRIVER

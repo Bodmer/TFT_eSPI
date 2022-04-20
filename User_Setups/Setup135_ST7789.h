@@ -1,4 +1,5 @@
 // ST7789 135 x 240 display with no chip select line
+#define USER_SETUP_ID 135
 
 #define ST7789_DRIVER     // Configure all registers
 

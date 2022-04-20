@@ -8,7 +8,7 @@
 //   run without the need to make any more changes for a particular hardware setup!
 //   Note that some sketches are designed for a particular TFT pixel width/height
 
-
+#define USER_SETUP_ID 60
 // ##################################################################################
 //
 // Section 1. Call up the right driver file and any options for it

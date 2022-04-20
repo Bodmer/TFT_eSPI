@@ -1,4 +1,5 @@
 // Support for 1.47" 320x172 Round Rectangle Color IPS TFT Display
+#define USER_SETUP_ID 71
 
 #define ST7789_DRIVER  // Full configuration option, define additional parameters below for this display
 

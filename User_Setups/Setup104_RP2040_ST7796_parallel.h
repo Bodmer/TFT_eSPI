@@ -1,5 +1,6 @@
 // This setup is for the RP2040 processor only when used with 8 bit parallel displays
 // See SetupX_Template.h for all options available
+#define USER_SETUP_ID 104
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Interface

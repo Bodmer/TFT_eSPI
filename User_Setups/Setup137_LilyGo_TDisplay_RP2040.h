@@ -1,4 +1,5 @@
 // LilyGo T-Display RP2040 (ST7789 135 x 240 display)
+#define USER_SETUP_ID 137
 
 #define ST7789_DRIVER     // Configure all registers
 

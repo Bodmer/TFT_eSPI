@@ -1,4 +1,5 @@
 // See SetupX_Template.h for all options available
+#define USER_SETUP_ID 4
 
 #define S6D02A1_DRIVER
 
