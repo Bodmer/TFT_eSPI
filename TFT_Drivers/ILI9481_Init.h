@@ -705,7 +705,7 @@
           writedata(0x66);           // 18 bit colour interface
     #endif
     
-    #if !defined (TFT_PARALLEL_8_BIT) && !defined (TFT_PARALLEL_16_BIT)
+    #if defined (TFT_PARALLEL_8_BIT) || defined (TFT_PARALLEL_16_BIT)
           writecommand(TFT_INVON);
     #endif
 
