@@ -153,6 +153,7 @@ menu "TFT_eSPI"
     config TFT_PARALLEL_8_BIT
         bool "Enable 8-bit parallel mode (otherwise SPI is assumed)"
         default "n"
+        depends on IDF_TARGET_ESP32
         help
             Use 8-bit parallel bus to send data to the LCD. If not set SPI will be used.
     
@@ -214,7 +215,8 @@ menu "TFT_eSPI"
         config TFT_MISO
             int "TFT MISO pin"
             default -1
-            range -1 32
+            range -1 32 if IDF_TARGET_ESP32
+            range -1 45 if IDF_TARGET_ESP32S2
             help
                 Master In Slave Out pin.
                 Can be labelled as SDO in some displays
@@ -222,7 +224,8 @@ menu "TFT_eSPI"
         config TFT_MOSI
             int "TFT MOSI pin"
             default -1
-            range -1 32
+            range -1 32 if IDF_TARGET_ESP32
+            range -1 45 if IDF_TARGET_ESP32S2
             help
                 Master Out Slave In pin.
                 Can be labelled as SDA or SDI in some displays
@@ -230,7 +233,8 @@ menu "TFT_eSPI"
         config TFT_SCLK
             int "TFT Clock pin"
             default -1
-            range -1 32
+            range -1 32 if IDF_TARGET_ESP32
+            range -1 45 if IDF_TARGET_ESP32S2
             help
                 Labelled in some displays as WR
 
@@ -266,7 +270,8 @@ menu "TFT_eSPI"
         config TFT_CS
             int "TFT Chip Select pin"
             default -1
-            range -1 33
+            range -1 33 if IDF_TARGET_ESP32
+            range -1 45 if IDF_TARGET_ESP32S2
     
         config TFT_DC
             int "TFT Data/Command pin"
@@ -278,7 +283,8 @@ menu "TFT_eSPI"
         config TFT_RST
             int "TFT Reset pin"
             default -1
-            range -1 33
+            range -1 33 if IDF_TARGET_ESP32
+            range -1 45 if IDF_TARGET_ESP32S2
 
         config ENABLE_BL
             bool "Enable backlight control"
@@ -288,7 +294,8 @@ menu "TFT_eSPI"
             config TFT_BL
                 int "TFT Backlight pin"
                 default -1
-                range -1 33
+                range -1 33 if IDF_TARGET_ESP32
+                range -1 45 if IDF_TARGET_ESP32S2
                 help
                     Pin for the backlight control signal
         
@@ -355,7 +362,8 @@ menu "TFT_eSPI"
             config TOUCH_CS
                 int "Touch chip select pin"
                 default -1
-                range -1 33
+                range -1 33 if IDF_TARGET_ESP32
+                range -1 45 if IDF_TARGET_ESP32S2
 
             config SPI_TOUCH_FREQUENCY
                 int "SPI frequency for XPT2046 chip (Hz)"
