@@ -317,6 +317,13 @@ SPI3_HOST = 2
       #define TFT_SCLK 18
     #endif
 
+    #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S2)
+      #if (TFT_MISO == -1)
+        #undef TFT_MISO
+        #define TFT_MISO TFT_MOSI
+      #endif
+    #endif
+
   #endif
 
 #endif
