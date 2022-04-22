@@ -151,8 +151,8 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 ***************************************************************************************/
 void TFT_eSPI::gpioMode(uint8_t gpio, uint8_t mode)
 {
-  pinMode(pin, mode);
-  digitalWrite(pin, HIGH);
+  pinMode(gpio, mode);
+  digitalWrite(gpio, HIGH);
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 #endif // #ifdef TFT_PARALLEL_8_BIT
