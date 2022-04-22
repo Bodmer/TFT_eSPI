@@ -458,7 +458,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
 
   if (len > 19)
   {
-    SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_PORT), SPI_USR_MOSI_DBITLEN, 479, SPI_USR_MOSI_DBITLEN_S);
+    WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), 479);
 
     while(len>19)
     {
@@ -490,7 +490,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
 
   if (len)
   {
-    SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_PORT), SPI_USR_MOSI_DBITLEN, (len * 24) - 1, SPI_USR_MOSI_DBITLEN_S);
+    WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), (len * 24) - 1);
     WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), r0);
     WRITE_PERI_REG(SPI_W1_REG(SPI_PORT), r1);
     WRITE_PERI_REG(SPI_W2_REG(SPI_PORT), r2);
