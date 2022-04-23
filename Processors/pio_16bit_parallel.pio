@@ -33,6 +33,8 @@ next:
    jmp y--, next side 1
 
 .wrap_target
+// Transmit an 8 bit value (LS 8 bits of 32 bits).
+public start_8:
 // Transmit a 16 bit value (LS 16 bits of 32 bits).
 public start_tx:
    // Fetch the next 32 bit value from the TX FIFO and set TFT_WR high.
@@ -41,16 +43,6 @@ public start_tx:
    // shifts the unused top 16 bits through.
    out pins, 32 side 0 [1]       
    // Set WR high and jump back to start.
-   jmp start_tx side 1
-
-// Transmit an 8 bit value (LS 8 bits of 32 bits).
-public start_8:
-   // Fetch the next 32 bit value from the TX FIFO and set TFT_WR high.
-   pull side 1
-   // Write the first byte (LSB) and sets WR low. This also 
-   // shifts the unused top 16 bits through.
-   out pins, 32 side 0 [1]     
-   // Jump to start
    jmp start_tx side 1
 
 // Transmit a set window command sequence.
@@ -75,7 +67,7 @@ send_xy:
    out pins, 8 side 0 [1]
    // Loop until 4 bytes sent, TFT_WR high.
    jmp !osre, send_xy side 1 [1]
-end_set_addr:
+end_set_addr: // Jump here since delay needed before DC change
    // Loop back for next command and write last command.
    jmp x--, pull_cmd side 1
    // Set DC high.
