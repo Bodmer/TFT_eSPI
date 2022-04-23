@@ -1,15 +1,14 @@
-// Setup for the ESP32 S2 with ILI9341 display
-// Note SPI DMA with ESP32 S2 is not currently supported
+// Setup for the ESP32 S3 with ILI9341 display
+// Note SPI DMA with ESP32 S3 is not currently supported
 #define USER_SETUP_ID 70
 // See SetupX_Template.h for all options available
 #define ILI9341_DRIVER
 
-                    // Typical board default pins
-#define TFT_CS   34 //     10 or 34
-
-#define TFT_MOSI 35 //     11 or 35
-#define TFT_SCLK 36 //     12 or 36
-#define TFT_MISO 37 //     13 or 37
+                    // Typical board default pins - change to match your board
+#define TFT_CS   34 //     10 or 34 (FSPI CS0) 
+#define TFT_MOSI 35 //     11 or 35 (FSPI D)
+#define TFT_SCLK 36 //     12 or 36 (FSPI CLK)
+#define TFT_MISO 37 //     13 or 37 (FSPI Q)
 
 // Use pins in range 0-31
 #define TFT_DC    7
@@ -27,7 +26,7 @@
 
 #define SMOOTH_FONT
 
-// HSPI port NOT TESTED YET
+// FSPI port (SPI2) used unless following defined. HSPI port (SPI3) NOT TESTED YET
 //#define USE_HSPI_PORT
 
 //#define SPI_FREQUENCY  27000000
