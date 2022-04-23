@@ -515,7 +515,11 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
 ** Description:             Write a block of pixels of the same colour
 ***************************************************************************************/
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
+  #if defined (SSD1963_DRIVER)
+  if ( ((color & 0xF800)>> 8) == ((color & 0x07E0)>> 3) && ((color & 0xF800)>> 8)== ((color & 0x001F)<< 3) )
+  #else
   if ( (color >> 8) == (color & 0x00FF) )
+  #endif
   { if (!len) return;
     tft_Write_16(color);
   #if defined (SSD1963_DRIVER)
