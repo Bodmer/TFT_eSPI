@@ -399,13 +399,18 @@
 
       #define tft_Write_32D(C)    WAIT_FOR_FIFO_FREE(2); TX_FIFO = (((C)<<8) | ((C)>>8)); tft_Write_8L(C)
 
-  #else
-      // This writes 8 bits, then switches back to 16 bit mode automatically
-      // Have already waited for pio stalled (last data write complete) when DC switched to command mode
-      // The wait for stall allows DC to be changed immediately afterwards
+  #else // PIO interface, SPI or parallel
+    // This writes 8 bits, then switches back to 16 bit mode automatically
+    // Have already waited for pio stalled (last data write complete) when DC switched to command mode
+    // The wait for stall allows DC to be changed immediately afterwards
+    #if defined (TFT_PARALLEL_8_BIT) || defined (RP2040_PIO_SPI)
       #define tft_Write_8(C)      tft_pio->sm[pio_sm].instr = pio_instr_jmp8; \
                                   TX_FIFO = (C); \
                                   WAIT_FOR_STALL
+    #else // For 16 bit parallel 16 bits are always sent
+      #define tft_Write_8(C)      TX_FIFO = (C); \
+                                  WAIT_FOR_STALL
+    #endif
 
       // Note: the following macros do not wait for the end of transmission
 
