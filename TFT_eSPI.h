@@ -27,6 +27,10 @@
 ***************************************************************************************/
 
 //Standard support
+#ifdef TFT_eSPI_COMPONENT
+  #include "TFT_config.h"
+#endif
+
 #include <Arduino.h>
 #include <Print.h>
 #include <SPI.h>
@@ -36,9 +40,6 @@
 ***************************************************************************************/
 // Include header file that defines the fonts loaded, the TFT drivers
 // available and the pins to be used, etc, etc
-#ifdef CONFIG_TFT_eSPI_ESPIDF
-#include "TFT_config.h"
-#endif
 #include <User_Setup_Select.h>
 
 // Handle FLASH based storage e.g. PROGMEM
@@ -64,7 +65,11 @@
 #endif
 
 // Include the processor specific drivers
-#if defined (ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  #include "Processors/TFT_eSPI_ESP32_S3.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  #include "Processors/TFT_eSPI_ESP32_C3.h"
+#elif defined (ESP32)
   #include "Processors/TFT_eSPI_ESP32.h"
 #elif defined (ESP8266)
   #include "Processors/TFT_eSPI_ESP8266.h"
@@ -867,7 +872,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 // Load the Touch extension
 #ifdef TOUCH_CS
   #if defined (TFT_PARALLEL_8_BIT) || defined (RP2040_PIO_INTERFACE)
-    #error >>>>------>> Touch functions not supported in 8 bit parallel mode or with RP2040 PIO.
+    #error >>>>------>> Touch functions not supported in 8/16 bit parallel mode or with RP2040 PIO.
   #else
     #include "Extensions/Touch.h"        // Loaded if TOUCH_CS is defined by user
   #endif
