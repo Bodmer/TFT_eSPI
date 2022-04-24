@@ -8,22 +8,23 @@ assignees: ''
 ---
 
 To minimise effort to resolve issues the following should be provided as a minimum:
-1. Procesor, e.g RP2040, ESP32 S3 etc
-2. TFT_eSPI library version (try the latest, the problem may have been resolved!)
-3. IDE (e.g. Arduino or PlatformIO)
-4. Board package version (e.g. 2.0.3)
-5. TFT driver (e.g. ILI9341), a link to the vendors product web page is useful too.
+1. A description of the problem and the conditions that cause it to occur
+2. IDE (e.g. Arduino or PlatformIO)
+3. TFT_eSPI library version (try the latest, the problem may have been resolved!) from the Manage Libraries... menu
+4. Board package version (e.g. 2.0.3) available from the Boards Manager... menu
+5. Procesor, e.g RP2040, ESP32 S3 etc
+6. TFT driver (e.g. ILI9341), a link to the vendors product web page is useful too.
+7. Interface type (SPI or parallel)
 
 Plus further information as appropriate to the problem:
-6. TFT to processor connections used
-7. A zip file containing your setup file (just drag and drop in message window - do not paste in long files!)
-8. A zip file  containing a simple and complete example sketch that demonstrates the problem but needs no special hardware sensors or libraries.
-9. A description of the problem and the conditions that cause it to occur
-10. Screen shot pictures showing the problem  (just drag and drop in message window)
+8. TFT to processor connections used
+9. A zip file containing your setup file (just drag and drop in message window - do not paste in long files!)
+10. A zip file  containing a simple and complete example sketch that demonstrates the problem but needs no special hardware sensors or libraries.
+11. Screen shot pictures showing the problem  (just drag and drop in message window)
 
-The idea is to provide sufficient information so I can setup the exact same scenario to investigate and resolve the issue.
+The idea is to provide sufficient information so I can setup the exact same (or sufficiently similar) scenario to investigate and resolve the issue.
 
-Put three ticks ( ` chracter on key next to "1") at the start and end of short pasted code segments to avoid format/markup anolmolies and to use a monspaced font. Example:
+Put three ticks ( ` character on key next to "1" key) at the start and end of short pasted code segments to avoid format/markup anomolies and to use a monspaced font. Example:
 
 ```
   Serial.begin(115200);
