@@ -2,8 +2,12 @@
         // TFT_eSPI driver functions for ESP32 processors //
         ////////////////////////////////////////////////////
 
+// Temporarily a separate file to TFT_eSPI_ESP32.h until board package low level API stabilises
+
 #ifndef _TFT_eSPI_ESP32H_
 #define _TFT_eSPI_ESP32H_
+
+#warning >>>>------>> DMA is not supported on the ESP32 S3 (possible future update)
 
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x32
@@ -20,11 +24,12 @@
   #define VSPI FSPI
 #endif
 
-// Fix IDF problems with ESP32S3 VSPI=FSPI_HOST=SPI2_HOST=1   HSPI_HOST=SPI3_HOST=2
+// Fix IDF problems with ESP32S3
+// Note illogical enumerations: FSPI_HOST=SPI2_HOST=1   HSPI_HOST=SPI3_HOST=2
 #if CONFIG_IDF_TARGET_ESP32S3
-  // Fix ESP32C3 IDF bug for missing definition (VSPI/FSPI only tested at the moment)
-  #ifndef REG_SPI_BASE
-    #define REG_SPI_BASE(i)     (((i)>1) ? (DR_REG_SPI3_BASE) : (DR_REG_SPI2_BASE))
+  // Fix ESP32C3 IDF bug for missing definition (FSPI only tested at the moment)
+  #ifndef REG_SPI_BASE //                      HSPI                 FSPI/VSPI
+    #define REG_SPI_BASE(i) (((i)>1) ? (DR_REG_SPI3_BASE) : (DR_REG_SPI2_BASE))
   #endif
 
   // Fix ESP32S3 IDF bug for name change
@@ -32,9 +37,6 @@
     #define SPI_MOSI_DLEN_REG(x) SPI_MS_DLEN_REG(x)
   #endif
 
-  // Fix ESP32C3 specific register reference
-  //#define out_w1tc out_w1tc.val
-  //#define out_w1ts out_w1ts.val
 #endif
 
 // SUPPORT_TRANSACTIONS is mandatory for ESP32 so the hal mutex is toggled
@@ -58,7 +60,7 @@ FSPI = 0, uses SPI2 ???? To be checked
 HSPI = 1, uses SPI3 ???? To be checked
 VSPI not defined
 
-For ESP32/S2/C3:
+For ESP32/S2/C3/S3:
 SPI1_HOST = 0
 SPI2_HOST = 1
 SPI3_HOST = 2

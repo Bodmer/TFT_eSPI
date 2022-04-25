@@ -5,6 +5,8 @@
 #ifndef _TFT_eSPI_ESP32H_
 #define _TFT_eSPI_ESP32H_
 
+#warning >>>>------>> ESP32 C3 support is incomplete and non-functional at the moment
+
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x32
 
