@@ -20,6 +20,13 @@
   #endif
 #endif
 
+// Adafruit 1.69 round corner TFT support
+#if (TFT_HEIGHT == 280) && (TFT_WIDTH == 240)
+  #ifndef CGRAM_OFFSET
+    #define CGRAM_OFFSET
+  #endif
+#endif
+
 // 1.47" 172x320 Round Rectangle Color IPS TFT Display
 #if (TFT_HEIGHT == 320) && (TFT_WIDTH == 172)
   #ifndef CGRAM_OFFSET
