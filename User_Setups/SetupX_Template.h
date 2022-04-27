@@ -10,6 +10,9 @@
 
 #define USER_SETUP_ID 0xFFFFFFFF
 
+// Define to disable all #warnings in library (can be put in User_Setup_Select.h)
+//#define DISABLE_ALL_LIBRARY_WARNINGS
+
 // ##################################################################################
 //
 // Section 1. Call up the right driver file and any options for it

@@ -7,7 +7,9 @@
 #ifndef _TFT_eSPI_ESP32H_
 #define _TFT_eSPI_ESP32H_
 
-#warning >>>>------>> ESP32 C3 support is incomplete and non-functional at the moment
+#if !defined(DISABLE_ALL_LIBRARY_WARNINGS)
+ #warning >>>>------>> DMA is not supported on the ESP32 C3 (possible future update)
+#endif
 
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x32
