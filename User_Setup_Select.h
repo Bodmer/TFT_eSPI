@@ -83,7 +83,9 @@
 //#include <User_Setups/Setup61_RP2040_ILI9341_PIO_SPI.h>    // Setup file for RP2040 with PIO SPI ILI9341
 //#include <User_Setups/Setup62_RP2040_Nano_Connect_ILI9341.h>    // Setup file for RP2040 with SPI ILI9341
 
-//#include <User_Setups/Setup70_ESP32_S2_ILI9341.h>  // Setup file for ESP32 S2 with SPI ILI9341
+//#include <User_Setups/Setup70_ESP32_S2_ILI9341.h>   // Setup file for ESP32 S2 with SPI ILI9341
+//#include <User_Setups/Setup70b_ESP32_S3_ILI9341.h>  // Setup file for ESP32 S3 with SPI ILI9341
+//#include <User_Setups/Setup70c_ESP32_C3_ILI9341.h>  // Setup file for ESP32 C3 with SPI ILI9341
 
 //#include <User_Setups/Setup71_ESP32_S2_ST7789.h>       // Setup file for ESP32 S2 with ST7789
 //#include <User_Setups/Setup72_ESP32_ST7789_172x320.h>  // Setup file for ESP32 with ST7789 1.47" 172x320

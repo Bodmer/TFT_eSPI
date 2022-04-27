@@ -142,7 +142,6 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
   pinMode(TFT_D5, mode);
   pinMode(TFT_D6, mode);
   pinMode(TFT_D7, mode);
-  return;
 }
 
 /***************************************************************************************

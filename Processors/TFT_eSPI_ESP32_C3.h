@@ -2,6 +2,8 @@
         // TFT_eSPI driver functions for ESP32 processors //
         ////////////////////////////////////////////////////
 
+// Temporarily a separate file to TFT_eSPI_ESP32.h until board package low level API stabilises
+
 #ifndef _TFT_eSPI_ESP32H_
 #define _TFT_eSPI_ESP32H_
 
@@ -22,15 +24,11 @@
   #define VSPI FSPI
 #endif
 
-
-
-
 // Fix IDF problems with ESP32C3
 #if CONFIG_IDF_TARGET_ESP32C3
   // Fix ESP32C3 IDF bug for missing definition (VSPI/FSPI only tested at the moment)
   #ifndef REG_SPI_BASE
-    //Will this work as per S3? #define REG_SPI_BASE(i)     (((i)>1) ? (DR_REG_SPI3_BASE) : (DR_REG_SPI2_BASE))
-    #define REG_SPI_BASE(i)     (DR_REG_SPI1_BASE + (((i)>1) ? (((i)* 0x1000) + 0x20000) : (((~(i)) & 1)* 0x1000 )))
+    #define REG_SPI_BASE(i) DR_REG_SPI2_BASE
   #endif
 
   // Fix ESP32C3 IDF bug for name change
@@ -53,12 +51,12 @@ VSPI = 3, uses SPI3
 ESP32-S2:
 FSPI = 1, uses SPI2
 HSPI = 2, uses SPI3
-VSPI not defined
+VSPI not defined so have made VSPI = HSPI
 
-ESP32 C3:
-FSPI = 0, uses SPI2 ???? To be checked
-HSPI = 1, uses SPI3 ???? To be checked
-VSPI not defined
+ESP32 C3: Only 1 SPI port available
+FSPI = 1, uses SPI2
+HSPI = 1, uses SPI2
+VSPI not defined so have made VSPI = HSPI
 
 For ESP32/S2/C3:
 SPI1_HOST = 0
@@ -66,24 +64,8 @@ SPI2_HOST = 1
 SPI3_HOST = 2
 */
 
-// ESP32 specific SPI port selection
-#ifdef USE_HSPI_PORT
-  #ifdef CONFIG_IDF_TARGET_ESP32
-    #define SPI_PORT HSPI  //HSPI is port 2 on ESP32
-  #else
-    #define SPI_PORT 3     //HSPI is port 3 on ESP32 S2
-  #endif
-#elif defined(USE_FSPI_PORT)
-    #define SPI_PORT 2 //FSPI(ESP32 S2)
-#else
-  #ifdef CONFIG_IDF_TARGET_ESP32
-    #define SPI_PORT VSPI
-  #elif CONFIG_IDF_TARGET_ESP32S2
-    #define SPI_PORT 2 //FSPI(ESP32 S2)
-  #elif CONFIG_IDF_TARGET_ESP32C3
-    #define SPI_PORT FSPI
-  #endif
-#endif
+// ESP32 specific SPI port selection - only SPI2_HOST available on C3
+#define SPI_PORT SPI2_HOST
 
 #ifdef RPI_DISPLAY_TYPE
   #define CMD_BITS (16-1)
@@ -568,13 +550,13 @@ SPI3_HOST = 2
     #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;    \
                            *_spi_w = ((C)<<8 | (C)>>8); \
                            *_spi_cmd = SPI_USR;
-#else
+  #else
     #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;    \
                            *_spi_w = ((C)<<8 | (C)>>8); \
                            *_spi_cmd = SPI_UPDATE;      \
                     while (*_spi_cmd & SPI_UPDATE);     \
                            *_spi_cmd = SPI_USR;
-#endif
+  #endif
 
   // Write 16 bits
   #define tft_Write_16S(C) TFT_WRITE_BITS(C, 16)
