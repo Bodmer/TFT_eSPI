@@ -86,7 +86,7 @@ void setup()   {
   spr.createSprite(spr_width, spr.fontHeight());
   uint16_t bg_color = tft.readPixel(120, 120); // Get colour from dial centre
   spr.fillSprite(bg_color);
-  spr.setTextColor(TFT_WHITE, bg_color);
+  spr.setTextColor(TFT_WHITE, bg_color, true);
   spr.setTextDatum(MC_DATUM);
   spr.setTextPadding(spr_width);
   spr.drawNumber(0, spr_width/2, spr.fontHeight()/2);
@@ -203,6 +203,7 @@ void plotNeedle(int16_t angle, uint16_t ms_delay)
     }
 
     // Update the number at the centre of the dial
+    spr.setTextColor(TFT_WHITE, bg_color, true);
     spr.drawNumber(old_angle+120, spr_width/2, spr.fontHeight()/2);
     spr.pushSprite(120 - spr_width / 2, 120 - spr.fontHeight() / 2);
 
