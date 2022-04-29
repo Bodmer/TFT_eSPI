@@ -7,7 +7,9 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 3. Support for the ESP32-S3 and ESP32-C3 has been added (DMA not support at the moment). Tested with v2.0.3 RC1 of the ESP32 board package. Example setups:
 
       [Setup70_ESP32_S2_ILI9341.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h)
+      
       [Setup70b_ESP32_S3_ILI9341.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70b_ESP32_S3_ILI9341.h)
+      
       [Setup70c_ESP32_C3_ILI9341.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70c_ESP32_C3_ILI9341.h)
 
 4. Smooth fonts can now be rendered direct to the TFT with very little flicker for quickly changing values. This is achieved by a line-by-line and block-by-block update of the glyph area without drawing pixels twice. This is a "breaking" change for some sketches because a new true/false parameter is needed to render the background. The default is false if the parameter is missing, Examples:
@@ -76,8 +78,8 @@ Displays using the following controllers are supported:
 * HX8357C (16 bit parallel tested with RP2040)
 * HX8357D
 * R61581
-* RM68120
-* RM68140 (support files added but untested)
+* RM68120 (support files added but untested)
+* RM68140
 * S6D02A1
 * SSD1351
 * SSD1963
