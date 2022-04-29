@@ -78,8 +78,8 @@ Displays using the following controllers are supported:
 * HX8357C (16 bit parallel tested with RP2040)
 * HX8357D
 * R61581
-* RM68120
-* RM68140 (support files added but untested)
+* RM68120 (support files added but untested)
+* RM68140
 * S6D02A1
 * SSD1351
 * SSD1963
