@@ -33,7 +33,7 @@
 //#include <User_Setups/Setup10_RPi_touch_ILI9486.h> // Setup file configured for ESP8266 and RPi TFT with touch
 
 //#include <User_Setups/Setup11_RPi_touch_ILI9486.h> // Setup file configured for ESP32 and RPi TFT with touch
-//#include <User_Setups/Setup12_M5Stack.h>           // Setup file for the ESP32 based M5Stack
+//#include <User_Setups/Setup12_M5Stack_Basic_Core.h> // Setup file for the ESP32 based M5Stack Basic Core
 //#include <User_Setups/Setup13_ILI9481_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
 //#include <User_Setups/Setup14_ILI9341_Parallel.h>  // Setup file for the ESP32 with parallel bus TFT
 //#include <User_Setups/Setup15_HX8357D.h>           // Setup file configured for HX8357D (untested)
