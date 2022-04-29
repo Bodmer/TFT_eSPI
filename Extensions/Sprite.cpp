@@ -2393,15 +2393,27 @@ void TFT_eSprite::drawGlyph(uint16_t code)
   uint16_t fg = textcolor;
   uint16_t bg = textbgcolor;
 
+  // Check if cursor has moved
+  if (last_cursor_x != cursor_x)
+  {
+    bg_cursor_x = cursor_x;
+    last_cursor_x = cursor_x;
+  }
+
   if (code < 0x21)
   {
     if (code == 0x20) {
+      if (_fillbg) fillRect(bg_cursor_x, cursor_y, (cursor_x + gFont.spaceWidth) - bg_cursor_x, gFont.yAdvance, bg);
       cursor_x += gFont.spaceWidth;
+      bg_cursor_x = cursor_x;
+      last_cursor_x = cursor_x;
       return;
     }
 
     if (code == '\n') {
       cursor_x = 0;
+      bg_cursor_x = 0;
+      last_cursor_x = 0;
       cursor_y += gFont.yAdvance;
       if (textwrapY && (cursor_y >= height())) cursor_y = 0;
       return;
@@ -2421,6 +2433,8 @@ void TFT_eSprite::drawGlyph(uint16_t code)
       createSprite(gWidth[gNum], gFont.yAdvance);
       if(fg != bg) fillSprite(bg);
       cursor_x = -gdX[gNum];
+      bg_cursor_x = cursor_x;
+      last_cursor_x = cursor_x;
       cursor_y = 0;
     }
     else
@@ -2428,10 +2442,11 @@ void TFT_eSprite::drawGlyph(uint16_t code)
       if( textwrapX && ((cursor_x + gWidth[gNum] + gdX[gNum]) > width())) {
         cursor_y += gFont.yAdvance;
         cursor_x = 0;
+        bg_cursor_x = 0;
+        last_cursor_x = 0;
       }
 
       if( textwrapY && ((cursor_y + gFont.yAdvance) > height())) cursor_y = 0;
-
       if ( cursor_x == 0) cursor_x -= gdX[gNum];
     }
 
@@ -2445,11 +2460,45 @@ void TFT_eSprite::drawGlyph(uint16_t code)
     }
 #endif
 
-    int16_t  xs = 0;
-    uint16_t dl = 0;
+    int16_t cy = cursor_y + gFont.maxAscent - gdY[gNum];
+    int16_t cx = cursor_x + gdX[gNum];
+
+    //  if (cx > width() && bg_cursor_x > width()) return;
+    //  if (cursor_y > height()) return;
+
+    int16_t  fxs = cx;
+    uint32_t fl = 0;
+    int16_t  bxs = cx;
+    uint32_t bl = 0;
+    int16_t  bx = 0;
     uint8_t pixel = 0;
-    int32_t cgy = cursor_y + gFont.maxAscent - gdY[gNum];
-    int32_t cgx = cursor_x + gdX[gNum];
+
+    int16_t fillwidth   = 0;
+    uint16_t fillheight = 0;
+
+    // Fill area above glyph
+    if (_fillbg) {
+      fillwidth  = (cursor_x + gxAdvance[gNum]) - bg_cursor_x;
+      if (fillwidth > 0) {
+        fillheight = gFont.maxAscent - gdY[gNum];
+        if (fillheight > 0) {
+          fillRect(bg_cursor_x, cursor_y, fillwidth, fillheight, textbgcolor);
+        }
+      }
+      else {
+        // Could be negative
+        fillwidth = 0;
+      }
+
+      // Fill any area to left of glyph                              
+      if (bg_cursor_x < cx) fillRect(bg_cursor_x, cy, cx - bg_cursor_x, gHeight[gNum], textbgcolor);
+      // Set x position in glyph area where background starts
+      if (bg_cursor_x > cx) bx = bg_cursor_x - cx;
+      // Fill any area to right of glyph
+      if (cx + gWidth[gNum] < cursor_x + gxAdvance[gNum]) {
+        fillRect(cx + gWidth[gNum], cy, (cursor_x + gxAdvance[gNum]) - (cx + gWidth[gNum]), gHeight[gNum], textbgcolor);
+      }
+    }
 
     for (int32_t y = 0; y < gHeight[gNum]; y++)
     {
@@ -2458,49 +2507,65 @@ void TFT_eSprite::drawGlyph(uint16_t code)
         fontFile.read(pbuffer, gWidth[gNum]);
       }
 #endif
+
       for (int32_t x = 0; x < gWidth[gNum]; x++)
       {
 #ifdef FONT_FS_AVAILABLE
-        if (fs_font) {
-          pixel = pbuffer[x];
-        }
+        if (fs_font) pixel = pbuffer[x];
         else
 #endif
         pixel = pgm_read_byte(gPtr + gBitmap[gNum] + x + gWidth[gNum] * y);
 
         if (pixel)
         {
+          if (bl) { drawFastHLine( bxs, y + cy, bl, bg); bl = 0; }
           if (pixel != 0xFF)
           {
-            if (dl) { drawFastHLine( xs, y + cgy, dl, fg); dl = 0; }
-            if (_bpp != 1) {
-              if (fg == bg) drawPixel(x + cgx, y + cgy, alphaBlend(pixel, fg, readPixel(x + cgx, y + cgy)));
-              else drawPixel(x + cgx, y + cgy, alphaBlend(pixel, fg, bg));
+            if (fl) {
+              if (fl==1) drawPixel(fxs, y + cy, fg);
+              else drawFastHLine( fxs, y + cy, fl, fg);
+              fl = 0;
             }
-            else if (pixel>127) drawPixel(x + cgx, y + cgy, fg);
+            if (getColor) bg = getColor(x + cx, y + cy);
+            drawPixel(x + cx, y + cy, alphaBlend(pixel, fg, bg));
           }
           else
           {
-            if (dl==0) xs = x + cgx;
-            dl++;
+            if (fl==0) fxs = x + cx;
+            fl++;
           }
         }
         else
         {
-          if (dl) { drawFastHLine( xs, y + cgy, dl, fg); dl = 0; }
+          if (fl) { drawFastHLine( fxs, y + cy, fl, fg); fl = 0; }
+          if (_fillbg) {
+            if (x >= bx) {
+              if (bl==0) bxs = x + cx;
+              bl++;
+            }
+          }
         }
       }
-      if (dl) { drawFastHLine( xs, y + cgy, dl, fg); dl = 0; }
+      if (fl) { drawFastHLine( fxs, y + cy, fl, fg); fl = 0; }
+      if (bl) { drawFastHLine( bxs, y + cy, bl, bg); bl = 0; }
+    }
+
+    // Fill area below glyph
+    if (fillwidth > 0) {
+      fillheight = (cursor_y + gFont.yAdvance) - (cy + gHeight[gNum]);
+      if (fillheight > 0) {
+        fillRect(bg_cursor_x, cy + gHeight[gNum], fillwidth, fillheight, textbgcolor);
+      }
     }
 
     if (pbuffer) free(pbuffer);
+    cursor_x += gxAdvance[gNum];
 
     if (newSprite)
     {
-      pushSprite(cgx, cursor_y);
+      pushSprite(cx, cursor_y);
       deleteSprite();
     }
-    cursor_x += gxAdvance[gNum];
   }
   else
   {
@@ -2508,6 +2573,8 @@ void TFT_eSprite::drawGlyph(uint16_t code)
     drawRect(cursor_x, cursor_y + gFont.maxAscent - gFont.ascent, gFont.spaceWidth, gFont.ascent, fg);
     cursor_x += gFont.spaceWidth + 1;
   }
+  bg_cursor_x = cursor_x;
+  last_cursor_x = cursor_x;
 }
 
 
