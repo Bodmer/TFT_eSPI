@@ -44,7 +44,7 @@ TFT_eSprite spr    = TFT_eSprite(&tft); // Sprite for meter reading
 uint16_t* tft_buffer;
 bool      buffer_loaded = false;
 uint16_t  spr_width = 0;
-
+uint16_t  bg_color =0;
 // =======================================================================================
 // This function will be called during decoding of the jpeg file
 // =======================================================================================
@@ -82,9 +82,9 @@ void setup()   {
 
   // Load the font and create the Sprite for reporting the value
   spr.loadFont(AA_FONT_LARGE);
-  spr_width = spr.textWidth("277");
+  spr_width = spr.textWidth("777"); // 7 is widest numeral in this font
   spr.createSprite(spr_width, spr.fontHeight());
-  uint16_t bg_color = tft.readPixel(120, 120); // Get colour from dial centre
+  bg_color = tft.readPixel(120, 120); // Get colour from dial centre
   spr.fillSprite(bg_color);
   spr.setTextColor(TFT_WHITE, bg_color, true);
   spr.setTextDatum(MC_DATUM);
