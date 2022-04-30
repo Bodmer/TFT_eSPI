@@ -8,7 +8,7 @@
 
   The larger fonts are Run Length Encoded to reduce their
   size.
-
+f
   Created by Bodmer 2/12/16
   Last update by Bodmer 20/03/20
  ****************************************************/
@@ -18,9 +18,9 @@
 
 #if defined (ESP32)
   #if defined(CONFIG_IDF_TARGET_ESP32S3)
-    #include "Processors/TFT_eSPI_ESP32_S3.c"
+    #include "Processors/TFT_eSPI_ESP32_S3.c" // Tested with SPI and 8 bit parallel
   #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    #include "Processors/TFT_eSPI_ESP32_C3.c"
+    #include "Processors/TFT_eSPI_ESP32_C3.c" // Tested with SPI (8 bit parallel will probably work too!)
   #else
     #include "Processors/TFT_eSPI_ESP32.c"
   #endif
