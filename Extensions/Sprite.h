@@ -34,7 +34,7 @@ class TFT_eSprite : public TFT_eSPI {
            // Returns a pointer to the Sprite frame buffer
   void*    frameBuffer(int8_t f);
   
-           // Set or get the colour depth to 4, 8 or 16 bits. Can be used to change depth an existing
+           // Set or get the colour depth to 1, 4, 8 or 16 bits. Can be used to change depth an existing
            // sprite, but clears it to black, returns a new pointer if sprite is re-created.
   void*    setColorDepth(int8_t b);
   int8_t   getColorDepth(void);
