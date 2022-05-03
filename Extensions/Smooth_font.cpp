@@ -431,7 +431,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     startWrite(); // Avoid slow ESP32 transaction overhead for every pixel
 
     int16_t fillwidth   = 0;
-    uint16_t fillheight = 0;
+    int16_t fillheight = 0;
 
     // Fill area above glyph
     if (_fillbg) {
