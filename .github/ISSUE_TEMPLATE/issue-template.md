@@ -17,10 +17,10 @@ To minimise effort to resolve issues the following should be provided as a minim
 7. Interface type (SPI or parallel)
 
 Plus further information as appropriate to the problem:
-8. TFT to processor connections used
-9. A zip file containing your setup file (just drag and drop in message window - do not paste in long files!)
-10. A zip file  containing a simple and complete example sketch that demonstrates the problem but needs no special hardware sensors or libraries.
-11. Screen shot pictures showing the problem  (just drag and drop in message window)
+1. TFT to processor connections used
+2. A zip file containing your setup file (just drag and drop in message window - do not paste in long files!)
+3. A zip file  containing a simple and complete example sketch that demonstrates the problem but needs no special hardware sensors or libraries.
+4. Screen shot pictures showing the problem  (just drag and drop in message window)
 
 The idea is to provide sufficient information so I can setup the exact same (or sufficiently similar) scenario to investigate and resolve the issue.
 
