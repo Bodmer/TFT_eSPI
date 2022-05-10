@@ -17,7 +17,7 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
       tft.setTextColor(TFT_WHITE, TFT_BLUE, true);
       spr.setTextColor(TFT_BLUE, TFT_BLACK, true);
 
-Note: background rendering is also now available when using the print stream e.g. with: tft.println("Hello World");
+Note: background rendering for Smooth fonts is also now available when using the print stream e.g. with: tft.println("Hello World");
 
 5. New anti-aliased graphics functions to draw lines, wedge shaped lines, circles and rounded rectangles. [Examples are included](https://github.com/Bodmer/TFT_eSPI/tree/master/examples/Smooth%20Graphics). Examples have also been added to [display PNG compressed images](https://github.com/Bodmer/TFT_eSPI/tree/master/examples/PNG%20Images) (note: requires ~40kbytes RAM).
 
