@@ -1,3 +1,21 @@
+/*  Create C arrays from jpeg images using this online tool:
+    http://tomeko.net/online_tools/file_to_hex.php?lang=en
+    If needed, first resize and crop to an appropriate width and height
+    to suit your display with an image editing program such as GIMP, IrfanView.
+    
+    You can also change the image "quality" to reduce the file size.
+    
+    Paste the array into a new tab, top and tail the array from the
+    tool to look like the one below with:
+    #include <pgmspace.h>
+    const uint8_t img_name[] PROGMEM = {    //start with thisline
+       // 8bit array contents
+       
+    }; // end with this line
+    
+    No forget to change the name of the array 'img_name'
+*/
+
 #include <pgmspace.h>
 const uint8_t panda_png[] PROGMEM = {
 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 
