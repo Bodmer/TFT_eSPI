@@ -1,6 +1,6 @@
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
-1. There is a [test branch](https://github.com/Bodmer/TFT_eSPI/tree/RP2040_16bit_parallel) for the RP2040 with 16 bit parallel displays. This has been tested and the screen update performance is very good (4ms to clear 320 x 480 screen with HC8357C). The use of the RP2040 PIO makes it easy to change the write cycle timing for different displays. DMA with 16 bit transfers is also supported.
+1. Support has been added in v2.4.70 for the RP2040 with 16 bit parallel displays. This has been tested and the screen update performance is very good (4ms to clear 320 x 480 screen with HC8357C). The use of the RP2040 PIO makes it easy to change the write cycle timing for different displays. DMA with 16 bit transfers is also supported.
 
 2. Support for HX8357B and HX8357C screens has been added (only tested with RP2040 and 16 bit parallel interface)
 
@@ -11,6 +11,8 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
       [Setup70b_ESP32_S3_ILI9341.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70b_ESP32_S3_ILI9341.h)
       
       [Setup70c_ESP32_C3_ILI9341.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70c_ESP32_C3_ILI9341.h)
+
+      [Setup70d_ILI9488_S3_Parallel.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70d_ILI9488_S3_Parallel.h)
 
 4. Smooth fonts can now be rendered direct to the TFT with very little flicker for quickly changing values. This is achieved by a line-by-line and block-by-block update of the glyph area without drawing pixels twice. This is a "breaking" change for some sketches because a new true/false parameter is needed to render the background. The default is false if the parameter is missing, Examples:
 
