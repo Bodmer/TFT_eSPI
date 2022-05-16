@@ -2,9 +2,19 @@
 // This example renders a png file that is stored in a FLASH array
 // using the PNGdec library (available via library manager).
 
+// Image files can be converted to arrays using the tool here:
+// https://notisrac.github.io/FileToCArray/
+// To use this tool:
+//   1. Drag and drop file on "Browse..." button
+//   2. Tick box "Treat as binary"
+//   3. Click "Convert"
+//   4. Click "Save as file" and move the header file to sketch folder
+//   5. Open the sketch in IDE
+//   6. Include the header file containing the array (panda.h in this example)
+
 // Include the PNG decoder library
 #include <PNGdec.h>
-#include "panda_png.h" // Image is stored here in an 8 bit array
+#include "panda.h" // Image is stored here in an 8 bit array
 
 PNG png; // PNG decoder inatance
 
@@ -38,7 +48,7 @@ void setup()
 //====================================================================================
 void loop()
 {
-  int16_t rc = png.openFLASH((uint8_t *)panda_png, sizeof(panda_png), pngDraw);
+  int16_t rc = png.openFLASH((uint8_t *)panda, sizeof(panda), pngDraw);
   if (rc == PNG_SUCCESS) {
     Serial.println("Successfully png file");
     Serial.printf("image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());

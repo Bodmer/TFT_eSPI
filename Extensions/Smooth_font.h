@@ -3,7 +3,7 @@
 
  public:
 
-  // These are for the new antialiased fonts
+  // These are for the new anti-aliased fonts
   void     loadFont(const uint8_t array[]);
 #ifdef FONT_FS_AVAILABLE
   void     loadFont(String fontName, fs::FS &ffs);

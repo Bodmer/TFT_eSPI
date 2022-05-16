@@ -430,7 +430,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
     startWrite(); // Avoid slow ESP32 transaction overhead for every pixel
 
-    int16_t fillwidth   = 0;
+    int16_t fillwidth  = 0;
     int16_t fillheight = 0;
 
     // Fill area above glyph
@@ -438,6 +438,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       fillwidth  = (cursor_x + gxAdvance[gNum]) - bg_cursor_x;
       if (fillwidth > 0) {
         fillheight = gFont.maxAscent - gdY[gNum];
+        // Could be negative
         if (fillheight > 0) {
           fillRect(bg_cursor_x, cursor_y, fillwidth, fillheight, textbgcolor);
         }

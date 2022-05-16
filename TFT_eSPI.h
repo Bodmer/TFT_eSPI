@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.4.61"
+#define TFT_ESPI_VERSION "2.4.70"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -99,7 +99,7 @@
 #endif
 
 // Some ST7789 boards do not work with Mode 0
-#ifndef TFT_SPI_MODE 
+#ifndef TFT_SPI_MODE
   #if defined(ST7789_DRIVER) || defined(ST7789_2_DRIVER)
     #define TFT_SPI_MODE SPI_MODE3
   #else
@@ -280,7 +280,7 @@ const PROGMEM fontinfo fontdata [] = {
 #define TFT_WHITE       0xFFFF      /* 255, 255, 255 */
 #define TFT_ORANGE      0xFDA0      /* 255, 180,   0 */
 #define TFT_GREENYELLOW 0xB7E0      /* 180, 255,   0 */
-#define TFT_PINK        0xFE19      /* 255, 192, 203 */ //Lighter pink, was 0xFC9F      
+#define TFT_PINK        0xFE19      /* 255, 192, 203 */ //Lighter pink, was 0xFC9F
 #define TFT_BROWN       0x9A60      /* 150,  75,   0 */
 #define TFT_GOLD        0xFEA0      /* 255, 215,   0 */
 #define TFT_SILVER      0xC618      /* 192, 192, 192 */
@@ -409,7 +409,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
                    height(void),
                    width(void);
 
-                   // Read the colour of a pixel at x,y and return value in 565 format 
+                   // Read the colour of a pixel at x,y and return value in 565 format
   virtual uint16_t readPixel(int32_t x, int32_t y);
 
   virtual void     setWindow(int32_t xs, int32_t ys, int32_t xe, int32_t ye);   // Note: start + end coordinates
@@ -555,7 +555,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   // Text rendering - value returned is the pixel width of the rendered text
   int16_t  drawNumber(long intNumber, int32_t x, int32_t y, uint8_t font), // Draw integer using specified font number
            drawNumber(long intNumber, int32_t x, int32_t y),               // Draw integer using current font
-           
+
            // Decimal is the number of decimal places to render
            // Use with setTextDatum() to position values on TFT, and setTextPadding() to blank old displayed values
            drawFloat(float floatNumber, uint8_t decimal, int32_t x, int32_t y, uint8_t font), // Draw float using specified font number
@@ -579,14 +579,14 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
   int16_t  getCursorX(void),                                // Read current cursor x position (moves with tft.print())
            getCursorY(void);                                // Read current cursor y position
-           
+
   void     setTextColor(uint16_t color),                    // Set character (glyph) color only (background not over-written)
            setTextColor(uint16_t fgcolor, uint16_t bgcolor, bool bgfill = false),  // Set character (glyph) foreground and background colour, optional background fill for smooth fonts
            setTextSize(uint8_t size);                       // Set character size multiplier (this increases pixel size)
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
 
-  void     setTextDatum(uint8_t datum);                     // Set text datum position (default is top left), see Section 6 above 
+  void     setTextDatum(uint8_t datum);                     // Set text datum position (default is top left), see Section 6 above
   uint8_t  getTextDatum(void);
 
   void     setTextPadding(uint16_t x_width);                // Set text padding (background blanking/over-write) width in pixels
@@ -689,7 +689,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
                                            // Parameter "true" enables DMA engine control of TFT chip select (ESP32 only)
                                            // For ESP32 only, TFT reads will not work if parameter is true
   void     deInitDMA(void);   // De-initialise the DMA engine and detach from SPI bus - typically not used
-  
+
            // Push an image to the TFT using DMA, buffer is optional and grabs (double buffers) a copy of the image
            // Use the buffer if the image data will get over-written or destroyed while DMA is in progress
            // If swapping colour bytes is defined, and the double buffer option is NOT used, then the bytes
@@ -847,7 +847,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     _swapBytes; // Swap the byte order for TFT pushImage()
 
   bool     _booted;    // init() or begin() has already run once
-  
+
                        // User sketch manages these via set/getAttribute()
   bool     _cp437;        // If set, use correct CP437 charset (default is ON)
   bool     _utf8;         // If set, use UTF-8 decoder in print stream 'write()' function (default ON)
@@ -857,7 +857,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
   bool     _fillbg;    // Fill background flag (just for for smooth fonts at the moment)
 
-#if defined (SSD1963_DRIVER) 
+#if defined (SSD1963_DRIVER)
   uint16_t Cswap;      // Swap buffer for SSD1963
   uint8_t r6, g6, b6;  // RGB buffer for SSD1963
 #endif

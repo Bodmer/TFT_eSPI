@@ -84,9 +84,10 @@
 //#include <User_Setups/Setup61_RP2040_ILI9341_PIO_SPI.h>    // Setup file for RP2040 with PIO SPI ILI9341
 //#include <User_Setups/Setup62_RP2040_Nano_Connect_ILI9341.h>    // Setup file for RP2040 with SPI ILI9341
 
-//#include <User_Setups/Setup70_ESP32_S2_ILI9341.h>   // Setup file for ESP32 S2 with SPI ILI9341
-//#include <User_Setups/Setup70b_ESP32_S3_ILI9341.h>  // Setup file for ESP32 S3 with SPI ILI9341
-//#include <User_Setups/Setup70c_ESP32_C3_ILI9341.h>  // Setup file for ESP32 C3 with SPI ILI9341
+//#include <User_Setups/Setup70_ESP32_S2_ILI9341.h>     // Setup file for ESP32 S2 with SPI ILI9341
+//#include <User_Setups/Setup70b_ESP32_S3_ILI9341.h>    // Setup file for ESP32 S3 with SPI ILI9341
+//#include <User_Setups/Setup70c_ESP32_C3_ILI9341.h>    // Setup file for ESP32 C3 with SPI ILI9341
+//#include <User_Setups/Setup70d_ILI9488_S3_Parallel.h> // Setup file for ESP32 S3 with SPI ILI9488
 
 //#include <User_Setups/Setup71_ESP32_S2_ST7789.h>       // Setup file for ESP32 S2 with ST7789
 //#include <User_Setups/Setup72_ESP32_ST7789_172x320.h>  // Setup file for ESP32 with ST7789 1.47" 172x320
@@ -96,6 +97,10 @@
 //#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9341
 //#include <User_Setups/Setup103_RP2040_ILI9486_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9486
 //#include <User_Setups/Setup104_RP2040_ST7796_parallel.h>  // Setup file for Pico/RP2040 with 8 bit parallel ST7796
+
+//#include <User_Setups/Setup105_RP2040_ST7796_16bit_parallel.h>  // Setup file for RP2040 16 bit parallel display
+//#include <User_Setups/Setup106_RP2040_ILI9481_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
+//#include <User_Setups/Setup107_RP2040_ILI9341_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 
@@ -112,6 +117,16 @@
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
+
+//#include <User_Setups/Dustin_ILI9488.h>           // Setup file for Dustin Watts PCB with ILI9488
+//#include <User_Setups/Dustin_ST7796.h>           // Setup file for Dustin Watts PCB with ST7796
+//#include <User_Setups/Dustin_ILI9488_Pico.h>        // Setup file for Dustin Watts Pico PCB with ST7796
+//#include <User_Setups/Dustin_ST7789_Pico.h>           // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_GC9A01_Pico.h>           // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_GC9A01_ESP32.h>           // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_STT7789_ESP32.h>           // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_ILI9341_ESP32.h>           // Setup file for Dustin Watts PCB with ILI9341
+//#include <User_Setups/ILI9225.h>
 
 #endif // USER_SETUP_LOADED
 
@@ -148,7 +163,7 @@
 #endif
 
 // Invoke 18 bit colour for selected displays
-#if !defined (RPI_DISPLAY_TYPE) && !defined (TFT_PARALLEL_8_BIT) && !defined (ESP32_PARALLEL)
+#if !defined (RPI_DISPLAY_TYPE) && !defined (TFT_PARALLEL_8_BIT) && !defined (TFT_PARALLEL_16_BIT) && !defined (ESP32_PARALLEL)
   #if defined (ILI9481_DRIVER) || defined (ILI9486_DRIVER) || defined (ILI9488_DRIVER)
     #define SPI_18BIT_DRIVER
   #endif
