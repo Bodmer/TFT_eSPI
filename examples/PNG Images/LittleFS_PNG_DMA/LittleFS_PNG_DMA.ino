@@ -3,7 +3,7 @@
 // ESP32, ESP8266). It renders a png file that is stored in LittleFS
 // using the PNGdec library (available via library manager).
 
-// It uses DMA to send image data to the TFT while the decoding takes
+// It uses DMA (Direct Memory Access) to send image data to the TFT while the decoding takes
 // place. The processor and display combination must support DMA to
 // run this sketch! The decode time dominates so DMA is mainly an advantage
 // for slow display interface speeds.
