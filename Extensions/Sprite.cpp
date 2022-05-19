@@ -2076,15 +2076,16 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uin
 
       uint8_t  w  = pgm_read_byte(&glyph->width),
                h  = pgm_read_byte(&glyph->height);
+      int8_t   xo = pgm_read_byte(&glyph->xOffset),
+               yo = pgm_read_byte(&glyph->yOffset);
 
-      if (((x + w * size - 1) < (_vpX - _xDatum)) || // Clip left
-          ((y + h * size - 1) < (_vpY - _yDatum)))   // Clip top
+      if (((x + xo + w * size - 1) < (_vpX - _xDatum)) || // Clip left
+          ((y + yo + h * size - 1) < (_vpY - _yDatum)))   // Clip top
         return;
 
       uint8_t  *bitmap = (uint8_t *)pgm_read_dword(&gfxFont->bitmap);
       uint32_t bo = pgm_read_word(&glyph->bitmapOffset);
-      int8_t   xo = pgm_read_byte(&glyph->xOffset),
-               yo = pgm_read_byte(&glyph->yOffset);
+
       uint8_t  xx, yy, bits=0, bit=0;
       //uint8_t  xa = pgm_read_byte(&glyph->xAdvance);
       int16_t  xo16 = 0, yo16 = 0;
@@ -2125,6 +2126,12 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uin
 #ifdef LOAD_GLCD
   #ifdef LOAD_GFXFF
   } // End classic vs custom font
+  #endif
+#else
+  #ifndef LOAD_GFXFF
+    color = color;
+    bg = bg;
+    size = size;
   #endif
 #endif
 
@@ -2385,6 +2392,17 @@ int16_t TFT_eSprite::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t fo
   }
   // End of RLE font rendering
 #endif
+
+#if !defined (LOAD_FONT2) && !defined (LOAD_RLE)
+  // Stop warnings
+  flash_address = flash_address;
+  w = w;
+  pX = pX;
+  pY = pY;
+  line = line;
+  clip = clip;
+#endif
+
   return width * textsize;    // x +
 }
 

@@ -473,7 +473,7 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   _cp437    = true;     // Legacy GLCD font bug fix
   _utf8     = true;     // UTF8 decoding enabled
 
-#ifdef FONT_FS_AVAILABLE
+#if defined (FONT_FS_AVAILABLE) && defined (SMOOTH_FONT)
   fs_font  = true;     // Smooth font filing system or array (fs_font = false) flag
 #endif
 
@@ -3016,9 +3016,6 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
 {
   if (_vpOoB) return;
 
-  int32_t xd = x + _xDatum;
-  int32_t yd = y + _yDatum;
-
   if (c < 32) return;
 #ifdef LOAD_GLCD
 //>>>>>>>>>>>>>>>>>>
@@ -3026,6 +3023,9 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
   if(!gfxFont) { // 'Classic' built-in font
   #endif
 //>>>>>>>>>>>>>>>>>>
+
+  int32_t xd = x + _xDatum;
+  int32_t yd = y + _yDatum;
 
   if ((xd >= _vpW)                 || // Clip right
      ( yd >= _vpH)                 || // Clip bottom
@@ -3152,6 +3152,15 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
 #ifdef LOAD_GLCD
   #ifdef LOAD_GFXFF
   } // End classic vs custom font
+  #endif
+#else
+  #ifndef LOAD_GFXFF
+    // Avoid warnings if fonts are disabled
+    x = x;
+    y = y;
+    color = color;
+    bg = bg;
+    size = size;
   #endif
 #endif
 
@@ -4863,6 +4872,17 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
   }
   // End of RLE font rendering
 #endif
+
+#if !defined (LOAD_FONT2) && !defined (LOAD_RLE)
+  // Stop warnings
+  flash_address = flash_address;
+  w = w;
+  pX = pX;
+  pY = pY;
+  line = line;
+  clip = clip;
+#endif
+
   return width * textsize;    // x +
 }
 
