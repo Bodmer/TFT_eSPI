@@ -27,10 +27,6 @@
 ***************************************************************************************/
 
 //Standard support
-#ifdef TFT_eSPI_COMPONENT
-  #include "TFT_config.h"
-#endif
-
 #include <Arduino.h>
 #include <Print.h>
 #include <SPI.h>
@@ -40,6 +36,9 @@
 ***************************************************************************************/
 // Include header file that defines the fonts loaded, the TFT drivers
 // available and the pins to be used, etc, etc
+#ifdef CONFIG_TFT_eSPI_ESPIDF
+  #include "TFT_config.h"
+#endif
 #include <User_Setup_Select.h>
 
 // Handle FLASH based storage e.g. PROGMEM
