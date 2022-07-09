@@ -4,7 +4,7 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 
 2. Support for HX8357B and HX8357C screens has been added (only tested with RP2040 and 16 bit parallel interface)
 
-3. Support for the ESP32-S3 and ESP32-C3 has been added (DMA not support at the moment). Tested with v2.0.3 RC1 of the ESP32 board package. Example setups:
+3. Support for the ESP32-S2, ESP32-S3 and ESP32-C3 has been added (DMA not supported at the moment). Tested with v2.0.3 RC1 of the ESP32 board package. Example setups:
 
       [Setup70_ESP32_S2_ILI9341.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h)
       
