@@ -17,6 +17,6 @@
     }
   ],
   "frameworks": "arduino",
-  "platforms": "rp2040, espressif8266, espressif32, ststm32",
+  "platforms": "raspberrypi, espressif8266, espressif32, ststm32",
   "headers": "TFT_eSPI.h"
 }
