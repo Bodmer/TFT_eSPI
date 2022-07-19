@@ -676,6 +676,7 @@ void TFT_eSPI::init(uint8_t tc)
     pinMode(TFT_RST, OUTPUT);
   #endif
   if (TFT_RST >= 0) {
+    writecommand(0x00); // Put SPI bus in known state for TFT with CS tied low
     digitalWrite(TFT_RST, HIGH);
     delay(5);
     digitalWrite(TFT_RST, LOW);
