@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.4.72"
+#define TFT_ESPI_VERSION "2.4.73"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
