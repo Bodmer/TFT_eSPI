@@ -2417,6 +2417,8 @@ void TFT_eSprite::drawGlyph(uint16_t code)
 {
   uint16_t fg = textcolor;
   uint16_t bg = textbgcolor;
+  bool getBG  = false;
+  if (fg == bg) getBG = true;
 
   // Check if cursor has moved
   if (last_cursor_x != cursor_x)
@@ -2551,7 +2553,7 @@ void TFT_eSprite::drawGlyph(uint16_t code)
               else drawFastHLine( fxs, y + cy, fl, fg);
               fl = 0;
             }
-            if (getColor) bg = getColor(x + cx, y + cy);
+            if (getBG) bg = readPixel(x + cx, y + cy);
             drawPixel(x + cx, y + cy, alphaBlend(pixel, fg, bg));
           }
           else

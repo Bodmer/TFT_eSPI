@@ -14,7 +14,7 @@
 #ifdef ESP8266
 // ESP8266
 #include <ESP8266WiFi.h>
-#elif defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_RP2040)
+#elif (defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_RP2040)) && !defined(ARDUINO_RASPBERRY_PI_PICO_W)
 // RP2040 Nano Connect
 #include <WiFiNINA.h>
 #else

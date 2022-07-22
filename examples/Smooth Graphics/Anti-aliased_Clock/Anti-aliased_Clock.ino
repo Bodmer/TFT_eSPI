@@ -129,7 +129,7 @@ static void renderFace(float t) {
   face.setTextDatum(MC_DATUM);
 
   // The background colour will be read during the character rendering
-  face.setTextColor(CLOCK_FG);
+  face.setTextColor(CLOCK_FG, CLOCK_BG);
 
   // Text offset adjustment
   constexpr uint32_t dialOffset = CLOCK_R - 10;
@@ -143,7 +143,7 @@ static void renderFace(float t) {
   }
 
   // Add text (could be digital time...)
-  face.setTextColor(LABEL_FG);
+  face.setTextColor(LABEL_FG, CLOCK_BG);
   face.drawString("TFT_eSPI", CLOCK_R, CLOCK_R * 0.75);
 
   // Draw minute hand
