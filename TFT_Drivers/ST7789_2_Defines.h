@@ -34,6 +34,12 @@
   #endif
 #endif
 
+#if (TFT_HEIGHT == 320) && (TFT_WIDTH == 170)
+  #ifndef CGRAM_OFFSET
+    #define CGRAM_OFFSET
+  #endif
+#endif
+
 #if (TFT_HEIGHT == 300) && (TFT_WIDTH == 240)
   #ifndef CGRAM_OFFSET
     #define CGRAM_OFFSET

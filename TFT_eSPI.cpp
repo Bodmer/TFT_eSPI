@@ -3753,7 +3753,7 @@ constexpr float LoAlphaTheshold  = 1.0/32.0;
 constexpr float HiAlphaTheshold  = 1.0 - LoAlphaTheshold;
 
 /***************************************************************************************
-** Function name:           drawPixel (aplha blended)
+** Function name:           drawPixel (alpha blended)
 ** Description:             Draw a pixel blended with the screen or bg pixel colour
 ***************************************************************************************/
 uint16_t TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color, uint8_t alpha, uint32_t bg_color)
