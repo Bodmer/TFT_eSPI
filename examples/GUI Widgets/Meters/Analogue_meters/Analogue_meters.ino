@@ -65,18 +65,23 @@ void loop()
     float value = 50.0 + 50.0 * sin((d + 0) * 0.0174532925);
 
     float current;
-    mapValue(value, current, (float)0.0, (float)100.0, (float)0.0, (float)2.0);
+    current = mapValue(value, (float)0.0, (float)100.0, (float)0.0, (float)2.0);
     //Serial.print("I = "); Serial.print(current);
     amps.updateNeedle(current, 0);
 
     float voltage;
-    mapValue(value, voltage, (float)0.0, (float)100.0, (float)0.0, (float)10.0);
+    voltage = mapValue(value, (float)0.0, (float)100.0, (float)0.0, (float)10.0);
     //Serial.print(", V = "); Serial.println(voltage);
     volts.updateNeedle(voltage, 0);
     
     float resistance;
-    mapValue(value, resistance, (float)0.0, (float)100.0, (float)0.0, (float)100.0);
+    resistance = mapValue(value, (float)0.0, (float)100.0, (float)0.0, (float)100.0);
     //Serial.print(", R = "); Serial.println(resistance);
     ohms.updateNeedle(resistance, 0);
   }
+}
+
+float mapValue(float ip, float ipmin, float ipmax, float tomin, float tomax)
+{
+  return tomin + (((tomax - tomin) * (ip - ipmin))/ (ipmax - ipmin));
 }
