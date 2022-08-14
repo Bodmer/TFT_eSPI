@@ -1,9 +1,9 @@
-// Button widget demo, requires display with touch screen
+// Button widget demo, requires SPI display with touch screen
 
 // Requires widget library here:
 // https://github.com/Bodmer/TFT_eWidget
 
-#include "FS.h"
+#include <FS.h>
 #include "Free_Fonts.h" // Include the header file attached to this sketch
 
 #include <TFT_eSPI.h>              // Hardware-specific library
@@ -14,15 +14,15 @@ TFT_eSPI tft = TFT_eSPI();         // Invoke custom library
 #define CALIBRATION_FILE "/TouchCalData1"
 #define REPEAT_CAL false
 
-TFT_eWidget btnL = TFT_eWidget(&tft);
-TFT_eWidget btnR = TFT_eWidget(&tft);
+ButtonWidget btnL = ButtonWidget(&tft);
+ButtonWidget btnR = ButtonWidget(&tft);
 
 #define BUTTON_W 100
 #define BUTTON_H 50
 
 // Create an array of button instances to use in for() loops
 // This is more useful where large numbers of buttons are employed
-TFT_eWidget* btn[] = {&btnL , &btnR};;
+ButtonWidget* btn[] = {&btnL , &btnR};;
 uint8_t buttonCount = sizeof(btn) / sizeof(btn[0]);
 
 void btnL_pressAction(void)
