@@ -1158,6 +1158,8 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   #endif
 */
 
+  CS_H;
+
   #ifdef TFT_SDA_READ
     end_SDA_Read();
   #endif
