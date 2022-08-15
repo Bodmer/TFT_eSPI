@@ -1069,9 +1069,24 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   // Range checking
   if ((x0 < _vpX) || (y0 < _vpY) ||(x0 >= _vpW) || (y0 >= _vpH)) return 0;
 
-#if defined(TFT_PARALLEL_8_BIT) || defined(RP2040_PIO_INTERFACE)
+  // Temporary color variable because different driver ICs use different
+  // bit order in colors
+  uint16_t color = 0;
 
-  CS_L;
+  // This function can get called during anti-aliased font rendering
+  // so a transaction may be in progress. The old transaction state
+  // has to be saved so it can be restored before returning
+  bool wasInTransaction = inTransaction;
+  if (inTransaction)
+  {
+    inTransaction = false;
+    end_tft_write();
+  }
+
+  // set CS low and initialize SPI for reading if required
+  begin_tft_read();
+
+#if defined(TFT_PARALLEL_8_BIT) || defined(RP2040_PIO_INTERFACE)
 
   readAddrWindow(x0, y0, 1, 1);
 
@@ -1089,44 +1104,23 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   #if defined (ILI9341_DRIVER)  || defined(ILI9341_2_DRIVER) || defined (ILI9488_DRIVER) || defined (SSD1963_DRIVER)// Read 3 bytes
 
     // Read window pixel 24 bit RGB values and fill in LS bits
-    uint16_t rgb = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
-
-    CS_H;
-
-    // Set masked pins D0- D7 to output
-    busDir(dir_mask, OUTPUT);
-
-    return rgb;
+    color = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
 
   #else // ILI9481 or ILI9486 16 bit read
 
     // Fetch the 16 bit BRG pixel
     uint16_t bgr = (readByte() << 8) | readByte();
 
-    CS_H;
-
-    // Set masked pins D0- D7 to output
-    busDir(dir_mask, OUTPUT);
-
     #ifdef ILI9486_DRIVER
-      return  bgr;
+      color = bgr;
     #else
       // Swap Red and Blue (could check MADCTL setting to see if this is needed)
-      return  (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
+      color = (bgr>>11) | (bgr<<11) | (bgr & 0x7E0);
     #endif
 
   #endif
 
 #else // Not TFT_PARALLEL_8_BIT
-
-  // This function can get called during anti-aliased font rendering
-  // so a transaction may be in progress
-  bool wasInTransaction = inTransaction;
-  if (inTransaction) { inTransaction= false; end_tft_write();}
-
-  uint16_t color = 0;
-
-  begin_tft_read(); // Sets CS low
 
   readAddrWindow(x0, y0, 1, 1);
 
@@ -1163,20 +1157,41 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
   #endif
 */
-  CS_H;
 
   #ifdef TFT_SDA_READ
     end_SDA_Read();
   #endif
 
+#endif
+
+  // sets CS high (and reconfigures SPI bus if required)
+  // if no transaction is in progress as might be with anti-aliased
+  // drawing methods.
   end_tft_read();
 
-  // Reinstate the transaction if one was in progress
-  if(wasInTransaction) { begin_tft_write(); inTransaction = true; }
+#if defined(TFT_PARALLEL_8_BIT) || defined(RP2040_PIO_INTERFACE)
+  // in parallel mode, the data pins should be set to output
+  // when reading is complete:
+  // Set masked pins D0- D7 to output
+  busDir(dir_mask, OUTPUT);
+#endif
+
+  // Reinstate the transaction if one was in progress before calling
+  // this method
+  if (wasInTransaction)
+  {
+    begin_tft_write();
+    inTransaction = true;
+  }
+
+  /*
+  NOTE:
+  ending the tft read and subsequently restarting the tft write
+  may cause a short high pulse on the CS line which could confuse
+  tft drivers (not tested).
+  */
 
   return color;
-
-#endif
 }
 
 void TFT_eSPI::setCallback(getColorCallback getCol)
