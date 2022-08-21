@@ -104,6 +104,7 @@
 // #define ST7735_GREENTAB3
 // #define ST7735_GREENTAB128    // For 128 x 128 display
 // #define ST7735_GREENTAB160x80 // For 160 x 80 display (BGR, inverted, 26 offset)
+// #define ST7735_ROBOTLCD       // For some RobotLCD arduino shields (128x160, BGR, https://docs.arduino.cc/retired/getting-started-guides/TFT)
 // #define ST7735_REDTAB
 // #define ST7735_BLACKTAB
 // #define ST7735_REDTAB160x80   // For 160 x 80 display with 24 pixel offset
