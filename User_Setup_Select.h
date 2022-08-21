@@ -133,6 +133,8 @@
 //#include <User_Setups/Dustin_ILI9341_ESP32.h>           // Setup file for Dustin Watts PCB with ILI9341
 //#include <User_Setups/ILI9225.h>
 
+//#include <User_Setups/Setup300_TAMC_Termod_S3.h>  // Setup file for TAMC PCB Termod S3
+
 #endif // USER_SETUP_LOADED
 
 
