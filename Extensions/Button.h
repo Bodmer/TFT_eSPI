@@ -40,5 +40,5 @@ class TFT_eSPI_Button : public TFT_eSPI {
   uint16_t _outlinecolor, _fillcolor, _textcolor;
   char     _label[10]; // Button text is 9 chars maximum unless long_name used
 
-  bool  currstate, laststate; // Button states
+  bool  currstate = false, laststate = false; // Button states
 };
