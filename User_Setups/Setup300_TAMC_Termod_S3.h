@@ -1,3 +1,7 @@
+// Setup for TAMC Termod S3
+
+#define USER_SETUP_ID 300
+
 #define ST7789_DRIVER
 #define TFT_RGB_ORDER TFT_BGR
 #define TFT_WIDTH  240
@@ -21,8 +25,5 @@
 
 #define SMOOTH_FONT
 
-#define SPI_FREQUENCY  27000000
+#define SPI_FREQUENCY  40000000
 #define SPI_READ_FREQUENCY  20000000
-#define SPI_TOUCH_FREQUENCY  2500000
-
-#define USE_HSPI_PORT
