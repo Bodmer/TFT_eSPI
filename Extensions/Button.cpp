@@ -8,6 +8,8 @@ TFT_eSPI_Button::TFT_eSPI_Button(void) {
   _yd        = 0;
   _textdatum = MC_DATUM;
   _label[9]  = '\0';
+  currstate = false;
+  laststate = false;
 }
 
 // Classic initButton() function: pass center & size
