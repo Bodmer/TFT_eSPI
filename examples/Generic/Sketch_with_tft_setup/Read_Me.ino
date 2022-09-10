@@ -7,7 +7,7 @@ The procedure is as follows:
 1. Find the folder containing the boards.txt file for the processor board package you are using. To do this
    click the IDE menu "File->Preferences". At the bottom of that window click the link to the preferences.txt
    file. This will open a folder. Navigate to find the folder containing the "boards.txt" file for the
-   processor you are using. Exampe paths for RP2040 and ESP32 are:
+   processor you are using. Example paths for RP2040 and ESP32 are:
 
    C:\Users\xxxxx\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\2.5.2
    C:\Users\xxxxx\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.4
