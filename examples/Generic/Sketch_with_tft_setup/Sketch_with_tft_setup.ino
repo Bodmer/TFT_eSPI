@@ -3,9 +3,6 @@
 
 // See ReadMe tab for instructions to add a "user setup" configuration file to your sketch
 
-// Important: include tft_setup.h before including the library
-#include "tft_setup.h"
-
 #include <SPI.h>
 #include <TFT_eSPI.h>       // Hardware-specific library
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
