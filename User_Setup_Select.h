@@ -1,7 +1,7 @@
 // This header file contains a list of user setup files and defines which one the
 // compiler uses when the IDE performs a Verify/Compile or Upload.
 //
-// Users can create configurations for different Espressif boards and TFT displays.
+// Users can create configurations for different boards and TFT displays.
 // This makes selecting between hardware setups easy by "uncommenting" one line.
 
 // The advantage of this hardware configuration method is that the examples provided
@@ -14,10 +14,24 @@
 
 // Customised User_Setup files are stored in the "User_Setups" folder.
 
+// The following lines allow the user setup to be included in the sketch, see
+// "Sketch_with_tft_setup" generic example. Do not edit lines 19 to 26!
+#if __has_include(<tft_setup.h>)
+  #include <tft_setup.h>
+  #ifndef USER_SETUP_LOADED
+    #define USER_SETUP_LOADED
+  #endif
+#endif
+
 #ifndef USER_SETUP_LOADED //  Lets PlatformIO users define settings in
                           //  platformio.ini, see notes in "Tools" folder.
 
-// Only ONE line below should be uncommented.  Add extra lines and files as needed.
+
+///////////////////////////////////////////////////////
+//   User configuration selection lines are below    //
+///////////////////////////////////////////////////////
+
+// Only ONE line below should be uncommented to define your setup.  Add extra lines and files as needed.
 
 #include <User_Setup.h>           // Default setup is root library folder
 
