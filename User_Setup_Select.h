@@ -15,7 +15,13 @@
 // Customised User_Setup files are stored in the "User_Setups" folder.
 
 // The following lines allow the user setup to be included in the sketch, see
-// "Sketch_with_tft_setup" generic example. Do not edit lines 19 to 26!
+// "Sketch_with_tft_setup" generic example. Do not edit lines 19 to 32!
+#if !defined __has_include
+  #if !defined(DISABLE_ALL_LIBRARY_WARNINGS)
+    #warning Compiler does not support __has_include, so sketches cannot define the setup
+  #endif
+#endif
+
 #if __has_include(<tft_setup.h>)
   #include <tft_setup.h>
   #ifndef USER_SETUP_LOADED
