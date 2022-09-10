@@ -1,5 +1,5 @@
 
-// THIS SKETCH IS A TEMPLATE EXAMPLE NLY AND IS NOT INTENDED TO BE RUN UNLESS MODIFIED!
+// THIS SKETCH IS A TEMPLATE EXAMPLE ONLY AND IS NOT INTENDED TO BE RUN UNLESS MODIFIED!
 
 // See ReadMe tab for instructions to add a "user setup" configuration file to your sketch
 
