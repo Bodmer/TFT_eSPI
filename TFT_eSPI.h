@@ -39,6 +39,24 @@
 #ifdef CONFIG_TFT_eSPI_ESPIDF
   #include "TFT_config.h"
 #endif
+
+// The following lines allow the user setup to be included in the sketch folder, see
+// "Sketch_with_tft_setup" generic example.
+#if !defined __has_include
+  #if !defined(DISABLE_ALL_LIBRARY_WARNINGS)
+    #warning Compiler does not support __has_include, so sketches cannot define the setup
+  #endif
+#else
+  #if __has_include(<tft_setup.h>)
+    // Include the sketch setup file
+    #include <tft_setup.h>
+    #ifndef USER_SETUP_LOADED
+      // Prevent loading further setups
+      #define USER_SETUP_LOADED
+    #endif
+  #endif
+#endif
+
 #include <User_Setup_Select.h>
 
 // Handle FLASH based storage e.g. PROGMEM
