@@ -107,6 +107,8 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
 
   end_touch_read_write();
 
+  if (tz == 4095) tz = 0;
+
   return (uint16_t)tz;
 }
 
