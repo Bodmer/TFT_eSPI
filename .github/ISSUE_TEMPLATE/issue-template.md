@@ -26,8 +26,8 @@ Plus further information as appropriate to the problem:
 
 The idea is to provide sufficient information so I can setup the exact same (or sufficiently similar) scenario to investigate and resolve the issue without having a tedious ping-pong of Q&A.
 
-DO NOT paste code directly into the issue. To correctly format code put three ticks ( ` character on key next to "1" key) at the start and end of short pasted code segments to avoid format/markup anomolies. See here:
-https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code
+DO NOT paste code directly into the issue. To correctly format code put three ticks ( ` character on key next to "1" key) at the start and end of short pasted code segments to avoid format/markup anomolies. [See here:]
+(https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code)
 
 Example output:
 
