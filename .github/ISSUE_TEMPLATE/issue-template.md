@@ -1,3 +1,5 @@
+Only raise issues for problems with the library and/or provided examples. Post questions, comments and useful tips etc in the "Discussions" section.
+
 ---
 name: Issue template
 about: Guide to content
