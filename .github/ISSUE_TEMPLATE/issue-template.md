@@ -1,5 +1,3 @@
-Only raise issues for problems with the library and/or provided examples. Post questions, comments and useful tips etc in the "Discussions" section.
-
 ---
 name: Issue template
 about: Guide to content
@@ -8,6 +6,8 @@ labels: ''
 assignees: ''
 
 ---
+
+Only raise issues for problems with the library and/or provided examples. Post questions, comments and useful tips etc in the "Discussions" section.
 
 To minimise effort to resolve issues the following should be provided as a minimum:
 1. A description of the problem and the conditions that cause it to occur
