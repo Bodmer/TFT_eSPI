@@ -24,9 +24,9 @@ Plus further information as appropriate to the problem:
 3. A zip file  containing a simple and complete example sketch that demonstrates the problem but needs no special hardware sensors or libraries.
 4. Screen shot pictures showing the problem  (just drag and drop in message window)
 
-The idea is to provide sufficient information so I can setup the exact same (or sufficiently similar) scenario to investigate and resolve the issue.
+The idea is to provide sufficient information so I can setup the exact same (or sufficiently similar) scenario to investigate and resolve the issue without having a tedious ping-pong of Q&A.
 
-Put three ticks ( ` character on key next to "1" key) at the start and end of short pasted code segments to avoid format/markup anomolies and to use a monspaced font. Example:
+DO NOT paste code directly into the issue. To correctly format code put three ticks ( ` character on key next to "1" key) at the start and end of short pasted code segments to avoid format/markup anomolies. Example:
 
 ```
   Serial.begin(115200);
