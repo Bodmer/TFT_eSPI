@@ -3828,6 +3828,7 @@ void TFT_eSPI::fillSmoothRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, i
   int32_t cx = 0;
 
   // Limit radius to half width or height
+  if (r < 0) r = 0;
   if (r > w/2) r = w/2;
   if (r > h/2) r = h/2;
 
@@ -3892,6 +3893,7 @@ void TFT_eSPI::drawWideLine(float ax, float ay, float bx, float by, float wd, ui
 ***************************************************************************************/
 void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, float br, uint32_t fg_color, uint32_t bg_color)
 {
+  if ( (ar < 0.0) || (br < 0.0) )return;
   if ( (abs(ax - bx) < 0.01f) && (abs(ay - by) < 0.01f) ) bx += 0.01f;  // Avoid divide by zero
 
   // Find line bounding box

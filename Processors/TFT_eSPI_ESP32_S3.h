@@ -112,6 +112,11 @@ SPI3_HOST = 2
 
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
 #if !defined (ESP32_PARALLEL)
+  #define _spi_cmd       (volatile uint32_t*)(SPI_CMD_REG(SPI_PORT))
+  #define _spi_user      (volatile uint32_t*)(SPI_USER_REG(SPI_PORT))
+  #define _spi_mosi_dlen (volatile uint32_t*)(SPI_MOSI_DLEN_REG(SPI_PORT))
+  #define _spi_w         (volatile uint32_t*)(SPI_W0_REG(SPI_PORT))
+
   #if (TFT_SPI_MODE == SPI_MODE1) || (TFT_SPI_MODE == SPI_MODE2)
     #define SET_BUS_WRITE_MODE *_spi_user = SPI_USR_MOSI | SPI_CK_OUT_EDGE
     #define SET_BUS_READ_MODE  *_spi_user = SPI_USR_MOSI | SPI_USR_MISO | SPI_DOUTDIN | SPI_CK_OUT_EDGE
@@ -129,7 +134,7 @@ SPI3_HOST = 2
 #if !defined(TFT_PARALLEL_8_BIT) && !defined(SPI_18BIT_DRIVER)
   #define ESP32_DMA
   // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
-  #define DMA_BUSY_CHECK  dmaWait()
+  #define DMA_BUSY_CHECK  //dmaWait()
 #else
   #define DMA_BUSY_CHECK
 #endif

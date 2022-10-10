@@ -17,10 +17,10 @@ The procedure is as follows:
 
 3.  Close the Arduino IDE and open it again so the added file is recognised.
 
-4.  This step is already done in this sketch, but to adapt you own sketches, open the a sketch and add a
+4.  This step is already done in this sketch, but to adapt you own sketches, open the sketch and add a
     new tab, "tft_setup.h" in the main sketch, put all the tft library setup information in that header.
     The tab header name must be tft_setup.h
 
   IMPORTANT:  You will need to remember to add the platform.local.txt file again if you upgrade the IDE or
-  the board package version). Note that the file must be added to each processor board package you are using.
+  the board package version. Note that the file must be added to each processor board package you are using.
 */

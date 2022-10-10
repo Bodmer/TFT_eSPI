@@ -135,7 +135,14 @@ SPI3_HOST = 2
   // Call up the SPIFFS (SPI FLASH Filing System) for the anti-aliased fonts
   #define FS_NO_GLOBALS
   #include <FS.h>
-  #include "SPIFFS.h" // ESP32 only
+  #if defined(CONFIG_IDF_TARGET_ESP32)
+    #include "SPIFFS.h" // ESP32 only
+  #else
+    #ifndef SPIFFS
+      #include <LittleFS.h>
+      #define SPIFFS LittleFS
+    #endif
+  #endif
   #define FONT_FS_AVAILABLE
 #endif
 
