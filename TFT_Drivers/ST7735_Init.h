@@ -123,6 +123,17 @@
       0x00, 0x00,             //     XSTART = 0
       0x00, 0x9F },           //     XEND = 159
 
+  // Frame control init for RobotLCD, taken from https://github.com/arduino-libraries/TFT, Adafruit_ST7735.cpp l. 263, commit 61b8a7e
+  Rcmd3RobotLCD[] = {
+      3,
+      ST7735_FRMCTR1, 2    ,  //  1: Frame rate ctrl - normal mode, 2 args
+        0x0B, 0x14,
+      ST7735_FRMCTR2, 2    ,  //  2: Frame rate ctrl - idle mode, 2 args
+        0x0B, 0x14,
+      ST7735_FRMCTR3, 4    ,  //  3: Frame rate ctrl - partial mode, 4 args
+        0x0B, 0x14,
+        0x0B, 0x14 },
+
   Rcmd3[] = {                 // Init for 7735R, part 3 (red or green tab)
     4,                        //  4 commands in list:
     ST7735_GMCTRP1, 16      , //  1: 16 args, no delay:
@@ -180,6 +191,11 @@
          writecommand(TFT_INVON);
          colstart = 26;
          rowstart = 1;
+       }
+       else if (tabcolor == INITR_ROBOTLCD)
+       {
+         commandList(Rcmd2green);
+         commandList(Rcmd3RobotLCD);
        }
        else if (tabcolor == INITR_REDTAB160x80)
        {
