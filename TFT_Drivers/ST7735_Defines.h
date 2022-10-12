@@ -17,6 +17,7 @@
 #define INITR_GREENTAB128    0x5 // Use if you only get part of 128x128 screen in rotation 0 & 1
 #define INITR_GREENTAB160x80 0x6 // Use if you only get part of 128x128 screen in rotation 0 & 1
 #define INITR_REDTAB160x80   0x7 // Added for https://www.aliexpress.com/item/ShengYang-1pcs-IPS-0-96-inch-7P-SPI-HD-65K-Full-Color-OLED-Module-ST7735-Drive/32918394604.html
+#define INITR_ROBOTLCD       0x8
 #define INITB                0xB
 
 
@@ -42,6 +43,10 @@
  
 #elif defined (ST7735_GREENTAB160x80)
   #define TAB_COLOUR INITR_GREENTAB160x80
+  #define CGRAM_OFFSET
+
+#elif defined (ST7735_ROBOTLCD)
+  #define TAB_COLOUR INITR_ROBOTLCD
   #define CGRAM_OFFSET
 
 #elif defined (ST7735_REDTAB160x80)
@@ -107,7 +112,7 @@
 #define TFT_MAD_RGB 0x00
 
 #ifndef TFT_RGB_ORDER
-  #if defined(INITR_BLACKTAB) || defined(INITR_GREENTAB2) || defined(INITB)
+  #if defined(ST7735_BLACKTAB) || defined(ST7735_GREENTAB2) || defined(ST7735_INITB)
     #define TFT_MAD_COLOR_ORDER TFT_MAD_RGB
   #else
     #define TFT_MAD_COLOR_ORDER TFT_MAD_BGR
