@@ -370,7 +370,7 @@
   #define TX_FIFO  tft_pio->txf[pio_sm]
 
   // Temporary - to be deleted
-  #define dir_mask 0
+  #define GPIO_DIR_MASK 0
 
   #if  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
       // This writes 8 bits, then switches back to 16 bit mode automatically

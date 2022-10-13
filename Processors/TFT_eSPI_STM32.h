@@ -306,7 +306,7 @@
 #if defined (TFT_PARALLEL_8_BIT)
 
   // Mask for the 8 data bits to set pin directions (not used)
-  #define dir_mask 0
+  #define GPIO_DIR_MASK 0
 
   #define PARALLEL_INIT_TFT_DATA_BUS // None
 
