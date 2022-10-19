@@ -158,6 +158,9 @@ SPI3_HOST = 2
     #if (TFT_DC >= 0) &&  (TFT_DC < 32)
       #define DC_C GPIO.out_w1tc = (1 << TFT_DC)
       #define DC_D GPIO.out_w1ts = (1 << TFT_DC)
+    #elif (TFT_DC >= 32)
+      #define DC_C GPIO.out1_w1tc.val = (1 << (TFT_DC- 32))
+      #define DC_D GPIO.out1_w1ts.val = (1 << (TFT_DC- 32))
     #else
       #define DC_C
       #define DC_D

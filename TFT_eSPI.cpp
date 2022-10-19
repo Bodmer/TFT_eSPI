@@ -1070,7 +1070,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 
 #if defined(TFT_PARALLEL_8_BIT) || defined(RP2040_PIO_INTERFACE)
 
-  if (!inTransaction) CS_L;
+  if (!inTransaction) { CS_L; } // CS_L can be multi-statement
 
   readAddrWindow(x0, y0, 1, 1);
 
@@ -1090,7 +1090,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
     // Read window pixel 24 bit RGB values and fill in LS bits
     uint16_t rgb = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
 
-    if (!inTransaction) CS_H;
+    if (!inTransaction) { CS_H; } // CS_H can be multi-statement
 
     // Set masked pins D0- D7 to output
     busDir(GPIO_DIR_MASK, OUTPUT);
@@ -1102,7 +1102,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
     // Fetch the 16 bit BRG pixel
     uint16_t bgr = (readByte() << 8) | readByte();
 
-    if (!inTransaction) CS_H;
+    if (!inTransaction) { CS_H; } // CS_H can be multi-statement
 
     // Set masked pins D0- D7 to output
     busDir(GPIO_DIR_MASK, OUTPUT);
