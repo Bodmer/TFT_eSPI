@@ -78,7 +78,7 @@
     #define TFT_RGB_ORDER TFT_RGB
 #endif
 
-#ifdef CONFIG_TFT_RGB_ORDER
+#ifdef CONFIG_TFT_BGR_ORDER
     #define TFT_RGB_ORDER TFT_BGR
 #endif
 
@@ -223,9 +223,7 @@
 
 // SPI BUS
 #else
-    #if CONFIG_TFT_MISO == -1
-        #error "Invalid MISO pin. Check TFT_eSPI configuration"
-    #else
+    #if CONFIG_TFT_MISO != -1
         #define TFT_MISO      CONFIG_TFT_MISO
     #endif
 
