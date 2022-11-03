@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.4.78"
+#define TFT_ESPI_VERSION "2.4.79"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -38,6 +38,14 @@
 // available and the pins to be used, etc, etc
 #ifdef CONFIG_TFT_eSPI_ESPIDF
   #include "TFT_config.h"
+#endif
+
+// New ESP8266 board package uses ARDUINO_ARCH_ESP8266
+// old package defined ESP8266
+#if defined (ESP8266)
+  #ifndef ARDUINO_ARCH_ESP8266
+    #define ARDUINO_ARCH_ESP8266
+  #endif
 #endif
 
 // The following lines allow the user setup to be included in the sketch folder, see
@@ -75,7 +83,7 @@
   })
 #elif defined(__AVR__)
   #include <avr/pgmspace.h>
-#elif defined(ESP8266) || defined(ESP32)
+#elif defined(ARDUINO_ARCH_ESP8266) || defined(ESP32)
   #include <pgmspace.h>
 #else
   #define PROGMEM
@@ -88,7 +96,7 @@
   #include "Processors/TFT_eSPI_ESP32_C3.h"
 #elif defined (ESP32)
   #include "Processors/TFT_eSPI_ESP32.h"
-#elif defined (ESP8266)
+#elif defined (ARDUINO_ARCH_ESP8266)
   #include "Processors/TFT_eSPI_ESP8266.h"
 #elif defined (STM32)
   #include "Processors/TFT_eSPI_STM32.h"
@@ -678,6 +686,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
 
   // DMA support functions - these are currently just for SPI writes when using the ESP32 or STM32 processors
+  // DMA works also on RP2040 and PIO SPI, 8 bit parallel and 16 bit parallel
            // Bear in mind DMA will only be of benefit in particular circumstances and can be tricky
            // to manage by noobs. The functions have however been designed to be noob friendly and
            // avoid a few DMA behaviour "gotchas".

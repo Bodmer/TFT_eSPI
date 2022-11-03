@@ -23,7 +23,7 @@
   #else
     #include "Processors/TFT_eSPI_ESP32.c"
   #endif
-#elif defined (ESP8266)
+#elif defined (ARDUINO_ARCH_ESP8266)
   #include "Processors/TFT_eSPI_ESP8266.c"
 #elif defined (STM32) // (_VARIANT_ARDUINO_STM32_) stm32_def.h
   #include "Processors/TFT_eSPI_STM32.c"
@@ -624,7 +624,7 @@ void TFT_eSPI::init(uint8_t tc)
     sclkpinmask = (uint32_t) digitalPinToBitMask(TFT_SCLK);
   #endif
 
-  #if defined (TFT_SPI_OVERLAP) && defined (ESP8266)
+  #if defined (TFT_SPI_OVERLAP) && defined (ARDUINO_ARCH_ESP8266)
     // Overlap mode SD0=MISO, SD1=MOSI, CLK=SCLK must use D3 as CS
     //    pins(int8_t sck, int8_t miso, int8_t mosi, int8_t ss);
     //spi.pins(        6,          7,           8,          0);
@@ -653,7 +653,7 @@ void TFT_eSPI::init(uint8_t tc)
   // Set to output once again in case MISO is used for CS
   pinMode(TFT_CS, OUTPUT);
   digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
-#elif defined (ESP8266) && !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_SPI)
+#elif defined (ARDUINO_ARCH_ESP8266) && !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_SPI)
   spi.setHwCs(1); // Use hardware SS toggling
 #endif
 
@@ -4112,21 +4112,19 @@ void TFT_eSPI::fillRectVGradient(int16_t x, int16_t y, int16_t w, int16_t h, uin
 
   if ((w < 1) || (h < 1)) return;
 
-  begin_tft_write();
-
-  setWindow(x, y, x + w - 1, y + h - 1);
+  begin_nin_write();
 
   float delta = -255.0/h;
   float alpha = 255.0;
   uint32_t color = color1;
 
   while (h--) {
-    pushBlock(color, w);
+    drawFastHLine(x, y++, w, color);
     alpha += delta;
     color = alphaBlend((uint8_t)alpha, color1, color2);
   }
 
-  end_tft_write();
+  end_nin_write();
 }
 
 
@@ -4152,7 +4150,7 @@ void TFT_eSPI::fillRectHGradient(int16_t x, int16_t y, int16_t w, int16_t h, uin
 
   if ((w < 1) || (h < 1)) return;
 
-  begin_tft_write();
+  begin_nin_write();
 
   float delta = -255.0/w;
   float alpha = 255.0;
@@ -4164,7 +4162,7 @@ void TFT_eSPI::fillRectHGradient(int16_t x, int16_t y, int16_t w, int16_t h, uin
     color = alphaBlend((uint8_t)alpha, color1, color2);
   }
 
-  end_tft_write();
+  end_nin_write();
 }
 
 
@@ -4452,7 +4450,7 @@ uint32_t TFT_eSPI::alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8
 ** Description:             draw characters piped through serial stream
 ***************************************************************************************/
 /* // Not all processors support buffered write
-#ifndef ESP8266 // Avoid ESP8266 board package bug
+#ifndef ARDUINO_ARCH_ESP8266 // Avoid ESP8266 board package bug
 size_t TFT_eSPI::write(const uint8_t *buf, size_t len)
 {
   inTransaction = true;
