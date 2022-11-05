@@ -21,8 +21,14 @@
       writedata(0x66);           // 18 bit colour interface
     #endif
 
-    writecommand(0xC2);
-    writedata(0x44);
+    writecommand(0xC0); //                          1100.0000 Power Control 1
+    writedata(0x0E);    //                          0001.0111   ... VRH1
+    writedata(0x0E);    //                          0001.0101   ... VRH2
+    writecommand(0xC1); //                          1100.0001 Power Control 2
+    writedata(0x41);    //                          0100.0001   . SAP BT
+    writedata(0x00);    //                          0000.0000   ..... VC
+    writecommand(0xC2); //                          1100.0010 Power Control 3
+    writedata(0x55);    //     nb. was 0x44         0101.0101   . DCA1 . DCA0
 
     writecommand(0xC5);
     writedata(0x00);
