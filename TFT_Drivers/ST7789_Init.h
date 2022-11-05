@@ -103,7 +103,7 @@
   writedata(0x00);
   writedata(0x00);
   writedata(0x00);
-  writedata(0xE5);    // 239
+  writedata(0xEF);    // 239
 
   writecommand(ST7789_RASET);    // Row address set
   writedata(0x00);

@@ -82,9 +82,18 @@
 
   // Different controllers have different minimum write cycle periods, so the PIO clock is changed accordingly
   // The PIO clock is a division of the CPU clock so scales when the processor is overclocked
-  // PIO write frequency = (CPU clock/(4 * DIV_UNITS))
-  #if defined (TFT_PARALLEL_8_BIT) || defined (TFT_PARALLEL_16_BIT) || defined (RP2040_PIO_SPI)
-    #if defined (TFT_PARALLEL_16_BIT)
+  // PIO write frequency = (CPU clock/(4 * RP2040_PIO_CLK_DIV))
+  // The write cycle periods below assume a 125MHz CPU clock speed
+  #if defined (TFT_PARALLEL_8_BIT) || defined (TFT_PARALLEL_16_BIT)
+    #if defined (RP2040_PIO_CLK_DIV)
+      #if (RP2040_PIO_CLK_DIV > 0)
+        #define DIV_UNITS RP2040_PIO_CLK_DIV
+        #define DIV_FRACT 0
+      #else
+        #define DIV_UNITS 3
+        #define DIV_FRACT 0
+      #endif
+    #elif defined (TFT_PARALLEL_16_BIT)
       // Different display drivers have different minimum write cycle times
       #if defined (HX8357C_DRIVER) || defined (SSD1963_DRIVER)
         #define DIV_UNITS 1 // 32ns write cycle time SSD1963, HX8357C (maybe HX8357D?)
@@ -94,14 +103,9 @@
         #define DIV_UNITS 3 // 96ns write cycle time
       #endif
       #define DIV_FRACT 0
-    #else // 8 bit parallel mode
-      #ifdef ILI9481_DRIVER
-        #define DIV_UNITS 1
-        #define DIV_FRACT 160 // Note: Fractional values done with clock period dithering
-      #else
-        #define DIV_UNITS 1
-        #define DIV_FRACT 0
-      #endif
+    #else // 8 bit parallel mode default 64ns write cycle time
+      #define DIV_UNITS 2
+      #define DIV_FRACT 0 // Note: Fractional values done with clock period dithering
     #endif
   #endif
 
