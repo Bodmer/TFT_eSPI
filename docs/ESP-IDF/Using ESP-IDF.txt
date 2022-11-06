@@ -5,7 +5,13 @@ https://github.com/Bodmer/TFT_eSPI/pull/1770
 
 The library author (Bodmer) does not use the ESP-IDF so will not be able to provide support!
 
-The following instructions were posted by dracir9 as part of the pull request #1770 here:
+There are two ways to configure the library either:
+
+    manually enter the setup in menuconfig
+    OR
+    delete the KConfig file, run idf.py and use the User_Setup_Select.h file
+
+The following menuconfig instructions were posted by dracir9 as part of the pull request #1770:
 
 https://github.com/Bodmer/TFT_eSPI/pull/1770#issuecomment-1096478997
 
