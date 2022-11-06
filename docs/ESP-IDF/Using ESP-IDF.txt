@@ -9,7 +9,7 @@ There are two ways to configure the library either:
 
     manually enter the setup in menuconfig
     OR
-    delete the KConfig file, run idf.py and use the User_Setup_Select.h file
+    delete the KConfig file, select your LCD/board in the User_Setup_Select.h file, and run "idf.py reconfigure"
 
 The following menuconfig instructions were posted by dracir9 as part of the pull request #1770:
 
