@@ -212,6 +212,21 @@ menu "TFT_eSPI"
 
     menu "Display SPI config"
         depends on !TFT_PARALLEL_8_BIT
+    
+        choice TFT_SPI_PORT
+            prompt "SPI port"
+            default TFT_SPI_2_HOST
+            help
+                The ESP32 has 2 free SPI ports i.e. VSPI (SPI2) and HSPI (SPI3),
+                the VSPI is the default. If the VSPI port is in use and pins are
+                not accessible (e.g. TTGO T-Beam) then use the HSPI port for the
+                TFT display.
+            config TFT_VSPI_PORT
+                bool "VSPI (SPI2)"
+            config TFT_HSPI_PORT
+                bool "HSPI (SPI3)"
+        endchoice
+
         config TFT_MISO
             int "TFT MISO pin"
             default -1
