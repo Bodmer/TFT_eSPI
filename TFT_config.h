@@ -223,6 +223,10 @@
 
 // SPI BUS
 #else
+    #if CONFIG_TFT_HSPI_PORT
+        #define USE_HSPI_PORT
+    #endif
+
     #if CONFIG_TFT_MISO != -1
         #define TFT_MISO      CONFIG_TFT_MISO
     #endif
