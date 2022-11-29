@@ -71,7 +71,7 @@ Optimised drivers are incorporated for the following processors:
 * ESP8266
 * STM32F1xx, STM32F2xx, STM32F4xx, STM32F767 (higher RAM processors recommended)
 
-Generic (non-optimised Arduino function calls) are used by the library for other processors.
+For other processors the generic only SPI interface displays are supported and slower non-optimised standard Arduino SPI functions are used by the library.
 
 "Four wire" SPI and 8 bit parallel interfaces are supported. Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
 
