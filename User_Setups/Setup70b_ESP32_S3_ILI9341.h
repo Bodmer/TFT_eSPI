@@ -26,7 +26,7 @@
 
 #define SMOOTH_FONT
 
-// FSPI port (SPI2) used unless following defined. HSPI port (SPI3) NOT TESTED YET
+// FSPI (or VSPI) port (SPI2) used unless following defined. HSPI port is (SPI3) on S3.
 //#define USE_HSPI_PORT
 
 //#define SPI_FREQUENCY  27000000
