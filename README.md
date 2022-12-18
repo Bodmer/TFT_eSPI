@@ -4,7 +4,7 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 
       ![ttf_font_demo](https://i.imgur.com/bKkilIb.png)
 
-2. The TFT configuration (user setup) can now be included inside an Arduino IDE sketch providing the instructions in the example Generic->Sketch_with_tft_setup are followed. See ReadMe tab in that sketch for the instructions. If the setup is not in the sketch then the library settings will be used. This means that "per project" configurations are possible without modifying the library setup files. Please note that ALL the other examples in the library will use the library settings unless they are adapted and the "tft_setup.h" header file included. Note: there are issues with this approach, [#2007](https://github.com/Bodmer/TFT_eSPI/discussions/2007#discussioncomment-3834755) proposes an alternative method.
+2. For ESP32 ONLY, the TFT configuration (user setup) can now be included inside an Arduino IDE sketch providing the instructions in the example Generic->Sketch_with_tft_setup are followed. See ReadMe tab in that sketch for the instructions. If the setup is not in the sketch then the library settings will be used. This means that "per project" configurations are possible without modifying the library setup files. Please note that ALL the other examples in the library will use the library settings unless they are adapted and the "tft_setup.h" header file included. Note: there are issues with this approach, [#2007](https://github.com/Bodmer/TFT_eSPI/discussions/2007#discussioncomment-3834755) proposes an alternative method.
 
 3. New GUI examples have been added for sliders, buttons, graphs and meters. These examples require a new support library here:
 
