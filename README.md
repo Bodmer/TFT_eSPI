@@ -62,16 +62,16 @@ The use of PIO for SPI allows the RP2040 to be over-clocked (up to 250MHz works 
 
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targeted at 32 bit processors, it  has been performance optimised for STM32, ESP8266 and ESP32 types. The library can be loaded using the Arduino IDE's Library Manager. Direct Memory Access (DMA) can be used with the ESP32, RP2040 and STM32 processors with SPI interface displays to improve rendering performance. DMA with a parallel interface is only supported with the RP2040.
+An Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targeted at 32 bit processors, it  has been performance optimised for RP2040, STM32, ESP8266 and ESP32 types, other processors may be used but will use the slower generic Arduino interface calls. The library can be loaded using the Arduino IDE's Library Manager. Direct Memory Access (DMA) can be used with the ESP32, RP2040 and STM32 processors with SPI interface displays to improve rendering performance. DMA with a parallel interface (8 and 16 bit parallel) is only supported with the RP2040.
 
-Optimised drivers are incorporated for the following processors:
+Optimised drivers have been tested with the following processors:
 
 * RP2040, e.g. Raspberry Pi Pico
 * ESP32 and ESP32-S2, ESP32-C3, ESP32-S3
 * ESP8266
 * STM32F1xx, STM32F2xx, STM32F4xx, STM32F767 (higher RAM processors recommended)
 
-For other processors the generic only SPI interface displays are supported and slower non-optimised standard Arduino SPI functions are used by the library.
+For other processors only SPI interface displays are supported and the slower Arduino SPI library functions are used by the library. Higher clock speed processors such as used for the Teensy 3.x and 4.x boards will still provide a very good performance with the generic Arduino SPI functions.
 
 "Four wire" SPI and 8 bit parallel interfaces are supported. Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
 
@@ -100,9 +100,9 @@ Displays using the following controllers are supported:
 
 ILI9341 and ST7796 SPI based displays are recommended as starting point for experimenting with this library.
 
-The library supports some TFT displays designed for the Raspberry Pi (RPi) that are based on a ILI9486 or ST7796 driver chip with a 480 x 320 pixel screen. The ILI9486 RPi display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. Note that due to design variations between these displays not all RPi displays will work with this library, so purchasing a RPi display of these types solely for use with this library is not recommended.
+The library supports some TFT displays designed for the Raspberry Pi (RPi) that are based on a ILI9486 or ST7796 driver chip with a 480 x 320 pixel screen. The ILI9486 RPi display must be of the Waveshare design and use a 16 bit serial interface based on the 74HC04, 74HC4040 and 2 x 74HC4094 logic chips. Note that due to design variations between these displays not all RPi displays will work with this library, so purchasing a RPi display of these types solely for use with this library is NOT recommended.
 
-A "good" RPi display is the [MHS-4.0 inch Display-B type ST7796](http://www.lcdwiki.com/MHS-4.0inch_Display-B) which provides good performance. This has a dedicated controller and can be clocked at up to 80MHz with the ESP32 (55MHz with STM32 and 40MHz with ESP8266). The [MHS-3.5 inch RPi ILI9486](http://www.lcdwiki.com/MHS-3.5inch_RPi_Display) based display is also supported.
+A "good" RPi display is the [MHS-4.0 inch Display-B type ST7796](http://www.lcdwiki.com/MHS-4.0inch_Display-B) which provides good performance. This has a dedicated controller and can be clocked at up to 80MHz with the ESP32 (125MHz with overclocked RP2040, 55MHz with STM32 and 40MHz with ESP8266). The [MHS-3.5 inch RPi ILI9486](http://www.lcdwiki.com/MHS-3.5inch_RPi_Display) based display is also supported, however the MHS ILI9341 based display of the same type does NOT work with this library.
 
 Some displays permit the internal TFT screen RAM to be read, a few of the examples use this feature. The TFT_Screen_Capture example allows full screens to be captured and sent to a PC, this is handy to create program documentation.
 
