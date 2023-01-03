@@ -1,1 +1,0 @@
-build.extra_flags=-I{build.source.path}
