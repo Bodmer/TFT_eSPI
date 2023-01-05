@@ -541,8 +541,10 @@ void TFT_eSPI::initBus(void) {
 
 // Configure chip select for touchscreen controller if present
 #ifdef TOUCH_CS
-  pinMode(TOUCH_CS, OUTPUT);
-  digitalWrite(TOUCH_CS, HIGH); // Chip select high (inactive)
+  if (TOUCH_CS >= 0) {
+    pinMode(TOUCH_CS, OUTPUT);
+    digitalWrite(TOUCH_CS, HIGH); // Chip select high (inactive)
+  }
 #endif
 
 // In parallel mode and with the RP2040 processor, the TFT_WR line is handled in the  PIO
