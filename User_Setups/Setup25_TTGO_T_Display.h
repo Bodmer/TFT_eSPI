@@ -19,7 +19,7 @@
 #define TFT_DC              16
 #define TFT_RST             23
 
-#define TOUCH_CS            -1
+//#define TOUCH_CS            -1
 
 #define TFT_BL          4  // Display backlight control pin
 
