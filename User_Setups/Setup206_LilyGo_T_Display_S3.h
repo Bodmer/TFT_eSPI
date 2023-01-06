@@ -13,10 +13,6 @@
 
 #define TFT_PARALLEL_8_BIT
 
-#define TFT_DATA_PIN_OFFSET_EN /* The ESP32S3 controller is controlled by two registers.      \
-                                Select data pin numbers higher than 32 to enable this option, \
-                                this macro definition added by Micky -20220701 */
-
 #define TFT_WIDTH 170
 #define TFT_HEIGHT 320
 
