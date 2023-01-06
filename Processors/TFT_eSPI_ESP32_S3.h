@@ -351,15 +351,15 @@ SPI3_HOST = 2
 ////////////////////////////////////////////////////////////////////////////////////////
 #if defined (TFT_PARALLEL_8_BIT)
 
-#if (TFT_D0 >= 32) // If D0 is a high GPIO then assume all data bits use high GPIO
-  #define MASK_OFFSET 32
-  #define GPIO_CLR_REG GPIO.out1_w1tc.val
-  #define GPIO_SET_REG GPIO.out1_w1ts.val
-#else
-  #define MASK_OFFSET 0
-  #define GPIO_CLR_REG GPIO.out_w1tc
-  #define GPIO_SET_REG GPIO.out_w1ts
-#endif
+  #if (TFT_D0 >= 32) // If D0 is a high GPIO assume all other data bits are high GPIO
+    #define MASK_OFFSET 32
+    #define GPIO_CLR_REG GPIO.out1_w1tc.val
+    #define GPIO_SET_REG GPIO.out1_w1ts.val
+  #else
+    #define MASK_OFFSET 0
+    #define GPIO_CLR_REG GPIO.out_w1tc
+    #define GPIO_SET_REG GPIO.out_w1ts
+  #endif
 
   // Create a bit set lookup table for data bus - wastes 1kbyte of RAM but speeds things up dramatically
   // can then use e.g. GPIO.out_w1ts = set_mask(0xFF); to set data bus to 0xFF
@@ -378,18 +378,24 @@ SPI3_HOST = 2
   }                                                \
 
   // Mask for the 8 data bits to set pin directions
-  #if (TFT_D0 >= 32) // If D0 is a high GPIO then assume all data bits use high GPIO
-    #define GPIO_DIR_MASK ((1 << (TFT_D0-MASK_OFFSET)) | (1 << (TFT_D1-MASK_OFFSET)) | (1 << (TFT_D2-MASK_OFFSET)) | (1 << (TFT_D3-MASK_OFFSET)) | (1 << (TFT_D4-MASK_OFFSET)) | (1 << (TFT_D5-MASK_OFFSET)) | (1 << (TFT_D6-MASK_OFFSET)) | (1 << (TFT_D7-MASK_OFFSET)))
-  #else
-    #define GPIO_DIR_MASK ((1 << TFT_D0) | (1 << TFT_D1) | (1 << TFT_D2) | (1 << TFT_D3) | (1 << TFT_D4) | (1 << TFT_D5) | (1 << TFT_D6) | (1 << TFT_D7))
-  #endif
+  #define GPIO_DIR_MASK ((1 << (TFT_D0-MASK_OFFSET)) | (1 << (TFT_D1-MASK_OFFSET)) | (1 << (TFT_D2-MASK_OFFSET)) | (1 << (TFT_D3-MASK_OFFSET)) | (1 << (TFT_D4-MASK_OFFSET)) | (1 << (TFT_D5-MASK_OFFSET)) | (1 << (TFT_D6-MASK_OFFSET)) | (1 << (TFT_D7-MASK_OFFSET)))
 
   #if (TFT_WR >= 32)
-    // Data bits and the write line are cleared sequentially
-    #define GPIO_OUT_CLR_MASK (GPIO_DIR_MASK); WR_L
+    #if (TFT_D0 >= 32)
+      // Data bits and the write line are cleared to 0 in one step (1.25x faster)
+      #define GPIO_OUT_CLR_MASK (GPIO_DIR_MASK | (1 << (TFT_WR-32)))
+    #elif (TFT_D0 >= 0)
+      // Data bits and the write line are cleared sequentially
+      #define GPIO_OUT_CLR_MASK (GPIO_DIR_MASK); WR_L
+    #endif
   #elif (TFT_WR >= 0)
-    // Data bits and the write line are cleared to 0 in one step (1.25x faster)
-    #define GPIO_OUT_CLR_MASK (GPIO_DIR_MASK | (1 << TFT_WR));WR_L
+    #if (TFT_D0 >= 32)
+      // Data bits and the write line are cleared sequentially
+      #define GPIO_OUT_CLR_MASK (GPIO_DIR_MASK); WR_L
+    #elif (TFT_D0 >= 0)
+      // Data bits and the write line are cleared to 0 in one step (1.25x faster)
+      #define GPIO_OUT_CLR_MASK (GPIO_DIR_MASK | (1 << TFT_WR))
+    #endif
   #else
     #define GPIO_OUT_CLR_MASK
   #endif
