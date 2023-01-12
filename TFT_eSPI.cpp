@@ -4037,8 +4037,7 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
   if (startAngle < 90) {
     startSlope[0] =  slope;
   }
-  else if (
-  < 180) {
+  else if (startAngle < 180) {
     startSlope[1] =  slope;
   }
   else if (startAngle < 270) {
