@@ -19,7 +19,7 @@
 
 TFT_eSPI tft = TFT_eSPI(); // Invoke library
 
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
   ADC_MODE(ADC_VCC); // Read the supply voltage
 #endif
 
@@ -45,15 +45,15 @@ Serial.print("\n[code]\n");
 
 Serial.print ("TFT_eSPI ver = "); Serial.println(user.version);
 printProcessorName();
-#if defined (ESP32) || defined (ESP8266)
+#if defined (ESP32) || defined (ARDUINO_ARCH_ESP8266)
   if (user.esp < 0x32F000 || user.esp > 0x32FFFF) { Serial.print("Frequency    = "); Serial.print(ESP.getCpuFreqMHz());Serial.println("MHz"); }
 #endif
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
   Serial.print("Voltage      = "); Serial.print(ESP.getVcc() / 918.0); Serial.println("V"); // 918 empirically determined
 #endif
 Serial.print("Transactions = "); Serial.println((user.trans  ==  1) ? "Yes" : "No");
 Serial.print("Interface    = "); Serial.println((user.serial ==  1) ? "SPI" : "Parallel");
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
 if (user.serial ==  1){ Serial.print("SPI overlap  = "); Serial.println((user.overlap == 1) ? "Yes\n" : "No\n"); }
 #endif
 if (user.tft_driver != 0xE9D) // For ePaper displays the size is defined in the sketch
@@ -78,7 +78,7 @@ if (user.pin_tft_mosi != -1) { Serial.print("MOSI    = "); Serial.print("GPIO ")
 if (user.pin_tft_miso != -1) { Serial.print("MISO    = "); Serial.print("GPIO "); Serial.println(getPinName(user.pin_tft_miso)); }
 if (user.pin_tft_clk  != -1) { Serial.print("SCK     = "); Serial.print("GPIO "); Serial.println(getPinName(user.pin_tft_clk)); }
 
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
 if (user.overlap == true)
 {
   Serial.println("Overlap selected, following pins MUST be used:");
@@ -92,7 +92,7 @@ if (user.overlap == true)
 }
 #endif
 String pinNameRef = "GPIO ";
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
   pinNameRef = "PIN_D";
 #endif
 

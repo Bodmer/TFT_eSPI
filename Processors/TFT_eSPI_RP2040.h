@@ -65,9 +65,20 @@
   #define DMA_BUSY_CHECK
 #endif
 
+// Handle high performance MHS RPi display type
+#if  defined (MHS_DISPLAY_TYPE)  && !defined (RPI_DISPLAY_TYPE)
+  #define RPI_DISPLAY_TYPE
+#endif
+
 #if !defined (RP2040_PIO_INTERFACE) // SPI
-  // Initialise processor specific SPI functions, used by init()
-  #define INIT_TFT_DATA_BUS  // Not used
+
+  #if  defined (MHS_DISPLAY_TYPE) // High speed RPi TFT type always needs 16 bit transfers
+    // This swaps to 16 bit mode, used for commands so wait avoids clash with DC timing
+    #define INIT_TFT_DATA_BUS hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS)
+  #else
+    // Initialise processor specific SPI functions, used by init()
+    #define INIT_TFT_DATA_BUS  // Not used
+  #endif
 
   // Wait for tx to end, flush rx FIFO, clear rx overrun
   #define SPI_BUSY_CHECK while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};     \
@@ -141,7 +152,7 @@
   #if !defined (RP2040_PIO_INTERFACE)// SPI
     //#define DC_C sio_hw->gpio_clr = (1ul << TFT_DC)
     //#define DC_D sio_hw->gpio_set = (1ul << TFT_DC)
-    #if  defined (RPI_DISPLAY_TYPE)
+    #if  defined (RPI_DISPLAY_TYPE) && !defined (MHS_DISPLAY_TYPE)
       #define DC_C digitalWrite(TFT_DC, LOW);
       #define DC_D digitalWrite(TFT_DC, HIGH);
     #else
@@ -167,7 +178,7 @@
   #define CS_H // No macro allocated so it generates no code
 #else
   #if !defined (RP2040_PIO_INTERFACE) // SPI
-    #if  defined (RPI_DISPLAY_TYPE)
+    #if  defined (RPI_DISPLAY_TYPE) && !defined (MHS_DISPLAY_TYPE)
       #define CS_L digitalWrite(TFT_CS, LOW);
       #define CS_H digitalWrite(TFT_CS, HIGH);
     #else
@@ -287,7 +298,28 @@
   // Macros to write commands/pixel colour data to other displays
   ////////////////////////////////////////////////////////////////////////////////////////
   #else
-    #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
+    #if  defined (MHS_DISPLAY_TYPE) // High speed RPi TFT type always needs 16 bit transfers
+      // This swaps to 16 bit mode, used for commands so wait avoids clash with DC timing
+      #define tft_Write_8(C)      while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {}; \
+                                  hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS); \
+                                  spi_get_hw(SPI_X)->dr = (uint32_t)((C) | ((C)<<8)); \
+                                  while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {}; \
+
+      // Note: the following macros do not wait for the end of transmission
+
+      #define tft_Write_16(C)     while (!spi_is_writable(SPI_X)){}; spi_get_hw(SPI_X)->dr = (uint32_t)(C)
+
+      #define tft_Write_16N(C)    while (!spi_is_writable(SPI_X)){}; spi_get_hw(SPI_X)->dr = (uint32_t)(C)
+
+      #define tft_Write_16S(C)    while (!spi_is_writable(SPI_X)){}; spi_get_hw(SPI_X)->dr = (uint32_t)(C)<<8 | (C)>>8
+
+      #define tft_Write_32(C)     spi_get_hw(SPI_X)->dr = (uint32_t)((C)>>16); spi_get_hw(SPI_X)->dr = (uint32_t)(C)
+
+      #define tft_Write_32C(C,D)  spi_get_hw(SPI_X)->dr = (uint32_t)(C); spi_get_hw(SPI_X)->dr = (uint32_t)(D)
+
+      #define tft_Write_32D(C)    spi_get_hw(SPI_X)->dr = (uint32_t)(C); spi_get_hw(SPI_X)->dr = (uint32_t)(C)
+
+    #elif  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
       #define tft_Write_8(C)   spi.transfer(C); spi.transfer(C)
       #define tft_Write_16(C)  spi.transfer((uint8_t)((C)>>8));spi.transfer((uint8_t)((C)>>0))
       #define tft_Write_16N(C) spi.transfer((uint8_t)((C)>>8));spi.transfer((uint8_t)((C)>>0))

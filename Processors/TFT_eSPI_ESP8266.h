@@ -19,7 +19,7 @@
 #define DMA_BUSY_CHECK // DMA not available, leave blank
 
 // Initialise processor specific SPI functions, used by init()
-#if (!defined (SUPPORT_TRANSACTIONS) && defined (ESP8266))
+#if (!defined (SUPPORT_TRANSACTIONS) && defined (ARDUINO_ARCH_ESP8266))
   #define INIT_TFT_DATA_BUS \
     spi.setBitOrder(MSBFIRST); \
     spi.setDataMode(TFT_SPI_MODE); \
