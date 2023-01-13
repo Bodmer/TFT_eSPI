@@ -577,7 +577,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#ifdef RP2040_DMA // DMA functions for 16 bit SPI and 8 bit parallel displays
+#ifdef RP2040_DMA // DMA functions for 16 bit SPI and 8/16 bit parallel displays
 ////////////////////////////////////////////////////////////////////////////////////////
 /*
 These are created in header file:

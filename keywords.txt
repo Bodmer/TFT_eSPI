@@ -18,6 +18,9 @@ pushColor	KEYWORD2
 
 setRotation	KEYWORD2
 getRotation	KEYWORD2
+setOrigin	KEYWORD2
+getOriginX	KEYWORD2
+getOriginY	KEYWORD2
 invertDisplay	KEYWORD2
 setAddrWindow	KEYWORD2
 
@@ -44,6 +47,8 @@ end_SDA_Read	KEYWORD2
 fillScreen	KEYWORD2
 
 drawRect	KEYWORD2
+fillRectHGradient	KEYWORD2
+fillRectVGradient	KEYWORD2
 drawRoundRect	KEYWORD2
 fillRoundRect	KEYWORD2
 
@@ -69,6 +74,7 @@ getPivotY	KEYWORD2
 readRect	KEYWORD2
 pushRect	KEYWORD2
 pushImage	KEYWORD2
+pushMaskedImage	KEYWORD2
 readRectRGB	KEYWORD2
 
 drawNumber	KEYWORD2
@@ -140,10 +146,12 @@ calibrateTouch	KEYWORD2
 setTouch	KEYWORD2
 
 # Smooth (anti-aliased) graphics functions
-fillRectHGradient	KEYWORD2
-fillRectVGradient	KEYWORD2
+drawSmoothCircle	KEYWORD2
 fillSmoothCircle	KEYWORD2
+drawSmoothRoundRect	KEYWORD2
 fillSmoothRoundRect	KEYWORD2
+drawSmoothArc	KEYWORD2
+drawArc	KEYWORD2
 drawSpot	KEYWORD2
 drawWideLine	KEYWORD2
 drawWedgeLine	KEYWORD2

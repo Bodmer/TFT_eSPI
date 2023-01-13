@@ -11,7 +11,7 @@
 #include <Timezone.h>
 
 // Choose library to load
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
 // ESP8266
 #include <ESP8266WiFi.h>
 #elif (defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_RP2040)) && !defined(ARDUINO_RASPBERRY_PI_PICO_W)

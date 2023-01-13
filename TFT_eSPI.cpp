@@ -149,7 +149,6 @@ inline void TFT_eSPI::begin_tft_read(void){
   SET_BUS_READ_MODE;
 }
 
-
 /***************************************************************************************
 ** Function name:           end_tft_read (was called spi_end_read)
 ** Description:             End transaction for reads and deselect TFT
@@ -233,7 +232,6 @@ void TFT_eSPI::setViewport(int32_t x, int32_t y, int32_t w, int32_t h, bool vpDa
 
   //Serial.print(" _vpX=");Serial.print( _vpX);Serial.print(", _vpY=");Serial.print( _vpY);
   //Serial.print(", _vpW=");Serial.print(_vpW);Serial.print(", _vpH=");Serial.println(_vpH);
-
 }
 
 /***************************************************************************************
@@ -863,6 +861,48 @@ void TFT_eSPI::setRotation(uint8_t m)
 
   // Reset the viewport to the whole screen
   resetViewport();
+}
+
+
+/***************************************************************************************
+** Function name:           getRotation
+** Description:             Return the rotation value (as used by setRotation())
+***************************************************************************************/
+uint8_t TFT_eSPI::getRotation(void)
+{
+  return rotation;
+}
+
+
+/***************************************************************************************
+** Function name:           setOrigin
+** Description:             Set graphics origin to position x,y wrt to top left corner
+***************************************************************************************/
+//Note: setRotation, setViewport and resetViewport will revert origin to top left
+void TFT_eSPI::setOrigin(int32_t x, int32_t y)
+{
+  _xDatum = x;
+  _yDatum = y;
+}
+
+
+/***************************************************************************************
+** Function name:           getOriginX
+** Description:             Set graphics origin to position x
+***************************************************************************************/
+int32_t TFT_eSPI::getOriginX(void)
+{
+  return _xDatum;
+}
+
+
+/***************************************************************************************
+** Function name:           getOriginY
+** Description:             Set graphics origin to position y
+***************************************************************************************/
+int32_t TFT_eSPI::getOriginY(void)
+{
+  return _yDatum;
 }
 
 
@@ -1998,6 +2038,91 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
   end_tft_write();
 }
 
+/***************************************************************************************
+** Function name:           pushMaskedImage
+** Description:             Render a 16 bit colour image with a 1bpp mask
+***************************************************************************************/
+// Can be used with a 16bpp sprite and a 1bpp sprite for the mask
+void TFT_eSPI::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask)
+{
+  if (_vpOoB || w < 1 || h < 1) return;
+
+  // To simplify mask handling the window clipping is done by the pushImage function
+  // Each mask image line assumed to be padded to and integer number of bytes & padding bits are 0
+
+  begin_tft_write();
+  inTransaction = true;
+
+  uint8_t  *mptr = mask;
+  uint8_t  *eptr = mask + ((w + 7) >> 3);
+  uint16_t *iptr = img;
+  uint32_t setCount = 0;
+
+  // For each line in the image
+  while (h--) {
+    uint32_t xp = 0;
+    uint32_t clearCount = 0;
+    uint8_t  mbyte= *mptr++;
+    uint32_t bits  = 8;
+    // Scan through each byte of the bitmap and determine run lengths
+    do {
+      setCount = 0;
+
+      //Get run length for clear bits to determine x offset
+      while ((mbyte & 0x80) == 0x00) {
+        // Check if remaining bits in byte are clear (reduce shifts)
+        if (mbyte == 0) {
+          clearCount += bits;      // bits not always 8 here
+          if (mptr >= eptr) break; // end of line
+          mbyte = *mptr++;
+          bits  = 8;
+          continue;
+        }
+        mbyte = mbyte << 1; // 0's shifted in
+        clearCount ++;
+        if (--bits) continue;;
+        if (mptr >= eptr) break;
+        mbyte = *mptr++;
+        bits  = 8;
+      }
+
+      //Get run length for set bits to determine render width
+      while ((mbyte & 0x80) == 0x80) {
+        // Check if all bits are set (reduces shifts)
+        if (mbyte == 0xFF) {
+          setCount += bits;
+          if (mptr >= eptr) break;
+          mbyte = *mptr++;
+          //bits  = 8; // NR, bits always 8 here unless 1's shifted in
+          continue;
+        }
+        mbyte = mbyte << 1; //or mbyte += mbyte + 1 to shift in 1's
+        setCount ++;
+        if (--bits) continue;
+        if (mptr >= eptr) break;
+        mbyte = *mptr++;
+        bits  = 8;
+      }
+
+      // A mask boundary or mask end has been found, so render the pixel line
+      if (setCount) {
+        xp += clearCount;
+        clearCount = 0;
+        pushImage(x + xp, y, setCount, 1, iptr + xp);      // pushImage handles clipping
+        //pushImageDMA(x + xp, y, setCount, 1, iptr + xp);
+        xp += setCount;
+      }
+    } while (setCount || mptr < eptr);
+
+    y++;
+    iptr += w;
+    eptr += ((w + 7) >> 3);
+  }
+
+  inTransaction = lockTransaction;
+  end_tft_write();
+}
+
 
 /***************************************************************************************
 ** Function name:           setSwapBytes
@@ -2510,13 +2635,13 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
 
   // Sort coordinates by Y order (y2 >= y1 >= y0)
   if (y0 > y1) {
-    swap_coord(y0, y1); swap_coord(x0, x1);
+    transpose(y0, y1); transpose(x0, x1);
   }
   if (y1 > y2) {
-    swap_coord(y2, y1); swap_coord(x2, x1);
+    transpose(y2, y1); transpose(x2, x1);
   }
   if (y0 > y1) {
-    swap_coord(y0, y1); swap_coord(x0, x1);
+    transpose(y0, y1); transpose(x0, x1);
   }
 
   if (y0 == y2) { // Handle awkward all-on-same-line case as its own thing
@@ -2557,7 +2682,7 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
     sa += dx01;
     sb += dx02;
 
-    if (a > b) swap_coord(a, b);
+    if (a > b) transpose(a, b);
     drawFastHLine(a, y, b - a + 1, color);
   }
 
@@ -2571,7 +2696,7 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
     sa += dx12;
     sb += dx02;
 
-    if (a > b) swap_coord(a, b);
+    if (a > b) transpose(a, b);
     drawFastHLine(a, y, b - a + 1, color);
   }
 
@@ -2835,15 +2960,6 @@ void TFT_eSPI::setTextPadding(uint16_t x_width)
 uint16_t TFT_eSPI::getTextPadding(void)
 {
   return padX;
-}
-
-/***************************************************************************************
-** Function name:           getRotation
-** Description:             Return the rotation value (as used by setRotation())
-***************************************************************************************/
-uint8_t TFT_eSPI::getRotation(void)
-{
-  return rotation;
 }
 
 /***************************************************************************************
@@ -3194,7 +3310,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   addr_col = 0xFFFF;
 
 #if defined (ILI9225_DRIVER)
-  if (rotation & 0x01) { swap_coord(x0, y0); swap_coord(x1, y1); }
+  if (rotation & 0x01) { transpose(x0, y0); transpose(x1, y1); }
   SPI_BUSY_CHECK;
   DC_C; tft_Write_8(TFT_CASET1);
   DC_D; tft_Write_16(x0);
@@ -3222,8 +3338,8 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   #endif
 #elif defined (SSD1351_DRIVER)
   if (rotation & 1) {
-    swap_coord(x0, y0);
-    swap_coord(x1, y1);
+    transpose(x0, y0);
+    transpose(x1, y1);
   }
   SPI_BUSY_CHECK;
   DC_C; tft_Write_8(TFT_CASET);
@@ -3234,7 +3350,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   DC_D;
 #else
   #if defined (SSD1963_DRIVER)
-    if ((rotation & 0x1) == 0) { swap_coord(x0, y0); swap_coord(x1, y1); }
+    if ((rotation & 0x1) == 0) { transpose(x0, y0); transpose(x1, y1); }
   #endif
 
   #ifdef CGRAM_OFFSET
@@ -3326,7 +3442,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   addr_row = 0xFFFF;
 
 #if defined (SSD1963_DRIVER)
-  if ((rotation & 0x1) == 0) { swap_coord(xs, ys); swap_coord(xe, ye); }
+  if ((rotation & 0x1) == 0) { transpose(xs, ys); transpose(xe, ye); }
 #endif
 
 #ifdef CGRAM_OFFSET
@@ -3420,7 +3536,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   begin_tft_write();
 
 #if defined (ILI9225_DRIVER)
-  if (rotation & 0x01) { swap_coord(x, y); }
+  if (rotation & 0x01) { transpose(x, y); }
   SPI_BUSY_CHECK;
 
   // Set window to full screen to optimise sequential pixel rendering
@@ -3455,7 +3571,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 #elif (defined (ARDUINO_ARCH_RP2040) || defined (ARDUINO_ARCH_MBED)) && !defined (SSD1351_DRIVER)
 
   #if defined (SSD1963_DRIVER)
-    if ((rotation & 0x1) == 0) { swap_coord(x, y); }
+    if ((rotation & 0x1) == 0) { transpose(x, y); }
   #endif
 
   #if !defined(RP2040_PIO_INTERFACE)
@@ -3535,13 +3651,13 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 #else
 
   #if defined (SSD1963_DRIVER)
-    if ((rotation & 0x1) == 0) { swap_coord(x, y); }
+    if ((rotation & 0x1) == 0) { transpose(x, y); }
   #endif
 
     SPI_BUSY_CHECK;
 
   #if defined (SSD1351_DRIVER)
-    if (rotation & 0x1) { swap_coord(x, y); }
+    if (rotation & 0x1) { transpose(x, y); }
     // No need to send x if it has not changed (speeds things up)
     if (addr_col != x) {
       DC_C; tft_Write_8(TFT_CASET);
@@ -3693,13 +3809,13 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 
   bool steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
-    swap_coord(x0, y0);
-    swap_coord(x1, y1);
+    transpose(x0, y0);
+    transpose(x1, y1);
   }
 
   if (x0 > x1) {
-    swap_coord(x0, x1);
-    swap_coord(y0, y1);
+    transpose(x0, x1);
+    transpose(y0, y1);
   }
 
   int32_t dx = x1 - x0, dy = abs(y1 - y0);;
@@ -3750,6 +3866,7 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 constexpr float PixelAlphaGain   = 255.0;
 constexpr float LoAlphaTheshold  = 1.0/32.0;
 constexpr float HiAlphaTheshold  = 1.0 - LoAlphaTheshold;
+constexpr float deg2rad      = 3.14159265359/180.0;
 
 /***************************************************************************************
 ** Function name:           drawPixel (alpha blended)
@@ -3761,6 +3878,290 @@ uint16_t TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color, uint8_t alpha
   color = alphaBlend(alpha, color, bg_color);
   drawPixel(x, y, color);
   return color;
+}
+
+
+/***************************************************************************************
+** Function name:           drawSmoothArc
+** Description:             Draw a smooth arc clockwise from 6 o'clock
+***************************************************************************************/
+void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, int32_t startAngle, int32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds)
+// Centre at x,y
+// r = arc outer radius, ir = arc inner radius. Inclusive so arc thickness = r - ir + 1
+// Angles in range 0-360
+// Arc foreground colour anti-aliased with background colour at edges
+// anti-aliased roundEnd is optional, default is anti-aliased straight end
+// Note: rounded ends extend the arc angle so can overlap, user sketch to manage this.
+{
+  inTransaction = true;
+
+  if (endAngle != startAngle)
+  {
+    float sx = -sinf(startAngle * deg2rad);
+    float sy = +cosf(startAngle * deg2rad);
+    float ex = -sinf(  endAngle * deg2rad);
+    float ey = +cosf(  endAngle * deg2rad);
+
+    if (roundEnds)
+    { // Round ends
+      sx = sx * (r + ir)/2.0 + x;
+      sy = sy * (r + ir)/2.0 + y;
+      drawSpot(sx, sy, (r - ir)/2.0, fg_color, bg_color);
+
+      ex = ex * (r + ir)/2.0 + x;
+      ey = ey * (r + ir)/2.0 + y;
+      drawSpot(ex, ey, (r - ir)/2.0, fg_color, bg_color);
+    }
+    else
+    { // Square ends
+      float asx = sx * ir + x;
+      float asy = sy * ir + y;
+      float aex = sx *  r + x;
+      float aey = sy *  r + y;
+      drawWedgeLine(asx, asy, aex, aey, 0.3, 0.3, fg_color, bg_color);
+
+      asx = ex * ir + x;
+      asy = ey * ir + y;
+      aex = ex *  r + x;
+      aey = ey *  r + y;
+      drawWedgeLine(asx, asy, aex, aey, 0.3, 0.3, fg_color, bg_color);
+    }
+
+    if (endAngle > startAngle)
+    {
+      // Draw arc in single sweep
+      drawArc(x, y, r, ir, startAngle, endAngle, fg_color, bg_color);
+    }
+    else
+    {
+      // Arc sweeps through 6 o'clock so draw in two parts
+      drawArc(x, y, r, ir, startAngle, 360, fg_color, bg_color);
+      drawArc(x, y, r, ir, 0, endAngle, fg_color, bg_color);
+    }
+  }
+  else // Draw full 360
+  {
+    drawArc(x, y, r, ir, 0, 360, fg_color, bg_color);
+  }
+
+  inTransaction = lockTransaction;
+  end_tft_write();
+}
+
+/***************************************************************************************
+** Function name:           sqrt_fraction
+** Description:             Smooth graphics support function for alpha derivation
+***************************************************************************************/
+// Compute the fixed point square root of an integer and
+// return the 8 MS bits of fractional part.
+// Quicker than sqrt() for processors that do not have and FPU (e.g. RP2040)
+inline uint8_t TFT_eSPI::sqrt_fraction(uint32_t num) {
+  if (num > (0x40000000)) return 0;
+  uint32_t bsh = 0x00004000;
+  uint32_t fpr = 0;
+  uint32_t osh = 0;
+
+  // Auto adjust from U8:8 up to U15:16
+  while (num>bsh) {bsh <<= 2; osh++;}
+
+  do {
+    uint32_t bod = bsh + fpr;
+    if(num >= bod)
+    {
+      num -= bod;
+      fpr = bsh + bod;
+    }
+    num <<= 1;
+  } while(bsh >>= 1);
+
+  return fpr>>osh;
+}
+
+/***************************************************************************************
+** Function name:           drawArc
+** Description:             Draw an arc clockwise from 6 o'clock position
+***************************************************************************************/
+// Centre at x,y
+// r = arc outer radius, ir = arc inner radius. Inclusive, so arc thickness = r-ir+1
+// Angles MUST be in range 0-360, end angle MUST be greater than start angle
+// Arc foreground fg_color anti-aliased with background colour along sides
+// smooth is optional, default is true, smooth=false means no antialiasing
+// Note: Arc ends are not anti-aliased (use drawSmoothArc instead for that)
+void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
+                       int32_t startAngle, int32_t endAngle,
+                       uint32_t fg_color, uint32_t bg_color,
+                       bool smooth)
+{
+  if (_vpOoB) return;
+  if (r < ir) transpose(r, ir);  // Required that r > ir
+  if (r <= 0 || ir < 0) return;  // Invalid r, ir can be zero (circle sector)
+  if (endAngle < startAngle) transpose(startAngle, endAngle);
+  if (startAngle < 0) startAngle = 0;
+  if (endAngle > 360) endAngle = 360;
+
+  inTransaction = true;
+
+  int32_t xs = 0;       // x start position for quadrant scan
+  uint8_t alpha = 0;    // alpha value for blending pixels
+
+  int32_t r2 = r * r;   // Outer arc radius^2
+  if (smooth) r++;      // Outer AA zone radius
+  int32_t r1 = r * r;   // Outer AA radius^2
+  int16_t w  = r - ir;  // Width of arc (r - ir + 1)
+  int32_t r3 = ir * ir; // Inner arc radius^2
+  if (smooth) ir--;     // Inner AA zone radius
+  int32_t r4 = ir * ir; // Inner AA radius^2
+
+  // Float variants of adjusted inner and outer arc radii
+  //float irf = ir;
+  //float rf  = r;
+
+  //     1 | 2
+  //    ---¦---    Arc quadrant index
+  //     0 | 3
+  // Fixed point U16.16 slope table for arc start/end in each quadrant
+  uint32_t startSlope[4] = {0,  0, 0xFFFFFFFF, 0};
+  uint32_t   endSlope[4] = {0, 0xFFFFFFFF,  0, 0};
+
+  // Ensure maximum U16.16 slope of arc ends is ~ 0x8000 0000
+  constexpr float minDivisor = 1.0f/0x8000;
+
+  // Fill in start slope table and empty quadrants
+  float fabscos = fabsf(cosf(startAngle * deg2rad));
+  float fabssin = fabsf(sinf(startAngle * deg2rad));
+
+  // U16.16 slope of arc start
+  uint32_t slope = (fabscos/(fabssin + minDivisor)) * (float)(1<<16);
+
+  // Update slope table, add slope for arc start
+  if (startAngle < 90) {
+    startSlope[0] =  slope;
+  }
+  else if (startAngle < 180) {
+    startSlope[1] =  slope;
+  }
+  else if (startAngle < 270) {
+    startSlope[1] = 0xFFFFFFFF;
+    startSlope[2] = slope;
+  }
+  else {
+    startSlope[1] = 0xFFFFFFFF;
+    startSlope[2] =  0;
+    startSlope[3] = slope;
+  }
+
+  // Fill in end slope table and empty quadrants
+  fabscos  = fabsf(cosf(endAngle * deg2rad));
+  fabssin  = fabsf(sinf(endAngle * deg2rad));
+
+  // U16.16 slope of arc end
+  slope   = (uint32_t)((fabscos/(fabssin + minDivisor)) * (float)(1<<16));
+
+  // Work out which quadrants will need to be drawn and add slope for arc end
+  if (endAngle < 90) {
+    endSlope[0] = slope;
+    endSlope[1] =  0;
+    endSlope[2] = 0xFFFFFFFF;
+  }
+  else if (endAngle < 180) {
+    endSlope[1] = slope;
+    endSlope[2] = 0xFFFFFFFF;
+  }
+  else if (endAngle < 270) {
+    endSlope[2] =  slope;
+  }
+  else {
+    endSlope[3] =  slope;
+  }
+
+  // Scan quadrant
+  for (int32_t cy = r - 1; cy > 0; cy--)
+  {
+    uint32_t len[4] = { 0,  0,  0,  0}; // Pixel run length
+    int32_t  xst[4] = {-1, -1, -1, -1}; // Pixel run x start
+    uint32_t dy2 = (r - cy) * (r - cy);
+
+    // Find and track arc zone start point
+    while ((r - xs) * (r - xs) + dy2 >= r1) xs++;
+
+    for (int32_t cx = xs; cx < r; cx++)
+    {
+      // Calculate radius^2
+      uint32_t hyp = (r - cx) * (r - cx) + dy2;
+
+      // If in outer zone calculate alpha
+      if (hyp > r2) {
+        //alpha = (uint8_t)((rf - sqrtf(hyp)) * 255);
+        alpha = ~sqrt_fraction(hyp); // Outer AA zone
+      }
+      // If within arc fill zone, get line start and lengths for each quadrant
+      else if (hyp >= r3) {
+        // Calculate U16.16 slope
+        slope = ((r - cy) << 16)/(r - cx);
+        if (slope <= startSlope[0] && slope >= endSlope[0]) { // slope hi -> lo
+          xst[0] = cx; // Bottom left line end
+          len[0]++;
+        }
+        if (slope >= startSlope[1] && slope <= endSlope[1]) { // slope lo -> hi
+          xst[1] = cx; // Top left line end
+          len[1]++;
+        }
+        if (slope <= startSlope[2] && slope >= endSlope[2]) { // slope hi -> lo
+          xst[2] = cx; // Bottom right line start
+          len[2]++;
+        }
+        if (slope >= startSlope[3] && slope <= endSlope[3]) { // slope lo -> hi
+          xst[3] = cx; // Top right line start
+          len[3]++;
+        }
+        continue; // Next x
+      }
+      else {
+        if (hyp <= r4) break;  // Skip inner pixels
+        //alpha = (uint8_t)((sqrtf(hyp) - irf) * 255.0);
+        alpha = sqrt_fraction(hyp); // Inner AA zone
+      }
+
+      if (alpha < 16) continue;  // Skip low alpha pixels
+
+      // If background is read it must be done in each quadrant
+      uint16_t pcol = alphaBlend(alpha, fg_color, bg_color);
+      // Check if an AA pixels need to be drawn
+      slope = ((r - cy)<<16)/(r - cx);
+      if (slope <= startSlope[0] && slope >= endSlope[0]) // BL
+        drawPixel(x + cx - r, y - cy + r, pcol);
+      if (slope >= startSlope[1] && slope <= endSlope[1]) // TL
+        drawPixel(x + cx - r, y + cy - r, pcol);
+      if (slope <= startSlope[2] && slope >= endSlope[2]) // TR
+        drawPixel(x - cx + r, y + cy - r, pcol);
+      if (slope >= startSlope[3] && slope <= endSlope[3]) // BR
+        drawPixel(x - cx + r, y - cy + r, pcol);
+    }
+    // Add line in inner zone
+    if (len[0]) drawFastHLine(x + xst[0] - len[0] + 1 - r, y - cy + r, len[0], fg_color); // BL
+    if (len[1]) drawFastHLine(x + xst[1] - len[1] + 1 - r, y + cy - r, len[1], fg_color); // TL
+    if (len[2]) drawFastHLine(x - xst[2] + r, y + cy - r, len[2], fg_color); // TR
+    if (len[3]) drawFastHLine(x - xst[3] + r, y - cy + r, len[3], fg_color); // BR
+  }
+
+  // Fill in centre lines
+  if (startAngle ==   0 || endAngle == 360) drawFastVLine(x, y + r - w, w, fg_color); // Bottom
+  if (startAngle <=  90 && endAngle >=  90) drawFastHLine(x - r + 1, y, w, fg_color); // Left
+  if (startAngle <= 180 && endAngle >= 180) drawFastVLine(x, y - r + 1, w, fg_color); // Top
+  if (startAngle <= 270 && endAngle >= 270) drawFastHLine(x + r - w, y, w, fg_color); // Right
+
+  inTransaction = lockTransaction;
+  end_tft_write();
+}
+
+/***************************************************************************************
+** Function name:           drawSmoothCircle
+** Description:             Draw a smooth circle
+***************************************************************************************/
+// To have effective anti-aliasing the circle will be 3 pixels thick
+void TFT_eSPI::drawSmoothCircle(int32_t x, int32_t y, int32_t r, uint32_t fg_color, uint32_t bg_color)
+{
+  drawSmoothRoundRect(x-r, y-r, r, r-1, 0, 0, fg_color, bg_color);
 }
 
 /***************************************************************************************
@@ -3789,12 +4190,19 @@ void TFT_eSPI::fillSmoothCircle(int32_t x, int32_t y, int32_t r, uint32_t color,
       int32_t hyp2 = (r - cx) * (r - cx) + dy2;
       if (hyp2 <= r1) break;
       if (hyp2 >= r2) continue;
+//*
+      uint8_t alpha = ~sqrt_fraction(hyp2);
+      if (alpha > 246) break;
+      xs = cx;
+      if (alpha < 9) continue;
+      //*/
+/*
       float alphaf = (float)r - sqrtf(hyp2);
       if (alphaf > HiAlphaTheshold) break;
       xs = cx;
       if (alphaf < LoAlphaTheshold) continue;
       uint8_t alpha = alphaf * 255;
-
+//*/
       if (bg_color == 0x00FFFFFF) {
         drawPixel(x + cx - r, y + cy - r, color, alpha, bg_color);
         drawPixel(x - cx + r, y + cy - r, color, alpha, bg_color);
@@ -3817,26 +4225,142 @@ void TFT_eSPI::fillSmoothCircle(int32_t x, int32_t y, int32_t r, uint32_t color,
 
 
 /***************************************************************************************
+** Function name:           drawSmoothRoundRect
+** Description:             Draw a rounded rectangle
+***************************************************************************************/
+// x,y is top left corner of bounding box for a complete rounded rectangle
+// r = arc outer corner radius, ir = arc inner radius. Arc thickness = r-ir+1
+// w and h are width and height of the bounding rectangle
+// If w and h are < radius (e.g. 0,0) a circle will be drawn with centre at x+r,y+r
+// Arc foreground fg_color anti-aliased with background colour at edges
+// A subset of corners can be drawn by specifying a quadrants mask. A bit set in the
+// mask means draw that quadrant (all are drawn if parameter missing):
+//   0x1 | 0x2
+//    ---¦---    Arc quadrant mask select bits (as in drawCircleHelper fn)
+//   0x8 | 0x4
+void TFT_eSPI::drawSmoothRoundRect(int32_t x, int32_t y, int32_t r, int32_t ir, int32_t w, int32_t h, uint32_t fg_color, uint32_t bg_color, uint8_t quadrants)
+{
+  if (_vpOoB) return;
+  if (r < ir) transpose(r, ir); // Required that r > ir
+  if (r <= 0 || ir < 0) return;  // Invalid
+
+  w -= 2*r;
+  h -= 2*r;
+
+  if (w < 0) w = 0;
+  if (h < 0) h = 0;
+
+  inTransaction = true;
+
+  x += r;
+  y += r;
+/*
+  float alphaGain = 1.0;
+  if (w != 0 || h != 0) {
+    if (r - ir < 2) alphaGain = 1.5; // Boost brightness for thin lines
+    if (r - ir < 1) alphaGain = 1.7;
+  }
+*/
+  uint16_t t = r - ir + 1;
+  int32_t xs = 0;
+  int32_t cx = 0;
+
+  int32_t r2 = r * r;   // Outer arc radius^2
+  r++;
+  int32_t r1 = r * r;   // Outer AA zone radius^2
+
+  int32_t r3 = ir * ir; // Inner arc radius^2
+  ir--;
+  int32_t r4 = ir * ir; // Inner AA zone radius^2
+
+  //float irf = ir;
+  //float rf  = r;
+  uint8_t alpha = 0;
+
+  // Scan top left quadrant x y r ir fg_color  bg_color
+  for (int32_t cy = r - 1; cy > 0; cy--)
+  {
+    int32_t len = 0;  // Pixel run length
+    int32_t lxst = 0; // Left side run x start
+    int32_t rxst = 0; // Right side run x start
+    int32_t dy2 = (r - cy) * (r - cy);
+
+    // Find and track arc zone start point
+    while ((r - xs) * (r - xs) + dy2 >= r1) xs++;
+
+    for (cx = xs; cx < r; cx++)
+    {
+      // Calculate radius^2
+      int32_t hyp = (r - cx) * (r - cx) + dy2;
+
+      // If in outer zone calculate alpha
+      if (hyp > r2) {
+        alpha = ~sqrt_fraction(hyp);
+        //alpha = (uint8_t)((rf - sqrtf(hyp)) * 255); // Outer AA zone
+      }
+      // If within arc fill zone, get line lengths for each quadrant
+      else if (hyp >= r3) {
+        rxst = cx; // Right side start
+        len++;     // Line segment length
+        continue;  // Next x
+      }
+      else {
+        if (hyp <= r4) break;  // Skip inner pixels
+        //alpha = (uint8_t)((sqrtf(hyp) - irf) * 255); // Inner AA zone
+        alpha = sqrt_fraction(hyp);
+      }
+
+      if (alpha < 16) continue;  // Skip low alpha pixels
+
+      // If background is read it must be done in each quadrant - TODO
+      uint16_t pcol = alphaBlend(alpha, fg_color, bg_color);
+      if (quadrants & 0x8) drawPixel(x + cx - r, y - cy + r + h, pcol);     // BL
+      if (quadrants & 0x1) drawPixel(x + cx - r, y + cy - r, pcol);         // TL
+      if (quadrants & 0x2) drawPixel(x - cx + r + w, y + cy - r, pcol);     // TR
+      if (quadrants & 0x4) drawPixel(x - cx + r + w, y - cy + r + h, pcol); // BR
+    }
+    // Fill arc inner zone in each quadrant
+    lxst = rxst - len + 1; // Calculate line segment start for left side
+    if (quadrants & 0x8) drawFastHLine(x + lxst - r, y - cy + r + h, len, fg_color);     // BL
+    if (quadrants & 0x1) drawFastHLine(x + lxst - r, y + cy - r, len, fg_color);         // TL
+    if (quadrants & 0x2) drawFastHLine(x - rxst + r + w, y + cy - r, len, fg_color);     // TR
+    if (quadrants & 0x4) drawFastHLine(x - rxst + r + w, y - cy + r + h, len, fg_color); // BR
+  }
+
+  // Draw sides
+  if ((quadrants & 0xC) == 0xC) fillRect(x, y + r - t + h, w + 1, t, fg_color); // Bottom
+  if ((quadrants & 0x9) == 0x9) fillRect(x - r + 1, y, t, h + 1, fg_color);     // Left
+  if ((quadrants & 0x3) == 0x3) fillRect(x, y - r + 1, w + 1, t, fg_color);     // Top
+  if ((quadrants & 0x6) == 0x6) fillRect(x + r - t + w, y, t, h + 1, fg_color); // Right
+
+  inTransaction = lockTransaction;
+  end_tft_write();
+}
+
+/***************************************************************************************
 ** Function name:           fillSmoothRoundRect
 ** Description:             Draw a filled anti-aliased rounded corner rectangle
 ***************************************************************************************/
 void TFT_eSPI::fillSmoothRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint32_t color, uint32_t bg_color)
 {
   inTransaction = true;
+
   int32_t xs = 0;
   int32_t cx = 0;
 
   // Limit radius to half width or height
-  if (r < 0) r = 0;
+  if (r < 0)   r = 0;
   if (r > w/2) r = w/2;
   if (r > h/2) r = h/2;
 
   y += r;
   h -= 2*r;
   fillRect(x, y, w, h, color);
+
   h--;
   x += r;
   w -= 2*r+1;
+
   int32_t r1 = r * r;
   r++;
   int32_t r2 = r * r;
@@ -3849,12 +4373,18 @@ void TFT_eSPI::fillSmoothRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, i
       int32_t hyp2 = (r - cx) * (r - cx) + dy2;
       if (hyp2 <= r1) break;
       if (hyp2 >= r2) continue;
+
+      uint8_t alpha = ~sqrt_fraction(hyp2);
+      if (alpha > 246) break;
+      xs = cx;
+      if (alpha < 9) continue;
+/*
       float alphaf = (float)r - sqrtf(hyp2);
       if (alphaf > HiAlphaTheshold) break;
       xs = cx;
       if (alphaf < LoAlphaTheshold) continue;
       uint8_t alpha = alphaf * 255;
-
+*/
       drawPixel(x + cx - r, y + cy - r, color, alpha, bg_color);
       drawPixel(x - cx + r + w, y + cy - r, color, alpha, bg_color);
       drawPixel(x - cx + r + w, y - cy + r + h, color, alpha, bg_color);
@@ -3871,6 +4401,7 @@ void TFT_eSPI::fillSmoothRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, i
 ** Function name:           drawSpot - maths intensive, so for small filled circles
 ** Description:             Draw an anti-aliased filled circle at ax,ay with radius r
 ***************************************************************************************/
+// Coordinates are floating point to achieve sub-pixel positioning
 void TFT_eSPI::drawSpot(float ax, float ay, float r, uint32_t fg_color, uint32_t bg_color)
 {
   // Filled circle can be created by the wide line function with zero line length
@@ -3893,7 +4424,7 @@ void TFT_eSPI::drawWideLine(float ax, float ay, float bx, float by, float wd, ui
 void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, float br, uint32_t fg_color, uint32_t bg_color)
 {
   if ( (ar < 0.0) || (br < 0.0) )return;
-  if ( (abs(ax - bx) < 0.01f) && (abs(ay - by) < 0.01f) ) bx += 0.01f;  // Avoid divide by zero
+  if ( (fabsf(ax - bx) < 0.01f) && (fabsf(ay - by) < 0.01f) ) bx += 0.01f;  // Avoid divide by zero
 
   // Find line bounding box
   int32_t x0 = (int32_t)floorf(fminf(ax-ar, bx-br));
@@ -3963,7 +4494,7 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
         pushColor(fg_color);
         continue;
       }
-      //Blend color with background and plot
+      //Blend colour with background and plot
       if (bg_color == 0x00FFFFFF) {
         bg = readPixel(xp, yp); swin = true;
       }
@@ -3976,7 +4507,7 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
   end_nin_write();
 }
 
-// Calculate distance of px,py to closest part of line
+
 /***************************************************************************************
 ** Function name:           lineDistance - private helper function for drawWedgeLine
 ** Description:             returns distance of px,py to closest part of a to b wedge
@@ -4375,26 +4906,13 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 ** Function name:           alphaBlend
 ** Description:             Blend 16bit foreground and background
 *************************************************************************************x*/
-uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc)
+inline uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc)
 {
-  // For speed use fixed point maths and rounding to permit a power of 2 division
-  uint16_t fgR = ((fgc >> 10) & 0x3E) + 1;
-  uint16_t fgG = ((fgc >>  4) & 0x7E) + 1;
-  uint16_t fgB = ((fgc <<  1) & 0x3E) + 1;
-
-  uint16_t bgR = ((bgc >> 10) & 0x3E) + 1;
-  uint16_t bgG = ((bgc >>  4) & 0x7E) + 1;
-  uint16_t bgB = ((bgc <<  1) & 0x3E) + 1;
-
-  // Shift right 1 to drop rounding bit and shift right 8 to divide by 256
-  uint16_t r = (((fgR * alpha) + (bgR * (255 - alpha))) >> 9);
-  uint16_t g = (((fgG * alpha) + (bgG * (255 - alpha))) >> 9);
-  uint16_t b = (((fgB * alpha) + (bgB * (255 - alpha))) >> 9);
-
-  // Combine RGB565 colours into 16 bits
-  //return ((r&0x18) << 11) | ((g&0x30) << 5) | ((b&0x18) << 0); // 2 bit greyscale
-  //return ((r&0x1E) << 11) | ((g&0x3C) << 5) | ((b&0x1E) << 0); // 4 bit greyscale
-  return (r << 11) | (g << 5) | (b << 0);
+  uint32_t rxb = bgc & 0xF81F;
+  rxb += ((fgc & 0xF81F) - rxb) * (alpha >> 2) >> 6;
+  uint32_t xgx = bgc & 0x07E0;
+  xgx += ((fgc & 0x07E0) - xgx) * alpha >> 8;
+  return (rxb & 0xF81F) | (xgx & 0x07E0);
 }
 
 /***************************************************************************************
@@ -4427,22 +4945,13 @@ uint32_t TFT_eSPI::alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8
     if (alphaDither >255) alpha = 255;
   }
 
-  // For speed use fixed point maths and rounding to permit a power of 2 division
-  uint16_t fgR = ((fgc >> 15) & 0x1FE) + 1;
-  uint16_t fgG = ((fgc >>  7) & 0x1FE) + 1;
-  uint16_t fgB = ((fgc <<  1) & 0x1FE) + 1;
-
-  uint16_t bgR = ((bgc >> 15) & 0x1FE) + 1;
-  uint16_t bgG = ((bgc >>  7) & 0x1FE) + 1;
-  uint16_t bgB = ((bgc <<  1) & 0x1FE) + 1;
-
-  // Shift right 1 to drop rounding bit and shift right 8 to divide by 256
-  uint16_t r = (((fgR * alpha) + (bgR * (255 - alpha))) >> 9);
-  uint16_t g = (((fgG * alpha) + (bgG * (255 - alpha))) >> 9);
-  uint16_t b = (((fgB * alpha) + (bgB * (255 - alpha))) >> 9);
-
-  // Combine RGB colours into 24 bits
-  return (r << 16) | (g << 8) | (b << 0);
+  uint32_t rxx = bgc & 0xFF0000;
+  rxx += ((fgc & 0xFF0000) - rxx) * alpha >> 8;
+  uint32_t xgx = bgc & 0x00FF00;
+  xgx += ((fgc & 0xFF0000) - xgx) * alpha >> 8;
+  uint32_t xxb = bgc & 0x0000FF;
+  xxb += ((fgc & 0xFF0000) - xxb) * alpha >> 8;
+  return (rxx & 0xFF0000) | (xgx & 0x00FF00) | (xxb & 0x0000FF);
 }
 
 /***************************************************************************************
