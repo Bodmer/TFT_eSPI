@@ -129,6 +129,7 @@
 //#include <User_Setups/Setup205_ESP32_TouchDown_S3.h>     // Setup file for the ESP32 TouchDown S3 based on ILI9488 480 x 320 TFT 
 
 //#include <User_Setups/Setup206_LilyGo_T_Display_S3.h>
+//#include <User_Setups/Setup207_LilyGo_T_HMI.h>
 
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 
