@@ -141,6 +141,14 @@
   writecommand(ST7789_MADCTL);
   writedata(TFT_MAD_COLOR_ORDER);
 
+ // writecommand(ST7789_RAMCTRL);
+ // writedata(0x00);
+ // writedata(0xE0); // 5 to 6 bit conversion: r0 = r5, b0 = b5
+
+  writecommand(ST7789_COLMOD);
+  writedata(0x55);
+  delay(10);
+
   //--------------------------------ST7789V Frame rate setting----------------------------------//
   writecommand(ST7789_PORCTRL);
   writedata(0x0b);
