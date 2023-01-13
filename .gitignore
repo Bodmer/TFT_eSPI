@@ -17,6 +17,11 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Arduino debug
+debug.cfg
+debug_custom.json
+*.svd
+
 # =========================
 # Operating System Files
 # =========================
