@@ -86,7 +86,9 @@
 #elif defined(ARDUINO_ARCH_ESP8266) || defined(ESP32)
   #include <pgmspace.h>
 #else
-  #define PROGMEM
+  #ifndef PROGMEM
+    #define PROGMEM
+  #endif
 #endif
 
 // Include the processor specific drivers

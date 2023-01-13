@@ -4004,13 +4004,13 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
   int32_t xs = 0;       // x start position for quadrant scan
   uint8_t alpha = 0;    // alpha value for blending pixels
 
-  int32_t r2 = r * r;   // Outer arc radius^2
+  uint32_t r2 = r * r;   // Outer arc radius^2
   if (smooth) r++;      // Outer AA zone radius
-  int32_t r1 = r * r;   // Outer AA radius^2
+  uint32_t r1 = r * r;   // Outer AA radius^2
   int16_t w  = r - ir;  // Width of arc (r - ir + 1)
-  int32_t r3 = ir * ir; // Inner arc radius^2
+  uint32_t r3 = ir * ir; // Inner arc radius^2
   if (smooth) ir--;     // Inner AA zone radius
-  int32_t r4 = ir * ir; // Inner AA radius^2
+  uint32_t r4 = ir * ir; // Inner AA radius^2
 
   // Float variants of adjusted inner and outer arc radii
   //float irf = ir;
