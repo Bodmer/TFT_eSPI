@@ -3895,7 +3895,7 @@ void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, int32_
 {
   inTransaction = true;
 
-  if (endAngle != startAngle)
+  if (endAngle != startAngle && (startAngle != 0 || endAngle != 360))
   {
     float sx = -sinf(startAngle * deg2rad);
     float sy = +cosf(startAngle * deg2rad);
@@ -3927,17 +3927,9 @@ void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, int32_
       drawWedgeLine(asx, asy, aex, aey, 0.3, 0.3, fg_color, bg_color);
     }
 
-    if (endAngle > startAngle)
-    {
-      // Draw arc in single sweep
-      drawArc(x, y, r, ir, startAngle, endAngle, fg_color, bg_color);
-    }
-    else
-    {
-      // Arc sweeps through 6 o'clock so draw in two parts
-      drawArc(x, y, r, ir, startAngle, 360, fg_color, bg_color);
-      drawArc(x, y, r, ir, 0, endAngle, fg_color, bg_color);
-    }
+    // Draw arc
+    drawArc(x, y, r, ir, startAngle, endAngle, fg_color, bg_color);
+
   }
   else // Draw full 360
   {
@@ -3949,7 +3941,7 @@ void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, int32_
 }
 
 /***************************************************************************************
-** Function name:           sqrt_fraction
+** Function name:           sqrt_fraction (private function)
 ** Description:             Smooth graphics support function for alpha derivation
 ***************************************************************************************/
 // Compute the fixed point square root of an integer and
@@ -3983,7 +3975,7 @@ inline uint8_t TFT_eSPI::sqrt_fraction(uint32_t num) {
 ***************************************************************************************/
 // Centre at x,y
 // r = arc outer radius, ir = arc inner radius. Inclusive, so arc thickness = r-ir+1
-// Angles MUST be in range 0-360, end angle MUST be greater than start angle
+// Angles MUST be in range 0-360
 // Arc foreground fg_color anti-aliased with background colour along sides
 // smooth is optional, default is true, smooth=false means no antialiasing
 // Note: Arc ends are not anti-aliased (use drawSmoothArc instead for that)
@@ -3992,10 +3984,15 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
                        uint32_t fg_color, uint32_t bg_color,
                        bool smooth)
 {
-  if (_vpOoB) return;
+  if (endAngle < startAngle) {
+    // Arc sweeps through 6 o'clock so draw in two parts
+    drawArc(x, y, r, ir, startAngle, 360, fg_color, bg_color, smooth);
+    startAngle = 0;
+  }
+
+  if (_vpOoB || startAngle == endAngle) return;
   if (r < ir) transpose(r, ir);  // Required that r > ir
   if (r <= 0 || ir < 0) return;  // Invalid r, ir can be zero (circle sector)
-  if (endAngle < startAngle) transpose(startAngle, endAngle);
   if (startAngle < 0) startAngle = 0;
   if (endAngle > 360) endAngle = 360;
 
@@ -4020,8 +4017,8 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
   //    ---¦---    Arc quadrant index
   //     0 | 3
   // Fixed point U16.16 slope table for arc start/end in each quadrant
-  uint32_t startSlope[4] = {0,  0, 0xFFFFFFFF, 0};
-  uint32_t   endSlope[4] = {0, 0xFFFFFFFF,  0, 0};
+  uint32_t startSlope[4] = {0, 0, 0xFFFFFFFF, 0};
+  uint32_t   endSlope[4] = {0, 0xFFFFFFFF, 0, 0};
 
   // Ensure maximum U16.16 slope of arc ends is ~ 0x8000 0000
   constexpr float minDivisor = 1.0f/0x8000;

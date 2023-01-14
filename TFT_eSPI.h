@@ -530,9 +530,9 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // The start angle may be larger than the end angle. Arcs are always drawn clockwise from the start angle.
   void     drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, int32_t startAngle, int32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds = false);
 
-           // As per "drawSmoothArc" except endAngle should be greater than startAngle (angles will be swapped otherwise)
+           // As per "drawSmoothArc" except the ends of the arc are NOT anti-aliased, this facilitates dynamic arc length changes with
+           // arc segments and ensures clean segment joints. 
            // The sides of the arc are anti-aliased by default. If smoothArc is false sides will NOT be anti-aliased
-           // The ends of the arc are NOT anti-aliased, this facilitates dynamic arc length changes with arc segments and ensures clean segment joints
   void     drawArc(int32_t x, int32_t y, int32_t r, int32_t ir, int32_t startAngle, int32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool smoothArc = true);
 
            // Draw an anti-aliased filled circle at x, y with radius r
