@@ -4,7 +4,7 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 
       ![arcs](https://github.com/Bodmer/Github-images/blob/main/smooth_arcs.png)
       
-      Here is the same resolution image (grabbed from the same TFT) with the smoothing diasbled (anti-aliasing):
+      Here is the same resolution image (grabbed from the same TFT) with the smoothing diasbled (no anti-aliasing):
       
       ![pixelated_arcs](https://github.com/Bodmer/Github-images/blob/main/pixelated_arcs.png)
 
