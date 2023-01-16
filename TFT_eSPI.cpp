@@ -3640,7 +3640,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
     TX_FIFO = (y<<16) | y;
     TX_FIFO = TFT_RAMWR;
     //DC set high by PIO
-    #if  defined (SPI_18BIT_DRIVER)
+    #if  defined (SPI_18BIT_DRIVER) || (defined (SSD1963_DRIVER) && defined (TFT_PARALLEL_8_BIT))
       TX_FIFO = ((color & 0xF800)<<8) | ((color & 0x07E0)<<5) | ((color & 0x001F)<<3);
     #else
       TX_FIFO = color;
@@ -4031,13 +4031,13 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
   uint32_t slope = (fabscos/(fabssin + minDivisor)) * (float)(1<<16);
 
   // Update slope table, add slope for arc start
-  if (startAngle < 90) {
+  if (startAngle <= 90) {
     startSlope[0] =  slope;
   }
-  else if (startAngle < 180) {
+  else if (startAngle <= 180) {
     startSlope[1] =  slope;
   }
-  else if (startAngle < 270) {
+  else if (startAngle <= 270) {
     startSlope[1] = 0xFFFFFFFF;
     startSlope[2] = slope;
   }
@@ -4055,16 +4055,16 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
   slope   = (uint32_t)((fabscos/(fabssin + minDivisor)) * (float)(1<<16));
 
   // Work out which quadrants will need to be drawn and add slope for arc end
-  if (endAngle < 90) {
+  if (endAngle <= 90) {
     endSlope[0] = slope;
     endSlope[1] =  0;
-    endSlope[2] = 0xFFFFFFFF;
+    startSlope[2] =  0;
   }
-  else if (endAngle < 180) {
+  else if (endAngle <= 180) {
     endSlope[1] = slope;
-    endSlope[2] = 0xFFFFFFFF;
+    startSlope[2] =  0;
   }
-  else if (endAngle < 270) {
+  else if (endAngle <= 270) {
     endSlope[2] =  slope;
   }
   else {
@@ -4093,24 +4093,28 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
       }
       // If within arc fill zone, get line start and lengths for each quadrant
       else if (hyp >= r3) {
-        // Calculate U16.16 slope
-        slope = ((r - cy) << 16)/(r - cx);
-        if (slope <= startSlope[0] && slope >= endSlope[0]) { // slope hi -> lo
-          xst[0] = cx; // Bottom left line end
-          len[0]++;
-        }
-        if (slope >= startSlope[1] && slope <= endSlope[1]) { // slope lo -> hi
-          xst[1] = cx; // Top left line end
-          len[1]++;
-        }
-        if (slope <= startSlope[2] && slope >= endSlope[2]) { // slope hi -> lo
-          xst[2] = cx; // Bottom right line start
-          len[2]++;
-        }
-        if (slope >= startSlope[3] && slope <= endSlope[3]) { // slope lo -> hi
-          xst[3] = cx; // Top right line start
-          len[3]++;
-        }
+        do {
+          // Calculate U16.16 slope
+          slope = ((r - cy) << 16)/(r - cx);
+          if (slope <= startSlope[0] && slope >= endSlope[0]) { // slope hi -> lo
+            xst[0] = cx; // Bottom left line end
+            len[0]++;
+          }
+          if (slope >= startSlope[1] && slope <= endSlope[1]) { // slope lo -> hi
+            xst[1] = cx; // Top left line end
+            len[1]++;
+          }
+          if (slope <= startSlope[2] && slope >= endSlope[2]) { // slope hi -> lo
+            xst[2] = cx; // Bottom right line start
+            len[2]++;
+          }
+          if (slope <= endSlope[3] && slope >= startSlope[3]) { // slope lo -> hi
+            xst[3] = cx; // Top right line start
+            len[3]++;
+          }
+          cx++;
+        } while ((r - cx) * (r - cx) + dy2 >= r3 && cx < r);
+        cx--;
         continue; // Next x
       }
       else {
@@ -4131,7 +4135,7 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
         drawPixel(x + cx - r, y + cy - r, pcol);
       if (slope <= startSlope[2] && slope >= endSlope[2]) // TR
         drawPixel(x - cx + r, y + cy - r, pcol);
-      if (slope >= startSlope[3] && slope <= endSlope[3]) // BR
+      if (slope <= endSlope[3] && slope >= startSlope[3]) // BR
         drawPixel(x - cx + r, y - cy + r, pcol);
     }
     // Add line in inner zone
@@ -4905,10 +4909,13 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 *************************************************************************************x*/
 inline uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc)
 {
+  // Split out and blend 5 bit red and blue channels
   uint32_t rxb = bgc & 0xF81F;
   rxb += ((fgc & 0xF81F) - rxb) * (alpha >> 2) >> 6;
+  // Split out and blend 6 bit green channel
   uint32_t xgx = bgc & 0x07E0;
   xgx += ((fgc & 0x07E0) - xgx) * alpha >> 8;
+  // Recombine channels
   return (rxb & 0xF81F) | (xgx & 0x07E0);
 }
 

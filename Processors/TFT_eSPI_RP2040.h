@@ -408,7 +408,7 @@
   // Temporary - to be deleted
   #define GPIO_DIR_MASK 0
 
-  #if  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+  #if  defined (SPI_18BIT_DRIVER)  || defined (SSD1963_DRIVER) // 18 bit colour (3 bytes)
       // This writes 8 bits, then switches back to 16 bit mode automatically
       // Have already waited for pio stalled (last data write complete) when DC switched to command mode
       // The wait for stall allows DC to be changed immediately afterwards

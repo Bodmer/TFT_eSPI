@@ -29,10 +29,15 @@
       #include "pio_SPI.pio.h"
     #endif
   #elif defined (TFT_PARALLEL_8_BIT)
-    // SPI PIO code for 8 bit parallel interface (16 bit colour)
-    #include "pio_8bit_parallel.pio.h"
+    #if defined (SSD1963_DRIVER)
+      // PIO code for 8 bit parallel interface (18 bit colour)
+      #include "pio_8bit_parallel_18bpp.pio.h"
+    #else
+      // PIO code for 8 bit parallel interface (16 bit colour)
+      #include "pio_8bit_parallel.pio.h"
+    #endif
   #else // must be TFT_PARALLEL_16_BIT
-    // SPI PIO code for 16 bit parallel interface (16 bit colour)
+    // PIO code for 16 bit parallel interface (16 bit colour)
     #include "pio_16bit_parallel.pio.h"
   #endif
 
@@ -279,7 +284,7 @@ void pioinit(uint16_t clock_div, uint16_t fract_div) {
 // PIO handles pixel block fill writes
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
 {
-#if  defined (SPI_18BIT_DRIVER)
+#if  defined (SPI_18BIT_DRIVER) || (defined (SSD1963_DRIVER) && defined (TFT_PARALLEL_8_BIT))
   uint32_t col = ((color & 0xF800)<<8) | ((color & 0x07E0)<<5) | ((color & 0x001F)<<3);
   if (len) {
     WAIT_FOR_STALL;
@@ -327,7 +332,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 ** Description:             Write a sequence of pixels
 ***************************************************************************************/
 void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
-#if  defined (SPI_18BIT_DRIVER)
+#if  defined (SPI_18BIT_DRIVER) || (defined (SSD1963_DRIVER) && defined (TFT_PARALLEL_8_BIT))
   uint16_t *data = (uint16_t*)data_in;
   if (_swapBytes) {
     while ( len-- ) {
