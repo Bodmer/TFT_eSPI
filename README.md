@@ -3,6 +3,10 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 1. New functions have been added to draw smooth (antialiased) arcs, circles, and rounded rectangle outlines. New sketches are provided in the "Smooth Graphics" examples folder. Arcs can be drawn with or without anti-aliasing. The arc ends can be straight or rounded. The arc drawing algorithm uses an optimised fixed point sqrt() function to improve performance on processors that do not have a hardware Floating Point Unit (e.g. RP2040). Here's a demo image of smooth (anti-aliased) arcs with rounded ends and increasing sweep angle:
 
       ![arcs](https://github.com/Bodmer/Github-images/blob/main/smooth_arcs.png)
+      
+      Here is the same resolution image (grabbed from the same TFT) with the smoothing diasbled (anti-aliasing):
+      
+      ![pixelated_arcs](https://github.com/Bodmer/Github-images/blob/main/pixelated_arcs.png)
 
 2. An excellent new compatible library is available which can render TrueType fonts on a TFT screen (or into a sprite). This has been developed by [takkaO](https://github.com/takkaO/OpenFontRender), I have created a branch with some bug fixes [here](https://github.com/Bodmer/OpenFontRender). The library provides access to compact font files, with fully scaleable anti-aliased glyphs. Left, middle and right justified text can also be printed to the screen. I have added TFT_eSPI specific examples to the OpenFontRender library and tested on RP2040 and ESP32 processors, the ESP8266 does not have sufficient RAM due to the glyph render complexity. Here is a demo screen where a single 12kbyte font file binary was used to render fully anti-aliased glyphs of gradually increasing size on a 320x480 TFT screen:
 
