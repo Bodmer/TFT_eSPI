@@ -1,6 +1,6 @@
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
-1. New functions have been added to draw smooth (antialiased) arcs, circles, and rounded rectangle outlines. New sketches are provided in the "Smooth Graphics" examples folder. Arcs can be drawn with or without anti-aliasing. The arc ends can be straight or rounded. The arc drawing algorithm uses an optimised fixed point sqrt() function to improve performance on processors that do not have a hardware Floating Point Unit (e.g. RP2040). Here's a demo image of smooth (anti-aliased) arcs with rounded ends and increasing sweep angle:
+1. New functions have been added to draw smooth (antialiased) arcs, circles, and rounded rectangle outlines. New sketches are provided in the "Smooth Graphics" examples folder. Arcs can be drawn with or without anti-aliasing (which will then render faster). The arc ends can be straight or rounded. The arc drawing algorithm uses an optimised fixed point sqrt() function to improve performance on processors that do not have a hardware Floating Point Unit (e.g. RP2040). Here's a demo image of smooth (anti-aliased) arcs with rounded ends and increasing sweep angle:
 
       ![arcs](https://github.com/Bodmer/Github-images/blob/main/smooth_arcs.png)
       
