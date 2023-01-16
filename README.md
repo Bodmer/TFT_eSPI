@@ -210,10 +210,3 @@ You can take this one step further and have your own setup select file and then 
 #include <../TFT_eSPI_Setups/my_setup_select.h>
 ```
 To select a new setup you then edit your own my_setup_select.h file (which will not get overwritten during an upgrade).
-
-# ePaper displays
-
-The library was intended to support only TFT displays but using a Sprite as a 1 bit per pixel screen buffer permits support for the Waveshare 2 and 3 colour SPI ePaper displays. This addition to the library is experimental and only one example is provided. Further examples will be added.
-
-![Example](https://i.imgur.com/L2tV129.jpg?1)
-
