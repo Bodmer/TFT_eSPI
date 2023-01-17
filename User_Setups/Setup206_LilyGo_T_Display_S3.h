@@ -6,8 +6,8 @@
 #define INIT_SEQUENCE_3 // Using this initialisation sequence improves the display image
 
 #define CGRAM_OFFSET
-// #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
-#define TFT_RGB_ORDER TFT_BGR // Colour order Blue-Green-Red
+#define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
+//#define TFT_RGB_ORDER TFT_BGR // Colour order Blue-Green-Red
 
 #define TFT_INVERSION_ON
 // #define TFT_INVERSION_OFF
