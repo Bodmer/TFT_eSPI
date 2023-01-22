@@ -15,11 +15,7 @@
     delay(120);
 
     writecommand(0x3A);
-    #if defined (TFT_PARALLEL_8_BIT) || defined (TFT_PARALLEL_16_BIT) || defined (RPI_DISPLAY_TYPE)
-      writedata(0x55);           // 16 bit colour interface
-    #else
-      writedata(0x66);           // 18 bit colour interface
-    #endif
+    writedata(0x55);           // 16 bit colour interface
 
     writecommand(0xC0); //                          1100.0000 Power Control 1
     writedata(0x0E);    //                          0001.0111   ... VRH1
