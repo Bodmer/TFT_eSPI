@@ -182,7 +182,7 @@
 
 // Invoke 18 bit colour for selected displays
 #if !defined (RPI_DISPLAY_TYPE) && !defined (TFT_PARALLEL_8_BIT) && !defined (TFT_PARALLEL_16_BIT) && !defined (ESP32_PARALLEL)
-  #if defined (ILI9481_DRIVER) || defined (ILI9486_DRIVER) || defined (ILI9488_DRIVER)
+  #if defined (ILI9481_DRIVER) || defined (ILI9488_DRIVER)
     #define SPI_18BIT_DRIVER
   #endif
 #endif
