@@ -43,11 +43,11 @@
     #endif
   #else
     #ifdef USE_HSPI_PORT
-      #define DMA_CHANNEL 2
-      spi_host_device_t spi_host = (spi_host_device_t) DMA_CHANNEL; // Draws once then freezes
+      #define DMA_CHANNEL SPI_DMA_CH_AUTO
+      spi_host_device_t spi_host = SPI3_HOST;
     #else // use FSPI port
-      #define DMA_CHANNEL 1
-      spi_host_device_t spi_host = (spi_host_device_t) DMA_CHANNEL; // Draws once then freezes
+      #define DMA_CHANNEL SPI_DMA_CH_AUTO
+      spi_host_device_t spi_host = SPI2_HOST;
     #endif
   #endif
 #endif
@@ -643,6 +643,15 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
     for (uint32_t i = 0; i < len; i++) (image[i] = image[i] << 8 | image[i] >> 8);
   }
 
+  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
+  // small transfers are performed using a blocking call until DMA capacity is reached.
+  // User sketch can prevent blocking by managing pixel count and splitting into blocks
+  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
+  while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
+    pushPixels(image, 0x400);
+    len -= 0x400; image+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
+  }
+
   esp_err_t ret;
   static spi_transaction_t trans;
 
@@ -669,11 +678,20 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 {
   if ((w == 0) || (h == 0) || (!DMA_Enabled)) return;
 
+  uint16_t *buffer = (uint16_t*)image;
   uint32_t len = w*h;
 
   dmaWait();
 
   setAddrWindow(x, y, w, h);
+  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
+  // small transfers are performed using a blocking call until DMA capacity is reached.
+  // User sketch can prevent blocking by managing pixel count and splitting into blocks
+  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
+  while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
+    pushPixels(buffer, 0x400);
+    len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
+  }
 
   esp_err_t ret;
   static spi_transaction_t trans;
@@ -681,7 +699,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   memset(&trans, 0, sizeof(spi_transaction_t));
 
   trans.user = (void *)1;
-  trans.tx_buffer = image;   //Data pointer
+  trans.tx_buffer = buffer;   //Data pointer
   trans.length = len * 16;   //Data length, in bits
   trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
 
@@ -751,6 +769,15 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   setAddrWindow(x, y, dw, dh);
 
+  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
+  // small transfers are performed using a blocking call until DMA capacity is reached.
+  // User sketch can prevent blocking by managing pixel count and splitting into blocks
+  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
+  while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
+    pushPixels(buffer, 0x400);
+    len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
+  }
+
   esp_err_t ret;
   static spi_transaction_t trans;
 
@@ -774,7 +801,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 // The DMA functions here work with SPI only (not parallel)
 /***************************************************************************************
 ** Function name:           dc_callback
-** Description:             Toggles DC line during transaction
+** Description:             Toggles DC line during transaction (not used)
 ***************************************************************************************/
 extern "C" void dc_callback();
 
@@ -782,6 +809,17 @@ void IRAM_ATTR dc_callback(spi_transaction_t *spi_tx)
 {
   if ((bool)spi_tx->user) {DC_D;}
   else {DC_C;}
+}
+
+/***************************************************************************************
+** Function name:           dma_end_callback
+** Description:             Clear DMA run flag to stop retransmission loop
+***************************************************************************************/
+extern "C" void dma_end_callback();
+
+void IRAM_ATTR dma_end_callback(spi_transaction_t *spi_tx)
+{
+  WRITE_PERI_REG(SPI_DMA_CONF_REG(spi_host), 0);
 }
 
 /***************************************************************************************
@@ -799,7 +837,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .sclk_io_num = TFT_SCLK,
     .quadwp_io_num = -1,
     .quadhd_io_num = -1,
-    .max_transfer_sz = TFT_WIDTH * TFT_HEIGHT * 2 + 8, // TFT screen size
+    .max_transfer_sz = 65536, // ESP32 S3 max size is 64Kbytes
     .flags = 0,
     .intr_flags = 0
   };
@@ -819,9 +857,9 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .input_delay_ns = 0,
     .spics_io_num = pin,
     .flags = SPI_DEVICE_NO_DUMMY, //0,
-    .queue_size = 1,
-    .pre_cb = 0, //dc_callback, //Callback to handle D/C line
-    .post_cb = 0
+    .queue_size = 1,            // Not using queues
+    .pre_cb = 0, //dc_callback, //Callback to handle D/C line (not used)
+    .post_cb = dma_end_callback //Callback to end transmission
   };
   ret = spi_bus_initialize(spi_host, &buscfg, DMA_CHANNEL);
   ESP_ERROR_CHECK(ret);
