@@ -18,7 +18,7 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 
 4. Support has been added in v2.4.70 for the RP2040 with 16 bit parallel displays. This has been tested and the screen update performance is very good (4ms to clear 320 x 480 screen with HC8357C). The use of the RP2040 PIO makes it easy to change the write cycle timing for different displays. DMA with 16 bit transfers is also supported.
 
-5. Support for the ESP32-S2, ESP32-S3 and ESP32-C3 has been added (DMA not supported at the moment). Tested with v2.0.3 RC1 of the ESP32 board package. Example setups:
+5. Support for the ESP32-S2, ESP32-S3 and ESP32-C3 has been added (DMA only on ESP32 S3 at the moment). Tested with v2.0.3 RC1 of the ESP32 board package. Example setups:
 
       [Setup70_ESP32_S2_ILI9341.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h)
       
