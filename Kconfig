@@ -153,7 +153,7 @@ menu "TFT_eSPI"
     config TFT_PARALLEL_8_BIT
         bool "Enable 8-bit parallel mode (otherwise SPI is assumed)"
         default "n"
-        depends on IDF_TARGET_ESP32
+        depends on IDF_TARGET_ESP32 || IDF_TARGET_ESP32S3
         help
             Use 8-bit parallel bus to send data to the LCD. If not set SPI will be used.
     
@@ -215,7 +215,7 @@ menu "TFT_eSPI"
     
         choice TFT_SPI_PORT
             prompt "SPI port"
-            default TFT_SPI_2_HOST
+            default TFT_VSPI_PORT
             help
                 The ESP32 has 2 free SPI ports i.e. VSPI (SPI2) and HSPI (SPI3),
                 the VSPI is the default. If the VSPI port is in use and pins are
