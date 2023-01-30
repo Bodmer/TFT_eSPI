@@ -215,7 +215,7 @@ menu "TFT_eSPI"
     
         choice TFT_SPI_PORT
             prompt "SPI port"
-            default TFT_SPI_2_HOST
+            default TFT_VSPI_PORT
             help
                 The ESP32 has 2 free SPI ports i.e. VSPI (SPI2) and HSPI (SPI3),
                 the VSPI is the default. If the VSPI port is in use and pins are

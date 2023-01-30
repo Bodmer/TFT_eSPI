@@ -1,12 +1,12 @@
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 # News
-1. New functions have been added to draw smooth (antialiased) arcs, circles, and rounded rectangle outlines. New sketches are provided in the "Smooth Graphics" examples folder. Arcs can be drawn with or without anti-aliasing (which will then render faster). The arc ends can be straight or rounded. The arc drawing algorithm uses an optimised fixed point sqrt() function to improve performance on processors that do not have a hardware Floating Point Unit (e.g. RP2040). Here's a demo image of smooth (anti-aliased) arcs with rounded ends and increasing sweep angle:
+1. New functions have been added to draw smooth (antialiased) arcs, circles, and rounded rectangle outlines. New sketches are provided in the "Smooth Graphics" examples folder. Arcs can be drawn with or without anti-aliasing (which will then render faster). The arc ends can be straight or rounded. The arc drawing algorithm uses an optimised fixed point sqrt() function to improve performance on processors that do not have a hardware Floating Point Unit (e.g. RP2040). Here are two demo images, on the left smooth (anti-aliased) arcs with rounded ends, the image to the right is the same resolution (grabbed from the same 240x240 TFT) with the smoothing diasbled (no anti-aliasing):
 
-      ![arcs](https://github.com/Bodmer/Github-images/blob/main/smooth_arcs.png)
-      
-      Here is the same resolution image (grabbed from the same TFT) with the smoothing diasbled (no anti-aliasing):
-      
-      ![pixelated_arcs](https://github.com/Bodmer/Github-images/blob/main/pixelated_arcs.png)
+      ![arcs](https://github.com/Bodmer/Github-images/blob/main/aa_arc_240x240.png)  ![pixelated_arcs](https://github.com/Bodmer/Github-images/blob/main/no_aa_arc_240x240.png)
+
+      Here the smooth arcs have been used to create anti-aliased meter gauges on a 320x240 TFT:
+ 
+      ![arcs](https://github.com/Bodmer/Github-images/blob/main/xarc_meters_320x240.png)
 
 2. An excellent new compatible library is available which can render TrueType fonts on a TFT screen (or into a sprite). This has been developed by [takkaO](https://github.com/takkaO/OpenFontRender), I have created a branch with some bug fixes [here](https://github.com/Bodmer/OpenFontRender). The library provides access to compact font files, with fully scaleable anti-aliased glyphs. Left, middle and right justified text can also be printed to the screen. I have added TFT_eSPI specific examples to the OpenFontRender library and tested on RP2040 and ESP32 processors, the ESP8266 does not have sufficient RAM due to the glyph render complexity. Here is a demo screen where a single 12kbyte font file binary was used to render fully anti-aliased glyphs of gradually increasing size on a 320x480 TFT screen:
 
@@ -18,7 +18,7 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
 
 4. Support has been added in v2.4.70 for the RP2040 with 16 bit parallel displays. This has been tested and the screen update performance is very good (4ms to clear 320 x 480 screen with HC8357C). The use of the RP2040 PIO makes it easy to change the write cycle timing for different displays. DMA with 16 bit transfers is also supported.
 
-5. Support for the ESP32-S2, ESP32-S3 and ESP32-C3 has been added (DMA not supported at the moment). Tested with v2.0.3 RC1 of the ESP32 board package. Example setups:
+5. Support for the ESP32-S2, ESP32-S3 and ESP32-C3 has been added (DMA only on ESP32 S3 at the moment). Tested with v2.0.3 RC1 of the ESP32 board package. Example setups:
 
       [Setup70_ESP32_S2_ILI9341.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70_ESP32_S2_ILI9341.h)
       
