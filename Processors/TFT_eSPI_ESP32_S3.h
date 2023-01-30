@@ -7,10 +7,6 @@
 #ifndef _TFT_eSPI_ESP32H_
 #define _TFT_eSPI_ESP32H_
 
-#if !defined(DISABLE_ALL_LIBRARY_WARNINGS)
- #warning >>>>------>> DMA is not supported on the ESP32 S3 (possible future update)
-#endif
-
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x32
 
@@ -108,6 +104,10 @@ SPI3_HOST = 2
   #if !defined (ESP32_PARALLEL)
     #define ESP32_PARALLEL
   #endif
+#endif
+
+#if !defined(DISABLE_ALL_LIBRARY_WARNINGS) && defined (ESP32_PARALLEL)
+ #warning >>>>------>> DMA is not supported in parallel mode
 #endif
 
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
