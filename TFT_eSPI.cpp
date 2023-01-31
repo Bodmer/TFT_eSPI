@@ -1181,6 +1181,13 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
     #if defined (ST7796_DRIVER)
       // Read the 2 bytes
       color = ((tft_Read_8()) << 8) | (tft_Read_8());
+    #elif defined (ST7735_DRIVER)
+      // Read the 3 RGB bytes, colour is in LS 6 bits of the top 7 bits of each byte
+      // as the TFT stores colours as 18 bits
+      uint8_t r = tft_Read_8()<<1;
+      uint8_t g = tft_Read_8()<<1;
+      uint8_t b = tft_Read_8()<<1;
+      color = color565(r, g, b);
     #else
       // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
       // as the TFT stores colours as 18 bits
@@ -1341,6 +1348,13 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
     #if defined (ST7796_DRIVER)
       // Read the 2 bytes
       color = ((tft_Read_8()) << 8) | (tft_Read_8());
+    #elif defined (ST7735_DRIVER)
+      // Read the 3 RGB bytes, colour is in LS 6 bits of the top 7 bits of each byte
+      // as the TFT stores colours as 18 bits
+      uint8_t r = tft_Read_8()<<1;
+      uint8_t g = tft_Read_8()<<1;
+      uint8_t b = tft_Read_8()<<1;
+      color = color565(r, g, b);
     #else
       // Read the 3 RGB bytes, colour is actually only in the top 6 bits of each byte
       // as the TFT stores colours as 18 bits
@@ -3885,7 +3899,7 @@ uint16_t TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color, uint8_t alpha
 ** Function name:           drawSmoothArc
 ** Description:             Draw a smooth arc clockwise from 6 o'clock
 ***************************************************************************************/
-void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, int32_t startAngle, int32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds)
+void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32_t startAngle, uint32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds)
 // Centre at x,y
 // r = arc outer radius, ir = arc inner radius. Inclusive so arc thickness = r - ir + 1
 // Angles in range 0-360
@@ -3980,38 +3994,34 @@ inline uint8_t TFT_eSPI::sqrt_fraction(uint32_t num) {
 // smooth is optional, default is true, smooth=false means no antialiasing
 // Note: Arc ends are not anti-aliased (use drawSmoothArc instead for that)
 void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
-                       int32_t startAngle, int32_t endAngle,
+                       uint32_t startAngle, uint32_t endAngle,
                        uint32_t fg_color, uint32_t bg_color,
                        bool smooth)
 {
-  if (endAngle < startAngle) {
-    // Arc sweeps through 6 o'clock so draw in two parts
-    drawArc(x, y, r, ir, startAngle, 360, fg_color, bg_color, smooth);
-    startAngle = 0;
-  }
-
+  if (endAngle   > 360)   endAngle = 360;
+  if (startAngle > 360) startAngle = 360;
   if (_vpOoB || startAngle == endAngle) return;
   if (r < ir) transpose(r, ir);  // Required that r > ir
   if (r <= 0 || ir < 0) return;  // Invalid r, ir can be zero (circle sector)
-  if (startAngle < 0) startAngle = 0;
-  if (endAngle > 360) endAngle = 360;
 
+  if (endAngle < startAngle) {
+    // Arc sweeps through 6 o'clock so draw in two parts
+    if (startAngle < 360) drawArc(x, y, r, ir, startAngle, 360, fg_color, bg_color, smooth);
+    if (endAngle == 0) return;
+    startAngle = 0;
+  }
   inTransaction = true;
 
-  int32_t xs = 0;       // x start position for quadrant scan
-  uint8_t alpha = 0;    // alpha value for blending pixels
+  int32_t xs = 0;        // x start position for quadrant scan
+  uint8_t alpha = 0;     // alpha value for blending pixels
 
   uint32_t r2 = r * r;   // Outer arc radius^2
-  if (smooth) r++;      // Outer AA zone radius
+  if (smooth) r++;       // Outer AA zone radius
   uint32_t r1 = r * r;   // Outer AA radius^2
-  int16_t w  = r - ir;  // Width of arc (r - ir + 1)
+  int16_t w  = r - ir;   // Width of arc (r - ir + 1)
   uint32_t r3 = ir * ir; // Inner arc radius^2
-  if (smooth) ir--;     // Inner AA zone radius
+  if (smooth) ir--;      // Inner AA zone radius
   uint32_t r4 = ir * ir; // Inner AA radius^2
-
-  // Float variants of adjusted inner and outer arc radii
-  //float irf = ir;
-  //float rf  = r;
 
   //     1 | 2
   //    ---¦---    Arc quadrant index
@@ -4088,38 +4098,32 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
 
       // If in outer zone calculate alpha
       if (hyp > r2) {
-        //alpha = (uint8_t)((rf - sqrtf(hyp)) * 255);
         alpha = ~sqrt_fraction(hyp); // Outer AA zone
       }
       // If within arc fill zone, get line start and lengths for each quadrant
       else if (hyp >= r3) {
-        do {
-          // Calculate U16.16 slope
-          slope = ((r - cy) << 16)/(r - cx);
-          if (slope <= startSlope[0] && slope >= endSlope[0]) { // slope hi -> lo
-            xst[0] = cx; // Bottom left line end
-            len[0]++;
-          }
-          if (slope >= startSlope[1] && slope <= endSlope[1]) { // slope lo -> hi
-            xst[1] = cx; // Top left line end
-            len[1]++;
-          }
-          if (slope <= startSlope[2] && slope >= endSlope[2]) { // slope hi -> lo
-            xst[2] = cx; // Bottom right line start
-            len[2]++;
-          }
-          if (slope <= endSlope[3] && slope >= startSlope[3]) { // slope lo -> hi
-            xst[3] = cx; // Top right line start
-            len[3]++;
-          }
-          cx++;
-        } while ((r - cx) * (r - cx) + dy2 >= r3 && cx < r);
-        cx--;
+        // Calculate U16.16 slope
+        slope = ((r - cy) << 16)/(r - cx);
+        if (slope <= startSlope[0] && slope >= endSlope[0]) { // slope hi -> lo
+          xst[0] = cx; // Bottom left line end
+          len[0]++;
+        }
+        if (slope >= startSlope[1] && slope <= endSlope[1]) { // slope lo -> hi
+          xst[1] = cx; // Top left line end
+          len[1]++;
+        }
+        if (slope <= startSlope[2] && slope >= endSlope[2]) { // slope hi -> lo
+          xst[2] = cx; // Bottom right line start
+          len[2]++;
+        }
+        if (slope <= endSlope[3] && slope >= startSlope[3]) { // slope lo -> hi
+          xst[3] = cx; // Top right line start
+          len[3]++;
+        }
         continue; // Next x
       }
       else {
         if (hyp <= r4) break;  // Skip inner pixels
-        //alpha = (uint8_t)((sqrtf(hyp) - irf) * 255.0);
         alpha = sqrt_fraction(hyp); // Inner AA zone
       }
 
@@ -4191,19 +4195,12 @@ void TFT_eSPI::fillSmoothCircle(int32_t x, int32_t y, int32_t r, uint32_t color,
       int32_t hyp2 = (r - cx) * (r - cx) + dy2;
       if (hyp2 <= r1) break;
       if (hyp2 >= r2) continue;
-//*
+
       uint8_t alpha = ~sqrt_fraction(hyp2);
       if (alpha > 246) break;
       xs = cx;
       if (alpha < 9) continue;
-      //*/
-/*
-      float alphaf = (float)r - sqrtf(hyp2);
-      if (alphaf > HiAlphaTheshold) break;
-      xs = cx;
-      if (alphaf < LoAlphaTheshold) continue;
-      uint8_t alpha = alphaf * 255;
-//*/
+
       if (bg_color == 0x00FFFFFF) {
         drawPixel(x + cx - r, y + cy - r, color, alpha, bg_color);
         drawPixel(x - cx + r, y + cy - r, color, alpha, bg_color);
@@ -4243,7 +4240,7 @@ void TFT_eSPI::drawSmoothRoundRect(int32_t x, int32_t y, int32_t r, int32_t ir, 
 {
   if (_vpOoB) return;
   if (r < ir) transpose(r, ir); // Required that r > ir
-  if (r <= 0 || ir < 0) return;  // Invalid
+  if (r <= 0 || ir < 0) return; // Invalid
 
   w -= 2*r;
   h -= 2*r;
@@ -4255,13 +4252,7 @@ void TFT_eSPI::drawSmoothRoundRect(int32_t x, int32_t y, int32_t r, int32_t ir, 
 
   x += r;
   y += r;
-/*
-  float alphaGain = 1.0;
-  if (w != 0 || h != 0) {
-    if (r - ir < 2) alphaGain = 1.5; // Boost brightness for thin lines
-    if (r - ir < 1) alphaGain = 1.7;
-  }
-*/
+
   uint16_t t = r - ir + 1;
   int32_t xs = 0;
   int32_t cx = 0;
@@ -4274,8 +4265,6 @@ void TFT_eSPI::drawSmoothRoundRect(int32_t x, int32_t y, int32_t r, int32_t ir, 
   ir--;
   int32_t r4 = ir * ir; // Inner AA zone radius^2
 
-  //float irf = ir;
-  //float rf  = r;
   uint8_t alpha = 0;
 
   // Scan top left quadrant x y r ir fg_color  bg_color
@@ -4296,8 +4285,7 @@ void TFT_eSPI::drawSmoothRoundRect(int32_t x, int32_t y, int32_t r, int32_t ir, 
 
       // If in outer zone calculate alpha
       if (hyp > r2) {
-        alpha = ~sqrt_fraction(hyp);
-        //alpha = (uint8_t)((rf - sqrtf(hyp)) * 255); // Outer AA zone
+        alpha = ~sqrt_fraction(hyp); // Outer AA zone
       }
       // If within arc fill zone, get line lengths for each quadrant
       else if (hyp >= r3) {
@@ -4307,8 +4295,7 @@ void TFT_eSPI::drawSmoothRoundRect(int32_t x, int32_t y, int32_t r, int32_t ir, 
       }
       else {
         if (hyp <= r4) break;  // Skip inner pixels
-        //alpha = (uint8_t)((sqrtf(hyp) - irf) * 255); // Inner AA zone
-        alpha = sqrt_fraction(hyp);
+        alpha = sqrt_fraction(hyp); // Inner AA zone
       }
 
       if (alpha < 16) continue;  // Skip low alpha pixels
@@ -4379,13 +4366,7 @@ void TFT_eSPI::fillSmoothRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, i
       if (alpha > 246) break;
       xs = cx;
       if (alpha < 9) continue;
-/*
-      float alphaf = (float)r - sqrtf(hyp2);
-      if (alphaf > HiAlphaTheshold) break;
-      xs = cx;
-      if (alphaf < LoAlphaTheshold) continue;
-      uint8_t alpha = alphaf * 255;
-*/
+
       drawPixel(x + cx - r, y + cy - r, color, alpha, bg_color);
       drawPixel(x - cx + r + w, y + cy - r, color, alpha, bg_color);
       drawPixel(x - cx + r + w, y - cy + r + h, color, alpha, bg_color);

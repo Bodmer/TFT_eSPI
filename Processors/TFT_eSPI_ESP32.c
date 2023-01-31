@@ -64,29 +64,35 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
-** Function name:           beginSDA
-** Description:             Detach SPI from pin to permit software SPI
+** Function name:           beginSDA - VSPI port only, FPSI port only for S2
+** Description:             Detach MOSI and attach MISO to SDA for reads
 ***************************************************************************************/
 void TFT_eSPI::begin_SDA_Read(void)
 {
-  pinMatrixOutDetach(TFT_MOSI, false, false);
-  pinMode(TFT_MOSI, INPUT);
-  pinMatrixInAttach(TFT_MOSI, VSPIQ_IN_IDX, false);
+  gpio_set_direction((gpio_num_t)TFT_MOSI, GPIO_MODE_INPUT);
+  #ifdef CONFIG_IDF_TARGET_ESP32
+    pinMatrixInAttach(TFT_MOSI, VSPIQ_IN_IDX, false);
+  #else // S2
+    pinMatrixInAttach(TFT_MOSI, FSPIQ_IN_IDX, false);
+  #endif
   SET_BUS_READ_MODE;
 }
 
 /***************************************************************************************
-** Function name:           endSDA
-** Description:             Attach SPI pins after software SPI
+** Function name:           endSDA - VSPI port only, FPSI port only for S2
+** Description:             Attach MOSI to SDA and detach MISO for writes
 ***************************************************************************************/
 void TFT_eSPI::end_SDA_Read(void)
 {
-  pinMode(TFT_MOSI, OUTPUT);
-  pinMatrixOutAttach(TFT_MOSI, VSPID_OUT_IDX, false, false);
-  pinMode(TFT_MISO, INPUT);
-  pinMatrixInAttach(TFT_MISO, VSPIQ_IN_IDX, false);
+  gpio_set_direction((gpio_num_t)TFT_MOSI, GPIO_MODE_OUTPUT);
+  #ifdef CONFIG_IDF_TARGET_ESP32
+    pinMatrixOutAttach(TFT_MOSI, VSPID_OUT_IDX, false, false);
+  #else // S2
+    pinMatrixOutAttach(TFT_MOSI, FSPID_OUT_IDX, false, false);
+  #endif
   SET_BUS_WRITE_MODE;
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////
 #endif // #if defined (TFT_SDA_READ)
 ////////////////////////////////////////////////////////////////////////////////////////

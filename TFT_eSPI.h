@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.5.2"
+#define TFT_ESPI_VERSION "2.5.21"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -142,6 +142,17 @@
 #ifndef SPI_BUSY_CHECK
   #define SPI_BUSY_CHECK
 #endif
+
+// If half duplex SDA mode is defined then MISO pin should be -1
+#ifdef TFT_SDA_READ
+  #ifdef TFT_MISO
+    #if TFT_MISO != -1
+      #undef TFT_MISO
+      #define TFT_MISO -1
+      #warning TFT_MISO set to -1
+    #endif
+  #endif
+#endif  
 
 /***************************************************************************************
 **                         Section 4: Setup fonts
@@ -528,12 +539,12 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // By default the arc is drawn with square ends unless the "roundEnds" parameter is included and set true
            // Angle = 0 is at 6 o'clock position, 90 at 9 o'clock etc. The angles must be in range 0-360 or they will be clipped to these limits
            // The start angle may be larger than the end angle. Arcs are always drawn clockwise from the start angle.
-  void     drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, int32_t startAngle, int32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds = false);
+  void     drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32_t startAngle, uint32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds = false);
 
            // As per "drawSmoothArc" except the ends of the arc are NOT anti-aliased, this facilitates dynamic arc length changes with
            // arc segments and ensures clean segment joints. 
            // The sides of the arc are anti-aliased by default. If smoothArc is false sides will NOT be anti-aliased
-  void     drawArc(int32_t x, int32_t y, int32_t r, int32_t ir, int32_t startAngle, int32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool smoothArc = true);
+  void     drawArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32_t startAngle, uint32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool smoothArc = true);
 
            // Draw an anti-aliased filled circle at x, y with radius r
            // Note: The thickness of line is 3 pixels to reduce the visible "braiding" effect of anti-aliasing narrow lines
