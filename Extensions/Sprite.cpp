@@ -254,6 +254,11 @@ void TFT_eSprite::createPalette(uint16_t colorMap[], uint8_t colors)
 ***************************************************************************************/
 void TFT_eSprite::createPalette(const uint16_t colorMap[], uint8_t colors)
 {
+  if (_colorMap != nullptr)
+  {
+    free(_colorMap);
+  }
+
   if (colorMap == nullptr)
   {
     // Create a color map using the default FLASH map
