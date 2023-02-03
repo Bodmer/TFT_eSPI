@@ -223,11 +223,6 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
 ***************************************************************************************/
 void TFT_eSprite::createPalette(uint16_t colorMap[], uint8_t colors)
 {
-  if (_colorMap != nullptr)
-  {
-    free(_colorMap);
-  }
-
   if (colorMap == nullptr)
   {
     // Create a color map using the default FLASH map
@@ -236,7 +231,7 @@ void TFT_eSprite::createPalette(uint16_t colorMap[], uint8_t colors)
   }
 
   // Allocate and clear memory for 16 color map
-  _colorMap = (uint16_t *)calloc(16, sizeof(uint16_t));
+  if (_colorMap == nullptr) _colorMap = (uint16_t *)calloc(16, sizeof(uint16_t));
 
   if (colors > 16) colors = 16;
 
@@ -261,7 +256,7 @@ void TFT_eSprite::createPalette(const uint16_t colorMap[], uint8_t colors)
   }
 
   // Allocate and clear memory for 16 color map
-  _colorMap = (uint16_t *)calloc(16, sizeof(uint16_t));
+  if (_colorMap == nullptr) _colorMap = (uint16_t *)calloc(16, sizeof(uint16_t));
 
   if (colors > 16) colors = 16;
 
@@ -380,7 +375,7 @@ void TFT_eSprite::deleteSprite(void)
   if (_colorMap != nullptr)
   {
     free(_colorMap);
-	_colorMap = nullptr;
+	  _colorMap = nullptr;
   }
 
   if (_created)
