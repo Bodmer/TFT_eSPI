@@ -131,6 +131,8 @@
 //#include <User_Setups/Setup206_LilyGo_T_Display_S3.h>
 //#include <User_Setups/Setup207_LilyGo_T_HMI.h>
 
+//#include <User_Setups/Setup208_ESP32_S3_Box_Lite.h>      // For the ESP32 S3 Box Lite (may also work with ESP32 S3 Box)
+
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
