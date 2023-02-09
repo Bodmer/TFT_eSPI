@@ -1,4 +1,4 @@
-// Display configuration for ST7789-based ESP32-S3-Box-Lite(https://amzn.to/3XiJkUW)
+// Display configuration for ST7789-based ESP32-S3-Box-Lite
 
 #define USER_SETUP_ID 208
 #define USER_SETUP_INFO "ESP32-S3-BOX-LITE"
