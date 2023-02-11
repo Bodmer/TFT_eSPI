@@ -61,7 +61,11 @@ The use of PIO for SPI allows the RP2040 to be over-clocked (up to 250MHz works 
 
 # TFT_eSPI
 
-An Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targeted at 32 bit processors, it  has been performance optimised for RP2040, STM32, ESP8266 and ESP32 types, other processors may be used but will use the slower generic Arduino interface calls. The library can be loaded using the Arduino IDE's Library Manager. Direct Memory Access (DMA) can be used with the ESP32, RP2040 and STM32 processors with SPI interface displays to improve rendering performance. DMA with a parallel interface (8 and 16 bit parallel) is only supported with the RP2040.
+A feature rich Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targeted at 32 bit processors, it  has been performance optimised for RP2040, STM32, ESP8266 and ESP32 types, other 32 bit processors may be used but will use the slower generic Arduino interface calls. The library can be loaded using the Arduino IDE's Library Manager. Direct Memory Access (DMA) can be used with the ESP32, RP2040 and STM32 processors with SPI interface displays to improve rendering performance. DMA with a parallel interface (8 and 16 bit) is only supported with the RP2040.
+
+The screen controller, interface pins and library configuration settings must be defined inside the library. They can NOT be defined in the Arduino sketch. See the User_Setup_Select.h file for details. This approach has significant advantages, it keeps the examples clean from long configuration options and once the setup is defined any example can be run without modification. PlatformIO users can define these settings on a per project basis within a platformio.ini file, see Docs folder in library.
+
+Lots of example sketches are provided which demonstrate using the functions in the library. Due to the popularity of the library there are lots of online tutorials for TFT_eSPI that have been created by enthusiastic users.
 
 Optimised drivers have been tested with the following processors:
 
@@ -70,9 +74,24 @@ Optimised drivers have been tested with the following processors:
 * ESP8266
 * STM32F1xx, STM32F2xx, STM32F4xx, STM32F767 (higher RAM processors recommended)
 
-For other processors only SPI interface displays are supported and the slower Arduino SPI library functions are used by the library. Higher clock speed processors such as used for the Teensy 3.x and 4.x boards will still provide a very good performance with the generic Arduino SPI functions.
+The library supports the following interface types for these processors:
 
-"Four wire" SPI and 8 bit parallel interfaces are supported. Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
+| Processor | 4 wire SPI | 8 bit parallel | 16 bit parallel |   DMA support    |
+|-----------|    :---:   |     :---:      |      :---:      |       :---:      |
+| RP2040    |     Yes    |      Yes       |       Yes       |  Yes (all)       |
+| ESP32     |     Yes    |      Yes       |       No        |  Yes (SPI only)  |
+| ESP32 C3  |     Yes    |      No        |       No        |  No              |
+| ESP32 S2  |     Yes    |      No        |       No        |  No              |
+| ESP32 S3  |     Yes    |      Yes       |       No        |  Yes (SPI only)  |
+| ESP8266   |     Yes    |      No        |       No        |  No              |
+| STM32Fxxx |     Yes    |      Yes       |       No        |  Yes (SPI only)  |
+| Other     |     Yes    |      No        |       No        |  No              |
+
+For other (generic) processors only SPI interface displays are supported and the slower Arduino SPI library functions are used by the library. Higher clock speed processors such as used for the Teensy 3.x and 4.x boards will still provide a very good performance with the generic Arduino SPI functions.
+
+Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
+
+Support for the XPT2046 touch screen controller is built into the library and can be used with SPI interface displays. Third party touch support libraries are also available when using a display parallel interface.
 
 Displays using the following controllers are supported:
 
@@ -92,7 +111,7 @@ Displays using the following controllers are supported:
 * RM68140
 * S6D02A1
 * SSD1351
-* SSD1963
+* SSD1963 (this controller only has a parallel interface option)
 * ST7735
 * ST7789
 * ST7796
