@@ -116,6 +116,8 @@
 //#include <User_Setups/Setup136_LilyGo_TTV.h>       // Setup file for ESP32 and Lilygo TTV ST7789 SPI bus TFT  135x240
 //#include <User_Setups/Setup137_LilyGo_TDisplay_RP2040.h>  // Setup file for Lilygo T-Display RP2040 (ST7789 on SPI bus with 135x240 TFT)
 
+//#include <User_Setups/Setup138_Pico_Explorer_Base_RP2040_ST7789.h> // Setup file for Pico Explorer Base by Pimoroni for RP2040 (ST7789 on SPI bus with 240x240 TFT)
+
 //#include <User_Setups/Setup200_GC9A01.h>           // Setup file for ESP32 and GC9A01 240 x 240 TFT
 
 //#include <User_Setups/Setup201_WT32_SC01.h>        // Setup file for ESP32 based WT32_SC01 from Seeed
