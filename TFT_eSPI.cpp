@@ -4464,16 +4464,25 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
       // Track edge to minimise calculations
       if (!endX) { endX = true; xs = xp; }
       if (alpha > HiAlphaTheshold) {
-        if (swin) { setWindow(xp, yp, width()-1, yp); swin = false; }
-        pushColor(fg_color);
+        #ifdef GC9A01_DRIVER
+          drawPixel(xp, yp, fg_color);
+        #else
+          if (swin) { setWindow(xp, yp, x1, yp); swin = false; }
+          pushColor(fg_color);
+        #endif
         continue;
       }
       //Blend color with background and plot
       if (bg_color == 0x00FFFFFF) {
         bg = readPixel(xp, yp); swin = true;
       }
-      if (swin) { setWindow(xp, yp, width()-1, yp); swin = false; }
-      pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
+      #ifdef GC9A01_DRIVER
+        uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain);
+        drawPixel(xp, yp, pcol, fg_color, bg));
+      #else
+        if (swin) { setWindow(xp, yp, x1, yp); swin = false; }
+        pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
+      #endif
     }
   }
 
@@ -4492,16 +4501,25 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
       // Track line boundary
       if (!endX) { endX = true; xs = xp; }
       if (alpha > HiAlphaTheshold) {
-        if (swin) { setWindow(xp, yp, width()-1, yp); swin = false; }
-        pushColor(fg_color);
+        #ifdef GC9A01_DRIVER
+          drawPixel(xp, yp, fg_color);
+        #else
+          if (swin) { setWindow(xp, yp, x1, yp); swin = false; }
+          pushColor(fg_color);
+        #endif
         continue;
       }
       //Blend colour with background and plot
       if (bg_color == 0x00FFFFFF) {
         bg = readPixel(xp, yp); swin = true;
       }
-      if (swin) { setWindow(xp, yp, width()-1, yp); swin = false; }
-      pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
+      #ifdef GC9A01_DRIVER
+        uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain);
+        drawPixel(xp, yp, pcol, fg_color, bg));
+      #else
+        if (swin) { setWindow(xp, yp, x1, yp); swin = false; }
+        pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
+      #endif
     }
   }
 
