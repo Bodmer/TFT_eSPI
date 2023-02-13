@@ -4477,8 +4477,8 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
         bg = readPixel(xp, yp); swin = true;
       }
       #ifdef GC9A01_DRIVER
-        uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain);
-        drawPixel(xp, yp, pcol, fg_color, bg));
+        uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg);
+        drawPixel(xp, yp, pcol);
       #else
         if (swin) { setWindow(xp, yp, x1, yp); swin = false; }
         pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
@@ -4514,8 +4514,8 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
         bg = readPixel(xp, yp); swin = true;
       }
       #ifdef GC9A01_DRIVER
-        uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain);
-        drawPixel(xp, yp, pcol, fg_color, bg));
+        uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg);
+        drawPixel(xp, yp, pcol);
       #else
         if (swin) { setWindow(xp, yp, x1, yp); swin = false; }
         pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
