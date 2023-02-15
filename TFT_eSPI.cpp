@@ -3166,14 +3166,13 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
 {
   if (_vpOoB) return;
 
+  if (c < 32) return;
 #ifdef LOAD_GLCD
 //>>>>>>>>>>>>>>>>>>
   #ifdef LOAD_GFXFF
-  if(!gfxFont) { // 'Classic' built-in GLCD font
+  if(!gfxFont) { // 'Classic' built-in font
   #endif
 //>>>>>>>>>>>>>>>>>>
-
-  if (c > 255) return;
 
   int32_t xd = x + _xDatum;
   int32_t yd = y + _yDatum;
@@ -5022,6 +5021,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
 #endif
 
   if (uniCode == '\n') uniCode+=22; // Make it a valid space character to stop errors
+  else if (uniCode < 32) return 1;
 
   uint16_t cwidth = 0;
   uint16_t cheight = 0;
@@ -5040,7 +5040,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
 
 #ifdef LOAD_FONT2
   if (textfont == 2) {
-    if (uniCode < 32 || uniCode > 127) return 1;
+    if (uniCode > 127) return 1;
 
     cwidth = pgm_read_byte(widtbl_f16 + uniCode-32);
     cheight = chr_hgt_f16;
@@ -5056,7 +5056,7 @@ size_t TFT_eSPI::write(uint8_t utf8)
 #ifdef LOAD_RLE
   {
     if ((textfont>2) && (textfont<9)) {
-      if (uniCode < 32 || uniCode > 127) return 1;
+      if (uniCode > 127) return 1;
       // Uses the fontinfo struct array to avoid lots of 'if' or 'switch' statements
       cwidth = pgm_read_byte( (uint8_t *)pgm_read_dword( &(fontdata[textfont].widthtbl ) ) + uniCode-32 );
       cheight= pgm_read_byte( &fontdata[textfont].height );
