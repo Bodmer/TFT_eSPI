@@ -7,8 +7,8 @@
 // This function will be called during decoding of the png file to render each image
 // line to the TFT. PNGdec generates the image line and a 1bpp mask.
 void pngDraw(PNGDRAW *pDraw) {
-  uint16_t lineBuffer[MAX_IMAGE_WDITH];          // Line buffer for rendering
-  uint8_t  maskBuffer[1 + MAX_IMAGE_WDITH / 8];  // Mask buffer
+  uint16_t lineBuffer[MAX_IMAGE_WIDTH];          // Line buffer for rendering
+  uint8_t  maskBuffer[1 + MAX_IMAGE_WIDTH / 8];  // Mask buffer
 
   png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
 

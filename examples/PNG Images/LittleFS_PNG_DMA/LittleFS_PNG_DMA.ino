@@ -22,7 +22,7 @@
 #include <PNGdec.h>
 
 PNG png;
-#define MAX_IMAGE_WDITH 240 // Adjust for your images
+#define MAX_IMAGE_WIDTH 240 // Adjust for your images
 
 int16_t xpos = 0;
 int16_t ypos = 0;
@@ -73,7 +73,7 @@ void loop()
         tft.startWrite();
         Serial.printf("image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
         uint32_t dt = millis();
-        if (png.getWidth() > MAX_IMAGE_WDITH) {
+        if (png.getWidth() > MAX_IMAGE_WIDTH) {
           Serial.println("Image too wide for allocated lin buffer!");
         }
         else {
@@ -99,8 +99,8 @@ void loop()
 // you will need to adapt this function to suit.
 // Callback function to draw pixels to the display
 void pngDraw(PNGDRAW *pDraw) {
-  uint16_t lineBuffer[MAX_IMAGE_WDITH];
-  static uint16_t dmaBuffer[MAX_IMAGE_WDITH]; // static so buffer persists after fn exit
+  uint16_t lineBuffer[MAX_IMAGE_WIDTH];
+  static uint16_t dmaBuffer[MAX_IMAGE_WIDTH]; // static so buffer persists after fn exit
 
   png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
   tft.pushImageDMA(xpos, ypos + pDraw->y, pDraw->iWidth, 1, lineBuffer, dmaBuffer);
