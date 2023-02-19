@@ -15,7 +15,7 @@
 
 #define TFT_GREY 0x2104 // Dark grey 16 bit colour
 
-#include "alert.h" // Out of range alert icon
+#include "Alert.h" // Out of range alert icon
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
