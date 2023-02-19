@@ -13,6 +13,7 @@ void pngDraw(PNGDRAW *pDraw) {
   png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
 
   if (png.getAlphaMask(pDraw, maskBuffer, 255)) {
+    // Note: pushMaskedImage is for pushing to the TFT and will not work pushing into a sprite
     tft.pushMaskedImage(xpos, ypos + pDraw->y, pDraw->iWidth, 1, lineBuffer, maskBuffer);
   }
 }
