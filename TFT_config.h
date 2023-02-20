@@ -12,7 +12,7 @@
  * @author Ricard Bitriá Ribes (https://github.com/dracir9)
  * Created Date: 22-01-2022
  * -----
- * Last Modified: 14-04-2022
+ * Last Modified: 20-02-2023
  * Modified By: Ricard Bitriá Ribes
  * -----
  * @copyright (c) 2022 Ricard Bitriá Ribes
@@ -160,6 +160,8 @@
 
 // 8 BIT PARALLEL BUS
 #ifdef CONFIG_TFT_PARALLEL_8_BIT
+
+    #define TFT_PARALLEL_8_BIT
 
     #if CONFIG_TFT_D0 == -1
         #error "Invalid Data 0 pin. Check TFT_eSPI configuration"
