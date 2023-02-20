@@ -5950,10 +5950,12 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
   #ifdef SPI_READ_FREQUENCY
     tft_settings.tft_rd_freq = SPI_READ_FREQUENCY/100000;
   #endif
-  #ifdef TFT_SPI_PORT
-    tft_settings.port = TFT_SPI_PORT;
-  #else
-    tft_settings.port = 255;
+  #ifndef GENERIC_PROCESSOR
+    #ifdef TFT_SPI_PORT
+      tft_settings.port = TFT_SPI_PORT;
+    #else
+      tft_settings.port = 255;
+    #endif
   #endif
   #ifdef RP2040_PIO_SPI
     tft_settings.interface = 0x10;
