@@ -37,11 +37,9 @@ Note: background rendering for Smooth fonts is also now available when using the
 
 7. New anti-aliased graphics functions to draw lines, wedge shaped lines, circles and rounded rectangles. [Examples are included](https://github.com/Bodmer/TFT_eSPI/tree/master/examples/Smooth%20Graphics). Examples have also been added to [display PNG compressed images](https://github.com/Bodmer/TFT_eSPI/tree/master/examples/PNG%20Images) (note: requires ~40kbytes RAM).
 
-8. Frank Boesing has created an extension library for TFT_eSPI that allows a large range of ready-built fonts to be used. Frank's library (adapted to permit rendering in sprites as well as TFT) can be [downloaded here](https://github.com/Bodmer/TFT_eSPI_ext). More than 3300 additional Fonts are [available here](https://github.com/FrankBoesing/fonts/tree/master/ofl). The TFT_eSPI_ext library contains examples that demonstrate the use of the fonts.
+8. Users of PowerPoint experienced with running macros may be interested in the [pptm sketch generator here](https://github.com/Bodmer/PowerPoint_to_sketch), this converts graphics and tables drawn in PowerPoint slides into an Arduino sketch that renders the graphics on a 480x320 TFT. This is based on VB macros [created by Kris Kasprzak here](https://github.com/KrisKasprzak/Powerpoint-ILI9341_t3).
 
-9. Users of PowerPoint experienced with running macros may be interested in the [pptm sketch generator here](https://github.com/Bodmer/PowerPoint_to_sketch), this converts graphics and tables drawn in PowerPoint slides into an Arduino sketch that renders the graphics on a 480x320 TFT. This is based on VB macros [created by Kris Kasprzak here](https://github.com/KrisKasprzak/Powerpoint-ILI9341_t3).
-
-10. The library contains two new functions for rectangles filled with a horizontal or vertical coloured gradient:
+9. The library contains two new functions for rectangles filled with a horizontal or vertical coloured gradient:
 
       tft.fillRectHGradient(x, y, w, h, color1, color2);
   
@@ -49,12 +47,12 @@ Note: background rendering for Smooth fonts is also now available when using the
       
       ![Gradient](https://i.imgur.com/atR0DmP.png)
 
-11. The RP2040 8 bit parallel interface uses the PIO. The PIO now manages the "setWindow" and "block fill" actions, releasing the processor for other tasks when areas of the screen are being filled with a colour. The PIO can optionally be used for SPI interface displays if #define RP2040_PIO_SPI is put in the setup file. Touch screens and pixel read operations are not supported when the PIO interface is used.
+10. The RP2040 8 bit parallel interface uses the PIO. The PIO now manages the "setWindow" and "block fill" actions, releasing the processor for other tasks when areas of the screen are being filled with a colour. The PIO can optionally be used for SPI interface displays if #define RP2040_PIO_SPI is put in the setup file. Touch screens and pixel read operations are not supported when the PIO interface is used.
 The RP2040 PIO features only work with [Earle Philhower's board package](https://github.com/earlephilhower/arduino-pico), NOT the Arduino Mbed version.
 
 The use of PIO for SPI allows the RP2040 to be over-clocked (up to 250MHz works on my boards) in Earle's board package whilst still maintaining high SPI clock rates.
 
-12. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with 8/16 bit parallel and 16 bit colour SPI displays. See "Bouncy_Circles" sketch.
+11. DMA can now be used with the Raspberry Pi Pico (RP2040) when used with 8/16 bit parallel and 16 bit colour SPI displays. See "Bouncy_Circles" sketch.
 
       ["Bouncing circles"](https://www.youtube.com/watch?v=njFXIzCTQ_Q&lc=UgymaUIwOIuihvYh-Qt4AaABAg)
 
