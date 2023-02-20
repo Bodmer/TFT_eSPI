@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.5.21"
+#define TFT_ESPI_VERSION "2.5.22"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -699,11 +699,12 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
   // Low level read/write
   void     spiwrite(uint8_t);        // legacy support only
-#ifndef RM68120_DRIVER
-  void     writecommand(uint8_t c);  // Send a command, function resets DC/RS high ready for data
+#ifdef RM68120_DRIVER
+  void     writecommand(uint16_t c);                 // Send a 16 bit command, function resets DC/RS high ready for data
+  void     writeRegister8(uint16_t c, uint8_t d);    // Write 8 bit data data to 16 bit command register
+  void     writeRegister16(uint16_t c, uint16_t d);  // Write 16 bit data data to 16 bit command register
 #else
-  void     writecommand(uint16_t c); // Send a command, function resets DC/RS high ready for data
-  void     writeRegister(uint16_t c, uint8_t d); // Write data to 16 bit command register
+  void     writecommand(uint8_t c);  // Send an 8 bit command, function resets DC/RS high ready for data
 #endif
   void     writedata(uint8_t d);     // Send data with DC/RS set high
 

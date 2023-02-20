@@ -1,5 +1,5 @@
 // This is a test sketch being developed for a new arc based meter widget
-// The meter grahic is fully anti-aliased to avoid jaggy pixelated edges
+// The meter graphic is fully anti-aliased to avoid jaggy pixelated edges
 
 // For this demo randomly sized meters are drawn, cycled and redrawn a random size.
 // The meter is ramped up and down 0-100 and 100-0, then pauses before a new

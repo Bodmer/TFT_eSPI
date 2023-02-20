@@ -375,7 +375,7 @@ void TFT_eSprite::deleteSprite(void)
   if (_colorMap != nullptr)
   {
     free(_colorMap);
-	  _colorMap = nullptr;
+    _colorMap = nullptr;
   }
 
   if (_created)

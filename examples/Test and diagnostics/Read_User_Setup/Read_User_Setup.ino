@@ -184,5 +184,5 @@ int8_t getPinName(int8_t pin)
 
   if (user.esp == 0x32F) return pin;
 
-  return -1; // Invalid pin
+  return pin; // Invalid pin
 }

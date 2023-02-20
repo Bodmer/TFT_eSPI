@@ -1,7 +1,7 @@
 // See SetupX_Template.h for all options available
 #define USER_SETUP_ID 13
 
-#define ESP32_PARALLEL
+#define TFT_PARALLEL_8_BIT
 
 
 #define ILI9481_DRIVER

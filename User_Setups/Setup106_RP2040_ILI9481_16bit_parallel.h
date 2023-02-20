@@ -8,6 +8,19 @@
 //#define TFT_PARALLEL_8_BIT
 #define TFT_PARALLEL_16_BIT
 
+// The parallel interface write cycle period is derived from a division of the CPU clock
+// speed so scales with the processor clock. This means that the divider ratio may need
+// to be increased when overclocking. I may also need to be adjusted dependant on the
+// display controller type (ILI94341, HX8357C etc). If RP2040_PIO_CLK_DIV is not defined
+// the library will set default values which may not suit your display.
+// The display controller data sheet will specify the minimum write cycle period. The
+// controllers often work reliably for shorter periods, however if the period is too short
+// the display may not initialise or graphics will become corrupted.
+// PIO write cycle frequency = (CPU clock/(4 * RP2040_PIO_CLK_DIV))
+//#define RP2040_PIO_CLK_DIV 1 // 32ns write cycle at 125MHz CPU clock
+//#define RP2040_PIO_CLK_DIV 2 // 64ns write cycle at 125MHz CPU clock
+//#define RP2040_PIO_CLK_DIV 3 // 96ns write cycle at 125MHz CPU clock
+//#define RP2040_PIO_CLK_DIV 4 // 96ns write cycle at 125MHz CPU clock
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Display driver type

@@ -1,34 +1,9 @@
-// See SetupX_Template.h for all options available
-#define USER_SETUP_ID 17
-
 #define EPD_DRIVER // ePaper driver
 
-
-// READ THIS  READ THIS  READ THIS  READ THIS  READ THIS  READ THIS
-// Install the ePaper library for your own display size and type
-// from here:
-// https://github.com/Bodmer/EPD_Libraries
-
-//  Note: Pin allocations for the ePaper signals are defined in
-//  the ePaper library's epdif.h file. There follows the default
-//  pins already included in epdif.h file for the ESP8266:
-
-///////////////////////////////////////////////////////////////////
-//   For ESP8266 connect as follows:                             //
-//   Display  3.3V to NodeMCU 3V3                                //
-//   Display   GND to NodeMCU GND                                //
-//                                                               //
-//   Display   GPIO   NodeMCU pin                                //
-//    BUSY       5      D1                                       //
-//    RESET      4      D2                                       //
-//    DC         0      D3                                       //
-//    CS         2      D4                                       //
-//    CLK       14      D5                                       //
-//                      D6 (MISO not connected to display)       //
-//    DIN       13      D7                                       //
-//                                                               //
-///////////////////////////////////////////////////////////////////
-
+#define TFT_MISO       -1
+#define TFT_MOSI       -1
+#define TFT_SCLK       -1
+#define TFT_RST        -1
 
 #define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
 #define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters

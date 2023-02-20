@@ -105,7 +105,7 @@ and is compatible with the GNU GPL.
 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvStartvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 Software License Agreement (FreeBSD License)
 
-Copyright (c) 2022 Bodmer (https://github.com/Bodmer)
+Copyright (c) 2023 Bodmer (https://github.com/Bodmer)
 
 All rights reserved.
 

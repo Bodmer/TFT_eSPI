@@ -988,7 +988,6 @@ void TFT_eSPI::writecommand(uint8_t c)
   DC_D;
 
   end_tft_write();
-
 }
 #else
 void TFT_eSPI::writecommand(uint16_t c)
@@ -1004,7 +1003,7 @@ void TFT_eSPI::writecommand(uint16_t c)
   end_tft_write();
 
 }
-void TFT_eSPI::writeRegister(uint16_t c, uint8_t d)
+void TFT_eSPI::writeRegister8(uint16_t c, uint8_t d)
 {
   begin_tft_write();
 
@@ -1019,6 +1018,22 @@ void TFT_eSPI::writeRegister(uint16_t c, uint8_t d)
   end_tft_write();
 
 }
+void TFT_eSPI::writeRegister16(uint16_t c, uint16_t d)
+{
+  begin_tft_write();
+
+  DC_C;
+
+  tft_Write_16(c);
+
+  DC_D;
+
+  tft_Write_16(d);
+
+  end_tft_write();
+
+}
+
 #endif
 
 /***************************************************************************************
@@ -2074,7 +2089,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
 /***************************************************************************************
 ** Function name:           pushMaskedImage
-** Description:             Render a 16 bit colour image with a 1bpp mask
+** Description:             Render a 16 bit colour image to TFT with a 1bpp mask
 ***************************************************************************************/
 // Can be used with a 16bpp sprite and a 1bpp sprite for the mask
 void TFT_eSPI::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask)
@@ -2143,7 +2158,6 @@ void TFT_eSPI::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint1
         xp += clearCount;
         clearCount = 0;
         pushImage(x + xp, y, setCount, 1, iptr + xp);      // pushImage handles clipping
-        //pushImageDMA(x + xp, y, setCount, 1, iptr + xp);
         xp += setCount;
       }
     } while (setCount || mptr < eptr);
@@ -3438,6 +3452,18 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
         hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
       #endif
       DC_D;
+    #elif defined (RM68120_DRIVER)
+      DC_C; tft_Write_16(TFT_CASET+0); DC_D; tft_Write_16(x0 >> 8);
+      DC_C; tft_Write_16(TFT_CASET+1); DC_D; tft_Write_16(x0 & 0xFF);
+      DC_C; tft_Write_16(TFT_CASET+2); DC_D; tft_Write_16(x1 >> 8);
+      DC_C; tft_Write_16(TFT_CASET+3); DC_D; tft_Write_16(x1 & 0xFF);
+      DC_C; tft_Write_16(TFT_PASET+0); DC_D; tft_Write_16(y0 >> 8);
+      DC_C; tft_Write_16(TFT_PASET+1); DC_D; tft_Write_16(y0 & 0xFF);
+      DC_C; tft_Write_16(TFT_PASET+2); DC_D; tft_Write_16(y1 >> 8);
+      DC_C; tft_Write_16(TFT_PASET+3); DC_D; tft_Write_16(y1 & 0xFF);
+
+      DC_C; tft_Write_16(TFT_RAMWR);
+      DC_D;
     #else
       // This is for the RP2040 and PIO interface (SPI or parallel)
       WAIT_FOR_STALL;
@@ -3665,6 +3691,24 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
       #endif
     #endif
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
+  #elif defined (RM68120_DRIVER)
+    if (addr_col != x) {
+      DC_C; tft_Write_16(TFT_CASET+0); DC_D; tft_Write_16(x >> 8);
+      DC_C; tft_Write_16(TFT_CASET+1); DC_D; tft_Write_16(x & 0xFF);
+      DC_C; tft_Write_16(TFT_CASET+2); DC_D; tft_Write_16(x >> 8);
+      DC_C; tft_Write_16(TFT_CASET+3); DC_D; tft_Write_16(x & 0xFF);
+      addr_col = x;
+    }
+    if (addr_row != y) {
+      DC_C; tft_Write_16(TFT_PASET+0); DC_D; tft_Write_16(y >> 8);
+      DC_C; tft_Write_16(TFT_PASET+1); DC_D; tft_Write_16(y & 0xFF);
+      DC_C; tft_Write_16(TFT_PASET+2); DC_D; tft_Write_16(y >> 8);
+      DC_C; tft_Write_16(TFT_PASET+3); DC_D; tft_Write_16(y & 0xFF);
+      addr_row = y;
+    }
+    DC_C; tft_Write_16(TFT_RAMWR); DC_D;
+
+    TX_FIFO = color;
   #else
     // This is for the RP2040 and PIO interface (SPI or parallel)
     WAIT_FOR_STALL;
@@ -3981,7 +4025,7 @@ void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32
 ***************************************************************************************/
 // Compute the fixed point square root of an integer and
 // return the 8 MS bits of fractional part.
-// Quicker than sqrt() for processors that do not have and FPU (e.g. RP2040)
+// Quicker than sqrt() for processors that do not have an FPU (e.g. RP2040)
 inline uint8_t TFT_eSPI::sqrt_fraction(uint32_t num) {
   if (num > (0x40000000)) return 0;
   uint32_t bsh = 0x00004000;

@@ -165,8 +165,13 @@
     #define DC_C  WAIT_FOR_STALL; \
                   tft_pio->sm[pio_sm].instr = pio_instr_clr_dc
 
-    // Flush has happened before this and mode changed back to 16 bit
-    #define DC_D  tft_pio->sm[pio_sm].instr = pio_instr_set_dc
+    #ifndef RM68120_DRIVER
+      // Flush has happened before this and mode changed back to 16 bit
+      #define DC_D  tft_pio->sm[pio_sm].instr = pio_instr_set_dc
+    #else
+      // Need to wait for stall since RM68120 commands are 16 bit
+      #define DC_D  WAIT_FOR_STALL; tft_pio->sm[pio_sm].instr = pio_instr_set_dc
+    #endif
   #endif
 #endif
 
