@@ -793,7 +793,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .sclk_io_num = TFT_SCLK,
     .quadwp_io_num = -1,
     .quadhd_io_num = -1,
-    #ifndef CONFIG_IDF_TARGET_ESP32
+    #ifdef CONFIG_IDF_TARGET_ESP32S2
       .data4_io_num = -1,
       .data5_io_num = -1,
       .data6_io_num = -1,
