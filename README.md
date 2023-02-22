@@ -61,7 +61,7 @@ The use of PIO for SPI allows the RP2040 to be over-clocked (up to 250MHz works 
 
 A feature rich Arduino IDE compatible graphics and fonts library for 32 bit processors. The library is targeted at 32 bit processors, it  has been performance optimised for RP2040, STM32, ESP8266 and ESP32 types, other 32 bit processors may be used but will use the slower generic Arduino interface calls. The library can be loaded using the Arduino IDE's Library Manager. Direct Memory Access (DMA) can be used with the ESP32, RP2040 and STM32 processors with SPI interface displays to improve rendering performance. DMA with a parallel interface (8 and 16 bit) is only supported with the RP2040.
 
-The updates for the ESP32 S3/C3/S3 means that the library requires the ESP32 Arduino board package 2.x.x or later.
+The updates for the ESP32 S2/C3/S3 means that the library requires the ESP32 Arduino board package 2.x.x or later.
 
 The screen controller, interface pins and library configuration settings must be defined inside the library. They can NOT be defined in the Arduino sketch. See the User_Setup_Select.h file for details. This approach has significant advantages, it keeps the examples clean from long configuration options and once the setup is defined any example can be run without modification. PlatformIO users can define these settings on a per project basis within a platformio.ini file, see Docs folder in library.
 
