@@ -1329,7 +1329,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
       int32_t lw = dw;
       uint16_t* line = data;
       while (lw--) {
-      #ifdef ILI9486_DRIVER
+      #if defined (ILI9486_DRIVER) || defined (ST7796_DRIVER)
         // Read the RGB 16 bit colour
         *line++ = readByte() | (readByte() << 8);
       #else
