@@ -511,14 +511,14 @@ SPI3_HOST = 2
 // Macros to write commands/pixel colour data to an Raspberry Pi TFT
 ////////////////////////////////////////////////////////////////////////////////////////
 #elif  defined (RPI_DISPLAY_TYPE)
-
-  // ESP32 low level SPI writes for 8, 16 and 32 bit values
+  // ESP32-S3 low level SPI writes for 8, 16 and 32 bit values
   // to avoid the function call overhead
-  #define TFT_WRITE_BITS(D, B) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), B-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), D); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
+  #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;    \
+                               *_spi_w = D;              \
+                               *_spi_cmd = SPI_UPDATE;   \
+                        while (*_spi_cmd & SPI_UPDATE);  \
+                               *_spi_cmd = SPI_USR;      \
+                        while (*_spi_cmd & SPI_USR);
 
   // Write 8 bits
   #define tft_Write_8(C) TFT_WRITE_BITS((C)<<8, 16)
@@ -546,34 +546,6 @@ SPI3_HOST = 2
 // Macros for all other SPI displays
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
-/* Old macros
-  // ESP32 low level SPI writes for 8, 16 and 32 bit values
-  // to avoid the function call overhead
-  #define TFT_WRITE_BITS(D, B) \
-  WRITE_PERI_REG(SPI_MOSI_DLEN_REG(SPI_PORT), B-1); \
-  WRITE_PERI_REG(SPI_W0_REG(SPI_PORT), D); \
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_PORT), SPI_USR); \
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_PORT))&SPI_USR);
-
-  // Write 8 bits
-  #define tft_Write_8(C) TFT_WRITE_BITS(C, 8)
-
-  // Write 16 bits with corrected endianness for 16 bit colours
-  #define tft_Write_16(C) TFT_WRITE_BITS((C)<<8 | (C)>>8, 16)
-
-  // Write 16 bits
-  #define tft_Write_16S(C) TFT_WRITE_BITS(C, 16)
-
-  // Write 32 bits
-  #define tft_Write_32(C) TFT_WRITE_BITS(C, 32)
-
-  // Write two address coordinates
-  #define tft_Write_32C(C,D) TFT_WRITE_BITS((uint16_t)((D)<<8 | (D)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
-
-  // Write same value twice
-  #define tft_Write_32D(C) TFT_WRITE_BITS((uint16_t)((C)<<8 | (C)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
-//*/
-//* Replacement slimmer macros
   #if !defined(CONFIG_IDF_TARGET_ESP32S3)
     #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;  \
                                *_spi_w = D;              \
@@ -598,13 +570,13 @@ SPI3_HOST = 2
     #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;    \
                            *_spi_w = ((C)<<8 | (C)>>8); \
                            *_spi_cmd = SPI_USR;
-#else
+  #else
     #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;    \
                            *_spi_w = ((C)<<8 | (C)>>8); \
                            *_spi_cmd = SPI_UPDATE;      \
                     while (*_spi_cmd & SPI_UPDATE);     \
                            *_spi_cmd = SPI_USR;
-#endif
+  #endif
 
   // Write 16 bits
   #define tft_Write_16S(C) TFT_WRITE_BITS(C, 16)
@@ -618,7 +590,6 @@ SPI3_HOST = 2
   // Write same value twice
   #define tft_Write_32D(C) TFT_WRITE_BITS((uint16_t)((C)<<8 | (C)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
 
-//*/
 #endif
 
 #ifndef tft_Write_16N
