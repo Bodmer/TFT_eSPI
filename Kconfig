@@ -236,7 +236,7 @@ menu "TFT_eSPI"
             default -1
             range -1 32 if IDF_TARGET_ESP32
             range -1 45 if IDF_TARGET_ESP32S2
-            range -1 48 if IDF_TARGET_ESP32S2
+            range -1 48 if IDF_TARGET_ESP32S3
             help
                 Master In Slave Out pin.
                 Can be labelled as SDO in some displays
@@ -246,7 +246,7 @@ menu "TFT_eSPI"
             default -1
             range -1 32 if IDF_TARGET_ESP32
             range -1 45 if IDF_TARGET_ESP32S2
-            range -1 48 if IDF_TARGET_ESP32S2
+            range -1 48 if IDF_TARGET_ESP32S3
             help
                 Master Out Slave In pin.
                 Can be labelled as SDA or SDI in some displays
@@ -256,7 +256,7 @@ menu "TFT_eSPI"
             default -1
             range -1 32 if IDF_TARGET_ESP32
             range -1 45 if IDF_TARGET_ESP32S2
-            range -1 48 if IDF_TARGET_ESP32S2
+            range -1 48 if IDF_TARGET_ESP32S3
             help
                 Labelled in some displays as WR
 
@@ -294,7 +294,7 @@ menu "TFT_eSPI"
             default -1
             range -1 33 if IDF_TARGET_ESP32
             range -1 45 if IDF_TARGET_ESP32S2
-            range -1 48 if IDF_TARGET_ESP32S2
+            range -1 48 if IDF_TARGET_ESP32S3
     
         config TFT_DC
             int "TFT Data/Command pin"
@@ -308,7 +308,7 @@ menu "TFT_eSPI"
             default -1
             range -1 33 if IDF_TARGET_ESP32
             range -1 45 if IDF_TARGET_ESP32S2
-            range -1 48 if IDF_TARGET_ESP32S2
+            range -1 48 if IDF_TARGET_ESP32S3
 
         config ENABLE_BL
             bool "Enable backlight control"
@@ -320,7 +320,7 @@ menu "TFT_eSPI"
                 default -1
                 range -1 33 if IDF_TARGET_ESP32
                 range -1 45 if IDF_TARGET_ESP32S2
-                range -1 48 if IDF_TARGET_ESP32S2
+                range -1 48 if IDF_TARGET_ESP32S3
                 help
                     Pin for the backlight control signal
         
@@ -389,7 +389,7 @@ menu "TFT_eSPI"
                 default -1
                 range -1 33 if IDF_TARGET_ESP32
                 range -1 45 if IDF_TARGET_ESP32S2
-                range -1 48 if IDF_TARGET_ESP32S2
+                range -1 48 if IDF_TARGET_ESP32S3
 
             config SPI_TOUCH_FREQUENCY
                 int "SPI frequency for XPT2046 chip (Hz)"
