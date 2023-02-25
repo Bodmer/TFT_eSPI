@@ -93,20 +93,20 @@ uint8_t TFT_eSPI::readByte(void)
 
 #if defined (TFT_PARALLEL_8_BIT)
   RD_L;
-  b  = gpio_get_level((gpio_num_t)(TFT_D0-MASK_OFFSET)); // Read three times to allow for bus access time
-  b  = gpio_get_level((gpio_num_t)(TFT_D0-MASK_OFFSET));
-  b  = gpio_get_level((gpio_num_t)(TFT_D0-MASK_OFFSET)); // Data should be stable now
-  RD_H;
+  b  = gpio_get_level((gpio_num_t)TFT_D0); // Read three times to allow for bus access time
+  b  = gpio_get_level((gpio_num_t)TFT_D0);
+  b  = gpio_get_level((gpio_num_t)TFT_D0); // Data should be stable now
 
   // Check GPIO bits used and build value
-  b  = (gpio_get_level((gpio_num_t)(TFT_D0-MASK_OFFSET)) << 0);
-  b |= (gpio_get_level((gpio_num_t)(TFT_D1-MASK_OFFSET)) << 1);
-  b |= (gpio_get_level((gpio_num_t)(TFT_D2-MASK_OFFSET)) << 2);
-  b |= (gpio_get_level((gpio_num_t)(TFT_D3-MASK_OFFSET)) << 3);
-  b |= (gpio_get_level((gpio_num_t)(TFT_D4-MASK_OFFSET)) << 4);
-  b |= (gpio_get_level((gpio_num_t)(TFT_D5-MASK_OFFSET)) << 5);
-  b |= (gpio_get_level((gpio_num_t)(TFT_D6-MASK_OFFSET)) << 6);
-  b |= (gpio_get_level((gpio_num_t)(TFT_D7-MASK_OFFSET)) << 7);
+  b  = (gpio_get_level((gpio_num_t)TFT_D0) << 0);
+  b |= (gpio_get_level((gpio_num_t)TFT_D1) << 1);
+  b |= (gpio_get_level((gpio_num_t)TFT_D2) << 2);
+  b |= (gpio_get_level((gpio_num_t)TFT_D3) << 3);
+  b |= (gpio_get_level((gpio_num_t)TFT_D4) << 4);
+  b |= (gpio_get_level((gpio_num_t)TFT_D5) << 5);
+  b |= (gpio_get_level((gpio_num_t)TFT_D6) << 6);
+  b |= (gpio_get_level((gpio_num_t)TFT_D7) << 7);
+  RD_H;
 #endif
 
   return b;
