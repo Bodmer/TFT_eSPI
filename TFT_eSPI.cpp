@@ -1182,7 +1182,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
     // Set masked pins D0- D7 to output
     busDir(GPIO_DIR_MASK, OUTPUT);
 
-    #ifdef ILI9486_DRIVER
+    #if defined (ILI9486_DRIVER) || defined (ST7796_DRIVER)
       return  bgr;
     #else
       // Swap Red and Blue (could check MADCTL setting to see if this is needed)
