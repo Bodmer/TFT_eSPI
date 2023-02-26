@@ -12,7 +12,7 @@
  * @author Ricard Bitriá Ribes (https://github.com/dracir9)
  * Created Date: 22-01-2022
  * -----
- * Last Modified: 20-02-2023
+ * Last Modified: 25-02-2023
  * Modified By: Ricard Bitriá Ribes
  * -----
  * @copyright (c) 2022 Ricard Bitriá Ribes
@@ -305,6 +305,14 @@
     #endif
 
     #define SPI_TOUCH_FREQUENCY CONFIG_SPI_TOUCH_FREQUENCY
+#endif
+
+/***************************************************************************************
+**                         Section 6: Others
+***************************************************************************************/
+
+#ifdef CONFIG_DISABLE_WARNINGS
+    #define DISABLE_ALL_LIBRARY_WARNINGS
 #endif
 
 #endif // TFT_CONFIG_H
