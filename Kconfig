@@ -398,4 +398,10 @@ menu "TFT_eSPI"
         endif
     endmenu
 
+    menu "Other settings"
+        config DISABLE_WARNINGS
+            bool "Disable Library warnings"
+            default n
+    endmenu
+
 endmenu
