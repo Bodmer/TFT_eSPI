@@ -398,7 +398,7 @@ void setup() {
   // Set the fontName from the array number or the defined fontName
   if (fontNumber >= 0)
   {
-    fontName = fontList[fontNumber];
+//    fontName = fontList[fontNumber];
     fontType = "";
   }
 
