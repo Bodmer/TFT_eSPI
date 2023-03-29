@@ -10,11 +10,11 @@
 ** Function name:           loadFont
 ** Description:             loads parameters from a font vlw array in memory
 *************************************************************************************x*/
-void TFT_eSPI::loadFont(const uint8_t array[])
+void TFT_eSPI::loadFont(const uint8_t array[], SpaceHint spaceHint)
 {
   if (array == nullptr) return;
   fontPtr = (uint8_t*) array;
-  loadFont("", false);
+  loadFont("", false, spaceHint);
 }
 
 #ifdef FONT_FS_AVAILABLE
@@ -22,10 +22,10 @@ void TFT_eSPI::loadFont(const uint8_t array[])
 ** Function name:           loadFont
 ** Description:             loads parameters from a font vlw file
 *************************************************************************************x*/
-void TFT_eSPI::loadFont(String fontName, fs::FS &ffs)
+void TFT_eSPI::loadFont(String fontName, fs::FS &ffs, SpaceHint spaceHint)
 {
   fontFS = ffs;
-  loadFont(fontName, false);
+  loadFont(fontName, false, spaceHint);
 }
 #endif
 
@@ -33,7 +33,7 @@ void TFT_eSPI::loadFont(String fontName, fs::FS &ffs)
 ** Function name:           loadFont
 ** Description:             loads parameters from a font vlw file
 *************************************************************************************x*/
-void TFT_eSPI::loadFont(String fontName, bool flash)
+void TFT_eSPI::loadFont(String fontName, bool flash, SpaceHint spaceHint)
 {
   /*
     The vlw font format does not appear to be documented anywhere, so some reverse
@@ -118,7 +118,7 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
     fontFile.seek(0, fs::SeekSet);
   }
 #else
-  // Avoid unused varaible warning
+  // Avoid unused variable warning
   fontName = fontName;
   flash = flash;
 #endif
@@ -136,12 +136,11 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
   gFont.maxAscent  = gFont.ascent;   // Determined from metrics
   gFont.maxDescent = gFont.descent;  // Determined from metrics
   gFont.yAdvance   = gFont.ascent + gFont.descent;
-  gFont.spaceWidth = gFont.yAdvance / 4;  // Guess at space width
 
   fontLoaded = true;
 
   // Fetch the metrics for each glyph
-  loadMetrics();
+  loadMetrics(spaceHint);
 }
 
 
@@ -150,7 +149,7 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
 ** Description:             Get the metrics for each glyph and store in RAM
 *************************************************************************************x*/
 //#define SHOW_ASCENT_DESCENT
-void TFT_eSPI::loadMetrics(void)
+void TFT_eSPI::loadMetrics(SpaceHint spaceHint)
 {
   uint32_t headerPtr = 24;
   uint32_t bitmapPtr = headerPtr + gFont.gCount * 28;
@@ -188,6 +187,8 @@ void TFT_eSPI::loadMetrics(void)
 #endif
 
   uint16_t gNum = 0;
+  uint16_t spaceCnt = 0;
+  gFont.spaceWidth = 0;
 
   while (gNum < gFont.gCount)
   {
@@ -221,6 +222,11 @@ void TFT_eSPI::loadMetrics(void)
     }
     */
 
+    if ((spaceHint == meanAsciiLetters) && (gUnicode[gNum] >= 'a') && (gUnicode[gNum] <= 'z')) {
+      gFont.spaceWidth += gxAdvance[gNum];
+      ++spaceCnt;
+    }
+
     // Different glyph sets have different descent values not always based on "p", so get maximum glyph descent
     if (((int16_t)gHeight[gNum] - (int16_t)gdY[gNum]) > gFont.maxDescent)
     {
@@ -244,7 +250,24 @@ void TFT_eSPI::loadMetrics(void)
 
   gFont.yAdvance = gFont.maxAscent + gFont.maxDescent;
 
-  gFont.spaceWidth = (gFont.ascent + gFont.descent) * 2/7;  // Guess at space width
+  switch(spaceHint) {
+    case meanAsciiLetters:
+      // mean width of all ASCII letters
+      if (spaceCnt > 0) {
+        gFont.spaceWidth /= spaceCnt;
+        break;
+      }
+      // no ASCII letter in the font so fall back to guessing the width
+      // no break
+    case guessSpace:
+      // guess the space based on font height
+      gFont.spaceWidth = (gFont.ascent + gFont.descent) * 2/7;  // Guess at space width
+      break;
+    case monospace:
+      // Take the width of the first glyph for monospaced fonts
+      gFont.spaceWidth = gxAdvance[0];
+      break;
+  }
 }
 
 
