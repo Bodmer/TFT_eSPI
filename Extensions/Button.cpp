@@ -16,7 +16,7 @@ TFT_eSPI_Button::TFT_eSPI_Button(void) {
 void TFT_eSPI_Button::initButton(
  TFT_eSPI *gfx, int16_t x, int16_t y, uint16_t w, uint16_t h,
  uint16_t outline, uint16_t fill, uint16_t textcolor,
- char *label, uint8_t textsize)
+ const char *label, uint8_t textsize)
 {
   // Tweak arguments and pass to the newer initButtonUL() function...
   initButtonUL(gfx, x - (w / 2), y - (h / 2), w, h, outline, fill,
@@ -27,7 +27,7 @@ void TFT_eSPI_Button::initButton(
 void TFT_eSPI_Button::initButtonUL(
  TFT_eSPI *gfx, int16_t x1, int16_t y1, uint16_t w, uint16_t h,
  uint16_t outline, uint16_t fill, uint16_t textcolor,
- char *label, uint8_t textsize)
+ const char *label, uint8_t textsize)
 {
   _x1           = x1;
   _y1           = y1;

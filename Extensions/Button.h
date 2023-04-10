@@ -13,12 +13,12 @@ class TFT_eSPI_Button
   // "Classic" initButton() uses centre & size
   void     initButton(TFT_eSPI *gfx, int16_t x, int16_t y,
   uint16_t w, uint16_t h, uint16_t outline, uint16_t fill,
-  uint16_t textcolor, char *label, uint8_t textsize);
+  uint16_t textcolor, const char *label, uint8_t textsize);
 
   // New/alt initButton() uses upper-left corner & size
   void     initButtonUL(TFT_eSPI *gfx, int16_t x1, int16_t y1,
   uint16_t w, uint16_t h, uint16_t outline, uint16_t fill,
-  uint16_t textcolor, char *label, uint8_t textsize);
+  uint16_t textcolor, const char *label, uint8_t textsize);
   
   // Adjust text datum and x, y deltas
   void     setLabelDatum(int16_t x_delta, int16_t y_delta, uint8_t datum = MC_DATUM);
