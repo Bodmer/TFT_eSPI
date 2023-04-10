@@ -3,12 +3,18 @@
 
  public:
 
+  enum SpaceHint {
+    guessSpace,       // mean width of all ASCII letters
+    monospace,        // monospace fonts, take the width of the first letter
+    meanAsciiLetters  // mean width of all lower case ascii letters. If there are no ascii letters in the font then guessSpace is used.
+  };
+
   // These are for the new anti-aliased fonts
-  void     loadFont(const uint8_t array[]);
+  void     loadFont(const uint8_t array[], SpaceHint spaceHint = guessSpace);
 #ifdef FONT_FS_AVAILABLE
-  void     loadFont(String fontName, fs::FS &ffs);
+  void     loadFont(String fontName, fs::FS &ffs, SpaceHint spaceHint = guessSpace);
 #endif
-  void     loadFont(String fontName, bool flash = true);
+  void     loadFont(String fontName, bool flash = true, SpaceHint spaceHint = guessSpace);
   void     unloadFont( void );
   bool     getUnicodeIndex(uint16_t unicode, uint16_t *index);
 
@@ -54,7 +60,7 @@ fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
 
   private:
 
-  void     loadMetrics(void);
+  void     loadMetrics(SpaceHint spaceHint);
   uint32_t readInt32(void);
 
   uint8_t* fontPtr = nullptr;
