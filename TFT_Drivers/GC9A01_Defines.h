@@ -4,7 +4,7 @@
   #define TFT_WIDTH  240
 #endif
 #ifndef TFT_HEIGHT
-  #define TFT_HEIGHT 320
+  #define TFT_HEIGHT 240
 #endif
 
 // Delay between some initialisation commands
