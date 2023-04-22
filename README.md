@@ -89,7 +89,9 @@ The library supports the following interface types for these processors:
 
 For other (generic) processors only SPI interface displays are supported and the slower Arduino SPI library functions are used by the library. Higher clock speed processors such as used for the Teensy 3.x and 4.x boards will still provide a very good performance with the generic Arduino SPI functions.
 
-Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32 Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
+4 wire SPI means the display must have SPI interface comaptible signals and a "Data/Command" control signal, this signal line is sometimes labelled DC, RS or A0. 
+
+Due to lack of GPIO pins the 8 bit parallel interface is NOT supported on the ESP8266. 8 bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32Fxxx Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
 
 Support for the XPT2046 touch screen controller is built into the library and can be used with SPI interface displays. Third party touch support libraries are also available when using a display parallel interface.
 
