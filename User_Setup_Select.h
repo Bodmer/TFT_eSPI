@@ -132,26 +132,26 @@
 
 //#include <User_Setups/Setup206_LilyGo_T_Display_S3.h>     // For the LilyGo T-Display S3 based ESP32S3 with ST7789 170 x 320 TFT
 //#include <User_Setups/Setup207_LilyGo_T_HMI.h>            // For the LilyGo T-HMI S3 based ESP32S3 with ST7789 240 x 320 TFT
-
-//#include <User_Setups/Setup208_ESP32_S3_Box_Lite.h>      // For the ESP32 S3 Box Lite (may also work with ESP32 S3 Box)
-
 //#include <User_Setups/Setup209_LilyGo_T_Dongle_S3.h>      // For the LilyGo T-Dongle S3 based ESP32 with ST7735 80 x 160 TFT
-// #include <User_Setups/Setup210_LilyGo_T_Embed_S3.h>         // For the LilyGo T-Embed S3 based ESP32S3 with ST7789 170 x 320 TFT
-// #include <User_Setups/Setup211_LilyGo_T_QT_Pro_S3.h>         // For the LilyGo T-QT Pro S3 based ESP32S3 with GC9A01 128 x 128 TFT
+//#include <User_Setups/Setup210_LilyGo_T_Embed_S3.h>         // For the LilyGo T-Embed S3 based ESP32S3 with ST7789 170 x 320 TFT
+//#include <User_Setups/Setup211_LilyGo_T_QT_Pro_S3.h>         // For the LilyGo T-QT Pro S3 based ESP32S3 with GC9A01 128 x 128 TFT
+
+//#include <User_Setups/Setup250_ESP32_S3_Box_Lite.h>      // For the ESP32 S3 Box Lite
+//#include <User_Setups/Setup251_ESP32_S3_Box.h>            // For the ESP32 S3 Box
 
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
 
-//#include <User_Setups/Dustin_ILI9488.h>           // Setup file for Dustin Watts PCB with ILI9488
+//#include <User_Setups/Dustin_ILI9488.h>          // Setup file for Dustin Watts PCB with ILI9488
 //#include <User_Setups/Dustin_ST7796.h>           // Setup file for Dustin Watts PCB with ST7796
-//#include <User_Setups/Dustin_ILI9488_Pico.h>        // Setup file for Dustin Watts Pico PCB with ST7796
-//#include <User_Setups/Dustin_ST7789_Pico.h>           // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
-//#include <User_Setups/Dustin_GC9A01_Pico.h>           // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
-//#include <User_Setups/Dustin_GC9A01_ESP32.h>           // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
-//#include <User_Setups/Dustin_STT7789_ESP32.h>           // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
-//#include <User_Setups/Dustin_ILI9341_ESP32.h>           // Setup file for Dustin Watts PCB with ILI9341
+//#include <User_Setups/Dustin_ILI9488_Pico.h>     // Setup file for Dustin Watts Pico PCB with ST7796
+//#include <User_Setups/Dustin_ST7789_Pico.h>      // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_GC9A01_Pico.h>      // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_GC9A01_ESP32.h>     // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_STT7789_ESP32.h>    // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_ILI9341_ESP32.h>    // Setup file for Dustin Watts PCB with ILI9341
 //#include <User_Setups/ILI9225.h>
 
 #endif // USER_SETUP_LOADED
