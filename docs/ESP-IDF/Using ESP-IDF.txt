@@ -43,7 +43,7 @@ Steps to use:
       I'll list two methods that I use most of the time:
 
       5.1. Press F1 and type ESP-IDF: Add Arduino ESP32 as ESP-IDF Component. This will
-      automatically download and install the latest code from the arduino esp-32 repository.
+      automatically download and install the latest code from the Arduino Esp-32 repository.
       This is the easiest method but as it uses the latest code it may introduce compilation errors.
 
       5.2. Go to the Arduino esp-32 repository release page. Choose a version and find its "Assets"
@@ -54,13 +54,13 @@ Steps to use:
   6.  Download the TFT_eSPI library into the components folder
   
   7.  Now open VS Code and load your project folder. Press F1 and type ESP-IDF: SDK Configuration
-      editor (menuconfig). Alternatively press Ctrl+E, G or press the gear button in the bottom left
+      editor (menuconfig). Alternatively press CTRL+E, G or press the gear button in the bottom left
       corner.
       
   8.  This will open the project configuration menu. Navigate to the TFT_eSPI section and configure
       the library (TFT driver, pins, fonts, etc.).
       
-  9.  Press F1 and type ESP-IDF: Build your project. Alternatively press Ctrl+E, B or click the
+  9.  Press F1 and type ESP-IDF: Build your project. Alternatively press CTRL+E, B or click the
       build button in the bottom left corner.
       
  10.  Choose your port by typing ESP-IDF: Select port to use or with the button in the bottom left.
