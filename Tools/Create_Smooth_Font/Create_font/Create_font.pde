@@ -143,7 +143,7 @@ int displayFontSize = 28;
 boolean createHeaderFile = true;
 
 // Automaticely open the folder with created files when done
-boolean openFolder = false;
+boolean openFolder = true;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Next we specify which unicode blocks from the the Basic Multilingual Plane (BMP) are included in the final font file. //
