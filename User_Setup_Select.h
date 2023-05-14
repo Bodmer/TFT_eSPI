@@ -12,11 +12,8 @@
 // Create a shortcut to this file on your desktop to permit quick access for editing.
 // Re-compile and upload after making and saving any changes to this file.
 
-// Customised User_Setup files are stored in the "User_Setups" folder.
-
-// It is also possible for the user tft settings to be included with the sketch, see
-// the "Sketch_with_tft_setup" generic example. This may be more convenient for
-// multiple projects.
+// Example User_Setup files are stored in the "User_Setups" folder. These can be used
+// unmodified or adapted for a particular hardware configuration.
 
 #ifndef USER_SETUP_LOADED //  Lets PlatformIO users define settings in
                           //  platformio.ini, see notes in "Tools" folder.
