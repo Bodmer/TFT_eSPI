@@ -17,7 +17,8 @@
 #define TFT_WIDTH 170
 #define TFT_HEIGHT 320
 
-#define TFT_DC 7
+#define TFT_CS  6
+#define TFT_DC  7
 #define TFT_RST 5
 
 #define TFT_WR 8

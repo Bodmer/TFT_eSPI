@@ -133,7 +133,7 @@ void pioinit(uint32_t clock_freq) {
   if (!pio_can_add_program(tft_pio, &tft_io_program)) {
     tft_pio = pio1;
     if (!pio_can_add_program(tft_pio, &tft_io_program)) {
-      Serial.println("No room for PIO program!");
+      // Serial.println("No room for PIO program!");
       return;
     }
   }
