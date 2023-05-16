@@ -193,8 +193,7 @@ void pioinit(uint16_t clock_div, uint16_t fract_div) {
   if (!pio_can_add_program(tft_pio, &tft_io_program) {
     tft_pio = pio1;
     if (!pio_can_add_program(tft_pio, &tft_io_program) {
-      Serial.println("No room for PIO program!");
-      while(1) delay(100);
+      // Serial.println("No room for PIO program!");
       return;
     }
   }
