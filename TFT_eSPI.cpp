@@ -17,20 +17,20 @@
 
 #if defined (ESP32)
   #if defined(CONFIG_IDF_TARGET_ESP32S3)
-    #include "Processors/TFT_eSPI_ESP32_S3.c" // Tested with SPI and 8 bit parallel
+    #include "Processors/TFT_eSPI_ESP32_S3.cpp" // Tested with SPI and 8 bit parallel
   #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    #include "Processors/TFT_eSPI_ESP32_C3.c" // Tested with SPI (8 bit parallel will probably work too!)
+    #include "Processors/TFT_eSPI_ESP32_C3.cpp" // Tested with SPI (8 bit parallel will probably work too!)
   #else
-    #include "Processors/TFT_eSPI_ESP32.c"
+    #include "Processors/TFT_eSPI_ESP32.cpp"
   #endif
 #elif defined (ARDUINO_ARCH_ESP8266)
-  #include "Processors/TFT_eSPI_ESP8266.c"
+  #include "Processors/TFT_eSPI_ESP8266.cpp"
 #elif defined (STM32) // (_VARIANT_ARDUINO_STM32_) stm32_def.h
-  #include "Processors/TFT_eSPI_STM32.c"
+  #include "Processors/TFT_eSPI_STM32.cpp"
 #elif defined (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED) // Raspberry Pi Pico
-  #include "Processors/TFT_eSPI_RP2040.c"
+  #include "Processors/TFT_eSPI_RP2040.cpp"
 #else
-  #include "Processors/TFT_eSPI_Generic.c"
+  #include "Processors/TFT_eSPI_Generic.cpp"
 #endif
 
 #ifndef SPI_BUSY_CHECK
@@ -5931,7 +5931,7 @@ void TFT_eSPI::setTextFont(uint8_t f)
 ** Function name:           getSPIinstance
 ** Description:             Get the instance of the SPI class
 ***************************************************************************************/
-#if !defined (TFT_PARALLEL_8_BIT) && ! defined (RP2040_PIO_INTERFACE)
+#if !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
 SPIClass& TFT_eSPI::getSPIinstance(void)
 {
   return spi;
