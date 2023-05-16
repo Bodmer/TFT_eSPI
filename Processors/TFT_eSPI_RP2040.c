@@ -18,26 +18,26 @@
     SPIClassRP2040 spi = SPIClassRP2040(SPI_X, TFT_MISO, -1, TFT_SCLK, TFT_MOSI);
   #endif
 
-#else // PIO interface used (8 bit parallel or SPI)
+#else // PIO interface used (8-bit parallel or SPI)
 
   #ifdef RP2040_PIO_SPI
     #if  defined (SPI_18BIT_DRIVER)
       // SPI PIO code for 18 bit colour transmit
       #include "pio_SPI_18bit.pio.h"
     #else
-      // SPI PIO code for 16 bit colour transmit
+      // SPI PIO code for 16-bit colour transmit
       #include "pio_SPI.pio.h"
     #endif
   #elif defined (TFT_PARALLEL_8_BIT)
     #if defined (SSD1963_DRIVER)
-      // PIO code for 8 bit parallel interface (18 bit colour)
+      // PIO code for 8-bit parallel interface (18 bit colour)
       #include "pio_8bit_parallel_18bpp.pio.h"
     #else
-      // PIO code for 8 bit parallel interface (16 bit colour)
+      // PIO code for 8-bit parallel interface (16-bit colour)
       #include "pio_8bit_parallel.pio.h"
     #endif
   #else // must be TFT_PARALLEL_16_BIT
-    // PIO code for 16 bit parallel interface (16 bit colour)
+    // PIO code for 16-bit parallel interface (16-bit colour)
     #include "pio_16bit_parallel.pio.h"
   #endif
 
@@ -128,18 +128,6 @@ void TFT_eSPI::end_SDA_Read(void)
 #ifdef RP2040_PIO_SPI
 void pioinit(uint32_t clock_freq) {
 
-  // Find a free SM on one of the PIO's
-  tft_pio = pio0;
-  
-  /*
-  pio_sm = pio_claim_unused_sm(tft_pio, false); // false means don't panic
-  // Try pio1 if SM not found
-  if (pio_sm < 0) {
-    tft_pio = pio1;
-    pio_sm = pio_claim_unused_sm(tft_pio, true); // panic this time if no SM is free
-  }
-  */
-
   // Find enough free space on one of the PIO's
   tft_pio = pio0;
   if (!pio_can_add_program(tft_pio, &tft_io_program)) {
@@ -197,18 +185,9 @@ void pioinit(uint32_t clock_freq) {
   pio_instr_set_dc = pio_encode_set((pio_src_dest)0, 1);
   pio_instr_clr_dc = pio_encode_set((pio_src_dest)0, 0);
 }
-#else // 8 or 16 bit parallel
+#else // 8 or 16-bit parallel
 void pioinit(uint16_t clock_div, uint16_t fract_div) {
 
-  // Find a free SM on one of the PIO's
-  tft_pio = pio0;
-  pio_sm = pio_claim_unused_sm(tft_pio, false); // false means don't panic
-  // Try pio1 if SM not found
-  if (pio_sm < 0) {
-    tft_pio = pio1;
-    pio_sm = pio_claim_unused_sm(tft_pio, true); // panic this time if no SM is free
-  }
-/*
   // Find enough free space on one of the PIO's
   tft_pio = pio0;
   if (!pio_can_add_program(tft_pio, &tft_io_program) {
@@ -219,7 +198,9 @@ void pioinit(uint16_t clock_div, uint16_t fract_div) {
       return;
     }
   }
-*/
+
+  pio_sm = pio_claim_unused_sm(tft_pio, false);
+
   #if defined (TFT_PARALLEL_8_BIT)
     uint8_t bits = 8;
   #else // must be TFT_PARALLEL_16_BIT
@@ -491,12 +472,12 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
   uint16_t g = (color & 0x07E0)>>3;
   uint16_t b = (color & 0x001F)<<3;
 
-  // If more than 32 pixels then change to 16 bit transfers with concatenated pixels
+  // If more than 32 pixels then change to 16-bit transfers with concatenated pixels
   if (len > 32) {
     uint32_t rg = r<<8 | g;
     uint32_t br = b<<8 | r;
     uint32_t gb = g<<8 | b;
-    // Must wait before changing to 16 bit
+    // Must wait before changing to 16-bit
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
     while ( len > 1 ) {
@@ -505,7 +486,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
       while (!spi_is_writable(SPI_X)){}; spi_get_hw(SPI_X)->dr = gb;
       len -= 2;
     }
-    // Must wait before changing back to 8 bit
+    // Must wait before changing back to 8-bit
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     hw_write_masked(&spi_get_hw(SPI_X)->cr0, (8 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
   }
@@ -536,7 +517,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#else //                   Standard SPI 16 bit colour TFT
+#else //                   Standard SPI 16-bit colour TFT
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -582,7 +563,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#ifdef RP2040_DMA // DMA functions for 16 bit SPI and 8/16 bit parallel displays
+#ifdef RP2040_DMA // DMA functions for 16-bit SPI and 8/16-bit parallel displays
 ////////////////////////////////////////////////////////////////////////////////////////
 /*
 These are created in header file:
