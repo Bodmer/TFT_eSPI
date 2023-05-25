@@ -24,6 +24,14 @@
 #include "sdkconfig.h"
 
 /***************************************************************************************
+**                         Others
+***************************************************************************************/
+
+#ifdef CONFIG_DISABLE_WARNINGS
+    #define DISABLE_ALL_LIBRARY_WARNINGS
+#endif
+
+/***************************************************************************************
 **                         TFT_eSPI Configuration defines
 ***************************************************************************************/
 // Override defaults
@@ -137,7 +145,9 @@
 #endif
 
 #if CONFIG_TFT_RST == -1
-    #error "Invalid Reset pin. Check TFT_eSPI configuration"
+    #if !defined(DISABLE_ALL_LIBRARY_WARNINGS)
+        #warning "Invalid Reset pin. Check TFT_eSPI configuration"
+    #endif
 #else
     #define TFT_RST         CONFIG_TFT_RST
 #endif
@@ -305,14 +315,6 @@
     #endif
 
     #define SPI_TOUCH_FREQUENCY CONFIG_SPI_TOUCH_FREQUENCY
-#endif
-
-/***************************************************************************************
-**                         Section 6: Others
-***************************************************************************************/
-
-#ifdef CONFIG_DISABLE_WARNINGS
-    #define DISABLE_ALL_LIBRARY_WARNINGS
 #endif
 
 #endif // TFT_CONFIG_H
