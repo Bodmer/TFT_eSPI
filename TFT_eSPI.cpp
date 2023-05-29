@@ -4498,7 +4498,9 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
   int32_t xs = x0;
   // Scan bounding box from ys down, calculate pixel intensity from distance to line
   for (int32_t yp = ys; yp <= y1; yp++) {
-    bool swin = true;  // Flag to start new window area
+    #ifndef GC9A01_DRIVER
+      bool swin = true;  // Flag to start new window area
+    #endif
     bool endX = false; // Flag to skip pixels
     ypay = yp - ay;
     for (int32_t xp = xs; xp <= x1; xp++) {
@@ -4519,7 +4521,10 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
       }
       //Blend color with background and plot
       if (bg_color == 0x00FFFFFF) {
-        bg = readPixel(xp, yp); swin = true;
+        bg = readPixel(xp, yp);
+        #ifndef GC9A01_DRIVER
+          swin = true;
+        #endif
       }
       #ifdef GC9A01_DRIVER
         uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg);
@@ -4535,7 +4540,9 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
   xs = x0;
   // Scan bounding box from ys-1 up, calculate pixel intensity from distance to line
   for (int32_t yp = ys-1; yp >= y0; yp--) {
-    bool swin = true;  // Flag to start new window area
+    #ifndef GC9A01_DRIVER
+      bool swin = true;  // Flag to start new window area
+    #endif
     bool endX = false; // Flag to skip pixels
     ypay = yp - ay;
     for (int32_t xp = xs; xp <= x1; xp++) {
@@ -4556,7 +4563,10 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
       }
       //Blend colour with background and plot
       if (bg_color == 0x00FFFFFF) {
-        bg = readPixel(xp, yp); swin = true;
+        bg = readPixel(xp, yp);
+        #ifndef GC9A01_DRIVER
+          swin = true;
+        #endif
       }
       #ifdef GC9A01_DRIVER
         uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg);
