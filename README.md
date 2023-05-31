@@ -12,7 +12,7 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
  
       ![arcs](https://github.com/Bodmer/Github-images/blob/main/xarc_meters_320x240.png)
 
-4. An excellent new compatible library is available which can render TrueType fonts on a TFT screen (or into a sprite). This has been developed by [takkaO](https://github.com/takkaO/OpenFontRender), I have created a branch with some bug fixes [here](https://github.com/Bodmer/OpenFontRender). The library provides access to compact font files, with fully scaleable anti-aliased glyphs. Left, middle and right justified text can also be printed to the screen. I have added TFT_eSPI specific examples to the OpenFontRender library and tested on RP2040 and ESP32 processors, the ESP8266 does not have sufficient RAM due to the glyph render complexity. Here is a demo screen where a single 12kbyte font file binary was used to render fully anti-aliased glyphs of gradually increasing size on a 320x480 TFT screen:
+4. An excellent new compatible library is available which can render TrueType fonts on a TFT screen (or into a sprite). This has been developed by [takkaO](https://github.com/takkaO/OpenFontRender). The library provides access to compact font files, with fully scaleable anti-aliased glyphs. Left, middle and right justified text can also be printed to the screen. I have added TFT_eSPI specific examples to the OpenFontRender library and tested on RP2040 and ESP32 processors, the ESP8266 does not have sufficient RAM due to the glyph render complexity. Here is a demo screen where a single 12kbyte font file binary was used to render fully anti-aliased glyphs of gradually increasing size on a 320x480 TFT screen:
 
       ![ttf_font_demo](https://i.imgur.com/bKkilIb.png)
 
