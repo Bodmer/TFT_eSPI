@@ -571,7 +571,7 @@ void TFT_eSPI::initBus(void) {
 
 #if defined (TFT_PARALLEL_8_BIT)
 
-  // Make sure read is high before we set the bus to output
+    // Make sure read is high before we set the bus to output
   if (TFT_RD >= 0) {
     pinMode(TFT_RD, OUTPUT);
     digitalWrite(TFT_RD, HIGH);
@@ -742,6 +742,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (R61581_DRIVER)
     #include "TFT_Drivers/R61581_Init.h"
 
+#elif defined (R61529_DRIVER)
+    #include "TFT_Drivers/R61529_Init.h"
+
 #elif defined (RM68140_DRIVER)
 	#include "TFT_Drivers/RM68140_Init.h"
 
@@ -842,6 +845,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (R61581_DRIVER)
     #include "TFT_Drivers/R61581_Rotation.h"
+
+#elif defined (R61529_DRIVER)
+    #include "TFT_Drivers/R61529_Rotation.h"
 
 #elif defined (RM68140_DRIVER)
 	#include "TFT_Drivers/RM68140_Rotation.h"
