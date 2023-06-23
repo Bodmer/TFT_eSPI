@@ -12,7 +12,7 @@ A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has b
  
       ![arcs](https://github.com/Bodmer/Github-images/blob/main/xarc_meters_320x240.png)
 
-4. An excellent new compatible library is available which can render TrueType fonts on a TFT screen (or into a sprite). This has been developed by [takkaO](https://github.com/takkaO/OpenFontRender), I have created a branch with some bug fixes [here](https://github.com/Bodmer/OpenFontRender). The library provides access to compact font files, with fully scaleable anti-aliased glyphs. Left, middle and right justified text can also be printed to the screen. I have added TFT_eSPI specific examples to the OpenFontRender library and tested on RP2040 and ESP32 processors, the ESP8266 does not have sufficient RAM due to the glyph render complexity. Here is a demo screen where a single 12kbyte font file binary was used to render fully anti-aliased glyphs of gradually increasing size on a 320x480 TFT screen:
+4. An excellent new compatible library is available which can render TrueType fonts on a TFT screen (or into a sprite). This has been developed by [takkaO](https://github.com/takkaO/OpenFontRender). The library provides access to compact font files, with fully scaleable anti-aliased glyphs. Left, middle and right justified text can also be printed to the screen. I have added TFT_eSPI specific examples to the OpenFontRender library and tested on RP2040 and ESP32 processors, the ESP8266 does not have sufficient RAM due to the glyph render complexity. Here is a demo screen where a single 12kbyte font file binary was used to render fully anti-aliased glyphs of gradually increasing size on a 320x480 TFT screen:
 
       ![ttf_font_demo](https://i.imgur.com/bKkilIb.png)
 
@@ -124,8 +124,6 @@ The library supports some TFT displays designed for the Raspberry Pi (RPi) that 
 A "good" RPi display is the [MHS-4.0 inch Display-B type ST7796](http://www.lcdwiki.com/MHS-4.0inch_Display-B) which provides good performance. This has a dedicated controller and can be clocked at up to 80MHz with the ESP32 (125MHz with overclocked RP2040, 55MHz with STM32 and 40MHz with ESP8266). The [MHS-3.5 inch RPi ILI9486](http://www.lcdwiki.com/MHS-3.5inch_RPi_Display) based display is also supported, however the MHS ILI9341 based display of the same type does NOT work with this library.
 
 Some displays permit the internal TFT screen RAM to be read, a few of the examples use this feature. The TFT_Screen_Capture example allows full screens to be captured and sent to a PC, this is handy to create program documentation.
-
-The library supports Waveshare 2 and 3 colour ePaper displays using full frame buffers. This addition is relatively immature and thus only one example has been provided.
 
 The library includes a "Sprite" class, this enables flicker free updates of complex graphics. Direct writes to the TFT with graphics functions are still available, so existing sketches do not need to be changed.
 
