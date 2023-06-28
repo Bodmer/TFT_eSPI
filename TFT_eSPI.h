@@ -83,7 +83,7 @@
   })
 #elif defined(__AVR__)
   #include <avr/pgmspace.h>
-#elif defined(ARDUINO_ARCH_ESP8266) || defined(ESP32)
+#elif defined(ARDUINO_ARCH_ESP8266) || defined(ESP32) || defined(LE501X)
   #include <pgmspace.h>
 #else
   #ifndef PROGMEM
@@ -104,6 +104,8 @@
   #include "Processors/TFT_eSPI_STM32.h"
 #elif defined(ARDUINO_ARCH_RP2040)
   #include "Processors/TFT_eSPI_RP2040.h"
+#elif defined (LE501X)
+  #include "Processors/TFT_eSPI_LE501X.h"
 #else
   #include "Processors/TFT_eSPI_Generic.h"
   #define GENERIC_PROCESSOR

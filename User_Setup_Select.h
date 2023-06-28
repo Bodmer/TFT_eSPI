@@ -140,6 +140,11 @@
 
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 
+//#include <User_Setups/Setup260_Microduino_family.h>       // Setup file for Microduino family with ST7789/ST7735 display
+//#include <User_Setups/Setup261_LE501X_ST7789.h>           // Setup file for LE501X with ST7789 display
+//#include <User_Setups/Setup262_LE501X_ST7789_parallel.h>  // Setup file for LE501X with 8 bit parallel ST7789
+//#include <User_Setups/Setup263_LE501X_ST7735.h>           // Setup file for LE501X with ST7735 display
+
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
 

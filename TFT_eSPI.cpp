@@ -29,6 +29,8 @@
   #include "Processors/TFT_eSPI_STM32.c"
 #elif defined (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED) // Raspberry Pi Pico
   #include "Processors/TFT_eSPI_RP2040.c"
+#elif defined (LE501X)  // LE501X
+  #include "Processors/TFT_eSPI_LE501X.c"
 #else
   #include "Processors/TFT_eSPI_Generic.c"
 #endif
@@ -614,7 +616,7 @@ void TFT_eSPI::init(uint8_t tc)
   {
     initBus();
 
-#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED)
+#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED) && !defined (LE501X) 
   // Legacy bitmasks for GPIO
   #if defined (TFT_CS) && (TFT_CS >= 0)
     cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
