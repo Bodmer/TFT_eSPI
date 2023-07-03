@@ -5936,7 +5936,7 @@ void TFT_eSPI::setTextFont(uint8_t f)
 ** Function name:           getSPIinstance
 ** Description:             Get the instance of the SPI class
 ***************************************************************************************/
-#if !defined (TFT_PARALLEL_8_BIT) && ! defined (RP2040_PIO_INTERFACE)
+#if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
 SPIClass& TFT_eSPI::getSPIinstance(void)
 {
   return spi;

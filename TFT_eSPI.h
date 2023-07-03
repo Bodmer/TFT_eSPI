@@ -29,8 +29,9 @@
 //Standard support
 #include <Arduino.h>
 #include <Print.h>
-#include <SPI.h>
-
+#if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
+  #include <SPI.h>
+#endif
 /***************************************************************************************
 **                         Section 2: Load library and processor specific header files
 ***************************************************************************************/
@@ -823,8 +824,9 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     verifySetupID(uint32_t id);
 
   // Global variables
+#if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
   static   SPIClass& getSPIinstance(void); // Get SPI class handle
-
+#endif
   uint32_t textcolor, textbgcolor;         // Text foreground and background colours
 
   uint32_t bitmap_fg, bitmap_bg;           // Bitmap foreground (bit=1) and background (bit=0) colours
