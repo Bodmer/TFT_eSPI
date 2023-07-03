@@ -644,10 +644,13 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
   // small transfers are performed using a blocking call until DMA capacity is reached.
   // User sketch can prevent blocking by managing pixel count and splitting into blocks
   // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
+  bool temp = _swapBytes;
+  _swapBytes = false;
   while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
     pushPixels(image, 0x400);
     len -= 0x400; image+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
   }
+  _swapBytes = temp;
 
   esp_err_t ret;
   static spi_transaction_t trans;
@@ -685,10 +688,13 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   // small transfers are performed using a blocking call until DMA capacity is reached.
   // User sketch can prevent blocking by managing pixel count and splitting into blocks
   // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
+  bool temp = _swapBytes;
+  _swapBytes = false;
   while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
     pushPixels(buffer, 0x400);
     len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
   }
+  _swapBytes = temp;
 
   esp_err_t ret;
   static spi_transaction_t trans;
@@ -770,10 +776,13 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   // small transfers are performed using a blocking call until DMA capacity is reached.
   // User sketch can prevent blocking by managing pixel count and splitting into blocks
   // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
+  bool temp = _swapBytes;
+  _swapBytes = false;
   while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
     pushPixels(buffer, 0x400);
     len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
   }
+  _swapBytes = temp;
 
   esp_err_t ret;
   static spi_transaction_t trans;
