@@ -1,4 +1,4 @@
-> ## This project adds support for ESP32_C3_Air101_Expansion_LCD_80X160 (LuatOS) extended screens.
+> ## This project adds support for ESP32_C3_Air101_Expansion_LCD_80X160 (LuatOS) extended screens.Please place this file in the file directory .\1.ESP32-C3\lib of the project FishTank-Z.
 
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 
