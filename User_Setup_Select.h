@@ -109,6 +109,7 @@
 //#include <User_Setups/Setup105_RP2040_ST7796_16bit_parallel.h>  // Setup file for RP2040 16 bit parallel display
 //#include <User_Setups/Setup106_RP2040_ILI9481_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
 //#include <User_Setups/Setup107_RP2040_ILI9341_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
+//#include <User_Setups/Setup108_RP2040_ST7735.h> // Setup file for Waveshare RP2040 board with onboard ST7735 0.96" 160x80 display
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 
