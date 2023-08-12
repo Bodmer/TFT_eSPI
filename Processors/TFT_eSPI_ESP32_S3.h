@@ -409,7 +409,15 @@ SPI3_HOST = 2
   //*/
 
   // Write 8 bits to TFT
-  #define tft_Write_8(C)  GPIO_CLR_REG =  GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t)(C)); WR_H
+  #define SUPER_SPECIFIC_ESP32_S3_9BITPARALLEL_HACK_OMG_WHAT_IS_THIS_MACRO_NIGHMARE
+  #ifdef SUPER_SPECIFIC_ESP32_S3_9BITPARALLEL_HACK_OMG_WHAT_IS_THIS_MACRO_NIGHMARE
+  static bool _hackit_ = false;
+  #define HACKIT(C) _hackit_ = C;
+  #else
+  static bool _hackit_ = false;
+  #define HACKIT(C) (void(0))
+  #endif
+  #define tft_Write_8(C)  GPIO.out_w1tc = GPIO_OUT_CLR_MASK; GPIO.out_w1ts = set_mask((uint8_t)(C)) | (_hackit_?(1<<TFT_WR):0); if (!_hackit_) WR_H
 
   #if defined (SSD1963_DRIVER)
 
@@ -429,12 +437,12 @@ SPI3_HOST = 2
       #define tft_Write_16S(C) GPIO.out_w1tc = GPIO_OUT_CLR_MASK; GPIO.out_w1ts = set_mask((uint8_t) ((C) >> 8)); WR_H
     #else
       // Write 16 bits to TFT
-      #define tft_Write_16(C) GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 8)); WR_H; \
-                              GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 0)); WR_H
+      #define tft_Write_16(C) GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 8)) | (_hackit_?(1<<TFT_WR):0); if (!_hackit_) WR_H; \
+                              GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 0)) | (_hackit_?(1<<TFT_WR):0); if (!_hackit_) WR_H
 
       // 16 bit write with swapped bytes
-      #define tft_Write_16S(C) GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 0)); WR_H; \
-                               GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 8)); WR_H
+      #define tft_Write_16S(C) GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 0)) | (_hackit_?(1<<TFT_WR):0); if (!_hackit_) WR_H; \
+                               GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 8)) | (_hackit_?(1<<TFT_WR):0); if (!_hackit_) WR_H
     #endif
 
   #endif

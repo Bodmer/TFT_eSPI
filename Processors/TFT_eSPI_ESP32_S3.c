@@ -551,7 +551,13 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
     #endif
   #endif
   }
-  else while (len--) {tft_Write_16(color);}
+  else {
+    tft_Write_16(color);
+    --len;
+    HACKIT(true);
+    while (len--) {tft_Write_16(color);}
+    HACKIT(false);
+  }
 }
 
 /***************************************************************************************
@@ -561,7 +567,12 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
 
   uint16_t *data = (uint16_t*)data_in;
+  tft_Write_16(*data);
+  data++;
+  --len;
+  HACKIT(true);
   while ( len-- ) {tft_Write_16(*data); data++;}
+  HACKIT(false);
 }
 
 /***************************************************************************************
@@ -569,10 +580,24 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
 ** Description:             Write a sequence of pixels
 ***************************************************************************************/
 void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
-
+  
   uint16_t *data = (uint16_t*)data_in;
-  if(_swapBytes) { while ( len-- ) {tft_Write_16(*data); data++; } }
-  else { while ( len-- ) {tft_Write_16S(*data); data++;} }
+  if(_swapBytes) { 
+    tft_Write_16(*data);
+    data++;
+    --len;
+    HACKIT(true);
+    while ( len-- ) {tft_Write_16(*data); data++; }
+    HACKIT(false);
+  }
+  else { 
+    tft_Write_16S(*data);
+    data++;
+    --len;
+    HACKIT(true);
+    while ( len-- ) {tft_Write_16S(*data); data++;} 
+    HACKIT(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
