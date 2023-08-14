@@ -107,7 +107,7 @@ SPI3_HOST = 2
 #endif
 
 #if !defined(DISABLE_ALL_LIBRARY_WARNINGS) && defined (ESP32_PARALLEL)
- #warning >>>>------>> DMA is not supported in parallel mode
+ #warning >>>>------>> DMA in parallel mode is in EXPERIMENTAL state! Things may break
 #endif
 
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
@@ -130,9 +130,15 @@ SPI3_HOST = 2
     #define SET_BUS_READ_MODE
 #endif
 
+// DMA checks
+
 // Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
-#if !defined(TFT_PARALLEL_8_BIT) && !defined(SPI_18BIT_DRIVER)
-  #define ESP32_DMA
+#if !defined(SPI_18BIT_DRIVER)
+  #if defined(TFT_PARALLEL_8_BIT)
+    #define ESP32_DMA_PARALLEL
+  #else
+    #define ESP32_DMA
+  #endif
   // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
   #define DMA_BUSY_CHECK  dmaWait()
 #else

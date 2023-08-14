@@ -581,7 +581,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#if defined (ESP32_DMA) && !defined (TFT_PARALLEL_8_BIT) //       DMA FUNCTIONS
+#if defined (ESP32_DMA) || defined (ESP32_DMA_PARALLEL) //       DMA FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -590,6 +590,8 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 ***************************************************************************************/
 bool TFT_eSPI::dmaBusy(void)
 {
+#if defined(ESP32_DMA)
+
   if (!DMA_Enabled || !spiBusyCheck) return false;
 
   spi_transaction_t *rtrans;
@@ -604,6 +606,10 @@ bool TFT_eSPI::dmaBusy(void)
   //Serial.print("spiBusyCheck=");Serial.println(spiBusyCheck);
   if (spiBusyCheck ==0) return false;
   return true;
+
+#elif defined(ESP32_DMA_PARALLEL)
+  return true;
+#endif
 }
 
 
@@ -613,6 +619,8 @@ bool TFT_eSPI::dmaBusy(void)
 ***************************************************************************************/
 void TFT_eSPI::dmaWait(void)
 {
+#if defined(ESP32_DMA)
+
   if (!DMA_Enabled || !spiBusyCheck) return;
   spi_transaction_t *rtrans;
   esp_err_t ret;
@@ -622,6 +630,10 @@ void TFT_eSPI::dmaWait(void)
     assert(ret == ESP_OK);
   }
   spiBusyCheck = 0;
+
+#elif defined(ESP32_DMA_PARALLEL)
+
+#endif
 }
 
 
@@ -639,6 +651,8 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
   if(_swapBytes) {
     for (uint32_t i = 0; i < len; i++) (image[i] = image[i] << 8 | image[i] >> 8);
   }
+
+#if defined(ESP32_DMA)
 
   // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
   // small transfers are performed using a blocking call until DMA capacity is reached.
@@ -666,6 +680,10 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
   assert(ret == ESP_OK);
 
   spiBusyCheck++;
+
+#elif defined(ESP32_DMA_PARALLEL)
+
+#endif
 }
 
 
@@ -682,6 +700,8 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   uint32_t len = w*h;
 
   dmaWait();
+
+#if defined(ESP32_DMA)
 
   setAddrWindow(x, y, w, h);
   // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
@@ -710,6 +730,12 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   assert(ret == ESP_OK);
 
   spiBusyCheck++;
+
+#elif defined(ESP32_DMA_PARALLEL)
+
+  buffer = buffer;
+  len = len;
+#endif
 }
 
 
@@ -736,6 +762,8 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   if (dw < 1 || dh < 1) return;
 
   uint32_t len = dw*dh;
+
+#if defined(ESP32_DMA)
 
   if (buffer == nullptr) {
     buffer = image;
@@ -798,13 +826,18 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   assert(ret == ESP_OK);
 
   spiBusyCheck++;
+
+#elif defined(ESP32_DMA_PARALLEL)
+
+  len = len;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Processor specific DMA initialisation
 ////////////////////////////////////////////////////////////////////////////////////////
 
-// The DMA functions here work with SPI only (not parallel)
+// The DMA functions here work with SPI and parallel (experimental)
 /***************************************************************************************
 ** Function name:           dc_callback
 ** Description:             Toggles DC line during transaction (not used)
@@ -813,8 +846,14 @@ extern "C" void dc_callback();
 
 void IRAM_ATTR dc_callback(spi_transaction_t *spi_tx)
 {
+#if defined(ESP32_DMA)
+
   if ((bool)spi_tx->user) {DC_D;}
   else {DC_C;}
+
+#elif defined(ESP32_DMA_PARALLEL)
+
+#endif
 }
 
 /***************************************************************************************
@@ -825,7 +864,11 @@ extern "C" void dma_end_callback();
 
 void IRAM_ATTR dma_end_callback(spi_transaction_t *spi_tx)
 {
+#if defined(ESP32_DMA)
   WRITE_PERI_REG(SPI_DMA_CONF_REG(spi_host), 0);
+#elif defined(ESP32_DMA_PARALLEL)
+
+#endif
 }
 
 /***************************************************************************************
@@ -837,6 +880,9 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
   if (DMA_Enabled) return false;
 
   esp_err_t ret;
+
+#if defined(ESP32_DMA)
+
   spi_bus_config_t buscfg = {
     .mosi_io_num = TFT_MOSI,
     .miso_io_num = TFT_MISO,
@@ -872,6 +918,12 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
   ret = spi_bus_add_device(spi_host, &devcfg, &dmaHAL);
   ESP_ERROR_CHECK(ret);
 
+#elif defined(ESP32_DMA_PARALLEL)
+
+  ret = ESP_OK;
+  ESP_ERROR_CHECK(ret);
+#endif
+
   DMA_Enabled = true;
   spiBusyCheck = 0;
   return true;
@@ -884,8 +936,16 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 void TFT_eSPI::deInitDMA(void)
 {
   if (!DMA_Enabled) return;
+
+#if defined(ESP32_DMA)
+
   spi_bus_remove_device(dmaHAL);
   spi_bus_free(spi_host);
+
+#elif defined(ESP32_DMA_PARALLEL)
+
+#endif
+
   DMA_Enabled = false;
 }
 
