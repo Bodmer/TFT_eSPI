@@ -67,6 +67,8 @@
 
 #if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
   #include <SPI.h>
+#elif defined(TFT_PARALLEL_8_BIT)
+  #include "esp_lcd_panel_io.h"
 #endif
 
 /***************************************************************************************

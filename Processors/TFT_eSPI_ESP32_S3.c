@@ -29,7 +29,7 @@
   #endif
 #endif
 
-#ifdef ESP32_DMA
+#if defined (ESP32_DMA)
   // DMA SPA handle
   spi_device_handle_t dmaHAL;
   #ifdef CONFIG_IDF_TARGET_ESP32
@@ -50,6 +50,9 @@
       spi_host_device_t spi_host = SPI2_HOST;
     #endif
   #endif
+#elif defined(ESP32_DMA_PARALLEL)
+  static esp_lcd_i80_bus_handle_t i80_bus = NULL;
+  static esp_lcd_panel_io_handle_t lcd_io_handle = NULL;
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -879,9 +882,8 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 {
   if (DMA_Enabled) return false;
 
-  esp_err_t ret;
-
 #if defined(ESP32_DMA)
+  esp_err_t ret;
 
   spi_bus_config_t buscfg = {
     .mosi_io_num = TFT_MOSI,
@@ -920,8 +922,51 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 
 #elif defined(ESP32_DMA_PARALLEL)
 
-  ret = ESP_OK;
-  ESP_ERROR_CHECK(ret);
+  esp_lcd_i80_bus_config_t bus_config = {
+    .dc_gpio_num = TFT_DC,
+    .wr_gpio_num = TFT_WR,
+    .clk_src = LCD_CLK_SRC_PLL160M,
+    .data_gpio_nums = {
+      TFT_D0,
+      TFT_D1,
+      TFT_D2,
+      TFT_D3,
+      TFT_D4,
+      TFT_D5,
+      TFT_D6,
+      TFT_D7
+    },
+    .bus_width = 8,
+    .max_transfer_bytes = 65536,
+    .psram_trans_align = 0,
+    .sram_trans_align = 0
+  };
+  ESP_ERROR_CHECK(esp_lcd_new_i80_bus(&bus_config, &i80_bus));
+
+  const esp_lcd_panel_io_i80_config_t io_config = {
+    .cs_gpio_num = TFT_CS,
+    .pclk_hz = SPI_FREQUENCY,
+    .trans_queue_depth = 10,
+    .on_color_trans_done = NULL,
+    .user_ctx = NULL,
+    .lcd_cmd_bits = 8,
+    .lcd_param_bits = 8,
+    .dc_levels = {
+      .dc_idle_level = 0,
+      .dc_cmd_level = 0,
+      .dc_dummy_level = 0,
+      .dc_data_level = 1,
+    },
+    .flags = {
+      .cs_active_high = 0,
+      .reverse_color_bits = 0,
+      .swap_color_bytes = 0,
+      .pclk_active_neg = 0,
+      .pclk_idle_low = 0
+    }
+  };
+  ESP_ERROR_CHECK(esp_lcd_new_panel_io_i80(i80_bus, &io_config, &lcd_io_handle));
+  
 #endif
 
   DMA_Enabled = true;
@@ -943,6 +988,9 @@ void TFT_eSPI::deInitDMA(void)
   spi_bus_free(spi_host);
 
 #elif defined(ESP32_DMA_PARALLEL)
+
+  esp_lcd_panel_io_del(lcd_io_handle);
+  esp_lcd_del_i80_bus(i80_bus);
 
 #endif
 
