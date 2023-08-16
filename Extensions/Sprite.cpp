@@ -88,8 +88,6 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
     _img8_2 = _img8 + (w * h + 1);
   }
 
-  if ( (_bpp == 4) && (_colorMap == nullptr)) createPalette(default_4bit_palette);
-
   // This is to make it clear what pointer size is expected to be used
   // but casting in the user sketch is needed due to the use of void*
   if ( (_bpp == 1) && (frames > 1) )
@@ -101,6 +99,8 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
   if (_img8)
   {
     _created = true;
+    if ( (_bpp == 4) && (_colorMap == nullptr)) createPalette(default_4bit_palette);
+
     rotation = 0;
     setViewport(0, 0, _dwidth, _dheight);
     setPivot(_iwidth/2, _iheight/2);
