@@ -106,10 +106,6 @@ SPI3_HOST = 2
   #endif
 #endif
 
-#if !defined(DISABLE_ALL_LIBRARY_WARNINGS) && defined (ESP32_PARALLEL)
- #warning >>>>------>> DMA in parallel mode is in EXPERIMENTAL state! Things may break
-#endif
-
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
 #if !defined (ESP32_PARALLEL)
   #define _spi_cmd       (volatile uint32_t*)(SPI_CMD_REG(SPI_PORT))
@@ -132,7 +128,7 @@ SPI3_HOST = 2
 
 // DMA checks
 
-// Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
+// Enable DMA on supported setups
 #if !defined(SPI_18BIT_DRIVER)
   #if defined(TFT_PARALLEL_8_BIT)
     #define ESP32_DMA_PARALLEL
@@ -149,6 +145,10 @@ SPI3_HOST = 2
   #define SPI_BUSY_CHECK
 #else
   #define SPI_BUSY_CHECK while (*_spi_cmd&SPI_USR)
+#endif
+
+#if !defined(DISABLE_ALL_LIBRARY_WARNINGS) && defined (ESP32_DMA_PARALLEL)
+  #warning >>>>------>> DMA in parallel mode is in EXPERIMENTAL state! Things may break
 #endif
 
 // If smooth font is used then it is likely SPIFFS will be needed
