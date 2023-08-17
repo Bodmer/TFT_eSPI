@@ -652,7 +652,7 @@ void TFT_eSPI::dmaWait(void)
   spiBusyCheck = 0;
 
 #elif defined(ESP32_DMA_PARALLEL)
-
+  
 #endif
 }
 
@@ -852,14 +852,8 @@ extern "C" void dc_callback();
 
 void IRAM_ATTR dc_callback(spi_transaction_t *spi_tx)
 {
-#if defined(ESP32_DMA)
-
   if ((bool)spi_tx->user) {DC_D;}
   else {DC_C;}
-
-#elif defined(ESP32_DMA_PARALLEL)
-
-#endif
 }
 
 /***************************************************************************************
@@ -870,11 +864,7 @@ extern "C" void dma_end_callback();
 
 void IRAM_ATTR dma_end_callback(spi_transaction_t *spi_tx)
 {
-#if defined(ESP32_DMA)
   WRITE_PERI_REG(SPI_DMA_CONF_REG(spi_host), 0);
-#elif defined(ESP32_DMA_PARALLEL)
-
-#endif
 }
 
 /***************************************************************************************
