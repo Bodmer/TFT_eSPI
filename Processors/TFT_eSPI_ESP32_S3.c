@@ -587,6 +587,19 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 #if defined (ESP32_DMA) || defined (ESP32_DMA_PARALLEL) //       DMA FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef ESP32_DMA_PARALLEL
+extern "C" inline void setAddrWindowDMA(int32_t x0, int32_t y0, int32_t w, int32_t h);
+
+void setAddrWindowDMA(int32_t x0, int32_t y0, int32_t w, int32_t h)
+{
+    uint8_t cmd_ca[] = {(uint8_t)((x0 >> 8) & 0xFF), (uint8_t)(x0 & 0xFF), (uint8_t)(((x0+w - 1) >> 8) & 0xFF), (uint8_t)((x0+w - 1) & 0xFF)};
+    uint8_t cmd_pa[] = {(uint8_t)((y0 >> 8) & 0xFF), (uint8_t)(y0 & 0xFF), (uint8_t)(((y0+h - 1) >> 8) & 0xFF), (uint8_t)((y0+h - 1) & 0xFF)};
+
+    esp_lcd_panel_io_tx_param(lcd_io_handle, TFT_CASET, cmd_ca, 4);
+    esp_lcd_panel_io_tx_param(lcd_io_handle, TFT_PASET, cmd_pa, 4);
+}
+#endif
+
 /***************************************************************************************
 ** Function name:           dmaBusy
 ** Description:             Check if DMA is busy
@@ -736,8 +749,31 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
 #elif defined(ESP32_DMA_PARALLEL)
 
-  buffer = buffer;
-  len = len;
+  setAddrWindowDMA(x, y, dw, dh);
+
+  // Buffer is larger than max transfer size of 64 kBytes
+  if (len > 32768)
+  {
+    // Send command and first 64 kB block
+    esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, buffer, 65536);
+    len -= 32768; buffer+= 32768;
+
+    // Keep sending 64 kB blocks
+    while(len > 32768)
+    {
+      // If the dma is busy, the LCD driver will queue the transaction.
+      // If the queue is full it will block execution and wait for the current transaction to finish.
+      esp_lcd_panel_io_tx_color(lcd_io_handle, -1, buffer, 65536); // If command is negative no command is sent
+      len -= 32768; buffer+= 32768;
+    }
+
+    // Send last batch of data
+    if (len)
+      esp_lcd_panel_io_tx_color(lcd_io_handle, -1, buffer, len*2);
+  }
+  else
+    esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, buffer, len*2);
+
 #endif
 }
 
@@ -765,8 +801,6 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   if (dw < 1 || dh < 1) return;
 
   uint32_t len = dw*dh;
-
-#if defined(ESP32_DMA)
 
   if (buffer == nullptr) {
     buffer = image;
@@ -798,6 +832,8 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
       memcpy(buffer, image, len*2);
     }
   }
+
+#if defined(ESP32_DMA)
 
   if (spiBusyCheck) dmaWait(); // In case we did not wait earlier
 
@@ -832,7 +868,31 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
 #elif defined(ESP32_DMA_PARALLEL)
 
-  len = len;
+  setAddrWindowDMA(x, y, dw, dh);
+
+  // Buffer is larger than max transfer size of 64 kBytes
+  if (len > 32768)
+  {
+    // Send command and first 64 kB block
+    esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, buffer, 65536);
+    len -= 32768; buffer+= 32768;
+
+    // Keep sending 64 kB blocks
+    while(len > 32768)
+    {
+      // If the dma is busy, the LCD driver will queue the transaction.
+      // If the queue is full it will block execution and wait for the current transaction to finish.
+      esp_lcd_panel_io_tx_color(lcd_io_handle, -1, buffer, 65536); // If command is negative no command is sent
+      len -= 32768; buffer+= 32768;
+    }
+
+    // Send last batch of data
+    if (len)
+      esp_lcd_panel_io_tx_color(lcd_io_handle, -1, buffer, len*2);
+  }
+  else
+    esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, buffer, len*2);
+
 #endif
 }
 
@@ -966,8 +1026,8 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     }
   };
   ESP_ERROR_CHECK(esp_lcd_new_panel_io_i80(i80_bus, &io_config, &lcd_io_handle));
-  
-#endif
+
+  #endif
 
   DMA_Enabled = true;
   spiBusyCheck = 0;
