@@ -694,8 +694,8 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 
   trans.user = (void *)1;
   trans.tx_buffer = image;  //finally send the line data
-  trans.length = len * 16;        //Data length, in bits
-  trans.flags = 0;                //SPI_TRANS_USE_TXDATA flag
+  trans.length = len * 16;  //Data length, in bits
+  trans.flags = 0;          //SPI_TRANS_USE_TXDATA flag
 
   ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
   assert(ret == ESP_OK);
@@ -757,66 +757,21 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 #if defined(ESP32_DMA)
 
   setAddrWindow(x, y, w, h);
-  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
-  // small transfers are performed using a blocking call until DMA capacity is reached.
-  // User sketch can prevent blocking by managing pixel count and splitting into blocks
-  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
+  
   bool temp = _swapBytes;
   _swapBytes = false;
-  while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
-    pushPixels(buffer, 0x400);
-    len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
-  }
+  pushPixelsDMA(buffer, len);
   _swapBytes = temp;
-
-  static spi_transaction_t trans;
-
-  memset(&trans, 0, sizeof(spi_transaction_t));
-
-  trans.user = (void *)1;
-  trans.tx_buffer = buffer;   //Data pointer
-  trans.length = len * 16;   //Data length, in bits
-  trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
-
-  ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
-  assert(ret == ESP_OK);
-
-  spiBusyCheck++;
 
 #elif defined(ESP32_DMA_PARALLEL)
 
   ret = setAddrWindowDMA(x, y, w, h);
   assert(ret == ESP_OK);
 
-  // Buffer is larger than max transfer size of 64 kBytes
-  if (len > 32768)
-  {
-    // Send command and first 64 kB block
-    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, buffer, 65536);
-    assert(ret == ESP_OK);
-    len -= 32768; buffer+= 32768;
-
-    // Keep sending 64 kB blocks
-    while(len > 32768)
-    {
-      // If the dma is busy, the LCD driver will queue the transaction.
-      // If the queue is full it will block execution and wait for the current transaction to finish.
-      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, buffer, 65536); // If command is negative no command is sent
-      assert(ret == ESP_OK);
-      len -= 32768; buffer+= 32768;
-    }
-
-    // Send last batch of data
-    if (len)
-    {
-      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, buffer, len*2);
-      assert(ret == ESP_OK);
-    }
-  }
-  else
-    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, buffer, len*2);
-
-  assert(ret == ESP_OK);
+  bool temp = _swapBytes;
+  _swapBytes = false;
+  pushPixelsDMA(buffer, len);
+  _swapBytes = temp;
 
 #endif
 }
@@ -885,66 +840,20 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   setAddrWindow(x, y, dw, dh);
 
-  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
-  // small transfers are performed using a blocking call until DMA capacity is reached.
-  // User sketch can prevent blocking by managing pixel count and splitting into blocks
-  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
   bool temp = _swapBytes;
   _swapBytes = false;
-  while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
-    pushPixels(buffer, 0x400);
-    len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
-  }
+  pushPixelsDMA(buffer, len);
   _swapBytes = temp;
-
-  static spi_transaction_t trans;
-
-  memset(&trans, 0, sizeof(spi_transaction_t));
-
-  trans.user = (void *)1;
-  trans.tx_buffer = buffer;  //finally send the line data
-  trans.length = len * 16;   //Data length, in bits
-  trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
-
-  ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
-  assert(ret == ESP_OK);
-
-  spiBusyCheck++;
 
 #elif defined(ESP32_DMA_PARALLEL)
 
   ret = setAddrWindowDMA(x, y, dw, dh);
   assert(ret == ESP_OK);
 
-  // Buffer is larger than max transfer size of 64 kBytes
-  if (len > 32768)
-  {
-    // Send command and first 64 kB block
-    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, buffer, 65536);
-    assert(ret == ESP_OK);
-    len -= 32768; buffer+= 32768;
-
-    // Keep sending 64 kB blocks
-    while(len > 32768)
-    {
-      // If the dma is busy, the LCD driver will queue the transaction.
-      // If the queue is full it will block execution and wait for the current transaction to finish.
-      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, buffer, 65536); // If command is negative no command is sent
-      assert(ret == ESP_OK);
-      len -= 32768; buffer+= 32768;
-    }
-
-    // Send last batch of data
-    if (len)
-    {
-      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, buffer, len*2);
-      assert(ret == ESP_OK);
-    }
-  }
-  else
-    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, buffer, len*2);
-
-  assert(ret == ESP_OK);
+  bool temp = _swapBytes;
+  _swapBytes = false;
+  pushPixelsDMA(buffer, len);
+  _swapBytes = temp;
 
 #endif
 }
