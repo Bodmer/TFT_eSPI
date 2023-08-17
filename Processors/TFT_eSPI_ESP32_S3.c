@@ -628,7 +628,7 @@ bool TFT_eSPI::dmaBusy(void)
   return true;
 
 #elif defined(ESP32_DMA_PARALLEL)
-  return true;
+  return false;
 #endif
 }
 
@@ -640,7 +640,6 @@ bool TFT_eSPI::dmaBusy(void)
 void TFT_eSPI::dmaWait(void)
 {
 #if defined(ESP32_DMA)
-
   if (!DMA_Enabled || !spiBusyCheck) return;
   spi_transaction_t *rtrans;
   esp_err_t ret;
@@ -650,9 +649,6 @@ void TFT_eSPI::dmaWait(void)
     assert(ret == ESP_OK);
   }
   spiBusyCheck = 0;
-
-#elif defined(ESP32_DMA_PARALLEL)
-  
 #endif
 }
 
@@ -864,7 +860,9 @@ extern "C" void dma_end_callback();
 
 void IRAM_ATTR dma_end_callback(spi_transaction_t *spi_tx)
 {
+#if defined(ESP32_DMA)
   WRITE_PERI_REG(SPI_DMA_CONF_REG(spi_host), 0);
+#endif
 }
 
 /***************************************************************************************
