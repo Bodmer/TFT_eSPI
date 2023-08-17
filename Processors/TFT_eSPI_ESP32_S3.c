@@ -755,25 +755,16 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   esp_err_t ret = ESP_OK;
 
 #if defined(ESP32_DMA)
-
   setAddrWindow(x, y, w, h);
-  
-  bool temp = _swapBytes;
-  _swapBytes = false;
-  pushPixelsDMA(buffer, len);
-  _swapBytes = temp;
-
 #elif defined(ESP32_DMA_PARALLEL)
-
   ret = setAddrWindowDMA(x, y, w, h);
   assert(ret == ESP_OK);
+#endif
 
   bool temp = _swapBytes;
   _swapBytes = false;
   pushPixelsDMA(buffer, len);
   _swapBytes = temp;
-
-#endif
 }
 
 
@@ -835,27 +826,17 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   esp_err_t ret = ESP_OK;
 
 #if defined(ESP32_DMA)
-
   if (spiBusyCheck) dmaWait(); // In case we did not wait earlier
-
   setAddrWindow(x, y, dw, dh);
-
-  bool temp = _swapBytes;
-  _swapBytes = false;
-  pushPixelsDMA(buffer, len);
-  _swapBytes = temp;
-
 #elif defined(ESP32_DMA_PARALLEL)
-
   ret = setAddrWindowDMA(x, y, dw, dh);
   assert(ret == ESP_OK);
+#endif
 
   bool temp = _swapBytes;
   _swapBytes = false;
   pushPixelsDMA(buffer, len);
   _swapBytes = temp;
-
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
