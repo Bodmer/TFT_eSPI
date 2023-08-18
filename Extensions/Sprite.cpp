@@ -1985,10 +1985,6 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uin
 {
   if ( _vpOoB || !_created ) return;
 
-  if ((x >= _vpW - _xDatum) || // Clip right
-      (y >= _vpH - _yDatum))   // Clip bottom
-    return;
-
   if (c < 32) return;
 #ifdef LOAD_GLCD
 //>>>>>>>>>>>>>>>>>>
@@ -1996,6 +1992,10 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uin
   if(!gfxFont) { // 'Classic' built-in font
 #endif
 //>>>>>>>>>>>>>>>>>>
+
+  if ((x >= _vpW - _xDatum) || // Clip right
+      (y >= _vpH - _yDatum))   // Clip bottom
+    return;
 
   if (((x + 6 * size - 1) < (_vpX - _xDatum)) || // Clip left
       ((y + 8 * size - 1) < (_vpY - _yDatum)))   // Clip top
