@@ -367,6 +367,29 @@ menu "TFT_eSPI"
                 Large transfer sizes require more memory for internal DMA data structures (12 Bytes
                 for every 4095 Bytes of maximum transfer size)
 
+        config DMA_FAST_TRANSFER 
+            bool "DMA transfer optimization"
+            default "n"
+            help
+                By enabling this setting the TFT_DMA_MAX_TX_SIZE can be significantly reduced while mantaining
+                the same level of performance. As a result the overall memory usage is lower
+                
+                MORE TESTING NEEEDED!!!
+                
+                When transfering data using DMA that exceeds TFT_DMA_MAX_TX_SIZE we have to
+                wait for the current transaction to complete. If this setting is disabled the
+                transferred image is divided in smaller rectangles that fit in a single DMA operation
+                This requires updating the display address window for each block.
+                
+                Some displays allow to pause pixel data transfers and resume them later if no
+                commands have been sent in between. Therefore we could set the address window once
+                and send color data in multiple transfers.
+                
+                Even if the display supports it there may be project configurations or user code that
+                interferes with this optimization. The result is that only the first transfer is valid
+                and the following ones are ignored. As a consequence only a portion of the total buffer
+                is displayed
+
         config DMA_SWAP_BYTES
             bool "Swap bytes"
             default "y"

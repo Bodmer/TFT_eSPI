@@ -327,6 +327,10 @@
 
     #define TFT_DMA_MAX_TX_SIZE CONFIG_DMA_MAX_TX_SIZE
 
+    #ifdef CONFIG_DMA_FAST_TRANSFER
+        #define TFT_DMA_FAST_TRANSFER
+    #endif
+
     #ifdef CONFIG_DMA_SWAP_BYTES
         #define TFT_DMA_SWAP_BYTES 1
     #else

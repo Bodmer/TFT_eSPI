@@ -755,28 +755,38 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   pushPixelsDMA(buffer, len);
   _swapBytes = temp;
 #elif defined(ESP32_DMA_PARALLEL)
-  // Buffer is larger than max transfer size
-  if (len > TFT_DMA_MAX_TX_SIZE/2)
-  {
-    h = TFT_DMA_MAX_TX_SIZE/2 / w;
-
-    do {
-      ret = setAddrWindowDMA(x, y, w, h);
-      assert(ret == ESP_OK);
-
-      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, w*h*2);
-      assert(ret == ESP_OK);
-      len -= w*h; image+= w*h; y += h;
-    }
-    while(len > TFT_DMA_MAX_TX_SIZE/2);
-  }
-
-  if (len > 0)
-  {
+  #ifdef TFT_DMA_FAST_TRANSFER
     ret = setAddrWindowDMA(x, y, w, h);
     assert(ret == ESP_OK);
-    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
-  }
+
+    bool temp = _swapBytes;
+    _swapBytes = false;
+    pushPixelsDMA(buffer, len);
+    _swapBytes = temp;
+  #else
+    // Buffer is larger than max transfer size
+    if (len > TFT_DMA_MAX_TX_SIZE/2)
+    {
+      h = TFT_DMA_MAX_TX_SIZE/2 / w;
+
+      do {
+        ret = setAddrWindowDMA(x, y, w, h);
+        assert(ret == ESP_OK);
+
+        ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, w*h*2);
+        assert(ret == ESP_OK);
+        len -= w*h; image+= w*h; y += h;
+      }
+      while(len > TFT_DMA_MAX_TX_SIZE/2);
+    }
+
+    if (len > 0)
+    {
+      ret = setAddrWindowDMA(x, y, w, h);
+      assert(ret == ESP_OK);
+      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
+    }
+  #endif
 #endif
 
   assert(ret == ESP_OK);
@@ -849,28 +859,38 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   pushPixelsDMA(buffer, len);
   _swapBytes = temp;
 #elif defined(ESP32_DMA_PARALLEL)
-  // Buffer is larger than max transfer size
-  if (len > TFT_DMA_MAX_TX_SIZE/2)
-  {
-    dh = TFT_DMA_MAX_TX_SIZE/2 / dw;
-
-    do {
-      ret = setAddrWindowDMA(x, y, dw, dh);
-      assert(ret == ESP_OK);
-
-      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, dw*dh*2);
-      assert(ret == ESP_OK);
-      len -= dw*dh; image+= dw*dh; y += dh;
-    }
-    while(len > TFT_DMA_MAX_TX_SIZE/2);
-  }
-
-  if (len > 0)
-  {
+  #ifdef TFT_DMA_FAST_TRANSFER
     ret = setAddrWindowDMA(x, y, dw, dh);
     assert(ret == ESP_OK);
-    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
-  }
+
+    bool temp = _swapBytes;
+    _swapBytes = false;
+    pushPixelsDMA(buffer, len);
+    _swapBytes = temp;
+  #else
+    // Buffer is larger than max transfer size
+    if (len > TFT_DMA_MAX_TX_SIZE/2)
+    {
+      dh = TFT_DMA_MAX_TX_SIZE/2 / dw;
+
+      do {
+        ret = setAddrWindowDMA(x, y, dw, dh);
+        assert(ret == ESP_OK);
+
+        ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, dw*dh*2);
+        assert(ret == ESP_OK);
+        len -= dw*dh; image+= dw*dh; y += dh;
+      }
+      while(len > TFT_DMA_MAX_TX_SIZE/2);
+    }
+
+    if (len > 0)
+    {
+      ret = setAddrWindowDMA(x, y, dw, dh);
+      assert(ret == ESP_OK);
+      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
+    }
+  #endif
 #endif
 
   assert(ret == ESP_OK);
@@ -978,7 +998,11 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
   const esp_lcd_panel_io_i80_config_t io_config = {
     .cs_gpio_num = TFT_CS,
     .pclk_hz = TFT_DMA_FREQUENCY,
+    #ifdef TFT_DMA_FAST_TRANSFER
+    .trans_queue_depth = 5,
+    #else
     .trans_queue_depth = 1,
+    #endif
     .on_color_trans_done = NULL,
     .user_ctx = NULL,
     .lcd_cmd_bits = 8,
