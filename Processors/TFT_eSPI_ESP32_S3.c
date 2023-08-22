@@ -700,7 +700,7 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 
 #elif defined(ESP32_DMA_PARALLEL)
 
-  // Buffer is larger than max transfer size of 64 kBytes
+  // Buffer is larger than max transfer size
   if (len > TFT_DMA_MAX_TX_SIZE/2)
   {
     // Send command and first block
@@ -708,7 +708,7 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
     assert(ret == ESP_OK);
     len -= TFT_DMA_MAX_TX_SIZE/2; image+= TFT_DMA_MAX_TX_SIZE/2;
 
-    // Keep sending 64 kB blocks
+    // Keep sending blocks
     while(len > TFT_DMA_MAX_TX_SIZE/2)
     {
       // If the dma is busy, the LCD driver will queue the transaction.
@@ -719,11 +719,8 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
     }
 
     // Send last batch of data
-    if (len)
-    {
+    if (len > 0)
       ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, image, len*2);
-      assert(ret == ESP_OK);
-    }
   }
   else
     ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
@@ -752,15 +749,37 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
 #if defined(ESP32_DMA)
   setAddrWindow(x, y, w, h);
-#elif defined(ESP32_DMA_PARALLEL)
-  ret = setAddrWindowDMA(x, y, w, h);
-  assert(ret == ESP_OK);
-#endif
 
   bool temp = _swapBytes;
   _swapBytes = false;
   pushPixelsDMA(buffer, len);
   _swapBytes = temp;
+#elif defined(ESP32_DMA_PARALLEL)
+  // Buffer is larger than max transfer size
+  if (len > TFT_DMA_MAX_TX_SIZE/2)
+  {
+    dh = TFT_DMA_MAX_TX_SIZE/2 / dw;
+
+    do {
+      ret = setAddrWindowDMA(x, y, dw, dh);
+      assert(ret == ESP_OK);
+
+      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, dw*dh*2);
+      assert(ret == ESP_OK);
+      len -= dw*dh; image+= dw*dh; y += dh;
+    }
+    while(len > TFT_DMA_MAX_TX_SIZE/2);
+  }
+
+  if (len > 0)
+  {
+    ret = setAddrWindowDMA(x, y, dw, dh);
+    assert(ret == ESP_OK);
+    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
+  }
+#endif
+
+  assert(ret == ESP_OK);
 }
 
 
@@ -824,15 +843,37 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 #if defined(ESP32_DMA)
   if (spiBusyCheck) dmaWait(); // In case we did not wait earlier
   setAddrWindow(x, y, dw, dh);
-#elif defined(ESP32_DMA_PARALLEL)
-  ret = setAddrWindowDMA(x, y, dw, dh);
-  assert(ret == ESP_OK);
-#endif
 
   bool temp = _swapBytes;
   _swapBytes = false;
   pushPixelsDMA(buffer, len);
   _swapBytes = temp;
+#elif defined(ESP32_DMA_PARALLEL)
+  // Buffer is larger than max transfer size
+  if (len > TFT_DMA_MAX_TX_SIZE/2)
+  {
+    dh = TFT_DMA_MAX_TX_SIZE/2 / dw;
+
+    do {
+      ret = setAddrWindowDMA(x, y, dw, dh);
+      assert(ret == ESP_OK);
+
+      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, dw*dh*2);
+      assert(ret == ESP_OK);
+      len -= dw*dh; image+= dw*dh; y += dh;
+    }
+    while(len > TFT_DMA_MAX_TX_SIZE/2);
+  }
+
+  if (len > 0)
+  {
+    ret = setAddrWindowDMA(x, y, dw, dh);
+    assert(ret == ESP_OK);
+    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
+  }
+#endif
+
+  assert(ret == ESP_OK);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
