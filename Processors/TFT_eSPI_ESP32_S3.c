@@ -928,7 +928,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
       TFT_D7
     },
     .bus_width = 8,
-    .max_transfer_bytes = 65536,
+    .max_transfer_bytes = TFT_DMA_MAX_TX_SIZE,
     .psram_trans_align = 0,
     .sram_trans_align = 0
   };
@@ -936,8 +936,8 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 
   const esp_lcd_panel_io_i80_config_t io_config = {
     .cs_gpio_num = TFT_CS,
-    .pclk_hz = SPI_FREQUENCY,
-    .trans_queue_depth = 10,
+    .pclk_hz = TFT_DMA_FREQUENCY,
+    .trans_queue_depth = 1,
     .on_color_trans_done = NULL,
     .user_ctx = NULL,
     .lcd_cmd_bits = 8,
@@ -951,7 +951,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .flags = {
       .cs_active_high = 0,
       .reverse_color_bits = 0,
-      .swap_color_bytes = 0,
+      .swap_color_bytes = TFT_DMA_SWAP_BYTES,
       .pclk_active_neg = 0,
       .pclk_idle_low = 0
     }

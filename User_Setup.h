@@ -387,3 +387,42 @@
 // so changing it here has no effect
 
 // #define SUPPORT_TRANSACTIONS
+
+// ##################################################################################
+//
+// ESP32-S2 and ESP32-S3 specific settings for Parallel DMA
+//
+// ##################################################################################
+
+/**
+ * Data transfer frequency
+ * Theoretical maximum frequency for 8-bit parallel bus is 80 MHz. Use lower values if
+ * visual glitches apperar or the module crashes or hangs frequently
+ */
+
+// #define TFT_DMA_FREQUENCY 80000000
+#define TFT_DMA_FREQUENCY 40000000
+// #define TFT_DMA_FREQUENCY 40000000
+
+
+/**
+ * Maximum number of bytes that can be transferred in a single DMA operation. This is the
+ * largest block of data that can be sent using pushImageDMA or pushPixelsDMA without
+ * blocking code execution.
+ * 
+ * Large transfer sizes require more memory for internal DMA data structures (12 Bytes
+ * for every 4095 Bytes of maximum transfer size)
+ */
+
+// #define TFT_DMA_MAX_TX_SIZE 65536 // 64 kBytes
+// #define TFT_DMA_MAX_TX_SIZE 153600 // 150 kBytes. Can hold a single 320*240 frame buffer with 16-bit colors
+#define TFT_DMA_MAX_TX_SIZE 307200 // 300 kBytes. Can hold a single 480*320 frame buffer with 16-bit colors
+
+/**
+ * Swap byte order when sending color data. This produces the same effect as calling
+ * setSwapBytes but the operation is handled by hardware rather than software which
+ * increases performance.
+ */
+
+// #define TFT_DMA_SWAP_BYTES 0    // false
+#define TFT_DMA_SWAP_BYTES 1    // true

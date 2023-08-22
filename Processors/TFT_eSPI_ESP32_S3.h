@@ -126,7 +126,9 @@ SPI3_HOST = 2
     #define SET_BUS_READ_MODE
 #endif
 
+////////////////////////////////////////////////////////////////////////////////////////
 // DMA checks
+////////////////////////////////////////////////////////////////////////////////////////
 
 // Enable DMA on supported setups
 #if !defined(SPI_18BIT_DRIVER)
@@ -139,6 +141,20 @@ SPI3_HOST = 2
   #define DMA_BUSY_CHECK  dmaWait()
 #else
   #define DMA_BUSY_CHECK
+#endif
+
+#ifdef ESP32_DMA_PARALLEL
+  #ifndef TFT_DMA_FREQUENCY
+    #define TFT_DMA_FREQUENCY 10000000
+  #endif
+
+  #ifndef TFT_DMA_MAX_TX_SIZE
+    #define TFT_DMA_MAX_TX_SIZE 65536 // 64 kBytes
+  #endif
+
+  #ifndef TFT_DMA_SWAP_BYTES
+    #define TFT_DMA_SWAP_BYTES 1
+  #endif
 #endif
 
 #if defined(TFT_PARALLEL_8_BIT)
