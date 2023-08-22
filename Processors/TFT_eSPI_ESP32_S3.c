@@ -701,21 +701,21 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 #elif defined(ESP32_DMA_PARALLEL)
 
   // Buffer is larger than max transfer size of 64 kBytes
-  if (len > 32768)
+  if (len > TFT_DMA_MAX_TX_SIZE/2)
   {
-    // Send command and first 64 kB block
-    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, 65536);
+    // Send command and first block
+    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, TFT_DMA_MAX_TX_SIZE/2 *2);
     assert(ret == ESP_OK);
-    len -= 32768; image+= 32768;
+    len -= TFT_DMA_MAX_TX_SIZE/2; image+= TFT_DMA_MAX_TX_SIZE/2;
 
     // Keep sending 64 kB blocks
-    while(len > 32768)
+    while(len > TFT_DMA_MAX_TX_SIZE/2)
     {
       // If the dma is busy, the LCD driver will queue the transaction.
       // If the queue is full it will block execution and wait for the current transaction to finish.
       ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, image, 65536); // If command is negative no command is sent
       assert(ret == ESP_OK);
-      len -= 32768; image+= 32768;
+      len -= TFT_DMA_MAX_TX_SIZE/2; image+= TFT_DMA_MAX_TX_SIZE/2;
     }
 
     // Send last batch of data
