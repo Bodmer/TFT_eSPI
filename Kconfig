@@ -344,6 +344,39 @@ menu "TFT_eSPI"
             default 0 if TFT_BACKLIGHT_ON_LOW
     endmenu
 
+    menu "Parallel DMA configuration"
+        depends on TFT_PARALLEL_8_BIT
+
+        config DMA_FREQUENCY
+            int "Bus frequency (Hz)"
+            default 4000000
+            range 1250000 80000000
+            help
+                Theoretical maximum frequency for 8-bit parallel bus is 80 MHz. Use lower values if
+                visual glitches apperar or the module crashes or hangs frequently
+
+        config DMA_MAX_TX_SIZE
+            int "Max transfer size (Bytes)"
+            default 65536
+            range 1 8388608
+            help
+                Maximum number of bytes that can be transferred in a single DMA operation. This is the
+                largest block of data that can be sent using pushImageDMA or pushPixelsDMA without
+                blocking code execution.
+                
+                Large transfer sizes require more memory for internal DMA data structures (12 Bytes
+                for every 4095 Bytes of maximum transfer size)
+
+        config DMA_SWAP_BYTES
+            bool "Swap bytes"
+            default "y"
+            help
+                Swap byte order when sending color data. This produces the same effect as calling
+                setSwapBytes but the operation is handled by hardware rather than software which
+                increases performance.
+
+    endmenu
+
     menu "Fonts"
         config TFT_LOAD_GLCD
             bool "Font 1: Original Adafruit 8 pixel font needs ~1820 bytes in FLASH"

@@ -12,7 +12,7 @@
  * @author Ricard Bitriá Ribes (https://github.com/dracir9)
  * Created Date: 22-01-2022
  * -----
- * Last Modified: 25-02-2023
+ * Last Modified: 22-08-2023
  * Modified By: Ricard Bitriá Ribes
  * -----
  * @copyright (c) 2022 Ricard Bitriá Ribes
@@ -315,6 +315,23 @@
     #endif
 
     #define SPI_TOUCH_FREQUENCY CONFIG_SPI_TOUCH_FREQUENCY
+#endif
+
+/***************************************************************************************
+**                         Section 6: Parallel DMA configuration
+***************************************************************************************/
+
+#ifdef CONFIG_TFT_PARALLEL_8_BIT
+    
+    #define TFT_DMA_FREQUENCY CONFIG_DMA_FREQUENCY
+
+    #define TFT_DMA_MAX_TX_SIZE CONFIG_DMA_MAX_TX_SIZE
+
+    #ifdef CONFIG_DMA_SWAP_BYTES
+        #define TFT_DMA_SWAP_BYTES 1
+    #else
+        #define TFT_DMA_SWAP_BYTES 0
+    #endif
 #endif
 
 #endif // TFT_CONFIG_H
