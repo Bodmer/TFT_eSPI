@@ -143,6 +143,8 @@
 
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 
+// #include <User_Setups/Setup350_S3_ILI9488_parallel_DMA.h>   // For the ESP32 S3 with ILI9488 in 8-bit parallel bus and DMA
+
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
 

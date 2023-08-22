@@ -364,3 +364,67 @@
 // so changing it here has no effect
 
 // #define SUPPORT_TRANSACTIONS
+
+// ##################################################################################
+//
+// ESP32-S2 and ESP32-S3 specific settings for Parallel DMA
+//
+// ##################################################################################
+
+/**
+ * Data transfer frequency
+ * Theoretical maximum frequency for 8-bit parallel bus is 80 MHz. Use lower values if
+ * visual glitches apperar or the module crashes or hangs frequently
+ */
+
+// #define TFT_DMA_FREQUENCY 80000000
+#define TFT_DMA_FREQUENCY 40000000
+// #define TFT_DMA_FREQUENCY 20000000
+
+
+/**
+ * Maximum number of bytes that can be transferred in a single DMA operation. This is the
+ * largest block of data that can be sent using pushImageDMA or pushPixelsDMA without
+ * blocking code execution.
+ * 
+ * Large transfer sizes require more memory for internal DMA data structures (12 Bytes
+ * for every 4095 Bytes of maximum transfer size)
+ */
+
+#define TFT_DMA_MAX_TX_SIZE 65536 // 64 kBytes
+// #define TFT_DMA_MAX_TX_SIZE 153600 // 150 kBytes. Can hold a single 320*240 frame buffer with 16-bit colors
+// #define TFT_DMA_MAX_TX_SIZE 307200 // 300 kBytes. Can hold a single 480*320 frame buffer with 16-bit colors
+
+/**
+ * DMA transfer optimization for small maximum transfer size (See above)
+ * 
+ * By enabling this setting the TFT_DMA_MAX_TX_SIZE can be significantly reduced while mantaining
+ * the same level of performance. As a result the overall memory usage is lower
+ *
+ * MORE TESTING NEEEDED!!!
+ * 
+ * When transfering data using DMA that exceeds TFT_DMA_MAX_TX_SIZE we have to
+ * wait for the current transaction to complete. If this setting is disabled the
+ * transferred image is divided in smaller rectangles that fit in a single DMA operation
+ * This requires updating the display address window for each block.
+ * 
+ * Some displays allow to pause pixel data transfers and resume them later if no
+ * commands have been sent in between. Therefore we could set the address window once
+ * and send color data in multiple transfers.
+ * 
+ * NOTE: Even if the display supports it there may be project configurations or user code that
+ * interferes with this optimization. The result is that only the first transfer is valid
+ * and the following ones are ignored. As a consequence only a portion of the total buffer
+ * is displayed
+ */
+
+// #define TFT_DMA_FAST_TRANSFER
+
+/**
+ * Swap byte order when sending color data. This produces the same effect as calling
+ * setSwapBytes but the operation is handled by hardware rather than software which
+ * increases performance.
+ */
+
+// #define TFT_DMA_SWAP_BYTES 0    // false
+#define TFT_DMA_SWAP_BYTES 1    // true
