@@ -713,7 +713,7 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
     {
       // If the dma is busy, the LCD driver will queue the transaction.
       // If the queue is full it will block execution and wait for the current transaction to finish.
-      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, image, 65536); // If command is negative no command is sent
+      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, image, TFT_DMA_MAX_TX_SIZE); // If command is negative no command is sent
       assert(ret == ESP_OK);
       len -= TFT_DMA_MAX_TX_SIZE/2; image+= TFT_DMA_MAX_TX_SIZE/2;
     }
