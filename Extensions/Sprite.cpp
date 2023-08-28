@@ -88,8 +88,6 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
     _img8_2 = _img8 + (w * h + 1);
   }
 
-  if ( (_bpp == 4) && (_colorMap == nullptr)) createPalette(default_4bit_palette);
-
   // This is to make it clear what pointer size is expected to be used
   // but casting in the user sketch is needed due to the use of void*
   if ( (_bpp == 1) && (frames > 1) )
@@ -101,6 +99,8 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
   if (_img8)
   {
     _created = true;
+    if ( (_bpp == 4) && (_colorMap == nullptr)) createPalette(default_4bit_palette);
+
     rotation = 0;
     setViewport(0, 0, _dwidth, _dheight);
     setPivot(_iwidth/2, _iheight/2);
@@ -1985,10 +1985,6 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uin
 {
   if ( _vpOoB || !_created ) return;
 
-  if ((x >= _vpW - _xDatum) || // Clip right
-      (y >= _vpH - _yDatum))   // Clip bottom
-    return;
-
   if (c < 32) return;
 #ifdef LOAD_GLCD
 //>>>>>>>>>>>>>>>>>>
@@ -1996,6 +1992,10 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uin
   if(!gfxFont) { // 'Classic' built-in font
 #endif
 //>>>>>>>>>>>>>>>>>>
+
+  if ((x >= _vpW - _xDatum) || // Clip right
+      (y >= _vpH - _yDatum))   // Clip bottom
+    return;
 
   if (((x + 6 * size - 1) < (_vpX - _xDatum)) || // Clip left
       ((y + 8 * size - 1) < (_vpY - _yDatum)))   // Clip top
