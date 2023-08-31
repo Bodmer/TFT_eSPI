@@ -221,7 +221,14 @@
 //#define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
 //#define TFT_BL   22  // LED back-light
 
-#define TOUCH_CS 33     // Chip select pin (T_CS) of touch screen
+// #define TOUCH_CS 33   // commented out - using TFT_eTouch library 
+// TFT_eTouch source from Achill Hasler https://github.com/achillhasler/TFT_eTouch 
+// config ready to use with TFT_eSPI and ESP32-2432S028 on my github https://github.com/w4b-zero/TFT_eTouch/
+#define TFT_ETOUCH_MOSI 32 // TP_DIN
+#define TFT_ETOUCH_MISO 39 // TP_OUT
+#define TFT_ETOUCH_SCK 25  // TP_CLK
+#define TFT_ETOUCH_CS 33   // TP_CS
+#define TFT_ETOUCH_PIRQ 36  // TP_IRQ
 
 //#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
