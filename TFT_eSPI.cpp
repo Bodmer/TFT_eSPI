@@ -5021,9 +5021,9 @@ uint32_t TFT_eSPI::alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8
   uint32_t rxx = bgc & 0xFF0000;
   rxx += ((fgc & 0xFF0000) - rxx) * alpha >> 8;
   uint32_t xgx = bgc & 0x00FF00;
-  xgx += ((fgc & 0xFF0000) - xgx) * alpha >> 8;
+  xgx += ((fgc & 0x00FF00) - xgx) * alpha >> 8;
   uint32_t xxb = bgc & 0x0000FF;
-  xxb += ((fgc & 0xFF0000) - xxb) * alpha >> 8;
+  xxb += ((fgc & 0x0000FF) - xxb) * alpha >> 8;
   return (rxx & 0xFF0000) | (xgx & 0x00FF00) | (xxb & 0x0000FF);
 }
 
