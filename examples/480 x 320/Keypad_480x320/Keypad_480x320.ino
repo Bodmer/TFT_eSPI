@@ -4,7 +4,7 @@
   example.
 
   This example diplays a keypad where numbers can be entered and
-  send to the Serial Monitor window.
+  sent to the Serial Monitor window.
 
   The sketch has been tested on the ESP8266 (which supports SPIFFS)
 
@@ -212,7 +212,7 @@ void touch_calibrate()
 
   // check file system exists
   if (!SPIFFS.begin()) {
-    Serial.println("Formating file system");
+    Serial.println("Formatting file system");
     SPIFFS.format();
     SPIFFS.begin();
   }
