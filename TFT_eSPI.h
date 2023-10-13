@@ -732,9 +732,6 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // Alpha blend 2 colours, see generic "alphaBlend_Test" example
            // alpha =   0 = 100% background colour
            // alpha = 255 = 100% foreground colour
-#if !defined (STM32) && !defined(__IMXRT1052__) && !defined(__IMXRT1062__)
-  inline 
-#endif
   uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc);
 
            // 16 bit colour alphaBlend with alpha dither (dither reduces colour banding)
