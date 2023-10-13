@@ -985,6 +985,20 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 template <typename T> static inline void
 transpose(T& a, T& b) { T t = a; a = b; b = t; }
 
+// Fast alphaBlend
+template <typename A, typename F, typename B> static inline uint16_t
+fastBlend(A alpha, F fgc, B bgc)
+{
+  // Split out and blend 5 bit red and blue channels
+  uint32_t rxb = bgc & 0xF81F;
+  rxb += ((fgc & 0xF81F) - rxb) * (alpha >> 2) >> 6;
+  // Split out and blend 6 bit green channel
+  uint32_t xgx = bgc & 0x07E0;
+  xgx += ((fgc & 0x07E0) - xgx) * alpha >> 8;
+  // Recombine channels
+  return (rxb & 0xF81F) | (xgx & 0x07E0);
+}
+
 /***************************************************************************************
 **                         Section 10: Additional extension classes
 ***************************************************************************************/

@@ -3954,7 +3954,7 @@ constexpr float deg2rad      = 3.14159265359/180.0;
 uint16_t TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color, uint8_t alpha, uint32_t bg_color)
 {
   if (bg_color == 0x00FFFFFF) bg_color = readPixel(x, y);
-  color = alphaBlend(alpha, color, bg_color);
+  color = fastBlend(alpha, color, bg_color);
   drawPixel(x, y, color);
   return color;
 }
@@ -4195,7 +4195,7 @@ void TFT_eSPI::drawArc(int32_t x, int32_t y, int32_t r, int32_t ir,
       if (alpha < 16) continue;  // Skip low alpha pixels
 
       // If background is read it must be done in each quadrant
-      uint16_t pcol = alphaBlend(alpha, fg_color, bg_color);
+      uint16_t pcol = fastBlend(alpha, fg_color, bg_color);
       // Check if an AA pixels need to be drawn
       slope = ((r - cy)<<16)/(r - cx);
       if (slope <= startSlope[0] && slope >= endSlope[0]) // BL
@@ -4366,7 +4366,7 @@ void TFT_eSPI::drawSmoothRoundRect(int32_t x, int32_t y, int32_t r, int32_t ir, 
       if (alpha < 16) continue;  // Skip low alpha pixels
 
       // If background is read it must be done in each quadrant - TODO
-      uint16_t pcol = alphaBlend(alpha, fg_color, bg_color);
+      uint16_t pcol = fastBlend(alpha, fg_color, bg_color);
       if (quadrants & 0x8) drawPixel(x + cx - r, y - cy + r + h, pcol);     // BL
       if (quadrants & 0x1) drawPixel(x + cx - r, y + cy - r, pcol);         // TL
       if (quadrants & 0x2) drawPixel(x - cx + r + w, y + cy - r, pcol);     // TR
@@ -4522,12 +4522,12 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
         bg = readPixel(xp, yp); swin = true;
       }
       #ifdef GC9A01_DRIVER
-        uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg);
+        uint16_t pcol = fastBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg);
         drawPixel(xp, yp, pcol);
         swin = swin;
       #else
         if (swin) { setWindow(xp, yp, x1, yp); swin = false; }
-        pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
+        pushColor(fastBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
       #endif
     }
   }
@@ -4560,12 +4560,12 @@ void TFT_eSPI::drawWedgeLine(float ax, float ay, float bx, float by, float ar, f
         bg = readPixel(xp, yp); swin = true;
       }
       #ifdef GC9A01_DRIVER
-        uint16_t pcol = alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg);
+        uint16_t pcol = fastBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg);
         drawPixel(xp, yp, pcol);
         swin = swin;
       #else
         if (swin) { setWindow(xp, yp, x1, yp); swin = false; }
-        pushColor(alphaBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
+        pushColor(fastBlend((uint8_t)(alpha * PixelAlphaGain), fg_color, bg));
       #endif
     }
   }
@@ -4719,7 +4719,7 @@ void TFT_eSPI::fillRectVGradient(int16_t x, int16_t y, int16_t w, int16_t h, uin
   while (h--) {
     drawFastHLine(x, y++, w, color);
     alpha += delta;
-    color = alphaBlend((uint8_t)alpha, color1, color2);
+    color = fastBlend((uint8_t)alpha, color1, color2);
   }
 
   end_nin_write();
@@ -4757,7 +4757,7 @@ void TFT_eSPI::fillRectHGradient(int16_t x, int16_t y, int16_t w, int16_t h, uin
   while (w--) {
     drawFastVLine(x++, y, h, color);
     alpha += delta;
-    color = alphaBlend((uint8_t)alpha, color1, color2);
+    color = fastBlend((uint8_t)alpha, color1, color2);
   }
 
   end_nin_write();
