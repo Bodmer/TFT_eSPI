@@ -4973,9 +4973,6 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
 ** Function name:           alphaBlend
 ** Description:             Blend 16bit foreground and background
 *************************************************************************************x*/
-#if !defined (STM32) && !defined(__IMXRT1052__) && !defined(__IMXRT1062__)
-  inline 
-#endif
 uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc)
 {
   // Split out and blend 5 bit red and blue channels
