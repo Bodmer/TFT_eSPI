@@ -3208,7 +3208,8 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
 
     setWindow(xd, yd, xd+5, yd+7);
 
-    for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(font + (c * 5) + i);
+    for (int8_t i = 0; i < 5; i++ )
+      column[i] = pgm_read_byte(c < 256 ? font + (c * 5) + i : font_ext + ((c - 256) * 5) + i);
     column[5] = 0;
 
     for (int8_t j = 0; j < 8; j++) {
@@ -3231,7 +3232,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
       if (i == 5)
         line = 0x0;
       else
-        line = pgm_read_byte(font + (c * 5) + i);
+        line = pgm_read_byte(c < 256 ? font + (c * 5) + i : font_ext + ((c - 256) * 5) + i);
 
       if (size == 1 && !fillbg) { // default size
         for (int8_t j = 0; j < 8; j++) {

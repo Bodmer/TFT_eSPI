@@ -171,6 +171,7 @@
 // Set flag so RLE rendering code is optionally compiled
 #ifdef LOAD_GLCD
   #include <Fonts/glcdfont.c>
+  #include <Fonts/glcdfont_ext.c>
 #endif
 
 #ifdef LOAD_FONT2
