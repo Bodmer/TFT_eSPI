@@ -2158,6 +2158,7 @@ void TFT_eSPI::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint1
         xp += clearCount;
         clearCount = 0;
         pushImage(x + xp, y, setCount, 1, iptr + xp);      // pushImage handles clipping
+	if (mptr >= eptr) break;
         xp += setCount;
       }
     } while (setCount || mptr < eptr);
