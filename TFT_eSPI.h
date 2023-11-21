@@ -663,7 +663,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
 
-  void     setTextDatum(uint8_t datum);                     // Set text datum position (default is top left), see Section 6 above
+  void     setTextDatum(uint8_t datum);                     // Set text datum position (default is top left), see Section 5 above
   uint8_t  getTextDatum(void);
 
   void     setTextPadding(uint16_t x_width);                // Set text padding (background blanking/over-write) width in pixels
