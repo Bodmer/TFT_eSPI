@@ -36,7 +36,7 @@ void setup() {
 
   tft.begin();
 
-  if (!SD.begin()) {
+  if (!SD.begin(5, tft.getSPIinstance())) {
     Serial.println("Card Mount Failed");
     return;
   }

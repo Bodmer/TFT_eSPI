@@ -16,11 +16,11 @@
 #define TFT_MISO 4
 #define TFT_MOSI 7
 #define TFT_SCLK 6
-#define TFT_CS   8 
+#define TFT_CS   8
 #define TFT_DC   9
-#define TFT_RST  10  
+#define TFT_RST  16
 #define TFT_BACKLIGHT_ON 1
-#define TFT_BL     11
+#define TFT_BL     10
 
 
 #define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH

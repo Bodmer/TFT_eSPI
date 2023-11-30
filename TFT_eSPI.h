@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.5.31"
+#define TFT_ESPI_VERSION "2.5.34"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -732,9 +732,6 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // Alpha blend 2 colours, see generic "alphaBlend_Test" example
            // alpha =   0 = 100% background colour
            // alpha = 255 = 100% foreground colour
-#if !defined (STM32) && !defined(__IMXRT1052__) && !defined(__IMXRT1062__)
-  inline 
-#endif
   uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc);
 
            // 16 bit colour alphaBlend with alpha dither (dither reduces colour banding)
@@ -987,6 +984,20 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 // Swap any type
 template <typename T> static inline void
 transpose(T& a, T& b) { T t = a; a = b; b = t; }
+
+// Fast alphaBlend
+template <typename A, typename F, typename B> static inline uint16_t
+fastBlend(A alpha, F fgc, B bgc)
+{
+  // Split out and blend 5 bit red and blue channels
+  uint32_t rxb = bgc & 0xF81F;
+  rxb += ((fgc & 0xF81F) - rxb) * (alpha >> 2) >> 6;
+  // Split out and blend 6 bit green channel
+  uint32_t xgx = bgc & 0x07E0;
+  xgx += ((fgc & 0x07E0) - xgx) * alpha >> 8;
+  // Recombine channels
+  return (rxb & 0xF81F) | (xgx & 0x07E0);
+}
 
 /***************************************************************************************
 **                         Section 10: Additional extension classes
