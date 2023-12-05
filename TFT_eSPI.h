@@ -16,7 +16,7 @@
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
-#define TFT_ESPI_VERSION "2.5.34"
+#define TFT_ESPI_VERSION "2.5.40"
 
 // Bit level feature flags
 // Bit 0 set: viewport capability
@@ -939,7 +939,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     _booted;    // init() or begin() has already run once
 
                        // User sketch manages these via set/getAttribute()
-  bool     _cp437;        // If set, use correct CP437 charset (default is ON)
+  bool     _cp437;        // If set, use correct CP437 charset (default is OFF)
   bool     _utf8;         // If set, use UTF-8 decoder in print stream 'write()' function (default ON)
   bool     _psram_enable; // Enable PSRAM use for library functions (TBD) and Sprites
 

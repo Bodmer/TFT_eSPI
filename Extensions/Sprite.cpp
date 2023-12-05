@@ -2001,6 +2001,9 @@ void TFT_eSprite::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uin
       ((y + 8 * size - 1) < (_vpY - _yDatum)))   // Clip top
     return;
 
+  if (c > 255) return;
+  if (!_cp437 && c > 175) c++;
+
   bool fillbg = (bg != color);
 
   if ((size==1) && fillbg)

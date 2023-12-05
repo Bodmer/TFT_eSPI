@@ -467,7 +467,7 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
   lockTransaction = false; // start/endWrite lock flag to allow sketch to keep SPI bus access open
 
   _booted   = true;     // Default attributes
-  _cp437    = true;     // Legacy GLCD font bug fix
+  _cp437    = false;    // Legacy GLCD font bug fix disabled by default
   _utf8     = true;     // UTF8 decoding enabled
 
 #if defined (FONT_FS_AVAILABLE) && defined (SMOOTH_FONT)
@@ -2158,7 +2158,7 @@ void TFT_eSPI::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint1
         xp += clearCount;
         clearCount = 0;
         pushImage(x + xp, y, setCount, 1, iptr + xp);      // pushImage handles clipping
-	if (mptr >= eptr) break;
+        if (mptr >= eptr) break;
         xp += setCount;
       }
     } while (setCount || mptr < eptr);
@@ -2866,7 +2866,7 @@ void TFT_eSPI::setCursor(int16_t x, int16_t y)
 ***************************************************************************************/
 void TFT_eSPI::setCursor(int16_t x, int16_t y, uint8_t font)
 {
-  textfont = font;
+  setTextFont(font);
   cursor_x = x;
   cursor_y = y;
 }
@@ -3188,8 +3188,6 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
   #endif
 //>>>>>>>>>>>>>>>>>>
 
-  if (c > 255) return;
-
   int32_t xd = x + _xDatum;
   int32_t yd = y + _yDatum;
 
@@ -3198,6 +3196,9 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
      ((xd + 6 * size - 1) < _vpX)  || // Clip left
      ((yd + 8 * size - 1) < _vpY))    // Clip top
     return;
+
+  if (c > 255) return;
+  if (!_cp437 && c > 175) c++;
 
   bool fillbg = (bg != color);
   bool clip = xd < _vpX || xd + 6  * textsize >= _vpW || yd < _vpY || yd + 8 * textsize >= _vpH;
