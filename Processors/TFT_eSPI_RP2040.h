@@ -49,7 +49,7 @@
 
   // Processor specific code used by SPI bus transaction begin/end_tft_write functions
   #define SET_BUS_WRITE_MODE spi_set_format(SPI_X,  8, (spi_cpol_t)(TFT_SPI_MODE >> 1), (spi_cpha_t)(TFT_SPI_MODE & 0x1), SPI_MSB_FIRST)
-  #define SET_BUS_READ_MODE  // spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
+  #define SET_BUS_READ_MODE  spi_set_format(SPI_X,  8, (spi_cpol_t)0, (spi_cpha_t)0, SPI_MSB_FIRST)
 #else
   // Processor specific code used by SPI bus transaction begin/end_tft_write functions
   #define SET_BUS_WRITE_MODE
