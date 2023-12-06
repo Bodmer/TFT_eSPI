@@ -2353,7 +2353,7 @@ void TFT_eSPI::drawCircleHelper( int32_t x0, int32_t y0, int32_t rr, uint8_t cor
   //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
   inTransaction = true;
 
-  while (xe < rr--)
+  do
   {
     while (f < 0) {
       ++xe;
@@ -2399,7 +2399,8 @@ void TFT_eSPI::drawCircleHelper( int32_t x0, int32_t y0, int32_t rr, uint8_t cor
       }
     }
     xs = xe;
-  }
+  } while (xe < rr--);
+
   inTransaction = lockTransaction;
   end_tft_write();              // Does nothing if Sprite class uses this function
 }
