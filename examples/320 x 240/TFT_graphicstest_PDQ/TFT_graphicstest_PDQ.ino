@@ -117,7 +117,7 @@ void loop(void)
 			d = -d;
 	}
 	
-	tft.setCursor(0, 0);
+	tft.setcursor(0, 0);
 	tft.setTextColor(TFT_MAGENTA);
 	tft.setTextSize(2);
 
@@ -362,9 +362,9 @@ uint32_t testHaD()
 
 	tft.setTextColor(TFT_YELLOW);
 	tft.setTextSize(2);
-	tft.setCursor(8, 285);
+	tft.setcursor(8, 285);
 	tft.print(F("http://hackaday.io/"));
-	tft.setCursor(96, 302);
+	tft.setcursor(96, 302);
 	tft.print(F("Xark"));
 
 	delay(3 * 1000L);
@@ -389,7 +389,7 @@ uint32_t testText()
 {
 	tft.fillScreen(TFT_BLACK);
 	uint32_t start = micros_start();
-	tft.setCursor(0, 0);
+	tft.setcursor(0, 0);
 	tft.setTextColor(TFT_WHITE,TFT_BLACK);	tft.setTextSize(1);
 	tft.println(F("Hello World!"));
 	tft.setTextSize(2);

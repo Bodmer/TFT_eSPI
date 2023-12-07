@@ -44,7 +44,7 @@ void loop() {
 // start_angle = 0 - 359
 // sub_angle   = 0 - 360 = subtended angle
 // r = radius
-// colour = 16 bit colour value
+// colour = 16-bit colour value
 
 int fillSegment(int x, int y, int start_angle, int sub_angle, int r, unsigned int colour)
 {
@@ -63,7 +63,7 @@ int fillSegment(int x, int y, int start_angle, int sub_angle, int r, unsigned in
 
     tft.fillTriangle(x1, y1, x2, y2, x, y, colour);
 
-    // Copy segment end to sgement start for next segment
+    // Copy segment end to segment start for next segment
     x1 = x2;
     y1 = y2;
   }
@@ -71,7 +71,7 @@ int fillSegment(int x, int y, int start_angle, int sub_angle, int r, unsigned in
 
 
 // #########################################################################
-// Return the 16 bit colour with brightness 0-100%
+// Return the 16-bit colour with brightness 0-100%
 // #########################################################################
 unsigned int brightness(unsigned int colour, int brightness)
 {

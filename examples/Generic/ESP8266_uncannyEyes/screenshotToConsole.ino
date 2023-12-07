@@ -58,7 +58,7 @@ void screenshotToConsole()
 
   // Get first pixel to prime the Run Length Encoded
   // Function format is: tft.readRectRGB( x, y, width, height, buffer);
-  // color is a pointer to a buffer that the RGB 8 bit values are piped into
+  // color is a pointer to a buffer that the RGB 8-bit values are piped into
   // the buffer size must be >= (width * height * 3) bytes
   eye[e].tft.readRectRGB(0, 0, 1, 1, color); // 1 x 1 so reading 1 pixel at 0,0
 

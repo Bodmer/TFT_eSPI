@@ -1,4 +1,4 @@
-// Sketch to demonstrate smooth (anti-aliased) graphics funtions:
+// Sketch to demonstrate smooth (anti-aliased) graphics functions:
 // Smooth graphics result in less pixel resolution jaggedness.
 
 #include <TFT_eSPI.h> // Master copy here: https://github.com/Bodmer/TFT_eSPI
@@ -35,7 +35,7 @@ void loop() {
   // drawSpot is for small anti-aliased circles, coordinates and radius are
   // floating point to allow sub-pixel positioning (large circles will
   // be slow to draw). Use fillSmoothCircle() for large circles.
-  // In this case black is the backgorund colour for the anti-aliasing
+  // In this case black is the background colour for the anti-aliasing
   float x = 10.5;
   float y = 10.5;
   float r = 8.6;
@@ -43,7 +43,7 @@ void loop() {
 
   // Fill sprite with a colour
   spr.fillSprite(TFT_RED);
-  // Draw spot in sprite, the backgorund colour is ommitted so function
+  // Draw spot in sprite, the background colour is omitted so function
   // reads background colour for aliasing. (To use this method with direct write
   // to TFT (tft.drawSpot...) requires the capability to read data from the TFT!)
   spr.drawSpot(x, y, r, TFT_WHITE);
@@ -63,7 +63,7 @@ void loop() {
   int w1 = r1 / 25;
   int w2 = r2 / 20;
 
-  // The following will be updated by the getCoord function
+  // The following will be updated by the getcoord function
   float px1 = 0.0;
   float py1 = 0.0;
   float px2 = 0.0;
@@ -72,7 +72,7 @@ void loop() {
   // Wedge line function, an anti-aliased wide line between 2 points, with different
   // line widths at the two ends. Background colour is black.
   for (int angle = -130; angle <= 130; angle += 10) {
-    getCoord(cx, cy, &px1, &py1, &px2, &py2, r1, r2, angle);
+    getcoord(cx, cy, &px1, &py1, &px2, &py2, r1, r2, angle);
     uint16_t colour = rainbow(map(angle, -130, 130, 0, 127));
     if (angle > 45) colour = TFT_DARKGREY;
     tft.drawWedgeLine(px1, py1, px2, py2, w1, w2, colour, TFT_BLACK);
@@ -82,7 +82,7 @@ void loop() {
   tft.fillSmoothCircle(cx, cy, r1 - 8, TFT_MAROON, TFT_BLACK);
 
   // Draw a white dial pointer using wedge line function
-  getCoord(cx, cy, &px1, &py1, &px2, &py2, 0, r1 - 10, 45);
+  getcoord(cx, cy, &px1, &py1, &px2, &py2, 0, r1 - 10, 45);
   // Magenta wedge line pointer on red background
   // Line tapers from radius 5 to zero
   tft.drawWedgeLine(cx, cy, px2, py2, 5, 0, TFT_WHITE, TFT_MAROON);
@@ -133,7 +133,7 @@ void loop() {
 // =========================================================================
 // Coordinates are returned to caller via the xp and yp pointers
 #define DEG2RAD 0.0174532925
-void getCoord(int16_t x, int16_t y, float *xp1, float *yp1, float *xp2, float *yp2, int16_t r1, int16_t r2, float a)
+void getcoord(int16_t x, int16_t y, float *xp1, float *yp1, float *xp2, float *yp2, int16_t r1, int16_t r2, float a)
 {
   float sx = cos( (a - 90) * DEG2RAD);
   float sy = sin( (a - 90) * DEG2RAD);
@@ -144,14 +144,14 @@ void getCoord(int16_t x, int16_t y, float *xp1, float *yp1, float *xp2, float *y
 }
 
 // =========================================================================
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // =========================================================================
 unsigned int rainbow(byte value)
 {
   // Value is expected to be in range 0-127
   // The value is converted to a spectrum colour from 0 = blue through to 127 = red
 
-  byte red = 0; // Red is the top 5 bits of a 16 bit colour value
+  byte red = 0; // Red is the top 5 bits of a 16-bit colour value
   byte green = 0;// Green is the middle 6 bits
   byte blue = 0; // Blue is the bottom 5 bits
 

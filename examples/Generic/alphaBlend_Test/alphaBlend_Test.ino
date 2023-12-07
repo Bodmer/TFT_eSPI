@@ -6,7 +6,7 @@
 
   blendedColor = tft.alphaBlend(alpha, fg_color, bg_color);
 
-  The alphaBlend() function operates on 16 bit colours only
+  The alphaBlend() function operates on 16-bit colours only
   A test is included where the colours are mapped to 8 bits after blending
 
   Information on alpha blending is here
@@ -43,7 +43,7 @@ void setup(void) {
 // -------------------------------------------------------------------------
 void loop()
 {
-  // 16 bit colours  (5 bits red, 6 bits green, 5 bits blue)
+  // 16-bit colours  (5 bits red, 6 bits green, 5 bits blue)
   // Blend from white to full spectrum
   for (int a = 0; a < 256; a+=2) // Alpha 0 = 100% background, alpha 255 = 100% foreground
   {
@@ -79,18 +79,18 @@ void loop()
   delay(4000);
 
   //*
-  // Decrease to 8 bit colour (3 bits red, 3 bits green, 2 bits blue)
+  // Decrease to 8-bit colour (3 bits red, 3 bits green, 2 bits blue)
   // Blend from white to full spectrum
   for (int a = 0; a < 256; a+=2) // Alpha 0 = 100% background, alpha 255 = 100% foreground
   {
-    // Convert blended 16 bit colour to 8 bits to reduce colour resolution, then map back to 16 bits for displaying
+    // Convert blended 16-bit colour to 8 bits to reduce colour resolution, then map back to 16 bits for displaying
     for (int c = 0; c < 192; c++) tft.drawPixel(c, a/2, tft.color8to16(tft.color16to8(tft.alphaBlend(a, rainbow(c), 0xFFFF))));
   }
 
   // Blend from full spectrum to black
   for (int a = 255; a > 2; a-=2)
   {
-    // Convert blended 16 bit colour to 8 bits to reduce colour resolution, then map back to 16 bits for displaying
+    // Convert blended 16-bit colour to 8 bits to reduce colour resolution, then map back to 16 bits for displaying
     for (int c = 0; c < 192; c++) tft.drawPixel(c, 128 + (255-a)/2, tft.color8to16(tft.color16to8(tft.alphaBlend(a, rainbow(c), 0))));
   }
 
@@ -108,7 +108,7 @@ void loop()
   //*/
 
   /*
-  // 16 bit colours  (5 bits red, 6 bits green, 5 bits blue)
+  // 16-bit colours  (5 bits red, 6 bits green, 5 bits blue)
   for (int a = 0; a < 256; a+=2) // Alpha 0 = 100% background, alpha 255 = 100% foreground
   {
     for (int c = 0; c < 192; c++) tft.drawPixel(c, a/2, tft.alphaBlend(a, rainbow(c), TFT_CYAN));
@@ -137,7 +137,7 @@ void loop()
 
 
 // #########################################################################
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // #########################################################################
 unsigned int rainbow(byte value)
 {
@@ -147,7 +147,7 @@ unsigned int rainbow(byte value)
  
   value = value%192;
   
-  byte red   = 0; // Red is the top 5 bits of a 16 bit colour value
+  byte red   = 0; // Red is the top 5 bits of a 16-bit colour value
   byte green = 0; // Green is the middle 6 bits, but only top 5 bits used here
   byte blue  = 0; // Blue is the bottom 5 bits
 

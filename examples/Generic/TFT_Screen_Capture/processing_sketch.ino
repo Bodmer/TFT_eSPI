@@ -63,7 +63,7 @@ int max_allowed  = 1000; // Maximum number of save images allowed before a resta
 // These are default values, this sketch obtains the actual values from the Arduino board
 int tft_width  = 480;    // default TFT width  (automatic - sent by Arduino)
 int tft_height = 480;    // default TFT height (automatic - sent by Arduino)
-int color_bytes = 2;     // 2 for 16 bit, 3 for three RGB bytes (automatic - sent by Arduino)
+int color_bytes = 2;     // 2 for 16-bit, 3 for three RGB bytes (automatic - sent by Arduino)
 
 import processing.serial.*;
 

@@ -112,7 +112,7 @@ void loop() {
 
   // Setting textDatum does nothing when using tft.print
   tft.fillScreen(TFT_BLUE);  // Clear screen
-  tft.setCursor(0,60);       // To be compatible with Adafruit_GFX the cursor datum is always bottom left
+  tft.setcursor(0,60);       // To be compatible with Adafruit_GFX the cursor datum is always bottom left
   tft.print("âäàå");         // Using tft.print means text background is NEVER rendered
   delay(2000);
   

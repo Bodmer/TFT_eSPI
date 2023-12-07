@@ -1,4 +1,4 @@
-// Icon images are stored in tabs ^ e.g. Alert.h etc above this line
+// Icon images are stored in tabs ^ e.g. Alert.h etc.above this line
 // more than one icon can be in a header file
 
 // Arrays containing FLASH images can be created with UTFT library tool:

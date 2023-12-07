@@ -14,7 +14,7 @@
 
 // The rotation angle is in degrees, an angle of 0 means no Sprite rotation.
 
-// The pushRotated() function works with 1, 8 and 16 bit per pixel (bpp) Sprites.
+// The pushRotated() function works with 1, 8 and 16-bit per pixel (bpp) Sprites.
 
 // For 1 bpp Sprites the foreground and background colours are defined with the
 // member function setBitmapColor(foregroundColor, backgroundColor).
@@ -99,7 +99,7 @@ void loop() {
 void createDialScale(int16_t start_angle, int16_t end_angle, int16_t increment)
 {
   // Create the dial Sprite
-  dial.setColorDepth(8);       // Size is odd (i.e. 91) so there is a centre pixel at 45,45
+  dial.setcolorDepth(8);       // Size is odd (i.e. 91) so there is a centre pixel at 45,45
   dial.createSprite(91, 91);   // 8bpp requires 91 * 91 = 8281 bytes
   dial.setPivot(45, 45);       // set pivot in middle of dial Sprite
 
@@ -158,7 +158,7 @@ void plotDial(int16_t x, int16_t y, int16_t angle, String label, uint16_t val)
 
 void createNeedle(void)
 {
-  needle.setColorDepth(8);
+  needle.setcolorDepth(8);
   needle.createSprite(11, 49); // create the needle Sprite 11 pixels wide by 49 high
 
   needle.fillSprite(TFT_BLACK);          // Fill with black

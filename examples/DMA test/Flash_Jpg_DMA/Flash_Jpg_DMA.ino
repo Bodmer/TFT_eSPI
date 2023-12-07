@@ -76,7 +76,7 @@ void setup()
   tft.setSwapBytes(true);
 
   // The decoder must be given the exact name of the rendering function above
-  TJpgDec.setCallback(tft_output);
+  TJpgDec.setcallback(tft_output);
 }
 
 void loop()

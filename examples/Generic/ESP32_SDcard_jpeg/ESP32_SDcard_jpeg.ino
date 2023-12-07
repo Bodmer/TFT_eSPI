@@ -249,12 +249,12 @@ void jpegInfo() {
 // Show the execution time (optional)
 //####################################################################################################
 // WARNING: for UNO/AVR legacy reasons printing text to the screen with the Mega might not work for
-// sketch sizes greater than ~70KBytes because 16 bit address pointers are used in some libraries.
+// sketch sizes greater than ~70KBytes because 16-bit address pointers are used in some libraries.
 
 // The Due will work fine with the HX8357_Due library.
 
 void showTime(uint32_t msTime) {
-  //tft.setCursor(0, 0);
+  //tft.setcursor(0, 0);
   //tft.setTextFont(1);
   //tft.setTextSize(2);
   //tft.setTextColor(TFT_WHITE, TFT_BLACK);

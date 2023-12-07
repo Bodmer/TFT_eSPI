@@ -12,12 +12,12 @@
   any position. If there is sufficient RAM then the Sprite can
   be the same size as the screen and used as a frame buffer.
 
-  A 16 bit Sprite occupies (2 * width * height) bytes in RAM.
+  A 16-bit Sprite occupies (2 * width * height) bytes in RAM.
 
   On a ESP8266 Sprite sizes up to 126 x 160 can be accommodated,
-  this size requires 40kBytes of RAM for a 16 bit colour depth.
+  this size requires 40kBytes of RAM for a 16-bit colour depth.
   
-  When 8 bit colour depth sprites are created they occupy
+  When 8-bit colour depth sprites are created they occupy
   (width * height) bytes in RAM, so larger sprites can be
   created, or the RAM required is halved.
 */
@@ -76,7 +76,7 @@ void loop() {
 // #########################################################################
 void drawStar(int x, int y, int star_color)
 {
-  // Create an 8 bit sprite 70x 80 pixels (uses 5600 bytes of RAM)
+  // Create an 8-bit sprite 70x 80 pixels (uses 5600 bytes of RAM)
   img.setColorDepth(8);
   img.createSprite(70, 80);
 
@@ -113,7 +113,7 @@ void numberBox(int x, int y, float num )
   #define IWIDTH  80
   #define IHEIGHT 35
 
-  // Create a 8 bit sprite 80 pixels wide, 35 high (2800 bytes of RAM needed)
+  // Create a 8-bit sprite 80 pixels wide, 35 high (2800 bytes of RAM needed)
   img.setColorDepth(8);
   img.createSprite(IWIDTH, IHEIGHT);
 

@@ -93,14 +93,14 @@ SPI3_HOST = 2
 // Initialise processor specific SPI functions, used by init()
 #define INIT_TFT_DATA_BUS // Not used
 
-// Define a generic flag for 8 bit parallel
+// Define a generic flag for 8-bit parallel
 #if defined (ESP32_PARALLEL) // Specific to ESP32 for backwards compatibility
   #if !defined (TFT_PARALLEL_8_BIT)
     #define TFT_PARALLEL_8_BIT // Generic parallel flag
   #endif
 #endif
 
-// Ensure ESP32 specific flag is defined for 8 bit parallel
+// Ensure ESP32 specific flag is defined for 8-bit parallel
 #if defined (TFT_PARALLEL_8_BIT)
   #if !defined (ESP32_PARALLEL)
     #define ESP32_PARALLEL
@@ -414,12 +414,12 @@ SPI3_HOST = 2
 
   #if defined (SSD1963_DRIVER)
 
-    // Write 18 bit color to TFT
+    // Write 18-bit color to TFT
     #define tft_Write_16(C) GPIO.out_w1tc = GPIO_OUT_CLR_MASK; GPIO.out_w1ts = set_mask((uint8_t) (((C) & 0xF800)>> 8)); WR_H; \
                             GPIO.out_w1tc = GPIO_OUT_CLR_MASK; GPIO.out_w1ts = set_mask((uint8_t) (((C) & 0x07E0)>> 3)); WR_H; \
                             GPIO.out_w1tc = GPIO_OUT_CLR_MASK; GPIO.out_w1ts = set_mask((uint8_t) (((C) & 0x001F)<< 3)); WR_H
 
-    // 18 bit color write with swapped bytes
+    // 18-bit color write with swapped bytes
     #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
   #else
@@ -433,7 +433,7 @@ SPI3_HOST = 2
       #define tft_Write_16(C) GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 8)); WR_H; \
                               GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 0)); WR_H
 
-      // 16 bit write with swapped bytes
+      // 16-bit write with swapped bytes
       #define tft_Write_16S(C) GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 0)); WR_H; \
                                GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 8)); WR_H
     #endif
@@ -446,13 +446,13 @@ SPI3_HOST = 2
                           GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >>  8)); WR_H; \
                           GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >>  0)); WR_H
 
-  // Write two concatenated 16 bit values to TFT
+  // Write two concatenated 16-bit values to TFT
   #define tft_Write_32C(C,D) GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 8)); WR_H; \
                              GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 0)); WR_H; \
                              GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((D) >> 8)); WR_H; \
                              GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((D) >> 0)); WR_H
 
-  // Write 16 bit value twice to TFT - used by drawPixel()
+  // Write 16-bit value twice to TFT - used by drawPixel()
   #define tft_Write_32D(C) GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 8)); WR_H; \
                            GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 0)); WR_H; \
                            GPIO_CLR_REG = GPIO_OUT_CLR_MASK; GPIO_SET_REG = set_mask((uint8_t) ((C) >> 8)); WR_H; \
@@ -481,12 +481,12 @@ SPI3_HOST = 2
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to a SPI ILI948x TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+#elif  defined (SPI_18BIT_DRIVER) // SPI 18-bit colour
 
   // Write 8 bits to TFT
   #define tft_Write_8(C)   spi.transfer(C)
 
-  // Convert 16 bit colour to 18 bit and write in 3 bytes
+  // Convert 16-bit colour to 18-bit and write in 3 bytes
   #define tft_Write_16(C)  spi.transfer(((C) & 0xF800)>>8); \
                            spi.transfer(((C) & 0x07E0)>>3); \
                            spi.transfer(((C) & 0x001F)<<3)
@@ -494,7 +494,7 @@ SPI3_HOST = 2
   // Future option for transfer without wait
   #define tft_Write_16N(C) tft_Write_16(C)
 
-  // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
+  // Convert swapped byte 16-bit colour to 18-bit and write in 3 bytes
   #define tft_Write_16S(C) spi.transfer((C) & 0xF8); \
                            spi.transfer(((C) & 0xE000)>>11 | ((C) & 0x07)<<5); \
                            spi.transfer(((C) & 0x1F00)>>5)
@@ -502,17 +502,17 @@ SPI3_HOST = 2
   // Write 32 bits to TFT
   #define tft_Write_32(C)  spi.write32(C)
 
-  // Write two concatenated 16 bit values to TFT
+  // Write two concatenated 16-bit values to TFT
   #define tft_Write_32C(C,D) spi.write32((C)<<16 | (D))
 
-  // Write 16 bit value twice to TFT
+  // Write 16-bit value twice to TFT
   #define tft_Write_32D(C)  spi.write32((C)<<16 | (C))
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to an Raspberry Pi TFT
 ////////////////////////////////////////////////////////////////////////////////////////
 #elif  defined (RPI_DISPLAY_TYPE)
-  // ESP32-S3 low level SPI writes for 8, 16 and 32 bit values
+  // ESP32-S3 low level SPI writes for 8, 16 and 32-bit values
   // to avoid the function call overhead
   #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;    \
                                *_spi_w = D;              \
@@ -524,7 +524,7 @@ SPI3_HOST = 2
   // Write 8 bits
   #define tft_Write_8(C) TFT_WRITE_BITS((C)<<8, 16)
 
-  // Write 16 bits with corrected endianness for 16 bit colours
+  // Write 16 bits with corrected endianness for 16-bit colours
   #define tft_Write_16(C) TFT_WRITE_BITS((C)<<8 | (C)>>8, 16)
 
   // Future option for transfer without wait
@@ -563,7 +563,7 @@ SPI3_HOST = 2
   // Write 8 bits
   #define tft_Write_8(C) TFT_WRITE_BITS(C, 8)
 
-  // Write 16 bits with corrected endianness for 16 bit colours
+  // Write 16 bits with corrected endianness for 16-bit colours
   #define tft_Write_16(C) TFT_WRITE_BITS((C)<<8 | (C)>>8, 16)
 
   // Future option for transfer without wait

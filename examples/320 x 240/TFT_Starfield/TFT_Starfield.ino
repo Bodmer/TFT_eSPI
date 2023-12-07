@@ -59,7 +59,7 @@ void loop()
       int old_screen_x = ((int)sx[i] - 160) * 256 / sz[i] + 160;
       int old_screen_y = ((int)sy[i] - 120) * 256 / sz[i] + 120;
 
-      // This is a faster pixel drawing function for occassions where many single pixels must be drawn
+      // This is a faster pixel drawing function for occasions where many single pixels must be drawn
       tft.drawPixel(old_screen_x, old_screen_y,TFT_BLACK);
 
       sz[i] -= 2;
@@ -82,7 +82,7 @@ void loop()
   unsigned long t1 = micros();
   //static char timeMicros[8] = {};
 
- // Calcualte frames per second
+ // Calculate frames per second
   Serial.println(1.0/((t1 - t0)/1000000.0));
 }
 

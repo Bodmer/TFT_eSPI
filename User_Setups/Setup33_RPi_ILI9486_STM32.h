@@ -54,7 +54,7 @@
 #define SMOOTH_FONT
 
 
-// Nucleo-F767ZI has a ~216MHZ CPU clock, this is divided by 4, 8, 16 etc
+// Nucleo-F767ZI has a ~216MHZ CPU clock, this is divided by 4, 8, 16 etc.
 
 #define SPI_FREQUENCY  20000000   // 27MHz SPI clock
 //#define SPI_FREQUENCY  55000000   // 55MHz is over-clocking ILI9341 but seems to work reliably!

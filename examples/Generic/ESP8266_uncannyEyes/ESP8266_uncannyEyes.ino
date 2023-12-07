@@ -120,7 +120,7 @@ void setup(void) {
 // EYE-RENDERING FUNCTION --------------------------------------------------
 #define BUFFER_SIZE 256 // 64 to 512 seems optimum = 30 fps for default eye
 void drawEye( // Renders one eye.  Inputs must be pre-clipped & valid.
-  // Use native 32 bit variables where possible as this is 10% faster!
+  // Use native 32-bit variables where possible as this is 10% faster!
   uint8_t  e,       // Eye array index; 0 or 1 for left/right
   uint32_t iScale,  // Scale factor for iris
   uint32_t  scleraX, // First pixel X offset into sclera image
@@ -134,7 +134,7 @@ void drawEye( // Renders one eye.  Inputs must be pre-clipped & valid.
   uint32_t d;
 
   uint32_t pixels = 0;
-  uint16_t pbuffer[BUFFER_SIZE]; // This one needs to be 16 bit
+  uint16_t pbuffer[BUFFER_SIZE]; // This one needs to be 16-bit
   
   // Set up raw pixel dump to entire screen.  Although such writes can wrap
   // around automatically from end of rect back to beginning, the region is

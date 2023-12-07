@@ -48,7 +48,7 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
       6. Descent in pixels from baseline to bottom of "p"
 
     Next are gCount sets of values for each glyph, each set comprises 7 int32t parameters (28 bytes):
-      1. Glyph Unicode stored as a 32 bit value
+      1. Glyph Unicode stored as a 32-bit value
       2. Height of bitmap bounding box
       3. Width of bitmap bounding box
       4. gxAdvance for cursor (setWidth in Processing)
@@ -57,7 +57,7 @@ void TFT_eSPI::loadFont(String fontName, bool flash)
       7. padding value, typically 0
 
     The bitmaps start next at 24 + (28 * gCount) bytes from the start of the file.
-    Each pixel is 1 byte, an 8 bit Alpha value which represents the transparency from
+    Each pixel is 1 byte, an 8-bit Alpha value which represents the transparency from
     0xFF foreground colour, 0x00 background. The library uses a linear interpolation
     between the foreground and background RGB component colours. e.g.
         pixelRed = ((fgRed * alpha) + (bgRed * (255 - alpha))/255
@@ -158,7 +158,7 @@ void TFT_eSPI::loadMetrics(void)
 #if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
   if ( psramFound() )
   {
-    gUnicode  = (uint16_t*)ps_malloc( gFont.gCount * 2); // Unicode 16 bit Basic Multilingual Plane (0-FFFF)
+    gUnicode  = (uint16_t*)ps_malloc( gFont.gCount * 2); // Unicode 16-bit Basic Multilingual Plane (0-FFFF)
     gHeight   =  (uint8_t*)ps_malloc( gFont.gCount );    // Height of glyph
     gWidth    =  (uint8_t*)ps_malloc( gFont.gCount );    // Width of glyph
     gxAdvance =  (uint8_t*)ps_malloc( gFont.gCount );    // xAdvance - to move x cursor
@@ -169,7 +169,7 @@ void TFT_eSPI::loadMetrics(void)
   else
 #endif
   {
-    gUnicode  = (uint16_t*)malloc( gFont.gCount * 2); // Unicode 16 bit Basic Multilingual Plane (0-FFFF)
+    gUnicode  = (uint16_t*)malloc( gFont.gCount * 2); // Unicode 16-bit Basic Multilingual Plane (0-FFFF)
     gHeight   =  (uint8_t*)malloc( gFont.gCount );    // Height of glyph
     gWidth    =  (uint8_t*)malloc( gFont.gCount );    // Width of glyph
     gxAdvance =  (uint8_t*)malloc( gFont.gCount );    // xAdvance - to move x cursor
@@ -308,7 +308,7 @@ void TFT_eSPI::unloadFont( void )
 
 /***************************************************************************************
 ** Function name:           readInt32
-** Description:             Get a 32 bit integer from the font file
+** Description:             Get a 32-bit integer from the font file
 *************************************************************************************x*/
 uint32_t TFT_eSPI::readInt32(void)
 {
@@ -316,18 +316,18 @@ uint32_t TFT_eSPI::readInt32(void)
 
 #ifdef FONT_FS_AVAILABLE
   if (fs_font) {
-    val  = fontFile.read() << 24;
-    val |= fontFile.read() << 16;
-    val |= fontFile.read() << 8;
-    val |= fontFile.read();
+    val  = (uint32_t)fontFile.read() << 24;
+    val |= (uint32_t)fontFile.read() << 16;
+    val |= (uint32_t)fontFile.read() << 8;
+    val |= (uint32_t)fontFile.read();
   }
   else
 #endif
   {
-    val  = pgm_read_byte(fontPtr++) << 24;
-    val |= pgm_read_byte(fontPtr++) << 16;
-    val |= pgm_read_byte(fontPtr++) << 8;
-    val |= pgm_read_byte(fontPtr++);
+    val  = (uint32_t)pgm_read_byte(fontPtr++) << 24;
+    val |= (uint32_t)pgm_read_byte(fontPtr++) << 16;
+    val |= (uint32_t)pgm_read_byte(fontPtr++) << 8;
+    val |= (uint32_t)pgm_read_byte(fontPtr++);
   }
 
   return val;

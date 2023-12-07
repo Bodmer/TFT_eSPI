@@ -1,5 +1,5 @@
 /*  
- Test the tft.print() viz embedded tft.write() function
+ Test the tft.print() viz. embedded tft.write() function
 
  This sketch used font 2, 4, 7
 
@@ -34,7 +34,7 @@ void loop() {
   // Set "cursor" at top left corner of display (0,0) and select font 2
   // (cursor will move to next line automatically during printing with 'tft.println'
   //  or stay on the line is there is room for the text with tft.print)
-  tft.setCursor(0, 0, 2);
+  tft.setcursor(0, 0, 2);
   // Set the font colour to be white with a black background, set text size multiplier to 1
   tft.setTextColor(TFT_WHITE,TFT_BLACK);  tft.setTextSize(1);
   // We can now plot text on screen using the "print" class

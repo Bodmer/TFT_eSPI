@@ -34,7 +34,7 @@ void setup(void)
   tft.setRotation(0);
   tft.fillScreen(TFT_BLUE);
 
-  img.setColorDepth(COLOR_DEPTH);
+  img.setcolorDepth(COLOR_DEPTH);
   img.createSprite(RADIUS*2+1, RADIUS*2+1);
   img.fillSprite(TFT_BLACK);
 }
@@ -68,14 +68,14 @@ void loop() {
 
 void yinyang(int x, int y, int start_angle, int r)
 {
-  int x1 = 0; // getCoord() will update these
+  int x1 = 0; // getcoord() will update these
   int y1 = 0;
 
-  getCoord(x, y, &x1, &y1, r/2, start_angle); // Get x1 ,y1
+  getcoord(x, y, &x1, &y1, r/2, start_angle); // Get x1 ,y1
   img.fillCircle( x1,  y1, r/2, TFT_WHITE);
   img.fillCircle( x1,  y1, r/8, TFT_BLACK);
 
-  getCoord(x, y, &x1, &y1, r/2, start_angle + 180);
+  getcoord(x, y, &x1, &y1, r/2, start_angle + 180);
   img.fillCircle( x1,  y1, r/2, TFT_BLACK);
   img.fillCircle( x1,  y1, r/8, TFT_WHITE);
   
@@ -87,7 +87,7 @@ void yinyang(int x, int y, int start_angle, int r)
 // =========================================================================
 // Coordinates are returned to caller via the xp and yp pointers
 #define RAD2DEG 0.0174532925
-void getCoord(int x, int y, int *xp, int *yp, int r, int a)
+void getcoord(int x, int y, int *xp, int *yp, int r, int a)
 {
   float sx1 = cos( (a-90) * RAD2DEG );    
   float sy1 = sin( (a-90) * RAD2DEG );

@@ -84,7 +84,7 @@ void loop() {
       tft.setTextFont(0);        // Select font 0 which is the Adafruit font
       tft.drawString("Original Adafruit font!", xpos, 5);
 
-      // The new larger fonts do not need to use the .setCursor call, coords are embedded
+      // The new larger fonts do not need to use the .setcursor call, coords are embedded
       tft.setTextColor(TFT_BLACK); // Do not plot the background colour
 
       // Overlay the black text on top of the rainbow plot (the advantage of not drawing the background colour!)

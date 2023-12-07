@@ -62,7 +62,7 @@
   writedata(0x21 | TFT_MAD_COLOR_ORDER);
 
   writecommand(0xF0);   //pixel data interface
-  writedata(0x00);      //8 bit bus
+  writedata(0x00);      //8-bit bus
 
   delay(1);
 
@@ -166,7 +166,7 @@
   writedata(0x21 | TFT_MAD_COLOR_ORDER);
 
   writecommand(0xF0);   //pixel data interface
-  writedata(0x00);      //8 bit bus
+  writedata(0x00);      //8-bit bus
 
   delay(1);
 
@@ -270,7 +270,7 @@
   writedata(0x21 | TFT_MAD_COLOR_ORDER);    // -- Set rotation
 
   writecommand(0xF0);   //pixel data interface
-  writedata(0x00);      //8 bit bus
+  writedata(0x00);      //8-bit bus
 
   delay(10);
 
@@ -371,7 +371,7 @@
 	//writedata(0x0050);    //16-bit/pixel
 
   writecommand(0xF0);   //pixel data interface
-  writedata(0x00);      //000 = 8 bit bus, 011 = 16 bit, 110 = 9 bit
+  writedata(0x00);      //000 = 8-bit bus, 011 = 16-bit, 110 = 9-bit
 
   writecommand(0xBC);
   writedata(0x40);     //contrast value

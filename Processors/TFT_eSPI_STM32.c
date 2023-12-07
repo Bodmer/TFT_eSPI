@@ -76,7 +76,7 @@ void TFT_eSPI::end_SDA_Read(void)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#if defined (TFT_PARALLEL_8_BIT) // Code for STM32 8 bit parallel
+#if defined (TFT_PARALLEL_8_BIT) // Code for STM32 8-bit parallel
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -286,7 +286,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+#elif defined (SPI_18BIT_DRIVER) // SPI 18-bit colour
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -356,7 +356,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#else //                   Standard SPI 16 bit colour TFT                                                 All Tested
+#else //                   Standard SPI 16-bit colour TFT                                                 All Tested
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -405,7 +405,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
   else {
   // HAL byte count for transmit is only 16 bits maximum so to avoid this constraint
   // transfers of small blocks are performed until HAL capacity is reached.
-    while(len>0x7FFF) { // Transfer 16 bit pixels in blocks if len*2 over 65534 bytes
+    while(len>0x7FFF) { // Transfer 16-bit pixels in blocks if len*2 over 65534 bytes
       HAL_SPI_Transmit(&spiHal, (uint8_t*)data, 0x800<<1, HAL_MAX_DELAY);
       len -= 0x800; data+= 0x800; // Arbitrarily use 2KByte blocks
     }
@@ -527,7 +527,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   // small transfers are performed using a blocking call until DMA capacity is reached.
   // User sketch can prevent blocking by managing pixel count and splitting into blocks
   // of 32767 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
-  while(len>0x7FFF) { // Transfer 16 bit pixels in blocks if len*2 over 65534 bytes
+  while(len>0x7FFF) { // Transfer 16-bit pixels in blocks if len*2 over 65534 bytes
     HAL_SPI_Transmit(&spiHal, (uint8_t*)buffer, 0x800<<1, HAL_MAX_DELAY);
     len -= 0x800; buffer+= 0x800; // Arbitrarily send 1K pixel blocks (2Kbytes)
   }

@@ -7,7 +7,7 @@
   Connect GND to target board GND
   Connect RX line to TX line of target board
   Make sure the target and terminal have the same baud rate
-  and serial stettings!
+  and serial settings!
 
   The sketch works with the ILI9341 TFT 240x320 display and
   the called up libraries.

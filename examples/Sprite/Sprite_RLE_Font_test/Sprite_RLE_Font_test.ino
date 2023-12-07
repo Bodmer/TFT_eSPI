@@ -9,7 +9,7 @@
  #########################################################################
 */
 
-// Specify sprite 160 x 128 pixels (needs 40Kbytes of RAM for 16 bit colour)
+// Specify sprite 160 x 128 pixels (needs 40Kbytes of RAM for 16-bit colour)
 #define IWIDTH  160
 #define IHEIGHT 128
 
@@ -31,7 +31,7 @@ void setup(void) {
 
   tft.fillScreen(TFT_BLUE);
 
-  //img.setColorDepth(8); // Optionally set depth to 8 to halve RAM use
+  //img.setcolorDepth(8); // Optionally set depth to 8 to halve RAM use
   img.createSprite(IWIDTH, IHEIGHT);
   img.fillSprite(TFT_BLACK);
 }

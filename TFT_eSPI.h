@@ -12,7 +12,7 @@
   Last review/edit by Bodmer: 04/02/22
  ****************************************************/
 
-// Stop fonts etc being loaded multiple times
+// Stop fonts etc. being loaded multiple times
 #ifndef _TFT_eSPIH_
 #define _TFT_eSPIH_
 
@@ -36,7 +36,7 @@
 **                         Section 2: Load library and processor specific header files
 ***************************************************************************************/
 // Include header file that defines the fonts loaded, the TFT drivers
-// available and the pins to be used, etc, etc
+// available and the pins to be used, etc. etc.
 #ifdef CONFIG_TFT_eSPI_ESPIDF
   #include "TFT_config.h"
 #endif
@@ -327,12 +327,12 @@ const PROGMEM fontinfo fontdata [] = {
 #define TFT_SKYBLUE     0x867D      /* 135, 206, 235 */
 #define TFT_VIOLET      0x915C      /* 180,  46, 226 */
 
-// Next is a special 16 bit colour value that encodes to 8 bits
-// and will then decode back to the same 16 bit value.
-// Convenient for 8 bit and 16 bit transparent sprites.
+// Next is a special 16-bit colour value that encodes to 8 bits
+// and will then decode back to the same 16-bit value.
+// Convenient for 8-bit and 16-bit transparent sprites.
 #define TFT_TRANSPARENT 0x0120 // This is actually a dark green
 
-// Default palette for 4 bit colour sprites
+// Default palette for 4-bit colour sprites
 static const uint16_t default_4bit_palette[] PROGMEM = {
   TFT_BLACK,    //  0  ^
   TFT_BROWN,    //  1  |
@@ -505,7 +505,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // Support for half duplex (bi-directional SDA) SPI bus where MOSI must be switched to input
            #ifdef TFT_SDA_READ
              #if defined (TFT_eSPI_ENABLE_8_BIT_READ)
-  uint8_t  tft_Read_8(void);     // Read 8 bit value from TFT command register
+  uint8_t  tft_Read_8(void);     // Read 8-bit value from TFT command register
              #endif
   void     begin_SDA_Read(void); // Begin a read on a half duplex (bi-directional SDA) SPI bus - sets MOSI to input
   void     end_SDA_Read(void);   // Restore MOSI to output
@@ -598,7 +598,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            getPivotY(void); // Get pivot y
 
            // The next functions can be used as a pair to copy screen blocks (or horizontal/vertical lines) to another location
-           // Read a block of pixels to a data buffer, buffer is 16 bit and the size must be at least w * h
+           // Read a block of pixels to a data buffer, buffer is 16-bit and the size must be at least w * h
   void     readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data);
            // Write a block of pixels to the screen which have been read by readRect()
   void     pushRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data);
@@ -619,11 +619,11 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // FLASH version
   void     pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *data, bool bpp8,  uint16_t *cmap = nullptr);
 
-           // Render a 16 bit colour image with a 1bpp mask
+           // Render a 16-bit colour image with a 1bpp mask
   void     pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask);
 
            // This next function has been used successfully to dump the TFT screen to a PC for documentation purposes
-           // It reads a screen area and returns the 3 RGB 8 bit colour values of each pixel in the buffer
+           // It reads a screen area and returns the 3 RGB 8-bit colour values of each pixel in the buffer
            // Set w and h to 1 to read 1 pixel's colour. The data buffer must be at least w * h * 3 bytes
   void     readRectRGB(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data);
 
@@ -650,7 +650,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            drawRightString(const String& string, int32_t x, int32_t y, uint8_t font); // Deprecated, use setTextDatum() and drawString()
 
 
-  // Text rendering and font handling support funtions
+  // Text rendering and font handling support functions
   void     setCursor(int16_t x, int16_t y),                 // Set cursor for tft.print()
            setCursor(int16_t x, int16_t y, uint8_t font);   // Set cursor and font number for tft.print()
 
@@ -663,7 +663,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
 
-  void     setTextDatum(uint8_t datum);                     // Set text datum position (default is top left), see Section 6 above
+  void     setTextDatum(uint8_t datum);                     // Set text datum position (default is top left), see Section 5 above
   uint8_t  getTextDatum(void);
 
   void     setTextPadding(uint16_t x_width);                // Set text padding (background blanking/over-write) width in pixels
@@ -701,11 +701,11 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   // Low level read/write
   void     spiwrite(uint8_t);        // legacy support only
 #ifdef RM68120_DRIVER
-  void     writecommand(uint16_t c);                 // Send a 16 bit command, function resets DC/RS high ready for data
-  void     writeRegister8(uint16_t c, uint8_t d);    // Write 8 bit data data to 16 bit command register
-  void     writeRegister16(uint16_t c, uint16_t d);  // Write 16 bit data data to 16 bit command register
+  void     writecommand(uint16_t c);                 // Send a 16-bit command, function resets DC/RS high ready for data
+  void     writeRegister8(uint16_t c, uint8_t d);    // Write 8-bit data data to 16-bit command register
+  void     writeRegister16(uint16_t c, uint16_t d);  // Write 16-bit data data to 16-bit command register
 #else
-  void     writecommand(uint8_t c);  // Send an 8 bit command, function resets DC/RS high ready for data
+  void     writecommand(uint8_t c);  // Send an 8-bit command, function resets DC/RS high ready for data
 #endif
   void     writedata(uint8_t d);     // Send data with DC/RS set high
 
@@ -717,15 +717,15 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 
 
   // Colour conversion
-           // Convert 8 bit red, green and blue to 16 bits
+           // Convert 8-bit red, green and blue to 16 bits
   uint16_t color565(uint8_t red, uint8_t green, uint8_t blue);
 
-           // Convert 8 bit colour to 16 bits
+           // Convert 8-bit colour to 16 bits
   uint16_t color8to16(uint8_t color332);
-           // Convert 16 bit colour to 8 bits
+           // Convert 16-bit colour to 8 bits
   uint8_t  color16to8(uint16_t color565);
 
-           // Convert 16 bit colour to/from 24 bit, R+G+B concatenated into LS 24 bits
+           // Convert 16-bit colour to/from 24-bit, R+G+B concatenated into LS 24 bits
   uint32_t color16to24(uint16_t color565);
   uint32_t color24to16(uint32_t color888);
 
@@ -734,14 +734,14 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // alpha = 255 = 100% foreground colour
   uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc);
 
-           // 16 bit colour alphaBlend with alpha dither (dither reduces colour banding)
+           // 16-bit colour alphaBlend with alpha dither (dither reduces colour banding)
   uint16_t alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc, uint8_t dither);
-           // 24 bit colour alphaBlend with optional alpha dither
+           // 24-bit colour alphaBlend with optional alpha dither
   uint32_t alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8_t dither = 0);
 
   // Direct Memory Access (DMA) support functions
   // These can be used for SPI writes when using the ESP32 (original) or STM32 processors.
-  // DMA also works on a RP2040 processor with PIO based SPI and parallel (8 and 16 bit) interfaces
+  // DMA also works on a RP2040 processor with PIO based SPI and parallel (8 and 16-bit) interfaces
            // Bear in mind DMA will only be of benefit in particular circumstances and can be tricky
            // to manage by noobs. The functions have however been designed to be noob friendly and
            // avoid a few DMA behaviour "gotchas".
@@ -963,7 +963,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 #ifdef TOUCH_CS
   #if defined (TFT_PARALLEL_8_BIT) || defined (RP2040_PIO_INTERFACE)
     #if !defined(DISABLE_ALL_LIBRARY_WARNINGS)
-      #error >>>>------>> Touch functions not supported in 8/16 bit parallel mode or with RP2040 PIO.
+      #error >>>>------>> Touch functions not supported in 8/16-bit parallel mode or with RP2040 PIO.
     #endif
   #else
     #include "Extensions/Touch.h"        // Loaded if TOUCH_CS is defined by user
@@ -989,10 +989,10 @@ transpose(T& a, T& b) { T t = a; a = b; b = t; }
 template <typename A, typename F, typename B> static inline uint16_t
 fastBlend(A alpha, F fgc, B bgc)
 {
-  // Split out and blend 5 bit red and blue channels
+  // Split out and blend 5-bit red and blue channels
   uint32_t rxb = bgc & 0xF81F;
   rxb += ((fgc & 0xF81F) - rxb) * (alpha >> 2) >> 6;
-  // Split out and blend 6 bit green channel
+  // Split out and blend 6-bit green channel
   uint32_t xgx = bgc & 0x07E0;
   xgx += ((fgc & 0x07E0) - xgx) * alpha >> 8;
   // Recombine channels

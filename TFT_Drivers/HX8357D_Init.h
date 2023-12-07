@@ -1,7 +1,7 @@
 
 // This is the command sequence that initialises the HX8357D driver
 //
-// This setup information uses simple 8 bit SPI writecommand() and writedata() functions
+// This setup information uses simple 8-bit SPI writecommand() and writedata() functions
 //
 // See ST7735_Setup.h file for an alternative format
 
@@ -94,7 +94,7 @@
     writedata(0x01);
     
     writecommand(HX8357_COLMOD);
-    writedata(0x55);  // 16 bit
+    writedata(0x55);  // 16-bit
     
     writecommand(HX8357_MADCTL);  
     writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_COLOR_ORDER); 

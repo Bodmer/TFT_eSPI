@@ -109,7 +109,7 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+#elif defined (SPI_18BIT_DRIVER) // SPI 18-bit colour
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -122,7 +122,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
   uint8_t r = (color & 0xF800)>>8;
   uint8_t g = (color & 0x07E0)>>3;
   uint8_t b = (color & 0x001F)<<3;
-  // Concatenate 4 pixels into three 32 bit blocks
+  // Concatenate 4 pixels into three 32-bit blocks
   uint32_t r0 = r<<24 | b<<16 | g<<8 | r;
   uint32_t r1 = g<<24 | r<<16 | b<<8 | g;
   uint32_t r2 = b<<24 | g<<16 | r<<8 | b;

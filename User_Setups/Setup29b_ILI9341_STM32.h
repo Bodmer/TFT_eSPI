@@ -1,4 +1,46 @@
 
+#define STM32
+
+#define NUCLEO_64_TFT
+//#define TFT_INVERSION_OFF
+
+#define TFT_WIDTH  240
+#define TFT_HEIGHT 320
+
+#define ST7789_DRIVER
+#define TFT_RGB_ORDER TFT_BGR
+
+#define TFT_SPI_PORT 1 // SPI 1 maximum clock rate is 55MHz
+#define TFT_MOSI D11
+#define TFT_MISO D12
+#define TFT_SCLK D13
+
+
+// Can use Ardiuno pin references, arbitrary allocation, TFT_eSPI controls chip select
+#define TFT_CS   D5 // Chip select control pin to TFT CS
+#define TFT_DC   D6 // Data Command control pin to TFT DC (may be labelled RS = Register Select)
+#define TFT_RST  D7 // Reset pin to TFT RST (or RESET)
+
+#define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
+#define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
+#define LOAD_FONT4  // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
+#define LOAD_FONT6  // Font 6. Large 48 pixel font, needs ~2666 bytes in FLASH, only characters 1234567890:-.apm
+#define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:-.
+#define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
+#define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
+
+// STM32 support for smooth fonts via program memory (FLASH) arrays
+#define SMOOTH_FONT
+
+#define SPI_FREQUENCY  55000000   // 27MHz SPI clock
+//#define SPI_FREQUENCY  55000000   // 55MHz is over-clocking ILI9341 but seems to work reliably!
+
+#define SPI_READ_FREQUENCY  15000000 // Reads need a slower SPI clock, probably ends up at 13.75MHz (CPU clock/16)
+
+// This has no effect, transactions for STM32 are automatically enabled
+#define SUPPORT_TRANSACTIONS
+
+/*
         ///////////////////////////////////////////////////
         //  Setup for STM32 Nucleo and ILI9341 display   //
         ///////////////////////////////////////////////////
@@ -17,16 +59,17 @@
 #define STM32
 
 // Define the TFT display driver
-#define ILI9341_DRIVER
+//#define ILI9341_DRIVER
 //#define ILI9481_DRIVER
-
+#define ST7789_DRIVER
+#define TFT_RGB_ORDER TFT_BGR
 // MOSI and SCK do not need to be defined, connect:
 //  - Arduino SCK  to TFT SCK
 //  - Arduino MOSI to TFT SDI(may be marked SDA or MOSI)
 // Typical Arduino SPI port 1 pins are (SCK=D13, MISO=D12, MOSI=D11) this is port pins PA5, PA6 and PA7 on Nucleo-F767ZI
 //                 SPI port 2 pins are (SCK=D18, MISO=A7, MOSI=D17) this is port pins PB13, PC2 and PB15 on Nucleo-F767ZI
 
-/*
+//*
 #define TFT_SPI_PORT 1 // SPI 1 maximum clock rate is 55MHz
 #define TFT_MOSI PA7
 #define TFT_MISO PA6
@@ -54,6 +97,7 @@
 #define TFT_SCLK PB13
 //*/
 
+/*
 // Can use Ardiuno pin references, arbitrary allocation, TFT_eSPI controls chip select
 #define TFT_CS   D5 // Chip select control pin to TFT CS
 #define TFT_DC   D6 // Data Command control pin to TFT DC (may be labelled RS = Register Select)
@@ -94,3 +138,4 @@
 
 // This has no effect, transactions for STM32 are automatically enabled
 #define SUPPORT_TRANSACTIONS
+*/

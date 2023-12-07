@@ -132,7 +132,7 @@ void loop(void)
       d = -d;
   }
   
-  tft.setCursor(0, 0);
+  tft.setcursor(0, 0);
   tft.setTextColor(TFT_MAGENTA);
 
   tft.println(F("Bodmer's TFT_eSPI"));
@@ -343,7 +343,7 @@ uint32_t testHaD()
   uint32_t t = micros() - start;
 
   tft.setTextColor(TFT_YELLOW);
-  tft.setCursor(0, 145);
+  tft.setcursor(0, 145);
   tft.print(F(" http://hackaday.io/"));
   tft.print(F("         Xark"));
 
@@ -371,7 +371,7 @@ uint32_t testFillScreen()
 uint32_t testText() {
   tft.fillScreen(TFT_BLACK);
   uint32_t start = micros_start();
-  tft.setCursor(0, 0);
+  tft.setcursor(0, 0);
   tft.setTextColor(TFT_WHITE); tft.setTextSize(1);
   tft.println(F("Hello World!"));
   tft.setTextColor(tft.color565(0xff, 0x00, 0x00));

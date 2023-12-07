@@ -19,7 +19,7 @@
 // Blue Pill overclocked to 128MHz *no* DMA - 32MHz SPI  64 fps
 // Blue Pill overclocked to 128MHz with DMA - 32MHz SPI 116 fps
 
-// ESP32     - 8 bit parallel     110 fps (no DMA)
+// ESP32     - 8-bit parallel     110 fps (no DMA)
 // ESP32     - 40MHz SPI *no* DMA  93 fps
 // ESP32     - 40MHz SPI with DMA 112 fps
 

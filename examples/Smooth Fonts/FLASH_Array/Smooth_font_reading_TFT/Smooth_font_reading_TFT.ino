@@ -9,7 +9,7 @@
   that will return the pixel color at a position x,y on the TFT. In this
   sketch that function is called pixelColor, so this line is included:
 
-    tft.setCallback(pixelColor);
+    tft.setcallback(pixelColor);
 
   TFT_eSPI will call this function during the rendering of the anti-aliased
   font and use it to blend the edges of each character with the screen color.
@@ -43,8 +43,8 @@ void setup(void) {
 
   tft.begin();
 
-  tft.setCallback(pixelColor);  // Switch on color callback for anti-aliased fonts
-  //tft.setCallback(nullptr);   // Switch off callback (off by default)
+  tft.setcallback(pixelColor);  // Switch on color callback for anti-aliased fonts
+  //tft.setcallback(nullptr);   // Switch off callback (off by default)
 
   tft.setRotation(1);
 }
@@ -61,7 +61,7 @@ void loop() {
     tft.loadFont(AA_FONT_SMALL);
 
   tft.setTextColor(TFT_BLACK, TFT_WHITE); // Background color is ignored if callback is set
-  tft.setCursor(0, 10); // Set cursor at top left of screen
+  tft.setcursor(0, 10); // Set cursor at top left of screen
 
   uint32_t t = millis();
   tft.println(" Ode to a small\n lump of green\n putty I found\n in my armpit\n one midsummer\n morning ");
@@ -83,7 +83,7 @@ unsigned int colour = red << 11; // Colour order is RGB 5+6+5 bits each
 
 void rainbow_fill()
 {
-  // The colours and state are not initialised so the start colour changes each time the funtion is called
+  // The colours and state are not initialised so the start colour changes each time the function is called
   
   for (int i = 319; i >= 0; i--) {
     // Draw a vertical line 1 pixel wide in the selected colour

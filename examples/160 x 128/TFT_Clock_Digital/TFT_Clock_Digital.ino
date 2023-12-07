@@ -79,7 +79,7 @@ void loop() {
     if (ss==0 || initial) {
       initial = 0;
       tft.setTextColor(TFT_GREEN, TFT_BLACK);
-      tft.setCursor (8, 52);
+      tft.setcursor (8, 52);
       tft.print(__DATE__); // This uses the standard ADAFruit small font
 
       tft.setTextColor(TFT_BLUE, TFT_BLACK);

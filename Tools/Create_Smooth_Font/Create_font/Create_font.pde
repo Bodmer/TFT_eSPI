@@ -48,13 +48,13 @@ Software License Agreement (FreeBSD License)
 // >>>>>>>>>>>>>>>>>>>>             INSTRUCTIONS             <<<<<<<<<<<<<<<<<<<<
 
 // See comments below in code for specifying the font parameters (point size,
-// unicode blocks to include etc). Ranges of characters (glyphs) and specific
+// unicode blocks to include etc.). Ranges of characters (glyphs) and specific
 // individual glyphs can be included in the created "*.vlw" font file.
 
 // Created fonts are saved in the sketches "FontFiles" folder. Press Ctrl+K to
 // see that folder location.
 
-// 16 bit Unicode point codes in the range 0x0000 - 0xFFFF are supported.
+// 16-bit Unicode point codes in the range 0x0000 - 0xFFFF are supported.
 // Codes 0-31 are control codes such as "tab" and "carraige return" etc.
 // and 32 is a "space", these should NOT be included.
 
@@ -369,7 +369,7 @@ static final int[] specificUnicodes = {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Variable to hold the inclusive Unicode range (16 bit values only for this sketch)
+// Variable to hold the inclusive Unicode range (16-bit values only for this sketch)
 int firstUnicode = 0;
 int lastUnicode  = 0;
 

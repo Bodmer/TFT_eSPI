@@ -66,7 +66,7 @@ void loop() {
     if (gy < -500.0) delta =  10.0;
     gy += delta;
 
-    // If the end of the graph x ais is reached start a new trace at 0.0,0.0
+    // If the end of the graph x axis is reached start a new trace at 0.0,0.0
     if (gx > gxHigh) {
       gx = 0.0;
       gy = 0.0;

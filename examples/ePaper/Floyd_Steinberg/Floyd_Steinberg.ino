@@ -84,7 +84,7 @@ void setup() {
 
   Serial.println(" SPIFFS initialisation OK");
 
-  frame.setColorDepth(1); // Must set the bits per pixel to 1 for ePaper displays
+  frame.setcolorDepth(1); // Must set the bits per pixel to 1 for ePaper displays
                           // Set bit depth BEFORE creating Sprite, default is 16!
 
   // Create a frame buffer in RAM of defined size and save the pointer to it
@@ -106,7 +106,7 @@ void loop() {
 
   frame.fillSprite(PAPER);
 
-  // Draw 8 bit grey-scale bitmap using Floyd-Steinberg dithering at x,y
+  // Draw 8-bit grey-scale bitmap using Floyd-Steinberg dithering at x,y
   //           /File name      x  y
   //drawFSBmp("/TestCard.bmp", 0, 0); // 176 x 264 pixels
 

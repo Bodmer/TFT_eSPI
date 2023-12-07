@@ -30,7 +30,7 @@ Steps to use:
       If your board is connected choose serial port. Leave ESP-IDF component directory blank and
       press Choose Template.
       
-  4.  In the dropdown choose Extension and select Arduino-as-component. (This is not mandatory.
+  4.  In the drop-down choose Extension and select Arduino-as-component. (This is not mandatory.
       You can try other templates if you want). This will create a blank project with a simple
       main source file in the "main" folder.
       

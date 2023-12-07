@@ -10,7 +10,7 @@
 
 // Viewports have a number of potential uses:
 // -  create a "virtual" TFT screen smaller than the actual TFT screen
-//  - render GUI items (menus etc) in a viewport, erase GUI item by redrawing whole screen,
+//  - render GUI items (menus etc.) in a viewport, erase GUI item by redrawing whole screen,
 //    this will be fast because only the viewport will be refreshed (e.g. clearing menu)
 //  - limit screen refresh to a particular area, e.g. changing numbers, icons or graph plotting
 //  - showing a small portion of a larger image or sprite, this allows panning and scrolling

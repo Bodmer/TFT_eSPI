@@ -100,15 +100,15 @@
 //#include <User_Setups/Setup71_ESP32_S2_ST7789.h>       // Setup file for ESP32 S2 with ST7789
 //#include <User_Setups/Setup72_ESP32_ST7789_172x320.h>  // Setup file for ESP32 with ST7789 1.47" 172x320
 
-//#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9488
-//#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9481
-//#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9341
-//#include <User_Setups/Setup103_RP2040_ILI9486_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9486
-//#include <User_Setups/Setup104_RP2040_ST7796_parallel.h>  // Setup file for Pico/RP2040 with 8 bit parallel ST7796
+//#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9488
+//#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9481
+//#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9341
+//#include <User_Setups/Setup103_RP2040_ILI9486_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9486
+//#include <User_Setups/Setup104_RP2040_ST7796_parallel.h>  // Setup file for Pico/RP2040 with 8-bit parallel ST7796
 
-//#include <User_Setups/Setup105_RP2040_ST7796_16bit_parallel.h>  // Setup file for RP2040 16 bit parallel display
-//#include <User_Setups/Setup106_RP2040_ILI9481_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
-//#include <User_Setups/Setup107_RP2040_ILI9341_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
+//#include <User_Setups/Setup105_RP2040_ST7796_16bit_parallel.h>  // Setup file for RP2040 16-bit parallel display
+//#include <User_Setups/Setup106_RP2040_ILI9481_16bit_parallel.h> // Setup file for RP2040 16-bit parallel display
+//#include <User_Setups/Setup107_RP2040_ILI9341_16bit_parallel.h> // Setup file for RP2040 16-bit parallel display
 //#include <User_Setups/Setup108_RP2040_ST7735.h> // Setup file for Waveshare RP2040 board with onboard ST7735 0.96" 160x80 display
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
@@ -168,7 +168,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-// Identical looking TFT displays may have a different colour ordering in the 16 bit colour
+// Identical looking TFT displays may have a different colour ordering in the 16-bit colour
 #define TFT_BGR 0   // Colour order Blue-Green-Red
 #define TFT_RGB 1   // Colour order Red-Green-Blue
 
@@ -190,7 +190,7 @@
   #endif
 #endif
 
-// Invoke 18 bit colour for selected displays
+// Invoke 18-bit colour for selected displays
 #if !defined (RPI_DISPLAY_TYPE) && !defined (TFT_PARALLEL_8_BIT) && !defined (TFT_PARALLEL_16_BIT) && !defined (ESP32_PARALLEL)
   #if defined (ILI9481_DRIVER) || defined (ILI9486_DRIVER) || defined (ILI9488_DRIVER)
     #define SPI_18BIT_DRIVER

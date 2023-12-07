@@ -1,5 +1,5 @@
 // Spiro
-// Rainbow patern generator
+// Rainbow pattern generator
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
@@ -67,7 +67,7 @@ unsigned int rainbow(int value)
   // Value is expected to be in range 0-127
   // The value is converted to a spectrum colour from 0 = blue through to red = blue
   //int value = random (128);
-  byte red = 0; // Red is the top 5 bits of a 16 bit colour value
+  byte red = 0; // Red is the top 5 bits of a 16-bit colour value
   byte green = 0;// Green is the middle 6 bits
   byte blue = 0; // Blue is the bottom 5 bits
 

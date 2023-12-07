@@ -14,9 +14,9 @@
 
 // Include the PNG decoder library
 #include <PNGdec.h>
-#include "panda.h" // Image is stored here in an 8 bit array
+#include "panda.h" // Image is stored here in an 8-bit array
 
-PNG png; // PNG decoder inatance
+PNG png; // PNG decoder instance
 
 #define MAX_IMAGE_WIDTH 240 // Adjust for your images
 

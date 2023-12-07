@@ -73,7 +73,7 @@ void analogMeter()
     // Long scale tick length
     int tl = 15;
 
-    // Coodinates of tick to draw
+    // Coordinates of tick to draw
     float sx = cos((i - 90) * 0.0174532925);
     float sy = sin((i - 90) * 0.0174532925);
     uint16_t x0 = sx * (M_SIZE*100 + tl) + M_SIZE*120;

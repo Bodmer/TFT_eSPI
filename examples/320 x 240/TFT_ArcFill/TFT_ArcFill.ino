@@ -11,7 +11,7 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 byte inc = 0;
 unsigned int col = 0;
 
-byte red = 31; // Red is the top 5 bits of a 16 bit colour value
+byte red = 31; // Red is the top 5 bits of a 16-bit colour value
 byte green = 0;// Green is the middle 6 bits
 byte blue = 0; // Blue is the bottom 5 bits
 byte state = 0;
@@ -56,7 +56,7 @@ void loop() {
 // rx = x axis outer radius
 // ry = y axis outer radius
 // w  = width (thickness) of arc in pixels
-// colour = 16 bit colour value
+// colour = 16-bit colour value
 // Note if rx and ry are the same then an arc of a circle is drawn
 
 void fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour)
@@ -87,7 +87,7 @@ void fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w
     tft.fillTriangle(x0, y0, x1, y1, x2, y2, colour);
     tft.fillTriangle(x1, y1, x2, y2, x3, y3, colour);
 
-    // Copy segment end to sgement start for next segment
+    // Copy segment end to segment start for next segment
     x0 = x2;
     y0 = y2;
     x1 = x3;
@@ -96,7 +96,7 @@ void fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w
 }
 
 // #########################################################################
-// Return the 16 bit colour with brightness 0-100%
+// Return the 16-bit colour with brightness 0-100%
 // #########################################################################
 unsigned int brightness(unsigned int colour, int brightness)
 {
@@ -112,7 +112,7 @@ unsigned int brightness(unsigned int colour, int brightness)
 }
 
 // #########################################################################
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // #########################################################################
 unsigned int rainbow(byte value)
 {

@@ -38,7 +38,7 @@ void setup(void) {
 void loop() {
 
   tft.fillScreen(TFT_BLUE);
-  tft.setCursor(0, 0, 2);
+  tft.setcursor(0, 0, 2);
   // Set the font colour to be white with a black background
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   // We can now plot text on screen using the "print" class
@@ -56,7 +56,7 @@ void loop() {
 
   printSubset(); // Print a useful subset of the readable registers
 
-  readTest(); // Test 8, 16 and 32 bit reads and index on the ID register
+  readTest(); // Test 8, 16 and 32-bit reads and index on the ID register
 
   //printRange32(0x00, 0xFF); // Print a range of registers (32 bits, index = 0)
 
@@ -70,8 +70,8 @@ void loop() {
 
 void readTest(void)
 {
-  Serial.println(); Serial.println("Test 8, 16 and 32 bit reads and the index...");
-  // Test 8, 16 and 32 bit reads and index
+  Serial.println(); Serial.println("Test 8, 16 and 32-bit reads and the index...");
+  // Test 8, 16 and 32-bit reads and index
   // Note at index 0 the register values are typically undefined (Bxxxxxxxx)
   Serial.println(tft.readcommand8(ILI9341_RDID4, 2), HEX);
   Serial.println(tft.readcommand16(ILI9341_RDID4, 2), HEX);

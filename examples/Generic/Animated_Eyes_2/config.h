@@ -64,7 +64,7 @@
 // JOYSTICK_X_PIN and JOYSTICK_Y_PIN specify analog input pins for manually
 // controlling the eye with an analog joystick.  If set to -1 or if not
 // defined, the eye will move on its own.
-// IRIS_PIN speficies an analog input pin for a photocell to make pupils
+// IRIS_PIN specifies an analog input pin for a photocell to make pupils
 // react to light (or potentiometer for manual control).  If set to -1 or
 // if not defined, the pupils will change on their own.
 // BLINK_PIN specifies an input pin for a button (to ground) that will

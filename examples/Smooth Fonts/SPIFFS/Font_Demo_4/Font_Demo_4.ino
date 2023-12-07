@@ -61,7 +61,7 @@ void setup(void) {
 
   tft.setRotation(1);
 
-  spr.setColorDepth(16); // 16 bit colour needed to show anti-aliased fonts
+  spr.setcolorDepth(16); // 16-bit colour needed to show anti-aliased fonts
 
   if (!SPIFFS.begin()) {
     Serial.println("SPIFFS initialisation failed!");
@@ -102,7 +102,7 @@ void loop() {
   
   spr.setTextColor(TFT_YELLOW, TFT_BLACK); // Set the sprite font colour and the background colour
 
-  tft.setCursor(xpos - 50, ypos);          // Set the tft cursor position, yes tft position!
+  tft.setcursor(xpos - 50, ypos);          // Set the tft cursor position, yes tft position!
   spr.printToSprite("Small 15pt font");    // Prints to tft cursor position, tft cursor NOT moved
 
   ypos += spr.fontHeight();   // Get the font height and move ypos down
@@ -121,14 +121,14 @@ void loop() {
 
   spr.setTextColor(TFT_WHITE, TFT_BLUE); // Set the font colour and the background colour
 
-  tft.setCursor(xpos - 90, ypos);  // Set the tft cursor position
+  tft.setcursor(xpos - 90, ypos);  // Set the tft cursor position
   spr.printToSprite("36pt font");  // Text is rendered via a minimally sized sprite
 
   ypos += spr.fontHeight();  // Get the font height and move ypos down
 
   // Draw changing numbers - no flicker using this plot method!
   for (int i = 0; i <= 200; i++) {
-    tft.setCursor(10, 10);
+    tft.setcursor(10, 10);
     // Number is converted to String type by (String) (number)
     spr.printToSprite(" " + (String) (i / 100.0) + " "); // Space padding helps over-write old numbers
     delay (20);

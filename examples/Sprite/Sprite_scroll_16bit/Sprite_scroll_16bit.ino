@@ -126,7 +126,7 @@ void numberBox(int num, int x, int y)
   // Fill it with black
   img.fillSprite(TFT_BLACK);
 
-  // Draw a backgorund of 2 filled triangles
+  // Draw a background of 2 filled triangles
   img.fillTriangle(  0, 0,  0, 49, 40, 25, TFT_RED);
   img.fillTriangle( 79, 0, 79, 49, 40, 25, TFT_DARKGREEN);
 
@@ -150,14 +150,14 @@ void numberBox(int num, int x, int y)
 
 
 // #########################################################################
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // #########################################################################
 unsigned int rainbow(byte value)
 {
   // Value is expected to be in range 0-127
   // The value is converted to a spectrum colour from 0 = red through to 127 = blue
 
-  byte red   = 0; // Red is the top 5 bits of a 16 bit colour value
+  byte red   = 0; // Red is the top 5 bits of a 16-bit colour value
   byte green = 0;// Green is the middle 6 bits
   byte blue  = 0; // Blue is the bottom 5 bits
 

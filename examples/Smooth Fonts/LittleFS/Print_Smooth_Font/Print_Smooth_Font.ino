@@ -12,7 +12,7 @@
   sketch in the library Tools folder. The Processing sketch can convert
   TrueType fonts in *.ttf or *.otf files.
 
-  The library supports 16 bit Unicode characters:
+  The library supports 16-bit Unicode characters:
   https://en.wikipedia.org/wiki/Unicode_font
 
   The characters supported are in the in the Basic Multilingual Plane:
@@ -78,7 +78,7 @@ void loop() {
   // Set "cursor" at top left corner of display (0,0)
   // (cursor will move to next line automatically during printing with 'tft.println'
   //  or stay on the line is there is room for the text with tft.print)
-  tft.setCursor(0, 0);
+  tft.setcursor(0, 0);
 
   // Set the font colour to be white with a black background, set text size multiplier to 1
   tft.setTextColor(TFT_WHITE, TFT_BLACK);

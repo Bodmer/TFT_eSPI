@@ -38,7 +38,7 @@ void setup()   {
   tft.fillScreen(TFT_BLACK);
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE);
-  tft.setCursor(0, 0);
+  tft.setcursor(0, 0);
 
 }
 
@@ -48,11 +48,11 @@ void loop() {
   tft.fillScreen(TFT_BLACK);
   tft.setTextSize(2);
   tft.setTextColor(TFT_WHITE);
-  tft.setCursor(40, 5);
+  tft.setcursor(40, 5);
   tft.println(F("Arduino"));
-  tft.setCursor(35, 25);
+  tft.setcursor(35, 25);
   tft.println(F("Cellular"));
-  tft.setCursor(35, 45);
+  tft.setcursor(35, 45);
   tft.println(F("Automata"));
 
   delay(1000);

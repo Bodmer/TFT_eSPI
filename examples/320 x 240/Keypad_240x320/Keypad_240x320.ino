@@ -3,8 +3,8 @@
   button handling class, this sketch is based on the Arduin-o-phone
   example.
 
-  This example diplays a keypad where numbers can be entered and
-  send to the Serial Monitor window.
+  This example displays a keypad where numbers can be entered and
+  sent to the Serial Monitor window.
 
   The sketch has been tested on the ESP8266 (which supports SPIFFS)
 
@@ -164,7 +164,7 @@ void loop(void) {
 
       // Update the number display field
       tft.setTextDatum(TL_DATUM);        // Use top left corner as text coord datum
-      tft.setFreeFont(&FreeSans18pt7b);  // Choose a nicefont that fits box
+      tft.setFreeFont(&FreeSans18pt7b);  // Choose a nice font that fits box
       tft.setTextColor(DISP_TCOLOR);     // Set the font colour
 
       // Draw the string, the value returned is the width in pixels
@@ -209,7 +209,7 @@ void touch_calibrate()
 
   // check file system exists
   if (!SPIFFS.begin()) {
-    Serial.println("Formating file system");
+    Serial.println("formatting file system");
     SPIFFS.format();
     SPIFFS.begin();
   }
@@ -238,7 +238,7 @@ void touch_calibrate()
   } else {
     // data not valid so recalibrate
     tft.fillScreen(TFT_BLACK);
-    tft.setCursor(20, 0);
+    tft.setcursor(20, 0);
     tft.setTextFont(2);
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -272,7 +272,7 @@ void touch_calibrate()
 // Print something in the mini status bar
 void status(const char *msg) {
   tft.setTextPadding(240);
-  //tft.setCursor(STATUS_X, STATUS_Y);
+  //tft.setcursor(STATUS_X, STATUS_Y);
   tft.setTextColor(TFT_WHITE, TFT_DARKGREY);
   tft.setTextFont(0);
   tft.setTextDatum(TC_DATUM);

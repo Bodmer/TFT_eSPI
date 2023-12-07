@@ -1,5 +1,5 @@
 //                            USER DEFINED SETTINGS
-//   Set driver type, fonts to be loaded, pins used and SPI control method etc
+//   Set driver type, fonts to be loaded, pins used and SPI control method etc.
 //
 //   See the User_Setup_Select.h file if you wish to be able to define multiple
 //   setups and then easily select which setup file is used by the compiler.
@@ -28,15 +28,15 @@
 //#define NUCLEO_64_TFT
 //#define NUCLEO_144_TFT
 
-// STM32 8 bit parallel only:
-// If STN32 Port A or B pins 0-7 are used for 8 bit parallel data bus bits 0-7
+// STM32 8-bit parallel only:
+// If STN32 Port A or B pins 0-7 are used for 8-bit parallel data bus bits 0-7
 // then this will improve rendering performance by a factor of ~8x
 //#define STM_PORTA_DATA_BUS
 //#define STM_PORTB_DATA_BUS
 
 // Tell the library to use parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
-//#defined TFT_PARALLEL_16_BIT // **** 16 bit parallel ONLY for RP2040 processor ****
+//#defined TFT_PARALLEL_16_BIT // **** 16-bit parallel ONLY for RP2040 processor ****
 
 // Display type -  only define if RPi display
 //#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
@@ -105,7 +105,7 @@
 // #define ST7735_GREENTAB3
 // #define ST7735_GREENTAB128    // For 128 x 128 display
 // #define ST7735_GREENTAB160x80 // For 160 x 80 display (BGR, inverted, 26 offset)
-// #define ST7735_ROBOTLCD       // For some RobotLCD arduino shields (128x160, BGR, https://docs.arduino.cc/retired/getting-started-guides/TFT)
+// #define ST7735_ROBOTLCD       // For some RobotLCD Arduino shields (128x160, BGR, https://docs.arduino.cc/retired/getting-started-guides/TFT)
 // #define ST7735_REDTAB
 // #define ST7735_BLACKTAB
 // #define ST7735_REDTAB160x80   // For 160 x 80 display with 24 pixel offset
@@ -242,7 +242,7 @@
 
 // ######       EDIT THE PINs BELOW TO SUIT YOUR ESP32 PARALLEL TFT SETUP        ######
 
-// The library supports 8 bit parallel TFTs with the ESP32, the pin
+// The library supports 8-bit parallel TFTs with the ESP32, the pin
 // selection below is compatible with ESP32 boards in UNO format.
 // Wemos D32 boards need to be modified, see diagram in Tools folder.
 // Only ILI9481 and ILI9341 based displays have been tested!
@@ -250,7 +250,7 @@
 // Parallel bus is only supported for the STM32 and ESP32
 // Example below is for ESP32 Parallel interface with UNO displays
 
-// Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
+// Tell the library to use 8-bit parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
 
 // The ESP32 and TFT the pins used for testing are:
@@ -330,11 +330,11 @@
 // For RP2040 processor and SPI displays, uncomment the following line to use the PIO interface.
 //#define RP2040_PIO_SPI // Leave commented out to use standard RP2040 SPI port interface
 
-// For RP2040 processor and 8 or 16 bit parallel displays:
+// For RP2040 processor and 8 or 16-bit parallel displays:
 // The parallel interface write cycle period is derived from a division of the CPU clock
 // speed so scales with the processor clock. This means that the divider ratio may need
 // to be increased when overclocking. It may also need to be adjusted dependant on the
-// display controller type (ILI94341, HX8357C etc). If RP2040_PIO_CLK_DIV is not defined
+// display controller type (ILI94341, HX8357C etc.). If RP2040_PIO_CLK_DIV is not defined
 // the library will set default values which may not suit your display.
 // The display controller data sheet will specify the minimum write cycle period. The
 // controllers often work reliably for shorter periods, however if the period is too short

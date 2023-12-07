@@ -31,16 +31,16 @@ WiFiUDP udp;
 //                                  Settings
 //====================================================================================
 
-#define TIMEZONE UK // See below for other "Zone references", UK, usMT etc
+#define TIMEZONE UK // See below for other "Zone references", UK, usMT etc.
 
 #ifdef ESP32 // Temporary fix, ESP8266 fails to communicate with some servers...
-// Try to use pool url instead so the server IP address is looked up from those available
+// Try to use pool URL instead so the server IP address is looked up from those available
 // (use a pool server in your own country to improve response time and reliability)
 //const char* ntpServerName = "time.nist.gov";
 //const char* ntpServerName = "pool.ntp.org";
 const char* ntpServerName = "time.google.com";
 #else
-// Try to use pool url instead so the server IP address is looked up from those available
+// Try to use pool URL instead so the server IP address is looked up from those available
 // (use a pool server in your own country to improve response time and reliability)
 // const char* ntpServerName = "time.nist.gov";
 const char* ntpServerName = "pool.ntp.org";

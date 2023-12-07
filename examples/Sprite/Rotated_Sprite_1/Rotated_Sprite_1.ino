@@ -10,7 +10,7 @@
 // screen very simple. The rotation is clockwise with increasing angle. The angle is in
 // degrees, an angle of 0 means no Sprite rotation.
 
-// The pushRotated() function works with 1, 4, 8 and 16 bit per pixel (bpp) Sprites.
+// The pushRotated() function works with 1, 4, 8 and 16-bit per pixel (bpp) Sprites.
 
 // The original Sprite is unchanged so can be plotted again at a different angle.
 
@@ -20,7 +20,7 @@
 // For 1 bpp Sprites the foreground and background colours are defined with the
 // function spr.setBitmapColor(foregroundColor, backgroundColor).
 
-// For 4 bpp Sprites the colour map index is used instead of the 16 bit colour
+// For 4 bpp Sprites the colour map index is used instead of the 16-bit colour
 // e.g. spr.setTextColor(5); // Green text in default colour map
 // See "Transparent_Sprite_Demo_4bit" example for default colour map details
 
@@ -59,7 +59,7 @@ void loop() {
   drawX(xw, yh);            // Show where screen pivot is
 
   // Create the Sprite
-  spr.setColorDepth(8);      // Create an 8bpp Sprite of 60x30 pixels
+  spr.setcolorDepth(8);      // Create an 8bpp Sprite of 60x30 pixels
   spr.createSprite(64, 30);  // 8bpp requires 64 * 30 = 1920 bytes
   spr.setPivot(32, 55);      // Set pivot relative to top left corner of Sprite
   spr.fillSprite(TFT_BLACK); // Fill the Sprite with black
@@ -120,7 +120,7 @@ void loop() {
   
   spr.deleteSprite();
 
-  spr.setColorDepth(8);         // Create a 8bpp Sprite
+  spr.setcolorDepth(8);         // Create a 8bpp Sprite
   spr.createSprite(40, 30);     // Create a new Sprite 40x30
   spr.setPivot(20, 70);         // Set Sprite pivot at 20,80
 

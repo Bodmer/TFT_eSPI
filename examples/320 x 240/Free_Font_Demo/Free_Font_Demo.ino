@@ -70,7 +70,7 @@ void loop() {
   // For comaptibility with Adafruit_GFX library the text background is not plotted when using the print class
   // even if we specify it.
   tft.setTextColor(TFT_YELLOW);
-  tft.setCursor(xpos, ypos);    // Set cursor near top left corner of screen
+  tft.setcursor(xpos, ypos);    // Set cursor near top left corner of screen
 
   tft.setFreeFont(TT1);     // Select the orginal small TomThumb font
   tft.println();             // Move cursor down a line
@@ -280,7 +280,7 @@ void drawDatumMarker(int x, int y)
 
 
 // There follows a crude way of flagging that this example sketch needs fonts which
-// have not been enbabled in the User_Setup.h file inside the TFT_HX8357 library.
+// have not been enabled in the User_Setup.h file inside the TFT_HX8357 library.
 //
 // These lines produce errors during compile time if settings in User_Setup are not correct
 //

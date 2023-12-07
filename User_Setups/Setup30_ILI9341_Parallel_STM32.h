@@ -14,7 +14,7 @@
 #define NUCLEO_64_TFT
 //#define NUCLEO_144_TFT
 
-// Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
+// Tell the library to use 8-bit parallel mode (otherwise SPI is assumed)
 #define TFT_PARALLEL_8_BIT
 
 // Define the display driver chip type
@@ -31,7 +31,7 @@
 #define TFT_WR   A1  // Write strobe control pin 
 #define TFT_RD   A0  // Read pin
 
-#define TFT_D0   D8  // 8 bit parallel bus to TFT
+#define TFT_D0   D8  // 8-bit parallel bus to TFT
 #define TFT_D1   D9
 #define TFT_D2   D2
 #define TFT_D3   D3

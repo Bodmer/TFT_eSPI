@@ -17,13 +17,13 @@ void setup(void) {
   tft.setRotation(3);
   tft.fillScreen((0xFFFF));
 
-  tft.setCursor(20, 0, 2);
+  tft.setcursor(20, 0, 2);
   tft.setTextColor(TFT_BLACK, TFT_WHITE);  tft.setTextSize(1);
   tft.println("calibration run");
 
   // check file system
   if (!SPIFFS.begin()) {
-    Serial.println("formating file system");
+    Serial.println("formatting file system");
 
     SPIFFS.format();
     SPIFFS.begin();
@@ -62,9 +62,9 @@ void loop() {
 
   if (tft.getTouch(&x, &y)) {
 
-    tft.setCursor(5, 5, 2);
+    tft.setcursor(5, 5, 2);
     tft.printf("x: %i     ", x);
-    tft.setCursor(5, 20, 2);
+    tft.setcursor(5, 20, 2);
     tft.printf("y: %i    ", y);
 
     tft.drawPixel(x, y, color);
