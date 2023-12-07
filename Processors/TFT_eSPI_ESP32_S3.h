@@ -107,10 +107,6 @@ SPI3_HOST = 2
   #endif
 #endif
 
-#if !defined(DISABLE_ALL_LIBRARY_WARNINGS) && defined (ESP32_PARALLEL)
- #warning >>>>------>> DMA is not supported in parallel mode
-#endif
-
 // Processor specific code used by SPI bus transaction startWrite and endWrite functions
 #if !defined (ESP32_PARALLEL)
   #define _spi_cmd       (volatile uint32_t*)(SPI_CMD_REG(SPI_PORT))
@@ -131,19 +127,45 @@ SPI3_HOST = 2
     #define SET_BUS_READ_MODE
 #endif
 
-// Code to check if DMA is busy, used by SPI bus transaction transaction and endWrite functions
-#if !defined(TFT_PARALLEL_8_BIT) && !defined(SPI_18BIT_DRIVER)
-  #define ESP32_DMA
+////////////////////////////////////////////////////////////////////////////////////////
+// DMA checks
+////////////////////////////////////////////////////////////////////////////////////////
+
+// Enable DMA on supported setups
+#if !defined(SPI_18BIT_DRIVER)
+  #if defined(TFT_PARALLEL_8_BIT)
+    #define ESP32_DMA_PARALLEL
+  #else
+    #define ESP32_DMA
+  #endif
   // Code to check if DMA is busy, used by SPI DMA + transaction + endWrite functions
   #define DMA_BUSY_CHECK  dmaWait()
 #else
   #define DMA_BUSY_CHECK
 #endif
 
+#ifdef ESP32_DMA_PARALLEL
+  #ifndef TFT_DMA_FREQUENCY
+    #define TFT_DMA_FREQUENCY 10000000
+  #endif
+
+  #ifndef TFT_DMA_MAX_TX_SIZE
+    #define TFT_DMA_MAX_TX_SIZE 65536 // 64 kBytes
+  #endif
+
+  #ifndef TFT_DMA_SWAP_BYTES
+    #define TFT_DMA_SWAP_BYTES 1
+  #endif
+#endif
+
 #if defined(TFT_PARALLEL_8_BIT)
   #define SPI_BUSY_CHECK
 #else
   #define SPI_BUSY_CHECK while (*_spi_cmd&SPI_USR)
+#endif
+
+#if !defined(DISABLE_ALL_LIBRARY_WARNINGS) && defined (ESP32_DMA_PARALLEL)
+  #warning >>>>------>> DMA in parallel mode is in EXPERIMENTAL state! Things may break
 #endif
 
 // If smooth font is used then it is likely SPIFFS will be needed

@@ -29,7 +29,7 @@
   #endif
 #endif
 
-#ifdef ESP32_DMA
+#if defined (ESP32_DMA)
   // DMA SPA handle
   spi_device_handle_t dmaHAL;
   #ifdef CONFIG_IDF_TARGET_ESP32
@@ -50,6 +50,9 @@
       spi_host_device_t spi_host = SPI2_HOST;
     #endif
   #endif
+#elif defined(ESP32_DMA_PARALLEL)
+  static esp_lcd_i80_bus_handle_t i80_bus = NULL;
+  static esp_lcd_panel_io_handle_t lcd_io_handle = NULL;
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -581,8 +584,25 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#if defined (ESP32_DMA) && !defined (TFT_PARALLEL_8_BIT) //       DMA FUNCTIONS
+#if defined (ESP32_DMA) || defined (ESP32_DMA_PARALLEL) //       DMA FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef ESP32_DMA_PARALLEL
+extern "C" inline esp_err_t setAddrWindowDMA(int32_t x0, int32_t y0, int32_t w, int32_t h);
+
+esp_err_t setAddrWindowDMA(int32_t x0, int32_t y0, int32_t w, int32_t h)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t cmd_ca[] = {(uint8_t)((x0 >> 8) & 0xFF), (uint8_t)(x0 & 0xFF), (uint8_t)(((x0+w - 1) >> 8) & 0xFF), (uint8_t)((x0+w - 1) & 0xFF)};
+  uint8_t cmd_pa[] = {(uint8_t)((y0 >> 8) & 0xFF), (uint8_t)(y0 & 0xFF), (uint8_t)(((y0+h - 1) >> 8) & 0xFF), (uint8_t)((y0+h - 1) & 0xFF)};
+
+  ret = esp_lcd_panel_io_tx_param(lcd_io_handle, TFT_CASET, cmd_ca, 4);
+  if (ret != ESP_OK) return ret;
+
+  ret =  esp_lcd_panel_io_tx_param(lcd_io_handle, TFT_PASET, cmd_pa, 4);
+  return ret;
+}
+#endif
 
 /***************************************************************************************
 ** Function name:           dmaBusy
@@ -590,6 +610,8 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 ***************************************************************************************/
 bool TFT_eSPI::dmaBusy(void)
 {
+#if defined(ESP32_DMA)
+
   if (!DMA_Enabled || !spiBusyCheck) return false;
 
   spi_transaction_t *rtrans;
@@ -604,6 +626,10 @@ bool TFT_eSPI::dmaBusy(void)
   //Serial.print("spiBusyCheck=");Serial.println(spiBusyCheck);
   if (spiBusyCheck ==0) return false;
   return true;
+
+#elif defined(ESP32_DMA_PARALLEL)
+  return false;
+#endif
 }
 
 
@@ -613,6 +639,7 @@ bool TFT_eSPI::dmaBusy(void)
 ***************************************************************************************/
 void TFT_eSPI::dmaWait(void)
 {
+#if defined(ESP32_DMA)
   if (!DMA_Enabled || !spiBusyCheck) return;
   spi_transaction_t *rtrans;
   esp_err_t ret;
@@ -622,6 +649,7 @@ void TFT_eSPI::dmaWait(void)
     assert(ret == ESP_OK);
   }
   spiBusyCheck = 0;
+#endif
 }
 
 
@@ -640,7 +668,11 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
     for (uint32_t i = 0; i < len; i++) (image[i] = image[i] << 8 | image[i] >> 8);
   }
 
-  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
+  esp_err_t ret = ESP_OK;
+
+#if defined(ESP32_DMA)
+
+  // DMA byte count for transmit is 64kBytes maximum, so to avoid this constraint
   // small transfers are performed using a blocking call until DMA capacity is reached.
   // User sketch can prevent blocking by managing pixel count and splitting into blocks
   // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
@@ -648,24 +680,54 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
   _swapBytes = false;
   while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
     pushPixels(image, 0x400);
-    len -= 0x400; image+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
+    len -= 0x400; image+= 0x400; // Arbitrarily send 1K pixel blocks (2kBytes)
   }
   _swapBytes = temp;
 
-  esp_err_t ret;
   static spi_transaction_t trans;
 
   memset(&trans, 0, sizeof(spi_transaction_t));
 
   trans.user = (void *)1;
   trans.tx_buffer = image;  //finally send the line data
-  trans.length = len * 16;        //Data length, in bits
-  trans.flags = 0;                //SPI_TRANS_USE_TXDATA flag
+  trans.length = len * 16;  //Data length, in bits
+  trans.flags = 0;          //SPI_TRANS_USE_TXDATA flag
 
   ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
   assert(ret == ESP_OK);
 
   spiBusyCheck++;
+
+#elif defined(ESP32_DMA_PARALLEL)
+
+  // Buffer is larger than max transfer size
+  if (len > TFT_DMA_MAX_TX_SIZE/2)
+  {
+    // Send command and first block
+    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, TFT_DMA_MAX_TX_SIZE/2 *2);
+    assert(ret == ESP_OK);
+    len -= TFT_DMA_MAX_TX_SIZE/2; image+= TFT_DMA_MAX_TX_SIZE/2;
+
+    // Keep sending blocks
+    while(len > TFT_DMA_MAX_TX_SIZE/2)
+    {
+      // If the dma is busy, the LCD driver will queue the transaction.
+      // If the queue is full it will block execution and wait for the current transaction to finish.
+      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, image, TFT_DMA_MAX_TX_SIZE); // If command is negative no command is sent
+      assert(ret == ESP_OK);
+      len -= TFT_DMA_MAX_TX_SIZE/2; image+= TFT_DMA_MAX_TX_SIZE/2;
+    }
+
+    // Send last batch of data
+    if (len > 0)
+      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, -1, image, len*2);
+  }
+  else
+    ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
+
+  assert(ret == ESP_OK);
+
+#endif
 }
 
 
@@ -683,33 +745,51 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   dmaWait();
 
+  esp_err_t ret = ESP_OK;
+
+#if defined(ESP32_DMA)
   setAddrWindow(x, y, w, h);
-  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
-  // small transfers are performed using a blocking call until DMA capacity is reached.
-  // User sketch can prevent blocking by managing pixel count and splitting into blocks
-  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
+
   bool temp = _swapBytes;
   _swapBytes = false;
-  while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
-    pushPixels(buffer, 0x400);
-    len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
-  }
+  pushPixelsDMA(buffer, len);
   _swapBytes = temp;
+#elif defined(ESP32_DMA_PARALLEL)
+  #ifdef TFT_DMA_FAST_TRANSFER
+    ret = setAddrWindowDMA(x, y, w, h);
+    assert(ret == ESP_OK);
 
-  esp_err_t ret;
-  static spi_transaction_t trans;
+    bool temp = _swapBytes;
+    _swapBytes = false;
+    pushPixelsDMA(buffer, len);
+    _swapBytes = temp;
+  #else
+    // Buffer is larger than max transfer size
+    if (len > TFT_DMA_MAX_TX_SIZE/2)
+    {
+      h = TFT_DMA_MAX_TX_SIZE/2 / w;
 
-  memset(&trans, 0, sizeof(spi_transaction_t));
+      do {
+        ret = setAddrWindowDMA(x, y, w, h);
+        assert(ret == ESP_OK);
 
-  trans.user = (void *)1;
-  trans.tx_buffer = buffer;   //Data pointer
-  trans.length = len * 16;   //Data length, in bits
-  trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
+        ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, w*h*2);
+        assert(ret == ESP_OK);
+        len -= w*h; image+= w*h; y += h;
+      }
+      while(len > TFT_DMA_MAX_TX_SIZE/2);
+    }
 
-  ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
+    if (len > 0)
+    {
+      ret = setAddrWindowDMA(x, y, w, h);
+      assert(ret == ESP_OK);
+      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
+    }
+  #endif
+#endif
+
   assert(ret == ESP_OK);
-
-  spiBusyCheck++;
 }
 
 
@@ -768,43 +848,59 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
     }
   }
 
-  if (spiBusyCheck) dmaWait(); // In case we did not wait earlier
+  esp_err_t ret = ESP_OK;
 
+#if defined(ESP32_DMA)
+  if (spiBusyCheck) dmaWait(); // In case we did not wait earlier
   setAddrWindow(x, y, dw, dh);
 
-  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
-  // small transfers are performed using a blocking call until DMA capacity is reached.
-  // User sketch can prevent blocking by managing pixel count and splitting into blocks
-  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
   bool temp = _swapBytes;
   _swapBytes = false;
-  while(len>0x4000) { // Transfer 16 bit pixels in blocks if len*2 over 65536 bytes
-    pushPixels(buffer, 0x400);
-    len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
-  }
+  pushPixelsDMA(buffer, len);
   _swapBytes = temp;
+#elif defined(ESP32_DMA_PARALLEL)
+  #ifdef TFT_DMA_FAST_TRANSFER
+    ret = setAddrWindowDMA(x, y, dw, dh);
+    assert(ret == ESP_OK);
 
-  esp_err_t ret;
-  static spi_transaction_t trans;
+    bool temp = _swapBytes;
+    _swapBytes = false;
+    pushPixelsDMA(buffer, len);
+    _swapBytes = temp;
+  #else
+    // Buffer is larger than max transfer size
+    if (len > TFT_DMA_MAX_TX_SIZE/2)
+    {
+      dh = TFT_DMA_MAX_TX_SIZE/2 / dw;
 
-  memset(&trans, 0, sizeof(spi_transaction_t));
+      do {
+        ret = setAddrWindowDMA(x, y, dw, dh);
+        assert(ret == ESP_OK);
 
-  trans.user = (void *)1;
-  trans.tx_buffer = buffer;  //finally send the line data
-  trans.length = len * 16;   //Data length, in bits
-  trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
+        ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, dw*dh*2);
+        assert(ret == ESP_OK);
+        len -= dw*dh; image+= dw*dh; y += dh;
+      }
+      while(len > TFT_DMA_MAX_TX_SIZE/2);
+    }
 
-  ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
+    if (len > 0)
+    {
+      ret = setAddrWindowDMA(x, y, dw, dh);
+      assert(ret == ESP_OK);
+      ret = esp_lcd_panel_io_tx_color(lcd_io_handle, TFT_RAMWR, image, len*2);
+    }
+  #endif
+#endif
+
   assert(ret == ESP_OK);
-
-  spiBusyCheck++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Processor specific DMA initialisation
 ////////////////////////////////////////////////////////////////////////////////////////
 
-// The DMA functions here work with SPI only (not parallel)
+// The DMA functions here work with SPI and parallel (experimental)
 /***************************************************************************************
 ** Function name:           dc_callback
 ** Description:             Toggles DC line during transaction (not used)
@@ -825,7 +921,9 @@ extern "C" void dma_end_callback();
 
 void IRAM_ATTR dma_end_callback(spi_transaction_t *spi_tx)
 {
+#if defined(ESP32_DMA)
   WRITE_PERI_REG(SPI_DMA_CONF_REG(spi_host), 0);
+#endif
 }
 
 /***************************************************************************************
@@ -836,7 +934,9 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 {
   if (DMA_Enabled) return false;
 
+#if defined(ESP32_DMA)
   esp_err_t ret;
+
   spi_bus_config_t buscfg = {
     .mosi_io_num = TFT_MOSI,
     .miso_io_num = TFT_MISO,
@@ -872,6 +972,59 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
   ret = spi_bus_add_device(spi_host, &devcfg, &dmaHAL);
   ESP_ERROR_CHECK(ret);
 
+#elif defined(ESP32_DMA_PARALLEL)
+
+  esp_lcd_i80_bus_config_t bus_config = {
+    .dc_gpio_num = TFT_DC,
+    .wr_gpio_num = TFT_WR,
+    .clk_src = LCD_CLK_SRC_PLL160M,
+    .data_gpio_nums = {
+      TFT_D0,
+      TFT_D1,
+      TFT_D2,
+      TFT_D3,
+      TFT_D4,
+      TFT_D5,
+      TFT_D6,
+      TFT_D7
+    },
+    .bus_width = 8,
+    .max_transfer_bytes = TFT_DMA_MAX_TX_SIZE,
+    .psram_trans_align = 0,
+    .sram_trans_align = 0
+  };
+  ESP_ERROR_CHECK(esp_lcd_new_i80_bus(&bus_config, &i80_bus));
+
+  const esp_lcd_panel_io_i80_config_t io_config = {
+    .cs_gpio_num = TFT_CS,
+    .pclk_hz = TFT_DMA_FREQUENCY,
+    #ifdef TFT_DMA_FAST_TRANSFER
+    .trans_queue_depth = 5,
+    #else
+    .trans_queue_depth = 1,
+    #endif
+    .on_color_trans_done = NULL,
+    .user_ctx = NULL,
+    .lcd_cmd_bits = 8,
+    .lcd_param_bits = 8,
+    .dc_levels = {
+      .dc_idle_level = 0,
+      .dc_cmd_level = 0,
+      .dc_dummy_level = 0,
+      .dc_data_level = 1,
+    },
+    .flags = {
+      .cs_active_high = 0,
+      .reverse_color_bits = 0,
+      .swap_color_bytes = TFT_DMA_SWAP_BYTES,
+      .pclk_active_neg = 0,
+      .pclk_idle_low = 0
+    }
+  };
+  ESP_ERROR_CHECK(esp_lcd_new_panel_io_i80(i80_bus, &io_config, &lcd_io_handle));
+
+  #endif
+
   DMA_Enabled = true;
   spiBusyCheck = 0;
   return true;
@@ -884,8 +1037,19 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 void TFT_eSPI::deInitDMA(void)
 {
   if (!DMA_Enabled) return;
+
+#if defined(ESP32_DMA)
+
   spi_bus_remove_device(dmaHAL);
   spi_bus_free(spi_host);
+
+#elif defined(ESP32_DMA_PARALLEL)
+
+  esp_lcd_panel_io_del(lcd_io_handle);
+  esp_lcd_del_i80_bus(i80_bus);
+
+#endif
+
   DMA_Enabled = false;
 }
 

@@ -22,21 +22,14 @@
 // Bit 0 set: viewport capability
 #define TFT_ESPI_FEATURES 1
 
-/***************************************************************************************
-**                         Section 1: Load required header files
-***************************************************************************************/
-
-//Standard support
+// Common includes
 #include <Arduino.h>
 #include <Print.h>
-#if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
-  #include <SPI.h>
-#endif
+
 /***************************************************************************************
-**                         Section 2: Load library and processor specific header files
+**                         Section 1: Load User configuration
 ***************************************************************************************/
-// Include header file that defines the fonts loaded, the TFT drivers
-// available and the pins to be used, etc, etc
+// Include file that converts from ESP_IDF configuration to library defines
 #ifdef CONFIG_TFT_eSPI_ESPIDF
   #include "TFT_config.h"
 #endif
@@ -67,6 +60,20 @@
 #endif
 
 #include <User_Setup_Select.h>
+
+/***************************************************************************************
+**                         Section 2: Additional specific includes
+***************************************************************************************/
+
+#if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
+  #include <SPI.h>
+#elif defined(TFT_PARALLEL_8_BIT)
+  #include "esp_lcd_panel_io.h"
+#endif
+
+/***************************************************************************************
+**                         Section 3: Load library and processor specific header files
+***************************************************************************************/
 
 // Handle FLASH based storage e.g. PROGMEM
 #if defined(ARDUINO_ARCH_RP2040)
@@ -111,7 +118,7 @@
 #endif
 
 /***************************************************************************************
-**                         Section 3: Interface setup
+**                         Section 4: Interface setup
 ***************************************************************************************/
 #ifndef TAB_COLOUR
   #define TAB_COLOUR 0
@@ -157,7 +164,7 @@
 #endif  
 
 /***************************************************************************************
-**                         Section 4: Setup fonts
+**                         Section 5: Setup fonts
 ***************************************************************************************/
 // Use GLCD font in error case where user requests a smooth font file
 // that does not exist (this is a temporary fix to stop ESP32 reboot)
@@ -279,7 +286,7 @@ const PROGMEM fontinfo fontdata [] = {
 };
 
 /***************************************************************************************
-**                         Section 5: Font datum enumeration
+**                         Section 6: Font datum enumeration
 ***************************************************************************************/
 //These enumerate the text plotting alignment (reference datum point)
 #define TL_DATUM 0 // Top left (default)
@@ -299,7 +306,7 @@ const PROGMEM fontinfo fontdata [] = {
 #define R_BASELINE 11 // Right character baseline
 
 /***************************************************************************************
-**                         Section 6: Colour enumeration
+**                         Section 7: Colour enumeration
 ***************************************************************************************/
 // Default color definitions
 #define TFT_BLACK       0x0000      /*   0,   0,   0 */
@@ -353,7 +360,7 @@ static const uint16_t default_4bit_palette[] PROGMEM = {
 };
 
 /***************************************************************************************
-**                         Section 7: Diagnostic support
+**                         Section 8: Diagnostic support
 ***************************************************************************************/
 // #define TFT_eSPI_DEBUG     // Switch on debug support serial messages  (not used yet)
 // #define TFT_eSPI_FNx_DEBUG // Switch on debug support for function "x" (not used yet)
@@ -417,7 +424,7 @@ int16_t tch_spi_freq;// Touch controller read/write SPI frequency
 } setup_t;
 
 /***************************************************************************************
-**                         Section 8: Class member and support functions
+**                         Section 9: Class member and support functions
 ***************************************************************************************/
 
 // Callback prototype for smooth font pixel colour read
@@ -815,7 +822,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   void     setAttribute(uint8_t id = 0, uint8_t a = 0); // Set attribute value
   uint8_t  getAttribute(uint8_t id = 0);                // Get attribute value
 
-           // Used for diagnostic sketch to see library setup adopted by compiler, see Section 7 above
+           // Used for diagnostic sketch to see library setup adopted by compiler, see Section 8 above
   void     getSetup(setup_t& tft_settings); // Sketch provides the instance to populate
   bool     verifySetupID(uint32_t id);
 
@@ -957,7 +964,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 #endif
 
 /***************************************************************************************
-**                         Section 9: TFT_eSPI class conditional extensions
+**                         Section 10: TFT_eSPI class conditional extensions
 ***************************************************************************************/
 // Load the Touch extension
 #ifdef TOUCH_CS
@@ -1000,7 +1007,7 @@ fastBlend(A alpha, F fgc, B bgc)
 }
 
 /***************************************************************************************
-**                         Section 10: Additional extension classes
+**                         Section 11: Additional extension classes
 ***************************************************************************************/
 // Load the Button Class
 #include "Extensions/Button.h"
