@@ -2,6 +2,10 @@
 // This example renders a png file that is stored in a FLASH array
 // using the PNGdec library (available via library manager).
 
+// Note: The PNGDEC required lots of RAM to work (~40kbytes) so
+// this sketch is will not run on smaller memory processors (e.g.
+// ESP8266, STM32F103 etc.)
+
 // The example png is encoded as ARGB 8 bits per pixel with indexed colour
 // It was created using GIMP and has a transparent background area.
 

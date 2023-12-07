@@ -3,6 +3,10 @@
 // ESP32, ESP8266). It renders a png file that is stored in LittleFS
 // using the PNGdec library (available via library manager).
 
+// Note: The PNGDEC required lots of RAM to work (~40kbytes) so
+// this sketch is will not run on smaller memory processors (e.g.
+// ESP8266, STM32F103 etc.)
+
 // The test image is in the sketch "data" folder (press Ctrl+K to see it).
 // You must upload the image to LittleFS using the Arduino IDE Tools Data
 // Upload menu option (you may need to install extra tools for that).
