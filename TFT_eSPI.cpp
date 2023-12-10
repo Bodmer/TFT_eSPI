@@ -603,7 +603,11 @@ void TFT_eSPI::begin(uint8_t tc)
  init(tc);
 }
 
-
+void TFT_eSPI::init(void (*write_dc)(uint8_t val), uint8_t tc)
+{
+  this->write_dc = write_dc;
+  init(tc);
+}
 /***************************************************************************************
 ** Function name:           init (tc is tab colour for ST7735 displays only)
 ** Description:             Reset, then initialise the TFT display registers

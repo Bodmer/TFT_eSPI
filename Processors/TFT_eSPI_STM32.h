@@ -218,8 +218,8 @@
 // Define the DC (TFT Data/Command or Register Select (RS))pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #if !defined (TFT_DC) || (TFT_DC < 0)
-  #define DC_C // No macro allocated so it generates no code
-  #define DC_D // No macro allocated so it generates no code
+  #define DC_C if (write_dc) write_dc(LOW)
+  #define DC_D if (write_dc) write_dc(HIGH)
   #undef  TFT_DC
 #else
   // Convert Arduino pin reference Dn or STM pin reference PXn to port and mask

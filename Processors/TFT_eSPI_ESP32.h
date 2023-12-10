@@ -145,8 +145,8 @@ SPI3_HOST = 2
 // Define the DC (TFT Data/Command or Register Select (RS))pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TFT_DC
-  #define DC_C // No macro allocated so it generates no code
-  #define DC_D // No macro allocated so it generates no code
+  #define DC_C if (write_dc) write_dc(LOW)
+  #define DC_D if (write_dc) write_dc(HIGH)
 #else
   #if defined (TFT_PARALLEL_8_BIT)
     // TFT_DC, by design, must be in range 0-31 for single register parallel write
