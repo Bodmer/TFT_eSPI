@@ -48,8 +48,8 @@
 // Define the DC (TFT Data/Command or Register Select (RS))pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TFT_DC
-  #define DC_C // No macro allocated so it generates no code
-  #define DC_D // No macro allocated so it generates no code
+  #define DC_C write_dc(LOW)
+  #define DC_D write_dc(HIGH)
 #else
   #if (TFT_DC == 16)
     #define DC_C digitalWrite(TFT_DC, LOW)
@@ -64,8 +64,8 @@
 // Define the CS (TFT chip select) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TFT_CS
-  #define CS_L // No macro allocated so it generates no code
-  #define CS_H // No macro allocated so it generates no code
+  #define CS_L write_cs(LOW);
+  #define CS_H write_cs(HIGH);
 #else
   #if (TFT_CS == 16)
     #define CS_L digitalWrite(TFT_CS, LOW)

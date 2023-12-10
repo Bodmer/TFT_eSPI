@@ -146,8 +146,8 @@
 // Define the DC (TFT Data/Command or Register Select (RS))pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TFT_DC
-  #define DC_C // No macro allocated so it generates no code
-  #define DC_D // No macro allocated so it generates no code
+  #define DC_C write_dc(LOW)
+  #define DC_D write_dc(HIGH)
 #else
   #if !defined (RP2040_PIO_INTERFACE)// SPI
     //#define DC_C sio_hw->gpio_clr = (1ul << TFT_DC)
@@ -179,8 +179,8 @@
 // Define the CS (TFT chip select) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TFT_CS
-  #define CS_L // No macro allocated so it generates no code
-  #define CS_H // No macro allocated so it generates no code
+  #define CS_L write_cs(LOW);
+  #define CS_H write_cs(HIGH);
 #else
   #if !defined (RP2040_PIO_INTERFACE) // SPI
     #if  defined (RPI_DISPLAY_TYPE) && !defined (MHS_DISPLAY_TYPE)
