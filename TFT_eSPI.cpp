@@ -262,6 +262,12 @@ void TFT_eSPI::begin(uint8_t tc)
  init(tc);
 }
 
+void TFT_eSPI::init(void (*write_dc)(uint8_t val), void (*write_cs)(uint8_t val), uint8_t tc)
+{
+  this->write_dc = write_dc;
+  this->write_cs = write_cs;
+  init(tc);
+}
 
 /***************************************************************************************
 ** Function name:           init (tc is tab colour for ST7735 displays only)
