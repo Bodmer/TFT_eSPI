@@ -56,7 +56,7 @@ void loop() {
   // For comaptibility with Adafruit_GFX library the text background is not plotted when using the print class
   // even if we specify it.
   tft.setTextColor(TFT_YELLOW, TFT_BLACK);
-  tft.setcursor(xpos, ypos);    // Set cursor near top left corner of screen
+  tft.setCursor(xpos, ypos);    // Set cursor near top left corner of screen
 
   tft.setTextFont(GLCD);     // Select the orginal small GLCD font by using NULL or GLCD
   tft.println();             // Move cursor down a line

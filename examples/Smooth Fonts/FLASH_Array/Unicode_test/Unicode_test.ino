@@ -77,7 +77,7 @@ void loop()
   tft.showFont(2000); // Note: This function moves the cursor position!
 
   tft.fillScreen(bg);
-  tft.setcursor(0,0);
+  tft.setCursor(0,0);
 
   tft.println(test1);
 
@@ -99,7 +99,7 @@ void loop()
   tft.showFont(2000); // Note: This function moves the cursor position!
 
   tft.fillScreen(bg);
-  tft.setcursor(0,0);
+  tft.setCursor(0,0);
 
   tft.setTextColor(TFT_CYAN, bg);
   tft.println(test2);
@@ -129,7 +129,7 @@ void loop()
 
   tft.fillScreen(bg);
   tft.setTextColor(TFT_GREEN, bg);
-  tft.setcursor(0,0);
+  tft.setCursor(0,0);
 
   tft.println("Konnichiwa");
   tft.println(test3);

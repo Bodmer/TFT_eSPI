@@ -66,7 +66,7 @@ void touch_calibrate()
 
   // Calibrate
   tft.fillScreen(TFT_BLACK);
-  tft.setcursor(20, 0);
+  tft.setCursor(20, 0);
   tft.setTextFont(2);
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);

@@ -31,7 +31,7 @@ void loop() {
   /* Dessine la fractale */
   draw_Julia(-0.8,+0.156,zoom);
   tft.fillRect(0, 0, 150, 20, TFT_BLACK);
-  tft.setcursor(0,15);
+  tft.setCursor(0,15);
   tft.setTextColor(TFT_WHITE);
   tft.print(" Zoom = ");
   tft.println(zoom);
@@ -46,7 +46,7 @@ void loop() {
 
 void draw_Julia(float c_r, float c_i, float zoom) {
 
-  tft.setcursor(0,0);
+  tft.setCursor(0,0);
   float new_r = 0.0, new_i = 0.0, old_r = 0.0, old_i = 0.0;
 
   /* Pour chaque pixel en X */

@@ -44,11 +44,11 @@ void loop() {
 
     // The standard AdaFruit font still works as before
     tft.setTextColor(TFT_BLACK); // Background is not defined so it is transparent
-    tft.setcursor (100, 5);
+    tft.setCursor (100, 5);
     tft.setTextFont(1);        // Select font 1 which is the Adafruit GLCD font
     tft.print("Original Adafruit font!");
 
-    // The new larger fonts do not need to use the .setcursor call, coords are embedded
+    // The new larger fonts do not need to use the .setCursor call, coords are embedded
     tft.setTextColor(TFT_BLACK); // Do not plot the background colour
     // Overlay the black text on top of the rainbow plot (the advantage of not drawing the background colour!)
     tft.drawCentreString("Font size 2", 160, 14, 2); // Draw text centre at position 120, 14 using font 2
@@ -69,15 +69,15 @@ void loop() {
     tft.setTextSize(1);           // We are using a text size multiplier of 1
 
     tft.setTextColor(TFT_BLACK);  // Set text colour to black, no background (so transparent)
-    tft.setcursor(76, 150, 4);    // Set cursor to x = 76, y = 150 and use font 4
+    tft.setCursor(76, 150, 4);    // Set cursor to x = 76, y = 150 and use font 4
     tft.println("Transparent...");  // As we use println, the cursor moves to the next line
 
-    tft.setcursor(70, 175);    // Set cursor to x = 70, y = 175
+    tft.setCursor(70, 175);    // Set cursor to x = 70, y = 175
     tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set text colour to white and background to black
     tft.println("White on black");
 
     tft.setTextFont(4);        // Select font 4 without moving cursor
-    tft.setcursor(00, 210);    // Set cursor to x = 90, y = 210 without changing the font
+    tft.setCursor(00, 210);    // Set cursor to x = 90, y = 210 without changing the font
     tft.setTextColor(TFT_WHITE);
     
     // By using the print class we can use all the formatting features like printing HEX

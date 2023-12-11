@@ -126,7 +126,7 @@ void testlines(uint16_t color) {
 }
 
 void testdrawtext(char *text, uint16_t color) {
-  tft.setcursor(0, 0);
+  tft.setCursor(0, 0);
   tft.setTextColor(color);
   tft.setTextWrap(true);
   tft.print(text);
@@ -215,7 +215,7 @@ void testroundrects() {
 void tftPrintTest() {
   tft.setTextWrap(false);
   tft.fillScreen(TFT_BLACK);
-  tft.setcursor(0, 30);
+  tft.setCursor(0, 30);
   tft.setTextColor(TFT_RED);
   tft.setTextSize(1);
   tft.println("Hello World!");
@@ -229,7 +229,7 @@ void tftPrintTest() {
   tft.setTextSize(4);
   tft.print(1234.567);
   delay(1500);
-  tft.setcursor(0, 0);
+  tft.setCursor(0, 0);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE);
   tft.setTextSize(0);

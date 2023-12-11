@@ -241,7 +241,7 @@ void touch_calibrate()
   } else {
     // data not valid so recalibrate
     tft.fillScreen(TFT_BLACK);
-    tft.setcursor(20, 0);
+    tft.setCursor(20, 0);
     tft.setTextFont(2);
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -275,7 +275,7 @@ void touch_calibrate()
 // Print something in the mini status bar
 void status(const char *msg) {
   tft.setTextPadding(240);
-  //tft.setcursor(STATUS_X, STATUS_Y);
+  //tft.setCursor(STATUS_X, STATUS_Y);
   tft.setTextColor(TFT_WHITE, TFT_DARKGREY);
   tft.setTextFont(0);
   tft.setTextDatum(TC_DATUM);

@@ -27,11 +27,11 @@ void setup(void) {
 void loop()
 {
   tft.fillRectHGradient(0, 0, 160, 50, TFT_MAGENTA, TFT_BLUE);
-  tft.setcursor(10,10);
+  tft.setCursor(10,10);
   tft.print("Horizontal gradient");
 
   tft.fillRectVGradient(0, 60, 160, 50, TFT_ORANGE, TFT_RED);
-  tft.setcursor(10,70);
+  tft.setCursor(10,70);
   tft.print("Vertical gradient");
 
   while(1) delay(100); // Wait here

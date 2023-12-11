@@ -109,7 +109,7 @@ void loop() {
   fillGradient(); // Put here after selecting the font so fontHeight() is already set
 
   tft.setTextColor(TFT_WHITE); // Background color is ignored in gradient area
-  tft.setcursor(0, 10); // Set cursor at top left of screen
+  tft.setCursor(0, 10); // Set cursor at top left of screen
 
   uint32_t t = millis();
   tft.println(" Ode to a small\n lump of green\n putty I found\n in my armpit\n one midsummer\n morning ");

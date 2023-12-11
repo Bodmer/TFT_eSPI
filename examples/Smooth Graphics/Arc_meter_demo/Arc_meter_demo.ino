@@ -172,7 +172,7 @@ void ringMeter(int x, int y, int r, int val, const char *units)
       if (val < 10) dx = ofr.getTextWidth("4");      // Adjust cursor x for 1 digit
       while ((uint8_t)str_buf[ptr] != 0) ptr++;      // Count the characters
       while (ptr) {
-        ofr.setcursor(w - dx - w / 20, -h / 2.5);    // Offset cursor position in sprite
+        ofr.setCursor(w - dx - w / 20, -h / 2.5);    // Offset cursor position in sprite
         ofr.rprintf(str_buf + ptr - 1);              // Draw a character
         str_buf[ptr - 1] = 0;                        // Replace character with a null
         dx += 1 + w / 3;                             // Adjust cursor for next character
@@ -185,7 +185,7 @@ void ringMeter(int x, int y, int r, int val, const char *units)
       ofr.setDrawer(tft);
       ofr.setFontColor(TFT_GOLD, DARKER_GREY);
       ofr.setFontSize(r / 2.0);
-      ofr.setcursor(x, y + (r * 0.4));
+      ofr.setCursor(x, y + (r * 0.4));
       ofr.cprintf("Watts");
     }
 #endif

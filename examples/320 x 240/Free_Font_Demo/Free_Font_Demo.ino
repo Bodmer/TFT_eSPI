@@ -70,7 +70,7 @@ void loop() {
   // For comaptibility with Adafruit_GFX library the text background is not plotted when using the print class
   // even if we specify it.
   tft.setTextColor(TFT_YELLOW);
-  tft.setcursor(xpos, ypos);    // Set cursor near top left corner of screen
+  tft.setCursor(xpos, ypos);    // Set cursor near top left corner of screen
 
   tft.setFreeFont(TT1);     // Select the orginal small TomThumb font
   tft.println();             // Move cursor down a line

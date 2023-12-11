@@ -38,7 +38,7 @@ void setup(void) {
 void loop() {
 
   tft.fillScreen(TFT_BLUE);
-  tft.setcursor(0, 0, 2);
+  tft.setCursor(0, 0, 2);
   // Set the font colour to be white with a black background
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   // We can now plot text on screen using the "print" class

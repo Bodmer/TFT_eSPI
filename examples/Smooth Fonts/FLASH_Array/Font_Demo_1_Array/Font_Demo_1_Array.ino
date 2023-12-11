@@ -61,7 +61,7 @@ void loop() {
   tft.setTextColor(TFT_WHITE, TFT_BLACK); // Set the font colour AND the background colour
                                           // so the anti-aliasing works
 
-  tft.setcursor(0, 0); // Set cursor at top left of screen
+  tft.setCursor(0, 0); // Set cursor at top left of screen
 
 
   // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -102,7 +102,7 @@ void loop() {
 
   // Get ready for the next demo while we have this font loaded
   tft.fillScreen(TFT_BLACK);
-  tft.setcursor(0, 0); // Set cursor at top left of screen
+  tft.setCursor(0, 0); // Set cursor at top left of screen
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.println("Wrong and right ways to");
   tft.println("print changing values...");
@@ -121,17 +121,17 @@ void loop() {
   // Draw changing numbers - does not work unless a filled rectangle is drawn over the old text
   for (int i = 0; i <= 99; i++)
   {
-    tft.setcursor(50, 50);
+    tft.setCursor(50, 50);
     tft.setTextColor(TFT_GREEN, TFT_BLACK); // TFT_BLACK is used for anti-aliasing only
                                             // By default background fill is off
     tft.print("      "); // Overprinting old number with spaces DOES NOT WORK!
-    tft.setcursor(50, 50);
+    tft.setCursor(50, 50);
     tft.print(i / 10.0, 1);
 
     // Adding a parameter "true" to the setTextColor() function fills character background
     // This extra parameter is only for smooth fonts!
     tft.setTextColor(TFT_GREEN, TFT_BLACK, true);
-    tft.setcursor(50, 90);
+    tft.setCursor(50, 90);
     tft.print(i / 10.0, 1);
     
     delay (200);
@@ -147,7 +147,7 @@ void loop() {
   
   tft.setTextColor(TFT_YELLOW, TFT_BLACK); // Change the font colour and the background colour
 
-  tft.setcursor(0, 0); // Set cursor at top left of screen
+  tft.setCursor(0, 0); // Set cursor at top left of screen
 
   tft.println("Large font!");
 

@@ -11,7 +11,7 @@ void setup(void) {
 
 void loop() {
   tft.fillScreen(TFT_BLACK);
-  tft.setcursor(0, 0);
+  tft.setCursor(0, 0);
 
   // Draw some random smooth rounded rectangles
   for (int i = 0; i < 20; i++)
@@ -30,7 +30,7 @@ void loop() {
   delay(2000);
 
   tft.fillScreen(TFT_BLACK);
-  tft.setcursor(0, 0);
+  tft.setCursor(0, 0);
 
   // Draw some random minimum thickness smooth rounded rectangles
   for (int i = 0; i < 20; i++)

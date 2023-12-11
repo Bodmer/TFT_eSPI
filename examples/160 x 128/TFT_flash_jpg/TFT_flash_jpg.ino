@@ -198,7 +198,7 @@ void jpegInfo() {
 // The Due will work fine with the HX8357_Due library.
 
 void showTime(uint32_t msTime) {
-  //tft.setcursor(0, 0);
+  //tft.setCursor(0, 0);
   //tft.setTextFont(1);
   //tft.setTextSize(2);
   //tft.setTextColor(TFT_WHITE, TFT_BLACK);
