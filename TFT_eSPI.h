@@ -420,6 +420,18 @@ int16_t tch_spi_freq;// Touch controller read/write SPI frequency
 **                         Section 8: Class member and support functions
 ***************************************************************************************/
 
+// Macro definitions for manipulating the least significant bit of a pointer
+// These macros are used to utilize the pointer's alignment property to carry an additional bit of information
+
+// Set the least significant bit of a pointer to carry extra information
+#define SET_PTR_FLAG(ptr) ((void*)((uintptr_t)(ptr) | 0x1))
+
+// Clear the least significant bit of a pointer to retrieve the original pointer
+#define CLEAR_PTR_FLAG(ptr) ((void*)((uintptr_t)(ptr) & ~((uintptr_t)0x1)))
+
+// Check if the least significant bit of a pointer is set
+#define CHECK_PTR_FLAG(ptr) (((uintptr_t)(ptr)) & 0x1)
+
 // Callback prototype for smooth font pixel colour read
 typedef uint16_t (*getColorCallback)(uint16_t x, uint16_t y);
 
@@ -836,10 +848,11 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   uint8_t  decoderState = 0;   // UTF8 decoder state        - not for user access
   uint16_t decoderBuffer;      // Unicode code-point buffer - not for user access
 
- //--------------------------------------- private ------------------------------------//
- private:
   void     (*write_dc)(uint8_t val);
   void     (*write_cs)(uint8_t val);
+
+ //--------------------------------------- private ------------------------------------//
+ private:
            // Legacy begin and end prototypes - deprecated TODO: delete
   void     spi_begin();
   void     spi_end();

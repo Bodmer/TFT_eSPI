@@ -655,7 +655,7 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 
   memset(&trans, 0, sizeof(spi_transaction_t));
 
-  trans.user = (void *)1;
+  trans.user = SET_PTR_FLAG(this);
   trans.tx_buffer = image;  //finally send the line data
   trans.length = len * 16;        //Data length, in bits
   trans.flags = 0;                //SPI_TRANS_USE_TXDATA flag
@@ -687,7 +687,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   memset(&trans, 0, sizeof(spi_transaction_t));
 
-  trans.user = (void *)1;
+  trans.user = SET_PTR_FLAG(this);
   trans.tx_buffer = image;   //Data pointer
   trans.length = len * 16;   //Data length, in bits
   trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
@@ -763,7 +763,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   memset(&trans, 0, sizeof(spi_transaction_t));
 
-  trans.user = (void *)1;
+  trans.user = SET_PTR_FLAG(this);
   trans.tx_buffer = buffer;  //finally send the line data
   trans.length = len * 16;   //Data length, in bits
   trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
@@ -787,8 +787,16 @@ extern "C" void dc_callback();
 
 void IRAM_ATTR dc_callback(spi_transaction_t *spi_tx)
 {
-  if ((bool)spi_tx->user) {DC_D;}
+  // check if ptr flag is set
+  uintptr_t flag = CHECK_PTR_FLAG(spi_tx->user);
+#ifndef TFT_DC
+  TFT_eSPI* this_ptr = (TFT_eSPI*) CLEAR_PTR_FLAG(spi_tx->user);
+  if ((bool)flag) {this_ptr->DC_D;}
+  else {this_ptr->DC_C;}
+#else
+  if ((bool)flag) {DC_D;}
   else {DC_C;}
+#endif
 }
 
 /***************************************************************************************
