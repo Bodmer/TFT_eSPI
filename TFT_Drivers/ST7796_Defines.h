@@ -12,6 +12,12 @@
 #define TFT_NOP     0x00
 #define TFT_SWRST   0x01
 
+#define TFT_INVOFF  0x20
+#define TFT_INVON   0x21
+
+#define TFT_DISPOFF 0x28
+#define TFT_DISPON  0x29
+
 #define TFT_CASET   0x2A
 #define TFT_PASET   0x2B
 #define TFT_RAMWR   0x2C
@@ -35,10 +41,6 @@
 #else
   #define TFT_MAD_COLOR_ORDER TFT_MAD_BGR
 #endif
-
-#define TFT_INVOFF  0x20
-#define TFT_INVON   0x21
-
 
 // ST7796 specific commands
 #define ST7796_NOP     0x00

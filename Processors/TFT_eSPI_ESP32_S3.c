@@ -843,6 +843,10 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .sclk_io_num = TFT_SCLK,
     .quadwp_io_num = -1,
     .quadhd_io_num = -1,
+    .data4_io_num = -1,
+    .data5_io_num = -1,
+    .data6_io_num = -1,
+    .data7_io_num = -1,
     .max_transfer_sz = 65536, // ESP32 S3 max size is 64Kbytes
     .flags = 0,
     .intr_flags = 0

@@ -2097,7 +2097,7 @@ void TFT_eSPI::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint1
   if (_vpOoB || w < 1 || h < 1) return;
 
   // To simplify mask handling the window clipping is done by the pushImage function
-  // Each mask image line assumed to be padded to and integer number of bytes & padding bits are 0
+  // Each mask image line assumed to be padded to an integer number of bytes & padding bits are 0
 
   begin_tft_write();
   inTransaction = true;
@@ -4966,7 +4966,10 @@ uint16_t TFT_eSPI::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining)
   }
 
   // 21-bit Unicode not supported so fall-back to extended ASCII
-  // if ((c & 0xF8) == 0xF0) return c;
+  // if (((c & 0xF8) == 0xF0) && (remaining > 3)) {
+  // c = ((c & 0x07) << 18) | ((buf[(*index)++] & 0x03F) << 12);
+  // c |= ((buf[(*index)++] & 0x3F) << 6);
+  // return c | ((buf[(*index)++] & 0x3F));
 
   return c; // fall-back to extended ASCII
 }
