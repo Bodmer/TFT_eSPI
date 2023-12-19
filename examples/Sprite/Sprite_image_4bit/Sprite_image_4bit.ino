@@ -59,7 +59,7 @@ void setup()
   // Initialise the TFT registers
   tft.init();
   
-  spr.setcolorDepth(4);
+  spr.setColorDepth(4);
 
   // Create a sprite of defined size
   spr.createSprite(WIDTH, HEIGHT);

@@ -10,7 +10,7 @@
   that will return the pixel color at a position x,y on the TFT. In this
   sketch that function is called gradientColor, so this line is included:
 
-    tft.setcallback(gradientColor);
+    tft.setCallback(gradientColor);
 
   TFT_eSPI will call this function during the rendering of the anti-aliased
   font to blend the edges of each character with the returned color.
@@ -73,8 +73,8 @@ void setup(void) {
 
   tft.begin();
 
-  tft.setcallback(gradientColor); // Switch on color callback for anti-aliased fonts
-  //tft.setcallback(nullptr);     // Switch off callback (off by default)
+  tft.setCallback(gradientColor); // Switch on color callback for anti-aliased fonts
+  //tft.setCallback(nullptr);     // Switch off callback (off by default)
 
   tft.setRotation(1);
 

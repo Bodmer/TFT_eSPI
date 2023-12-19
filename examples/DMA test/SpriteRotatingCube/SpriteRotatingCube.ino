@@ -147,8 +147,8 @@ void setup() {
   ypos = (tft.height() - IHEIGHT) / 2;
 
   // Define cprite colour depth
-  spr[0].setcolorDepth(COLOR_DEPTH);
-  spr[1].setcolorDepth(COLOR_DEPTH);
+  spr[0].setColorDepth(COLOR_DEPTH);
+  spr[1].setColorDepth(COLOR_DEPTH);
 
   // Create the 2 sprites
   sprPtr[0] = (uint16_t*)spr[0].createSprite(IWIDTH, IHEIGHT);

@@ -70,7 +70,7 @@ void setup()   {
   TJpgDec.setSwapBytes(true);
 
   // The jpeg decoder must be given the exact name of the rendering function above
-  TJpgDec.setcallback(tft_output);
+  TJpgDec.setCallback(tft_output);
 
   tft.begin();
   tft.setRotation(0);
@@ -128,7 +128,7 @@ void loop() {
 // =======================================================================================
 void createNeedle(void)
 {
-  needle.setcolorDepth(16);
+  needle.setColorDepth(16);
   needle.createSprite(NEEDLE_WIDTH, NEEDLE_LENGTH);  // create the needle Sprite
 
   needle.fillSprite(TFT_BLACK); // Fill with black

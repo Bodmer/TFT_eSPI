@@ -10,7 +10,7 @@
   that will return the pixel color at a position x,y on the TFT. In this
   sketch that function is called pixelColor, so this line is included:
 
-    tft.setcallback(pixelColor);
+    tft.setCallback(pixelColor);
 
   TFT_eSPI will call this function during the rendering of the anti-aliased
   font and use it to blend the edges of each character with the screen color.
@@ -52,8 +52,8 @@ void setup(void) {
 
   tft.begin();
 
-  tft.setcallback(pixelColor);  // The callback is only used during font rendering
-  //tft.setcallback(nullptr);   // Switch off callback (off by default)
+  tft.setCallback(pixelColor);  // The callback is only used during font rendering
+  //tft.setCallback(nullptr);   // Switch off callback (off by default)
 
   tft.setRotation(1);
 

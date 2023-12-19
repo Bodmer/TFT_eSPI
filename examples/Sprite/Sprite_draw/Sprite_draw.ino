@@ -47,7 +47,7 @@ void setup()
   tft.init();
 
   // Optionally set colour depth to 8 or 16 bits, default is 16 if not specified
-  // spr.setcolorDepth(8);
+  // spr.setColorDepth(8);
 
   // Create a sprite of defined size
   spr.createSprite(WIDTH, HEIGHT);

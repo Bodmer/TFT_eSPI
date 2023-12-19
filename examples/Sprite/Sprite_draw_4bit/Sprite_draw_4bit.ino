@@ -50,7 +50,7 @@ void setup()
   tft.init();
 
   // Set the sprite colour depth to 4
-  spr.setcolorDepth(4);
+  spr.setColorDepth(4);
 
   // Create a sprite of defined size
   spr.createSprite(WIDTH, HEIGHT);

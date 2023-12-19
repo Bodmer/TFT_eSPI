@@ -74,7 +74,7 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
 
   // Create the clock face sprite
-  //face.setcolorDepth(8); // 8-bit will work, but reduces effectiveness of anti-aliasing
+  //face.setColorDepth(8); // 8-bit will work, but reduces effectiveness of anti-aliasing
   face.createSprite(FACE_W, FACE_H);
 
   // Only 1 font used in the sprite, so can remain loaded
@@ -138,7 +138,7 @@ static void renderFace(float t) {
 
   // Draw digits around clock perimeter
   for (uint32_t h = 1; h <= 12; h++) {
-    getcoord(CLOCK_R, CLOCK_R, &xp, &yp, dialOffset, h * 360.0 / 12);
+    getCoord(CLOCK_R, CLOCK_R, &xp, &yp, dialOffset, h * 360.0 / 12);
     face.drawNumber(h, xp, 2 + yp);
   }
 
@@ -147,12 +147,12 @@ static void renderFace(float t) {
   face.drawString("TFT_eSPI", CLOCK_R, CLOCK_R * 0.75);
 
   // Draw minute hand
-  getcoord(CLOCK_R, CLOCK_R, &xp, &yp, M_HAND_LENGTH, m_angle);
+  getCoord(CLOCK_R, CLOCK_R, &xp, &yp, M_HAND_LENGTH, m_angle);
   face.drawWideLine(CLOCK_R, CLOCK_R, xp, yp, 6.0f, CLOCK_FG);
   face.drawWideLine(CLOCK_R, CLOCK_R, xp, yp, 2.0f, CLOCK_BG);
 
   // Draw hour hand
-  getcoord(CLOCK_R, CLOCK_R, &xp, &yp, H_HAND_LENGTH, h_angle);
+  getCoord(CLOCK_R, CLOCK_R, &xp, &yp, H_HAND_LENGTH, h_angle);
   face.drawWideLine(CLOCK_R, CLOCK_R, xp, yp, 6.0f, CLOCK_FG);
   face.drawWideLine(CLOCK_R, CLOCK_R, xp, yp, 2.0f, CLOCK_BG);
 
@@ -160,7 +160,7 @@ static void renderFace(float t) {
   face.fillSmoothCircle(CLOCK_R, CLOCK_R, 4, CLOCK_FG);
 
   // Draw cecond hand
-  getcoord(CLOCK_R, CLOCK_R, &xp, &yp, S_HAND_LENGTH, s_angle);
+  getCoord(CLOCK_R, CLOCK_R, &xp, &yp, S_HAND_LENGTH, s_angle);
   face.drawWedgeLine(CLOCK_R, CLOCK_R, xp, yp, 2.5, 1.0, SECCOND_FG);
   face.pushSprite(5, 5, TFT_TRANSPARENT);
 }
@@ -170,7 +170,7 @@ static void renderFace(float t) {
 // =========================================================================
 // Coordinates are returned to caller via the xp and yp pointers
 #define DEG2RAD 0.0174532925
-void getcoord(int16_t x, int16_t y, float *xp, float *yp, int16_t r, float a)
+void getCoord(int16_t x, int16_t y, float *xp, float *yp, int16_t r, float a)
 {
   float sx1 = cos( (a - 90) * DEG2RAD);
   float sy1 = sin( (a - 90) * DEG2RAD);

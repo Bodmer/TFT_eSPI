@@ -51,7 +51,7 @@ void setup(void) {
 
   tft.setRotation(1);
 
-  spr.setcolorDepth(16); // 16-bit colour needed to show antialiased fonts
+  spr.setColorDepth(16); // 16-bit colour needed to show antialiased fonts
 
   if (!LittleFS.begin()) {
     Serial.println("Flash FS initialisation failed!");
@@ -201,7 +201,7 @@ void button(int x, int y, int num )
   #define IHEIGHT 25
 
   // Create a 16-bit sprite 40 pixels wide, 25 high (2000 bytes of RAM needed)
-  spr.setcolorDepth(16);
+  spr.setColorDepth(16);
   spr.createSprite(IWIDTH, IHEIGHT);
 
   // Fill it with black (this will be the transparent colour this time)

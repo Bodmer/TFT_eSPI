@@ -76,7 +76,7 @@ void drawStar(int x, int y, int star_color)
 
   // Create an 1 bit (2 colour) sprite 70x80 pixels (uses 70*80/8 = 700 bytes of RAM)
   // Colour depths of 8 bits per pixel and 16 bits are also supported.
-  img.setcolorDepth(BITS_PER_PIXEL);         // Set colour depth first
+  img.setColorDepth(BITS_PER_PIXEL);         // Set colour depth first
   img.createSprite(70, 80);                  // then create the sprite
 
   // Fill Sprite with the colour that will be defined later as "transparent"

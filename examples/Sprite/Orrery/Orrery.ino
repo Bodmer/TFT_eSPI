@@ -90,7 +90,7 @@ void loop() {
 // =========================================================================
 // Coordinates are returned to caller via the xp and yp pointers
 #define DEG2RAD 0.0174532925
-void getcoord(int x, int y, int *xp, int *yp, int r, float a)
+void getCoord(int x, int y, int *xp, int *yp, int r, float a)
 {
   float sx1 = cos( -a * DEG2RAD );
   float sy1 = sin( -a * DEG2RAD );
@@ -131,10 +131,10 @@ int plot_planets(void)
   {
     ang = Astronomy_EclipticLongitude(body[i], astro_time);
 
-    int x1 = 0; // getcoord() will update these
+    int x1 = 0; // getCoord() will update these
     int y1 = 0;
 
-    getcoord(0, 0, &x1, &y1, i * 28, ang.angle); // Get x1 ,y1
+    getCoord(0, 0, &x1, &y1, i * 28, ang.angle); // Get x1 ,y1
 
     img.fillSprite(TFT_TRANSPARENT);
     img.fillCircle(9, 9, 9, TFT_BLACK);
@@ -149,7 +149,7 @@ int plot_planets(void)
       int xm = 0;
       int ym = 0;
 
-      getcoord(x1, y1, &xm, &ym, 15, 180 + ang.angle + mang.angle); // Get x1 ,y1
+      getCoord(x1, y1, &xm, &ym, 15, 180 + ang.angle + mang.angle); // Get x1 ,y1
 
       img.fillSprite(TFT_TRANSPARENT);
       img.fillCircle(9, 9, 7, TFT_BLACK);

@@ -59,7 +59,7 @@ void loop() {
   drawX(xw, yh);            // Show where screen pivot is
 
   // Create the Sprite
-  spr.setcolorDepth(8);      // Create an 8bpp Sprite of 60x30 pixels
+  spr.setColorDepth(8);      // Create an 8bpp Sprite of 60x30 pixels
   spr.createSprite(64, 30);  // 8bpp requires 64 * 30 = 1920 bytes
   spr.setPivot(32, 55);      // Set pivot relative to top left corner of Sprite
   spr.fillSprite(TFT_BLACK); // Fill the Sprite with black
@@ -120,7 +120,7 @@ void loop() {
   
   spr.deleteSprite();
 
-  spr.setcolorDepth(8);         // Create a 8bpp Sprite
+  spr.setColorDepth(8);         // Create a 8bpp Sprite
   spr.createSprite(40, 30);     // Create a new Sprite 40x30
   spr.setPivot(20, 70);         // Set Sprite pivot at 20,80
 

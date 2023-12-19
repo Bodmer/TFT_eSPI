@@ -84,7 +84,7 @@ void setup() {
 
   Serial.println(" SPIFFS initialisation OK");
 
-  frame.setcolorDepth(1); // Must set the bits per pixel to 1 for ePaper displays
+  frame.setColorDepth(1); // Must set the bits per pixel to 1 for ePaper displays
                           // Set bit depth BEFORE creating Sprite, default is 16!
 
   // Create a frame buffer in RAM of defined size and save the pointer to it

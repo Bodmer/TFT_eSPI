@@ -63,7 +63,7 @@ void loop() {
   int w1 = r1 / 25;
   int w2 = r2 / 20;
 
-  // The following will be updated by the getcoord function
+  // The following will be updated by the getCoord function
   float px1 = 0.0;
   float py1 = 0.0;
   float px2 = 0.0;
@@ -72,7 +72,7 @@ void loop() {
   // Wedge line function, an anti-aliased wide line between 2 points, with different
   // line widths at the two ends. Background colour is black.
   for (int angle = -130; angle <= 130; angle += 10) {
-    getcoord(cx, cy, &px1, &py1, &px2, &py2, r1, r2, angle);
+    getCoord(cx, cy, &px1, &py1, &px2, &py2, r1, r2, angle);
     uint16_t colour = rainbow(map(angle, -130, 130, 0, 127));
     if (angle > 45) colour = TFT_DARKGREY;
     tft.drawWedgeLine(px1, py1, px2, py2, w1, w2, colour, TFT_BLACK);
@@ -82,7 +82,7 @@ void loop() {
   tft.fillSmoothCircle(cx, cy, r1 - 8, TFT_MAROON, TFT_BLACK);
 
   // Draw a white dial pointer using wedge line function
-  getcoord(cx, cy, &px1, &py1, &px2, &py2, 0, r1 - 10, 45);
+  getCoord(cx, cy, &px1, &py1, &px2, &py2, 0, r1 - 10, 45);
   // Magenta wedge line pointer on red background
   // Line tapers from radius 5 to zero
   tft.drawWedgeLine(cx, cy, px2, py2, 5, 0, TFT_WHITE, TFT_MAROON);
@@ -133,7 +133,7 @@ void loop() {
 // =========================================================================
 // Coordinates are returned to caller via the xp and yp pointers
 #define DEG2RAD 0.0174532925
-void getcoord(int16_t x, int16_t y, float *xp1, float *yp1, float *xp2, float *yp2, int16_t r1, int16_t r2, float a)
+void getCoord(int16_t x, int16_t y, float *xp1, float *yp1, float *xp2, float *yp2, int16_t r1, int16_t r2, float a)
 {
   float sx = cos( (a - 90) * DEG2RAD);
   float sy = sin( (a - 90) * DEG2RAD);

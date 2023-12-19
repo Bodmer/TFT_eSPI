@@ -41,7 +41,7 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
 
   // Create a sprite for the graph
-  graph1.setcolorDepth(8);
+  graph1.setColorDepth(8);
   graph1.createSprite(128, 61);
   graph1.fillSprite(TFT_BLUE); // Note: Sprite is filled with black when created
 
@@ -51,7 +51,7 @@ void setup() {
   //graph1.setScrollRect(64, 0, 64, 61, TFT_DARKGREY);  // Try this line to change the graph scroll area
 
   // Create a sprite for the scrolling numbers
-  stext1.setcolorDepth(8);
+  stext1.setColorDepth(8);
   stext1.createSprite(32, 64);
   stext1.fillSprite(TFT_BLUE); // Fill sprite with blue
   stext1.setScrollRect(0, 0, 32, 64, TFT_BLUE);     // here we set scroll gap fill color to blue
@@ -59,7 +59,7 @@ void setup() {
   stext1.setTextDatum(BR_DATUM);  // Bottom right coordinate datum
 
   // Create a sprite for Hello World
-  stext2.setcolorDepth(8);
+  stext2.setColorDepth(8);
   stext2.createSprite(80, 16);
   stext2.fillSprite(TFT_DARKGREY);
   stext2.setScrollRect(0, 0, 40, 16, TFT_DARKGREY); // Scroll the "Hello" in the first 40 pixels
