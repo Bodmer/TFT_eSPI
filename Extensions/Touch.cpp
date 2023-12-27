@@ -4,7 +4,7 @@
 // Define TOUCH_CS is the user setup file to enable this code for SPI mode
 // Define TOUCH_ANALOG is the user setup file to enable this code for raw ADC mode,
 // an additional definitions for TOUCH_ANALOG_XP TOUCH_ANALOG_YM TOUCH_ANALOG_XM
-// and TOUCH_ANALOG_YP=4 is required.
+// and TOUCH_ANALOG_YP is required.
 
 // A demo is provided in examples Generic folder
 
