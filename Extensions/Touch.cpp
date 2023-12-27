@@ -471,13 +471,6 @@ void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t 
     parameters[3] = touchCalibration_y1;
     parameters[4] = touchCalibration_rotate | (touchCalibration_invert_x <<1) | (touchCalibration_invert_y <<2);
   }
-  Serial.printf("params: x0=% 4d x1=% 4d y0=% 4d y1=% 4d flags:%02x",
-  touchCalibration_x0,
-  touchCalibration_x1,
-  touchCalibration_y0,
-  touchCalibration_y1,
-  touchCalibration_rotate | (touchCalibration_invert_x <<1) | (touchCalibration_invert_y <<2)
-  );
 }
 
 
