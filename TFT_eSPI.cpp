@@ -6133,9 +6133,10 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#ifdef TOUCH_CS
+#if defined(TOUCH_CS) ||  defined(TOUCH_ANALOG)
   #include "Extensions/Touch.cpp"
 #endif
+
 
 #include "Extensions/Button.cpp"
 

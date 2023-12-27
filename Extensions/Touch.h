@@ -23,6 +23,7 @@
   void     setTouch(uint16_t *data);
 
  private:
+ #ifdef TOUCH_CS
            // Legacy support only - deprecated TODO: delete
   void     spi_begin_touch();
   void     spi_end_touch();
@@ -30,7 +31,7 @@
            // Handlers for the touch controller bus settings
   inline void begin_touch_read_write() __attribute__((always_inline));
   inline void end_touch_read_write()   __attribute__((always_inline));
-
+#endif
            // Private function to validate a touch, allow settle time and reduce spurious coordinates
   uint8_t  validTouch(uint16_t *x, uint16_t *y, uint16_t threshold = 600);
 

@@ -1,7 +1,10 @@
 // The following touch screen support code by maxpautsch was merged 1/10/17
 // https://github.com/maxpautsch
 
-// Define TOUCH_CS is the user setup file to enable this code
+// Define TOUCH_CS is the user setup file to enable this code for SPI mode
+// Define TOUCH_ANALOG is the user setup file to enable this code for raw ADC mode,
+// an additional definitions for TOUCH_ANALOG_XP TOUCH_ANALOG_YM TOUCH_ANALOG_XM
+// and TOUCH_ANALOG_YP=4 is required.
 
 // A demo is provided in examples Generic folder
 
@@ -15,6 +18,8 @@
   #define Z_THRESHOLD 350 // Touch pressure threshold for validating touches
 #endif
 
+
+#ifdef TOUCH_CS
 /***************************************************************************************
 ** Function name:           begin_touch_read_write - was spi_begin_touch
 ** Description:             Start transaction and select touch controller
@@ -116,7 +121,148 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
 
   return (uint16_t)tz;
 }
+#endif
 
+
+#ifdef TOUCH_ANALOG
+
+#if !defined(TOUCH_ANALOG_XP) || !defined(TOUCH_ANALOG_YM) || !defined(TOUCH_ANALOG_XM) || !defined(TOUCH_ANALOG_YP) 
+#error >>>>------>> Not all touch pins are defined. Definitions should be declared for: TOUCH_ANALOG_XP TOUCH_ANALOG_YM TOUCH_ANALOG_XM TOUCH_ANALOG_YP and optional TOUCH_ANALOG_AXM TOUCH_ANALOG_AYP
+#endif
+
+#ifndef TOUCH_ADC_MAX
+#if defined(ESP32) || defined(__arm__) 
+#define TOUCH_ADC_MAX 4095  // maximum value for ESP32 and most of ARMs ADC (default 11db, 12 bits)
+#else
+#define TOUCH_ADC_MAX 1023  // Arduino
+#endif
+#endif
+
+// oversampling if required
+#ifndef TOUCH_NUMSAMPLES
+#define TOUCH_NUMSAMPLES 2
+#endif
+
+#define NOISE_LEVEL 4  // Allow small amount of measurement noise
+
+// for some ESP32 boards ADC pins requires other GPIO's
+#ifndef TOUCH_ANALOG_AXM
+#define TOUCH_ANALOG_AXM TOUCH_ANALOG_XM
+#endif
+
+#ifndef TOUCH_ANALOG_AYP
+#define TOUCH_ANALOG_AYP TOUCH_ANALOG_YP
+#endif
+
+uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
+  int samples[TOUCH_NUMSAMPLES];
+  uint8_t i;
+  bool valid = true;
+
+  pinMode(TOUCH_ANALOG_YP, INPUT);
+  pinMode(TOUCH_ANALOG_YM, INPUT);
+  pinMode(TOUCH_ANALOG_XP, OUTPUT);
+  pinMode(TOUCH_ANALOG_XM, OUTPUT);
+
+  digitalWrite(TOUCH_ANALOG_XP, HIGH);
+  digitalWrite(TOUCH_ANALOG_XM, LOW);
+
+  delayMicroseconds(20); // Fast ARM chips need to allow voltages to settle
+
+  for (i=0; i<TOUCH_NUMSAMPLES; i++) {
+    samples[i] = analogRead(TOUCH_ANALOG_AYP);
+  }
+
+#if TOUCH_NUMSAMPLES > 2
+  insert_sort(samples, TOUCH_NUMSAMPLES);
+#endif
+#if TOUCH_NUMSAMPLES == 2
+  // Allow small amount of measurement noise, because capacitive
+  // coupling to a TFT display's signals can induce some noise.
+  if (samples[0] - samples[1] < -NOISE_LEVEL || samples[0] - samples[1] > NOISE_LEVEL) {
+    valid = false;
+  } else {
+    samples[1] = (samples[0] + samples[1]) >> 1; // average 2 samples
+  }
+#endif
+
+  *x = (TOUCH_ADC_MAX-samples[TOUCH_NUMSAMPLES/2]);
+
+   pinMode(TOUCH_ANALOG_XP, INPUT);
+   pinMode(TOUCH_ANALOG_XM, INPUT);
+   pinMode(TOUCH_ANALOG_YP, OUTPUT);
+   pinMode(TOUCH_ANALOG_YM, OUTPUT);
+
+   digitalWrite(TOUCH_ANALOG_YM, LOW);
+   digitalWrite(TOUCH_ANALOG_YP, HIGH);
+
+   delayMicroseconds(20); // Fast ARM chips need to allow voltages to settle
+
+  for (i=0; i<TOUCH_NUMSAMPLES; i++) {
+    samples[i] = analogRead(TOUCH_ANALOG_AXM);
+  }
+
+#if TOUCH_NUMSAMPLES > 2
+  insert_sort(samples, TOUCH_NUMSAMPLES);
+#endif
+#if TOUCH_NUMSAMPLES == 2
+  // Allow small amount of measurement noise, because capacitive
+  // coupling to a TFT display's signals can induce some noise.
+  if (samples[0] - samples[1] < -NOISE_LEVEL || samples[0] - samples[1] > NOISE_LEVEL) {
+    valid = false;
+  } else {
+    samples[1] = (samples[0] + samples[1]) >> 1; // average 2 samples
+  }
+#endif
+
+  *y = (TOUCH_ADC_MAX-samples[TOUCH_NUMSAMPLES/2]);
+
+  gpioMode(TOUCH_ANALOG_XP, OUTPUT);
+  gpioMode(TOUCH_ANALOG_XM, OUTPUT);
+  digitalWrite(TOUCH_ANALOG_YM, HIGH);
+
+  delayMicroseconds(20);
+
+  return valid;
+}
+
+uint16_t TFT_eSPI::getTouchRawZ(void){
+    // Z sample request
+  int16_t tz = TOUCH_ADC_MAX;
+
+  // Set X+ to ground
+  pinMode(TOUCH_ANALOG_XP, OUTPUT);
+  digitalWrite(TOUCH_ANALOG_XP, LOW);
+  
+  // Set Y- to VCC
+  pinMode(TOUCH_ANALOG_YM, OUTPUT);
+  digitalWrite(TOUCH_ANALOG_YM, HIGH); 
+  
+  // Hi-Z X- and Y+
+  digitalWrite(TOUCH_ANALOG_XM, LOW);
+  pinMode(TOUCH_ANALOG_XM, INPUT);
+  digitalWrite(TOUCH_ANALOG_YP, LOW);
+  pinMode(TOUCH_ANALOG_YP, INPUT);
+
+  delayMicroseconds(20);
+  
+  int z1 = analogRead(TOUCH_ANALOG_AXM); 
+  int z2 = analogRead(TOUCH_ANALOG_AYP);
+  tz = (TOUCH_ADC_MAX-(z2-z1));
+
+  if (tz == TOUCH_ADC_MAX) tz = 0;
+  //Serial.printf("z1=% 4d, z2=% 4d, tz=% 4d\r\n", z1, z2, tz);
+
+  gpioMode(TOUCH_ANALOG_YP, OUTPUT);
+  digitalWrite(TOUCH_ANALOG_XP, HIGH);
+  gpioMode(TOUCH_ANALOG_XM, OUTPUT);
+
+  delayMicroseconds(20);
+
+  return (uint16_t)tz;
+}
+
+#endif
 /***************************************************************************************
 ** Function name:           validTouch
 ** Description:             read validated position. Return false if not pressed. 
@@ -176,7 +322,7 @@ uint8_t TFT_eSPI::getTouch(uint16_t *x, uint16_t *y, uint16_t threshold){
   uint8_t valid = 0;
   while (n--)
   {
-    if (validTouch(&x_tmp, &y_tmp, threshold)) valid++;;
+    if (validTouch(&x_tmp, &y_tmp, threshold)) valid++;
   }
 
   if (valid<1) { _pressTime = 0; return false; }
@@ -325,6 +471,13 @@ void TFT_eSPI::calibrateTouch(uint16_t *parameters, uint32_t color_fg, uint32_t 
     parameters[3] = touchCalibration_y1;
     parameters[4] = touchCalibration_rotate | (touchCalibration_invert_x <<1) | (touchCalibration_invert_y <<2);
   }
+  Serial.printf("params: x0=% 4d x1=% 4d y0=% 4d y1=% 4d flags:%02x",
+  touchCalibration_x0,
+  touchCalibration_x1,
+  touchCalibration_y0,
+  touchCalibration_y1,
+  touchCalibration_rotate | (touchCalibration_invert_x <<1) | (touchCalibration_invert_y <<2)
+  );
 }
 
 
