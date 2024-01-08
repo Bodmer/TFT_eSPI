@@ -227,7 +227,7 @@ SPI3_HOST = 2
         #define CS_H GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))//;GPIO.out1_w1ts.val = (1 << (TFT_CS - 32))
       #endif
     #elif (TFT_CS >= 0)
-      #ifdef RPI_DISPLAY_TYPE  // RPi display needs a slower CS change
+      #if defined(RPI_DISPLAY_TYPE) || defined(ILI9486_DRIVER)  // RPi display needs a slower CS change
         #define CS_L GPIO.out_w1ts = (1 << TFT_CS); GPIO.out_w1tc = (1 << TFT_CS)
         #define CS_H GPIO.out_w1tc = (1 << TFT_CS); GPIO.out_w1ts = (1 << TFT_CS)
       #else

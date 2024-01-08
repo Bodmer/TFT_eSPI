@@ -976,20 +976,7 @@ void TFT_eSPI::spiwrite(uint8_t c)
 ** Function name:           writecommand
 ** Description:             Send an 8-bit command to the TFT
 ***************************************************************************************/
-#ifndef RM68120_DRIVER
-void TFT_eSPI::writecommand(uint8_t c)
-{
-  begin_tft_write();
-
-  DC_C;
-
-  tft_Write_8(c);
-
-  DC_D;
-
-  end_tft_write();
-}
-#else
+#if defined(RM68120_DRIVER)
 void TFT_eSPI::writecommand(uint16_t c)
 {
   begin_tft_write();
@@ -1033,7 +1020,32 @@ void TFT_eSPI::writeRegister16(uint16_t c, uint16_t d)
   end_tft_write();
 
 }
+#elif defined(ILI9486_DRIVER) 
+void TFT_eSPI::writecommand(uint8_t c)
+{
+  begin_tft_write();
 
+  DC_C;
+
+  tft_Write_8(c);
+  // This driver expect that spi transaction to be finished before DC_X line switched to data mode
+  end_tft_write();
+
+  DC_D;
+}
+#else
+void TFT_eSPI::writecommand(uint8_t c)
+{
+  begin_tft_write();
+
+  DC_C;
+
+  tft_Write_8(c);
+
+  DC_D;
+
+  end_tft_write();
+}
 #endif
 
 /***************************************************************************************
@@ -3400,6 +3412,14 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   DC_D; tft_Write_16(y1 | (y0 << 8));
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D;
+#elif defined(ILI9486_DRIVER)
+  SPI_BUSY_CHECK;
+  DC_C; tft_Write_8(TFT_CASET);CS_H;CS_L;
+  DC_D; tft_Write_8(0); tft_Write_8(x0>>8); tft_Write_8(0);tft_Write_8(x0 & 0b11111111); tft_Write_8(0);tft_Write_8(x1>>8); tft_Write_8(0);tft_Write_8(x1 & 0b11111111);CS_H;CS_L;
+  DC_C; tft_Write_8(TFT_PASET);CS_H;CS_L;
+  DC_D; tft_Write_8(0); tft_Write_8(y0>>8); tft_Write_8(0);tft_Write_8(y0 & 0b11111111);tft_Write_8(0);tft_Write_8(y1>>8); tft_Write_8(0);tft_Write_8(y1 & 0b11111111);CS_H;CS_L;
+  DC_C; tft_Write_8(TFT_RAMWR);CS_H;CS_L;
+  DC_D;
 #else
   #if defined (SSD1963_DRIVER)
     if ((rotation & 0x1) == 0) { transpose(x0, y0); transpose(x1, y1); }
@@ -3485,7 +3505,12 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     DC_C; tft_Write_8(TFT_PASET);
     DC_D; tft_Write_32C(y0, y1);
     DC_C; tft_Write_8(TFT_RAMWR);
-    DC_D;
+    // DC_C; tft_Write_8(TFT_CASET);CS_H;CS_L;
+    // DC_D; tft_Write_8(0); tft_Write_8(x0>>8); tft_Write_8(0); tft_Write_8(x0 & 0b11111111); tft_Write_8(0);tft_Write_8(x1>>8); tft_Write_8(0);tft_Write_8(x1 & 0b11111111);;CS_H;CS_L;
+    // DC_C; tft_Write_8(TFT_PASET);;CS_H;CS_L;
+    // DC_D; tft_Write_8(0); tft_Write_8(y0>>8); tft_Write_8(0);tft_Write_8(y0 & 0b11111111);tft_Write_8(0);tft_Write_8(y1>>8); tft_Write_8(0);tft_Write_8(y1 & 0b11111111);;CS_H;CS_L;
+    // DC_C; tft_Write_8(TFT_RAMWR);;CS_H;CS_L;
+    // DC_D;
   #endif // RP2040 SPI
 #endif
   //end_tft_write(); // Must be called after setWindow
@@ -4684,7 +4709,7 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
   begin_tft_write();
 
   setWindow(x, y, x + w - 1, y + h - 1);
-
+  
   pushBlock(color, w * h);
 
   end_tft_write();
