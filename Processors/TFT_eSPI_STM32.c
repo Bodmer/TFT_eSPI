@@ -418,7 +418,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
   if(_swapBytes) {
     while ( len-- ) {
       TX_FIFO = (uint8_t)(*data>>8);
-      TX_FIFO = (uint8_t)(*data<<8);
+      TX_FIFO = (uint8_t)(*data);
       data++;
     }
   }
