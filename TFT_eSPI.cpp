@@ -3153,8 +3153,10 @@ uint16_t TFT_eSPI::fontsLoaded(void)
 ** Function name:           fontHeight
 ** Description:             return the height of a font (yAdvance for free fonts)
 ***************************************************************************************/
-int16_t TFT_eSPI::fontHeight(int16_t font)
+int16_t TFT_eSPI::fontHeight(uint8_t font)
 {
+  if (font > 8) return 0;
+
 #ifdef SMOOTH_FONT
   if(fontLoaded) return gFont.yAdvance;
 #endif
@@ -3211,7 +3213,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
 
     setWindow(xd, yd, xd+5, yd+7);
 
-    for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(font + (c * 5) + i);
+    for (int8_t i = 0; i < 5; i++ ) column[i] = pgm_read_byte(&font[0] + (c * 5) + i);
     column[5] = 0;
 
     for (int8_t j = 0; j < 8; j++) {
@@ -3234,7 +3236,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
       if (i == 5)
         line = 0x0;
       else
-        line = pgm_read_byte(font + (c * 5) + i);
+        line = pgm_read_byte(&font[0] + (c * 5) + i);
 
       if (size == 1 && !fillbg) { // default size
         for (int8_t j = 0; j < 8; j++) {
@@ -5501,6 +5503,8 @@ int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY)
 // With font number. Note: font number is over-ridden if a smooth font is loaded
 int16_t TFT_eSPI::drawString(const char *string, int32_t poX, int32_t poY, uint8_t font)
 {
+  if (font > 8) return 0;
+
   int16_t sumX = 0;
   uint8_t padding = 1, baseline = 0;
   uint16_t cwidth = textWidth(string, font); // Find the pixel width of the string in the font
@@ -5906,6 +5910,7 @@ void TFT_eSPI::setFreeFont(const GFXfont *f)
 void TFT_eSPI::setTextFont(uint8_t f)
 {
   textfont = (f > 0) ? f : 1; // Don't allow font 0
+  textfont = (f > 8) ? 1 : f; // Don't allow font > 8
   gfxFont = NULL;
 }
 
@@ -5931,6 +5936,7 @@ void TFT_eSPI::setFreeFont(uint8_t font)
 void TFT_eSPI::setTextFont(uint8_t f)
 {
   textfont = (f > 0) ? f : 1; // Don't allow font 0
+  textfont = (f > 8) ? 1 : f; // Don't allow font > 8
 }
 #endif
 

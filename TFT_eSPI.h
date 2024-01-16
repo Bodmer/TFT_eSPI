@@ -681,7 +681,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            textWidth(const char *string),                   // Returns pixel width of string in current font
            textWidth(const String& string, uint8_t font),   // As above for String types
            textWidth(const String& string),
-           fontHeight(int16_t font),                        // Returns pixel height of specified font
+           fontHeight(uint8_t font),                        // Returns pixel height of specified font
            fontHeight(void);                                // Returns pixel height of current font
 
            // Used by library and Smooth font class to extract Unicode point codes from a UTF8 encoded string
