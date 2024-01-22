@@ -6151,6 +6151,10 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
   #include "Extensions/Smooth_font.cpp"
 #endif
 
+#ifdef SMOOTH_POLYGON
+  #include "Extensions/Polygon.cpp"  
+#endif
+
 #ifdef AA_GRAPHICS
   #include "Extensions/AA_graphics.cpp"  // Loaded if SMOOTH_FONT is defined by user
 #endif
