@@ -54,7 +54,7 @@ void TFT_eSPI::rotatePoint(tFPoint *aPoint, float aAngle) {
 // Rotation in degrees (0..360)
 void TFT_eSPI::fillSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
         uint32_t aFillColor,
-        tIPoint aOffset, float aRotationAngle, tIPoint aRotationPoint, 
+        tFPoint aOffset, float aRotationAngle, tFPoint aRotationPoint, 
         uint32_t aBackgroundColor) {
 
     tFPoints lPoints = aPoints;
@@ -86,10 +86,12 @@ void TFT_eSPI::fillSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aL
     if (aLineWidth == 0) 
         aLineWidth = 1;
     
-    tIPoint lBb0 = {(int32_t)floorf(lMin.X - aLineWidth), (int32_t)floorf(lMin.Y - aLineWidth)};
-    tIPoint lBb1 = {(int32_t)ceilf(lMax.X + aLineWidth), (int32_t)ceilf(lMax.Y + aLineWidth)};
+    int32_t lBb0X = (int32_t)floorf(lMin.X - aLineWidth);
+    int32_t lBb0Y = (int32_t)floorf(lMin.Y - aLineWidth);
+    int32_t lBb1X = (int32_t)ceilf(lMax.X + aLineWidth);
+    int32_t lBb1Y = (int32_t)ceilf(lMax.Y + aLineWidth);
 
-    if (!clipWindow(&lBb0.X, &lBb0.Y, &lBb1.X, &lBb1.Y))
+    if (!clipWindow(&lBb0X, &lBb0Y, &lBb1X, &lBb1Y))
         return;
 
     // Append first point to the end to close polygon
@@ -104,10 +106,10 @@ void TFT_eSPI::fillSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aL
     std::vector<int> lIntersections;
     lIntersections.resize(lPoints.size()-1);
 
-    for (int32_t lYp = lBb0.Y; lYp <= lBb1.Y; lYp++) {
+    for (int32_t lYp = lBb0Y; lYp <= lBb1Y; lYp++) {
         bool lNewWindow = true;  // Flag to start new window area
 
-        for (int32_t lXp = lBb0.X; lXp <= lBb1.X; lXp++) {
+        for (int32_t lXp = lBb0X; lXp <= lBb1X; lXp++) {
             float lDistance = aLineWidth * 2; // Just to make sure it's max
             uint32_t lBackgroundTemp = aBackgroundColor;
             tFPoint *lPa = &lPoints[0];
@@ -161,7 +163,7 @@ void TFT_eSPI::fillSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aL
                 drawPixel(lXp, lYp, lColor);
 #else
                 if (lNewWindow) 
-                    setWindow(lXp, lYp, lBb1.X, lYp);
+                    setWindow(lXp, lYp, lBb1X, lYp);
                 lNewWindow = false;
                 pushColor(lColor);
             } else
@@ -177,7 +179,7 @@ void TFT_eSPI::fillSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aL
 //--------------------------------------------------------------------------------
 // Rotation in degrees (0..360)
 void TFT_eSPI::drawSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
-        tIPoint aOffset, float aRotationAngle, tIPoint aRotationPoint, 
+        tFPoint aOffset, float aRotationAngle, tFPoint aRotationPoint, 
         uint32_t aBackgroundColor) {
     
     fillSmoothPolygon(aPoints, aLineWidth, aLineColor, TFT_NO_COLOR, aOffset, aRotationAngle, aRotationPoint, aBackgroundColor);
