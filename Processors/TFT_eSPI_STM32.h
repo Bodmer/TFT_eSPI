@@ -89,10 +89,10 @@
       //#define WR_TWRL_2
       #define WR_TWRL_3
     #else
-      //#define WR_TWRH_0    // Fastest
-      //#define WR_TWRH_1
-      //#define WR_TWRH_2
-      #define WR_TWRH_3      // Slowest
+      //#define WR_TWRL_0    // Fastest
+      //#define WR_TWRL_1
+      //#define WR_TWRL_2
+      #define WR_TWRL_3      // Slowest
     #endif
 
     // Extra write pulse high time (data hold time, delays next write cycle start)
