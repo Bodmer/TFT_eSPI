@@ -1,0 +1,62 @@
+This file describes the use of TFT_eSPI with the STM32CubeMX (short CubeMX)
+program. It can also be used in Platformio with the stm32cube framework.
+It is tested with both.
+
+CubeMX can generate all pin configuration and initial setup. So TFT_eSPI can
+make use of these pinnames and setup.
+
+The use of CubeMX will be described in the next staps. It is assumed the user
+is known with the use of CubeMX and how to create a base project and how to
+create a stm32cube project with the <project>.ioc file from CubeMX
+
+1:  Create a new project in CubeMX and give it some name. Do the basic clock
+    configuration.
+
+2:  Define all pins which shall be used in your project. For now stick to the
+    basic naming of the pins (TFT_DC, TFT_RST, TFT_CS, TFT_BL, TFT_D(0-7))
+    for the parallel usage. For SPI pins use (TFT_MOSI, TFT_MISO and TFT_SCLK).
+    GPIO_INPUT / GPIO_OUTPUT according to the use of the TFT_* port.
+    And further more the pins you want to use.
+
+3:  Save and generate the code.
+
+Now we split into two lines, A for the use in CubeIDE and B for the use in
+Platformio
+
+4A: Create a subdirectory Libraries in you in step 1 created project. Use the
+    main folder, not the 'core' folder.
+    Copy the TFT_eSPI and TFT_Arduino library into the directory Libraries.
+    - Add a 'Define symbol (-D)' to the project with defines
+      CONFIG_TFT_eSPI_STM32CUBE. So -D CONFIG_TFT_eSPI_STM32CUBE.
+    - Add 2 'Include Paths' for your C and C++ compiler.
+      One path '../Libraries/TFT-eSPI' and one '../Libraries/TFT_Arduino'.
+      Also add these path to 'Source Location' in 'Path and Symbols'
+      Create filter and remove all subdirectories of TFT_eSPI.
+    - Build and run the code.
+
+4B: Create a new project with stm32cube as framework. Copy the <project>.ioc
+    to the project main directory.
+    Install the TFT_eSPI library as normal. You can also install it under the
+    'lib' project subdirectory. Install the TFT_Arduino library under the
+    project subdir 'lib'.
+    Use the following platformio.ini as template:
+
+    [env:<mcu>]
+        platform = ststm32
+        board = <mcu>
+        framework = stm32cube
+        build_flags =
+	        -D USE_FULL_LL_DRIVER
+	        -D CONFIG_TFT_eSPI_STM32CUBE
+	        -I lib/TFT_eSPI (only if installed in lib subdirectory)
+	        -I lib/TFT_Arduino
+
+    [platformio]
+    include_dir = Inc
+    src_dir = Src
+
+    Compile and run.
+
+
+
+

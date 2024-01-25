@@ -10,6 +10,12 @@
 
 // Include processor specific header
 // None
+#ifdef CONFIG_TFT_eSPI_STM32CUBE
+  #include "main.h"
+  #include <WString.h>
+  #include <math.h>
+  #include <itoa.h>
+#endif
 
 // RPi support not tested - Fast RPi not supported
 
@@ -226,78 +232,150 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the DC (TFT Data/Command or Register Select (RS))pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined (TFT_DC) || (TFT_DC < 0)
-  #define DC_C // No macro allocated so it generates no code
-  #define DC_D // No macro allocated so it generates no code
-  #undef  TFT_DC
+#ifdef CONFIG_TFT_eSPI_STM32CUBE
+  #if !defined (TFT_DC_Pin) || (TFT_DC_Pin < 0)
+    #define DC_C // No macro allocated so it generates no code
+    #define DC_D // No macro allocated so it generates no code
+    #undef  TFT_DC
+  #else
+    // Convert Arduino pin reference Dn or STM pin reference PXn to port and mask
+    #define DC_PORT     TFT_DC_GPIO_Port
+    #define DC_PIN_MASK TFT_DC_Pin
+    // Use bit set reset register
+    #define DC_C DC_DELAY; DC_PORT->BSRR = DC_PIN_MASK<<16
+    #define DC_D DC_DELAY; DC_PORT->BSRR = DC_PIN_MASK
+  #endif
 #else
-  // Convert Arduino pin reference Dn or STM pin reference PXn to port and mask
-  #define DC_PORT     digitalPinToPort(TFT_DC)
-  #define DC_PIN_MASK digitalPinToBitMask(TFT_DC)
-  // Use bit set reset register
-  #define DC_C DC_DELAY; DC_PORT->BSRR = DC_PIN_MASK<<16
-  #define DC_D DC_DELAY; DC_PORT->BSRR = DC_PIN_MASK
+  #if !defined (TFT_DC) || (TFT_DC < 0)
+    #define DC_C // No macro allocated so it generates no code
+    #define DC_D // No macro allocated so it generates no code
+    #undef  TFT_DC
+  #else
+    // Convert Arduino pin reference Dn or STM pin reference PXn to port and mask
+    #define DC_PORT     digitalPinToPort(TFT_DC)
+    #define DC_PIN_MASK digitalPinToBitMask(TFT_DC)
+    // Use bit set reset register
+    #define DC_C DC_DELAY; DC_PORT->BSRR = DC_PIN_MASK<<16
+    #define DC_D DC_DELAY; DC_PORT->BSRR = DC_PIN_MASK
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the CS (TFT chip select) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined (TFT_CS) || (TFT_CS < 0)
-  #define CS_L // No macro allocated so it generates no code
-  #define CS_H // No macro allocated so it generates no code
-  #undef  TFT_CS
+#ifdef CONFIG_TFT_eSPI_STM32CUBE
+  #if !defined (TFT_CS_Pin) || (TFT_CS_Pin < 0)
+    #define CS_L // No macro allocated so it generates no code
+    #define CS_H // No macro allocated so it generates no code
+    #undef  TFT_CS
+  #else
+    // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
+    #define CS_PORT      TFT_CS_GPIO_Port
+    #define CS_PIN_MASK  TFT_CS_Pin
+    // Use bit set reset register
+    #define CS_L CS_PORT->BSRR = CS_PIN_MASK<<16
+    #define CS_H CS_PORT->BSRR = CS_PIN_MASK
+  #endif
 #else
-  // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
-  #define CS_PORT      digitalPinToPort(TFT_CS)
-  #define CS_PIN_MASK  digitalPinToBitMask(TFT_CS)
-  // Use bit set reset register
-  #define CS_L CS_PORT->BSRR = CS_PIN_MASK<<16
-  #define CS_H CS_PORT->BSRR = CS_PIN_MASK
+  #if !defined (TFT_CS) || (TFT_CS < 0)
+    #define CS_L // No macro allocated so it generates no code
+    #define CS_H // No macro allocated so it generates no code
+    #undef  TFT_CS
+  #else
+    // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
+    #define CS_PORT      digitalPinToPort(TFT_CS)
+    #define CS_PIN_MASK  digitalPinToBitMask(TFT_CS)
+    // Use bit set reset register
+    #define CS_L CS_PORT->BSRR = CS_PIN_MASK<<16
+    #define CS_H CS_PORT->BSRR = CS_PIN_MASK
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the RD (TFT Read) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
-#ifdef TFT_RD
-  #if (TFT_RD >= 0)
-    // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
-    #define RD_PORT      digitalPinToPort(TFT_RD)
-    #define RD_PIN_MASK  digitalPinToBitMask(TFT_RD)
-    // Use bit set reset register
-    #define RD_L RD_PORT->BSRR = RD_PIN_MASK<<16
-    #define RD_H RD_PORT->BSRR = RD_PIN_MASK
+#ifdef CONFIG_TFT_eSPI_STM32CUBE
+  #ifdef TFT_RD_Pin
+    #if (TFT_RD_Pin >= 0)
+      // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
+      #define RD_PORT      TFT_RD_GPIO_Port
+      #define RD_PIN_MASK  TFT_RD_Pin
+      // Use bit set reset register
+      #define RD_L RD_PORT->BSRR = RD_PIN_MASK<<16
+      #define RD_H RD_PORT->BSRR = RD_PIN_MASK
+    #else
+      #define RD_L
+      #define RD_H
+    #endif
   #else
+    #define TFT_RD -1
     #define RD_L
     #define RD_H
   #endif
 #else
-  #define TFT_RD -1
-  #define RD_L
-  #define RD_H
+  #ifdef TFT_RD
+    #if (TFT_RD >= 0)
+      // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
+      #define RD_PORT      digitalPinToPort(TFT_RD)
+      #define RD_PIN_MASK  digitalPinToBitMask(TFT_RD)
+      // Use bit set reset register
+      #define RD_L RD_PORT->BSRR = RD_PIN_MASK<<16
+      #define RD_H RD_PORT->BSRR = RD_PIN_MASK
+    #else
+      #define RD_L
+      #define RD_H
+    #endif
+  #else
+    #define TFT_RD -1
+    #define RD_L
+    #define RD_H
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the WR (TFT Write) pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
-#ifdef TFT_WR
-  // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
-  #define WR_PORT      digitalPinToPort(TFT_WR)
-  #define WR_PIN_MASK  digitalPinToBitMask(TFT_WR)
-  // Use bit set reset register
-  #define WR_L WR_PORT->BSRR = WR_PIN_MASK<<16
-  #define WR_H WR_PORT->BSRR = WR_PIN_MASK
+#ifdef CONFIG_TFT_eSPI_STM32CUBE
+  #ifdef TFT_WR_Pin
+    // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
+    #define WR_PORT      TFT_WR_GPIO_Port
+    #define WR_PIN_MASK  TFT_WR_Pin
+    // Use bit set reset register
+    #define WR_L WR_PORT->BSRR = WR_PIN_MASK<<16
+    #define WR_H WR_PORT->BSRR = WR_PIN_MASK
+  #endif
+#else
+  #ifdef TFT_WR
+    // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
+    #define WR_PORT      digitalPinToPort(TFT_WR)
+    #define WR_PIN_MASK  digitalPinToBitMask(TFT_WR)
+    // Use bit set reset register
+    #define WR_L WR_PORT->BSRR = WR_PIN_MASK<<16
+    #define WR_H WR_PORT->BSRR = WR_PIN_MASK
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define the touch screen chip select pin drive code
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined (TOUCH_CS) || (TOUCH_CS < 0)
-  #define T_CS_L // No macro allocated so it generates no code
-  #define T_CS_H // No macro allocated so it generates no code
+#ifdef CONFIG_TFT_eSPI_STM32CUBE
+  #if !defined (TOUCH_CS_Pin) || (TOUCH_CS_Pin < 0)
+    #define T_CS_L // No macro allocated so it generates no code
+    #define T_CS_H // No macro allocated so it generates no code
+  #else
+    // Speed is not important for this signal
+    #define T_CS_L digitalWrite(TOUCH_CS, LOW)
+    #define T_CS_H digitalWrite(TOUCH_CS, HIGH)
+  #endif
 #else
-  // Speed is not important for this signal
-  #define T_CS_L digitalWrite(TOUCH_CS, LOW)
-  #define T_CS_H digitalWrite(TOUCH_CS, HIGH)
+  #if !defined (TOUCH_CS) || (TOUCH_CS < 0)
+    #define T_CS_L // No macro allocated so it generates no code
+    #define T_CS_H // No macro allocated so it generates no code
+  #else
+    // Speed is not important for this signal
+    #define T_CS_L digitalWrite(TOUCH_CS, LOW)
+    #define T_CS_H digitalWrite(TOUCH_CS, HIGH)
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -792,15 +870,27 @@
     #else
       // This will work with any STM32 to parallel TFT pin mapping but will be slower
 
+      // if CubeMX is used, sssign the CubeMX pin reference to port and mask else
       // Convert Arduino pin reference Dx or STM pin reference PXn to port and mask
-      #define D0_PIN_NAME  digitalPinToPinName(TFT_D0)
-      #define D1_PIN_NAME  digitalPinToPinName(TFT_D1)
-      #define D2_PIN_NAME  digitalPinToPinName(TFT_D2)
-      #define D3_PIN_NAME  digitalPinToPinName(TFT_D3)
-      #define D4_PIN_NAME  digitalPinToPinName(TFT_D4)
-      #define D5_PIN_NAME  digitalPinToPinName(TFT_D5)
-      #define D6_PIN_NAME  digitalPinToPinName(TFT_D6)
-      #define D7_PIN_NAME  digitalPinToPinName(TFT_D7)
+      #ifdef CONFIG_TFT_eSPI_STM32CUBE
+        #define D0_PIN_NAME  TFT_D0_Pin
+        #define D1_PIN_NAME  TFT_D1_Pin
+        #define D2_PIN_NAME  TFT_D2_Pin
+        #define D3_PIN_NAME  TFT_D3_Pin
+        #define D4_PIN_NAME  TFT_D4_Pin
+        #define D5_PIN_NAME  TFT_D5_Pin
+        #define D6_PIN_NAME  TFT_D6_Pin
+        #define D7_PIN_NAME  TFT_D7_Pin
+      #else
+        #define D0_PIN_NAME  digitalPinToPinName(TFT_D0)
+        #define D1_PIN_NAME  digitalPinToPinName(TFT_D1)
+        #define D2_PIN_NAME  digitalPinToPinName(TFT_D2)
+        #define D3_PIN_NAME  digitalPinToPinName(TFT_D3)
+        #define D4_PIN_NAME  digitalPinToPinName(TFT_D4)
+        #define D5_PIN_NAME  digitalPinToPinName(TFT_D5)
+        #define D6_PIN_NAME  digitalPinToPinName(TFT_D6)
+        #define D7_PIN_NAME  digitalPinToPinName(TFT_D7)
+      #endif
 
       // Pin port bit number 0-15
       #define D0_PIN_BIT  (D0_PIN_NAME & 0xF)
@@ -813,24 +903,46 @@
       #define D7_PIN_BIT  (D7_PIN_NAME & 0xF)
 
       // Pin port
-      #define D0_PIN_PORT  digitalPinToPort(TFT_D0)
-      #define D1_PIN_PORT  digitalPinToPort(TFT_D1)
-      #define D2_PIN_PORT  digitalPinToPort(TFT_D2)
-      #define D3_PIN_PORT  digitalPinToPort(TFT_D3)
-      #define D4_PIN_PORT  digitalPinToPort(TFT_D4)
-      #define D5_PIN_PORT  digitalPinToPort(TFT_D5)
-      #define D6_PIN_PORT  digitalPinToPort(TFT_D6)
-      #define D7_PIN_PORT  digitalPinToPort(TFT_D7)
+      #ifdef CONFIG_TFT_eSPI_STM32CUBE
+        #define D0_PIN_PORT  TFT_D0_GPIO_Port
+        #define D1_PIN_PORT  TFT_D1_GPIO_Port
+        #define D2_PIN_PORT  TFT_D2_GPIO_Port
+        #define D3_PIN_PORT  TFT_D3_GPIO_Port
+        #define D4_PIN_PORT  TFT_D4_GPIO_Port
+        #define D5_PIN_PORT  TFT_D5_GPIO_Port
+        #define D6_PIN_PORT  TFT_D6_GPIO_Port
+        #define D7_PIN_PORT  TFT_D7_GPIO_Port
+      #else
+        #define D0_PIN_PORT  digitalPinToPort(TFT_D0)
+        #define D1_PIN_PORT  digitalPinToPort(TFT_D1)
+        #define D2_PIN_PORT  digitalPinToPort(TFT_D2)
+        #define D3_PIN_PORT  digitalPinToPort(TFT_D3)
+        #define D4_PIN_PORT  digitalPinToPort(TFT_D4)
+        #define D5_PIN_PORT  digitalPinToPort(TFT_D5)
+        #define D6_PIN_PORT  digitalPinToPort(TFT_D6)
+        #define D7_PIN_PORT  digitalPinToPort(TFT_D7)
+      #endif
 
       // Pin masks for set/clear
-      #define D0_PIN_MASK  digitalPinToBitMask(TFT_D0)
-      #define D1_PIN_MASK  digitalPinToBitMask(TFT_D1)
-      #define D2_PIN_MASK  digitalPinToBitMask(TFT_D2)
-      #define D3_PIN_MASK  digitalPinToBitMask(TFT_D3)
-      #define D4_PIN_MASK  digitalPinToBitMask(TFT_D4)
-      #define D5_PIN_MASK  digitalPinToBitMask(TFT_D5)
-      #define D6_PIN_MASK  digitalPinToBitMask(TFT_D6)
-      #define D7_PIN_MASK  digitalPinToBitMask(TFT_D7)
+      #ifdef CONFIG_TFT_eSPI_STM32CUBE
+        #define D0_PIN_MASK  (D0_PIN_NAME)
+        #define D1_PIN_MASK  (D1_PIN_NAME)
+        #define D2_PIN_MASK  (D2_PIN_NAME)
+        #define D3_PIN_MASK  (D3_PIN_NAME)
+        #define D4_PIN_MASK  (D4_PIN_NAME)
+        #define D5_PIN_MASK  (D5_PIN_NAME)
+        #define D6_PIN_MASK  (D6_PIN_NAME)
+        #define D7_PIN_MASK  (D7_PIN_NAME)
+      #else
+        #define D0_PIN_MASK  digitalPinToBitMask(TFT_D0)
+        #define D1_PIN_MASK  digitalPinToBitMask(TFT_D1)
+        #define D2_PIN_MASK  digitalPinToBitMask(TFT_D2)
+        #define D3_PIN_MASK  digitalPinToBitMask(TFT_D3)
+        #define D4_PIN_MASK  digitalPinToBitMask(TFT_D4)
+        #define D5_PIN_MASK  digitalPinToBitMask(TFT_D5)
+        #define D6_PIN_MASK  digitalPinToBitMask(TFT_D6)
+        #define D7_PIN_MASK  digitalPinToBitMask(TFT_D7)
+      #endif
 
       // Create bit set/reset mask based on LS byte of value B
       #define  D0_BSR_MASK(B) ((D0_PIN_MASK<<16)>>(((B)<< 4)&0x10))
@@ -1074,6 +1186,24 @@
 #elif !defined (TFT_PARALLEL_8_BIT)
   // Use a SPI read transfer
   #define tft_Read_8() spi.transfer(0)
+#endif
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Other Macros to support Arduino functions
+////////////////////////////////////////////////////////////////////////////////////////
+#ifdef CONFIG_TFT_eSPI_STM32CUBE
+  #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
+  #define pgm_read_word(addr) (*(const unsigned short *)(addr))
+  #define pgm_read_dword(addr) (*(const unsigned long *)(addr))
+  #define pgm_read_float(addr) (*(const float *)(addr))
+
+  #define delay(x)  HAL_Delay(x)
+  #define random(x) random()*x
+  #define yield()
+
+  #define min(a,b) (((a)<(b))?(a):(b))
+  #define max(a,b) (((a)>(b))?(a):(b))
+
 #endif
 
 #endif // Header end

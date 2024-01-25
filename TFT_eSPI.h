@@ -27,11 +27,15 @@
 ***************************************************************************************/
 
 //Standard support
-#include <Arduino.h>
-#include <Print.h>
-#if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
-  #include <SPI.h>
+#ifndef CONFIG_TFT_eSPI_STM32CUBE
+  #include <Arduino.h>
+
+  #if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
+    #include <SPI.h>
+  #endif
 #endif
+#include <Print.h>
+
 /***************************************************************************************
 **                         Section 2: Load library and processor specific header files
 ***************************************************************************************/
@@ -39,6 +43,10 @@
 // available and the pins to be used, etc. etc.
 #ifdef CONFIG_TFT_eSPI_ESPIDF
   #include "TFT_config.h"
+#endif
+
+#ifdef CONFIG_TFT_eSPI_STM32CUBE
+  #include "TFT_STM32cube_config.h"
 #endif
 
 // New ESP8266 board package uses ARDUINO_ARCH_ESP8266
@@ -820,7 +828,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     verifySetupID(uint32_t id);
 
   // Global variables
-#if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
+#if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE) && !defined (CONFIG_TFT_eSPI_STM32CUBE)
   static   SPIClass& getSPIinstance(void); // Get SPI class handle
 #endif
   uint32_t textcolor, textbgcolor;         // Text foreground and background colours
