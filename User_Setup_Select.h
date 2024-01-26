@@ -143,6 +143,7 @@
 
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 //#include <User_Setups/Setup302_Waveshare_ESP32S3_GC9A01.h>            // Setup file for Waveshare ESP32-S3-Touch-LCD-1.28 board with GC9A01 240*240 TFT
+//#include <User_Setups/Setup303_WaveShare ESP32S3_GEEK.h>            // Setup file for Waveshare Setup303_WaveShare ESP32S3_GEEK with ST7789 135*240 TFT
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
