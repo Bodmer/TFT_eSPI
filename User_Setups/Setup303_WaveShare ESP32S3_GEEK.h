@@ -9,6 +9,10 @@
 
 #define CGRAM_OFFSET      // Library will add offsets required
 
+#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+
+#define TFT_INVERSION_ON
+
 // Generic ESP32 setup
 //#define TFT_MISO 19
 #define TFT_MOSI 11
