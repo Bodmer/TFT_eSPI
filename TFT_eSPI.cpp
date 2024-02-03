@@ -783,6 +783,12 @@ void TFT_eSPI::init(uint8_t tc)
 
   setRotation(rotation);
 
+// Enabling backlight for displays with analog controlled backlight leds
+#if defined (TFT_ANALOG_BL) && defined (TFT_ANALOG_BL_POWER)
+  pinMode(TFT_ANALOG_BL, OUTPUT);
+  analogWrite(TFT_ANALOG_BL, TFT_ANALOG_BL_POWER);
+#endif
+	
 #if defined (TFT_BL) && defined (TFT_BACKLIGHT_ON)
   if (TFT_BL >= 0) {
     pinMode(TFT_BL, OUTPUT);
