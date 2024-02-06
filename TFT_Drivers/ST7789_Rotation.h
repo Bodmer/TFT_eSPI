@@ -160,6 +160,9 @@
       {
         colstart = 0;
         rowstart = 24;
+      } else {
+        colstart = 0;
+        rowstart = 0;
       }
 #endif
       writedata(TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
@@ -174,7 +177,11 @@
       {
         colstart = 24;
         rowstart = 0;
+      } else {
+        colstart = 0;
+        rowstart = 0;
       }
+
 #endif
       writedata(TFT_MAD_MV | TFT_MAD_MY | TFT_MAD_MX |TFT_MAD_COLOR_ORDER);
 
