@@ -2485,8 +2485,7 @@ void TFT_eSPI::fillCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t corne
 ***************************************************************************************/
 void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color)
 {
-  if (rx<2) return;
-  if (ry<2) return;
+  if (rx<2 || ry<2) return;
   int32_t x, y;
   int32_t rx2 = rx * rx;
   int32_t ry2 = ry * ry;
@@ -2537,8 +2536,7 @@ void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint1
 ***************************************************************************************/
 void TFT_eSPI::fillEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color)
 {
-  if (rx<2) return;
-  if (ry<2) return;
+  if (rx<2 || ry<2) return;
   int32_t x, y;
   int32_t rx2 = rx * rx;
   int32_t ry2 = ry * ry;
@@ -4407,9 +4405,12 @@ void TFT_eSPI::fillSmoothRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, i
   int32_t cx = 0;
 
   // Limit radius to half width or height
-  if (r < 0)   r = 0;
-  if (r > w/2) r = w/2;
-  if (r > h/2) r = h/2;
+  if (r < 0) {
+    r = 0;
+  } else {
+    if (r > w/2) r = w/2;
+    if (r > h/2) r = h/2;
+  }
 
   y += r;
   h -= 2*r;
@@ -5001,9 +5002,13 @@ uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc, uint8_t
 {
   if (dither) {
     int16_t alphaDither = (int16_t)alpha - dither + random(2*dither+1); // +/-4 randomised
-    alpha = (uint8_t)alphaDither;
-    if (alphaDither <  0) alpha = 0;
-    if (alphaDither >255) alpha = 255;
+    if (alphaDither < 0) {
+      alpha = 0;
+    } else if (alphaDither > 255) {
+      alpha = 255;
+    } else {
+      alpha = (uint8_t)alphaDither;
+    }
   }
 
   return alphaBlend(alpha, fgc, bgc);
@@ -5018,9 +5023,13 @@ uint32_t TFT_eSPI::alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8
 
   if (dither) {
     int16_t alphaDither = (int16_t)alpha - dither + random(2*dither+1); // +/-dither randomised
-    alpha = (uint8_t)alphaDither;
-    if (alphaDither <  0) alpha = 0;
-    if (alphaDither >255) alpha = 255;
+    if (alphaDither < 0) {
+      alpha = 0;
+    } else if (alphaDither > 255) {
+      alpha = 255;
+    } else {
+      alpha = (uint8_t)alphaDither;
+    }
   }
 
   uint32_t rxx = bgc & 0xFF0000;
@@ -5909,8 +5918,7 @@ void TFT_eSPI::setFreeFont(const GFXfont *f)
 ***************************************************************************************/
 void TFT_eSPI::setTextFont(uint8_t f)
 {
-  textfont = (f > 0) ? f : 1; // Don't allow font 0
-  textfont = (f > 8) ? 1 : f; // Don't allow font > 8
+  textfont = (f > 0 && f <= 8) ? f : 1; // Don't allow font 0 and font > 8
   gfxFont = NULL;
 }
 
@@ -5935,8 +5943,7 @@ void TFT_eSPI::setFreeFont(uint8_t font)
 ***************************************************************************************/
 void TFT_eSPI::setTextFont(uint8_t f)
 {
-  textfont = (f > 0) ? f : 1; // Don't allow font 0
-  textfont = (f > 8) ? 1 : f; // Don't allow font > 8
+  textfont = (f > 0 && f <= 8) ? f : 1; // Don't allow font 0 and font > 8
 }
 #endif
 
