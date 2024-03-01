@@ -52,9 +52,9 @@ void TFT_eSPI::rotatePoint(tFPoint *aPoint, float aAngle) {
 
 //--------------------------------------------------------------------------------
 // Rotation in degrees (0..360)
-void TFT_eSPI::fillSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
+void TFT_eSPI::fillSmoothPolygon(const tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
         uint32_t aFillColor,
-        tFPoint aOffset, float aRotationAngle, tFPoint aRotationPoint, 
+        const tFPoint aOffset, float aRotationAngle, const tFPoint aRotationPoint, 
         uint32_t aBackgroundColor) {
 
     tFPoints lPoints = aPoints;
@@ -178,8 +178,8 @@ void TFT_eSPI::fillSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aL
 
 //--------------------------------------------------------------------------------
 // Rotation in degrees (0..360)
-void TFT_eSPI::drawSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
-        tFPoint aOffset, float aRotationAngle, tFPoint aRotationPoint, 
+void TFT_eSPI::drawSmoothPolygon(const tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
+        const tFPoint aOffset, float aRotationAngle, const tFPoint aRotationPoint, 
         uint32_t aBackgroundColor) {
     
     fillSmoothPolygon(aPoints, aLineWidth, aLineColor, TFT_NO_COLOR, aOffset, aRotationAngle, aRotationPoint, aBackgroundColor);

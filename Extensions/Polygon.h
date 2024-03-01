@@ -10,12 +10,12 @@ public:
     typedef std::vector<tFPoint> tFPoints;
 
     void rotatePoint(tFPoint *aPoint, float aAngle);
-    void drawSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
-        tFPoint aOffset = {0, 0}, float aRotationAngle = 0.0, tFPoint aRotationPoint = {0, 0}, 
+    void drawSmoothPolygon(const tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
+        const tFPoint aOffset = {0, 0}, float aRotationAngle = 0.0, const tFPoint aRotationPoint = {0, 0}, 
         uint32_t aBackgroundColor = TFT_NO_COLOR);
-    void fillSmoothPolygon(tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
+    void fillSmoothPolygon(const tFPoints aPoints, float aLineWidth, uint32_t aLineColor, 
         uint32_t aFillColor = TFT_NO_COLOR,
-        tFPoint aOffset = {0, 0}, float aRotationAngle = 0.0, tFPoint aRotationPoint = {0, 0}, 
+        const tFPoint aOffset = {0, 0}, float aRotationAngle = 0.0, const tFPoint aRotationPoint = {0, 0}, 
         uint32_t aBackgroundColor = TFT_NO_COLOR);
 
 private:
