@@ -137,6 +137,7 @@
 //#include <User_Setups/Setup211_LilyGo_T_QT_Pro_S3.h>         // For the LilyGo T-QT Pro S3 based ESP32S3 with GC9A01 128 x 128 TFT
 // #include <User_Setups/Setup212_LilyGo_T_PicoPro.h>         // For the LilyGo T-PICO-Pro with ST7796 222 x 480 TFT
 // #include <User_Setups/Setup213_LilyGo_T_Beam_Shield.h>         // For the LilyGo T-BEAM V1.x with ST7796 222 x 480 TFT
+// #include <User_Setups/Setup214_LilyGo_T_Deck.h>         // For the LilyGo T-Deck ESP32S3 based device with ST7789 240 x 320 TFT
 
 //#include <User_Setups/Setup250_ESP32_S3_Box_Lite.h>      // For the ESP32 S3 Box Lite
 //#include <User_Setups/Setup251_ESP32_S3_Box.h>            // For the ESP32 S3 Box
