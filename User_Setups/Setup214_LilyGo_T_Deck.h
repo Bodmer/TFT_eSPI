@@ -1,10 +1,13 @@
 // ST7789 240 x 320 display
 //
-// The board peripheral power control pin needs to be set to HIGH when using any of the tdeck peripherals, to
-// run the TFT_eSPI examples the following will need to be added inside the setup function.
+// The board peripheral power control pin needs to be set to HIGH when using any of the tdeck peripherals, the
+// backlight also needs turning on manually before you can run the TFT_eSPI examples. The following will need 
+// to be added inside the setup function.
 //
 // pinMode(TDECK_PERI_GPIO, OUTPUT);
 // digitalWrite(TDECK_PERI_GPIO, HIGH);
+// pinMode(TFT_BL, OUTPUT);
+// digitalWrite(TFT_BL, HIGH);
 
 #define USER_SETUP_ID 214
 
@@ -23,7 +26,6 @@
 #define TFT_DC   11
 #define TFT_RST  -1
 #define TFT_BL   42
-#define TFT_BACKLIGHT_ON HIGH
 #define TDECK_PERI_GPIO 10
 
 
