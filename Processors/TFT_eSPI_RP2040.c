@@ -658,7 +658,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
     }
   }
   // else, if a buffer pointer has been provided copy whole image to the buffer
-  else if (buffer != image || _swapBytes) {
+  else if (buffer != image) {
     memcpy(buffer, image, len*2);
   }
 
