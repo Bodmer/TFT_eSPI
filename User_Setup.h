@@ -116,6 +116,8 @@
 // #define TFT_INVERSION_ON
 // #define TFT_INVERSION_OFF
 
+// #define TFT_PGAMCTRL_OFF // Positive gamma control
+// #define TFT_NGAMCTRL_OFF // Negative gamma correction
 
 // ##################################################################################
 //
