@@ -543,7 +543,7 @@ void TFT_eSPI::initBus(void) {
   // Configure chip select for touchscreen controller if present
   #ifdef TOUCH_CS_Pin
     if (TOUCH_CS_Pin >= 0) {;
-      digitalWrite(TOUCH_CS, HIGH); // Chip select high (inactive)
+      L_GPIO_SetOutputPin(TFT_TCS_GPIO_Port, TFT_TCS_Pin); // Chip select high (inactive)
     }
   #endif
 
