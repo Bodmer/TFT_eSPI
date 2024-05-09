@@ -776,7 +776,7 @@ bool TFT_eSprite::pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y, uint16_t
 
       if (transp == rp) {
         if (pixel_count) {
-          dspr->pushImage(ox, y, pixel_count, 1, sline_buffer, _bpp);
+          dspr->pushImage(ox, y, pixel_count, 1, sline_buffer);
           ox += pixel_count;
           pixel_count = 0;
         }
