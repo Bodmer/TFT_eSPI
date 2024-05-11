@@ -3004,8 +3004,8 @@ void TFT_eSPI::setTextPadding(uint16_t x_width)
 }
 
 /***************************************************************************************
-** Function name:           setTextPadding
-** Description:             Define padding width (aids erasing old text and numbers)
+** Function name:           getTextPadding
+** Description:             Return the padding width (as used in setTestPadding())
 ***************************************************************************************/
 uint16_t TFT_eSPI::getTextPadding(void)
 {
