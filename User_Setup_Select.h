@@ -148,6 +148,7 @@
 // #include <User_Setups/Setup401_LOLIN_TFT085_C3.h>            // Setup file for LOLIN TFT 0.85 shield with GC9A01 128 x 128 for C3 mini/pico
 // #include <User_Setups/Setup402_LOLIN_TFT085_S2_MINI.h>            // Setup file for LOLIN TFT 0.85 shield with GC9A01 128 x 128 for S2 mini
 // #include <User_Setups/Setup403_LOLIN_TFT085_S3_MINI.h>            // Setup file for LOLIN TFT 0.85 shield with GC9A01 128 x 128 for S3 mini
+// #include <User_Setups/Setup404_LOLIN_S3_MINI_PRO.h>            // Setup file for LOLIN S3 mini PRO
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 

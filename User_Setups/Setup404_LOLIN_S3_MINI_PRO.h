@@ -1,5 +1,5 @@
-// LOLIN TFT 0.85 shield for S3 mini
-#define USER_SETUP_ID 403
+// LOLIN TFT S3 mini pro
+#define USER_SETUP_ID 404
 
 #define USE_HSPI_PORT
 
@@ -17,15 +17,14 @@
 #define CGRAM_OFFSET
 
 
-#define TFT_BL     18   // LED back-light
-// #define TFT_BL     -1  // Disconnect 'BL' jumper, LED back-light always ON
-#define TFT_MISO   13   
-#define TFT_MOSI   11
-#define TFT_SCLK   12
-#define TFT_CS     4 
-#define TFT_DC     10
-#define TFT_RST    -1 // TFT's RST -- LOLIN board's EN
-// #define TFT_RST    16  
+#define TFT_BL     33   // LED back-light
+#define TFT_MISO   39   
+#define TFT_MOSI   38
+#define TFT_SCLK   40
+#define TFT_CS     35 
+#define TFT_DC     36
+#define TFT_RST    34 
+
 
 #define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
 #define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
