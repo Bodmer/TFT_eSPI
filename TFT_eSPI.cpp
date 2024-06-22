@@ -2483,7 +2483,7 @@ void TFT_eSPI::fillCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t corne
 ** Function name:           drawEllipse
 ** Description:             Draw a ellipse outline
 ***************************************************************************************/
-void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color)
+void TFT_eSPI::drawEllipse(int32_t x0, int32_t y0, int32_t rx, int32_t ry, uint32_t color)
 {
   if (rx<2) return;
   if (ry<2) return;
@@ -2535,7 +2535,7 @@ void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint1
 ** Function name:           fillEllipse
 ** Description:             draw a filled ellipse
 ***************************************************************************************/
-void TFT_eSPI::fillEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color)
+void TFT_eSPI::fillEllipse(int32_t x0, int32_t y0, int32_t rx, int32_t ry, uint32_t color)
 {
   if (rx<2) return;
   if (ry<2) return;

@@ -526,8 +526,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
            fillCircleHelper(int32_t x, int32_t y, int32_t r, uint8_t cornername, int32_t delta, uint32_t color),
 
-           drawEllipse(int16_t x, int16_t y, int32_t rx, int32_t ry, uint16_t color),
-           fillEllipse(int16_t x, int16_t y, int32_t rx, int32_t ry, uint16_t color),
+           drawEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry, uint32_t color),
+           fillEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry, uint32_t color),
 
            //                 Corner 1               Corner 2               Corner 3
            drawTriangle(int32_t x1,int32_t y1, int32_t x2,int32_t y2, int32_t x3,int32_t y3, uint32_t color),
