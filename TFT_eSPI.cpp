@@ -2990,6 +2990,9 @@ void TFT_eSPI::setTextWrap(bool wrapX, bool wrapY)
 bool TFT_eSPI::getTextWrapX() {
   return textwrapX;
 }
+bool TFT_eSPI::getTextWrap() {
+  return textwrapX;
+}
 
 
 /***************************************************************************************
