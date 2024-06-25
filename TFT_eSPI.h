@@ -662,6 +662,9 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            setTextSize(uint8_t size);                       // Set character size multiplier (this increases pixel size)
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
+  bool     getTextWrapX();                                  // get current textwrap setting for width
+  bool     getTextWrapY();                                  // get current textwrap setting for height
+
 
   void     setTextDatum(uint8_t datum);                     // Set text datum position (default is top left), see Section 5 above
   uint8_t  getTextDatum(void);
