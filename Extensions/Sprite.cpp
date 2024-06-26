@@ -18,6 +18,8 @@ TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
 {
   _tft = tft;     // Pointer to tft class so we can call member functions
 
+  uint8_t* _memoryArena;
+
   _iwidth    = 0; // Initialise width and height to 0 (it does not exist yet)
   _iheight   = 0;
   _bpp = 16;
@@ -69,6 +71,149 @@ void* TFT_eSprite::createSprite(int16_t w, int16_t h, uint8_t frames)
   _scolor = TFT_BLACK;
 
   _img8   = (uint8_t*) callocSprite(w, h, frames);
+  _img8_1 = _img8;
+  _img8_2 = _img8;
+  _img    = (uint16_t*) _img8;
+  _img4   = _img8;
+
+  if ( (_bpp == 16) && (frames > 1) ) {
+    _img8_2 = _img8 + (w * h * 2 + 1);
+  }
+
+  // ESP32 only 16bpp check
+  //if (esp_ptr_dma_capable(_img8_1)) Serial.println("DMA capable Sprite pointer _img8_1");
+  //else Serial.println("Not a DMA capable Sprite pointer _img8_1");
+  //if (esp_ptr_dma_capable(_img8_2)) Serial.println("DMA capable Sprite pointer _img8_2");
+  //else Serial.println("Not a DMA capable Sprite pointer _img8_2");
+
+  if ( (_bpp == 8) && (frames > 1) ) {
+    _img8_2 = _img8 + (w * h + 1);
+  }
+
+  // This is to make it clear what pointer size is expected to be used
+  // but casting in the user sketch is needed due to the use of void*
+  if ( (_bpp == 1) && (frames > 1) )
+  {
+    w = (w+7) & 0xFFF8;
+    _img8_2 = _img8 + ( (w>>3) * h + 1 );
+  }
+
+  if (_img8)
+  {
+    _created = true;
+    if ( (_bpp == 4) && (_colorMap == nullptr)) createPalette(default_4bit_palette);
+
+    rotation = 0;
+    setViewport(0, 0, _dwidth, _dheight);
+    setPivot(_iwidth/2, _iheight/2);
+    return _img8_1;
+  }
+
+  return nullptr;
+}
+
+
+void TFT_eSprite::createPaletteWithArena(uint16_t colorMap[], uint8_t colors, MemoryArena& arena)
+{
+    if (!_created) return;
+
+    if (colorMap == nullptr)
+    {
+        // Create a color map using the default FLASH map
+        createPaletteWithArena(default_4bit_palette, 16, arena);
+        return;
+    }
+
+    // Allocate and clear memory for 16 color map
+    if (_colorMap == nullptr)
+    {
+        _colorMap = (uint16_t*)arena.allocate(16 * sizeof(uint16_t));
+        memset(_colorMap, 0, 16 * sizeof(uint16_t));
+    }
+
+    if (colors > 16) colors = 16;
+
+    // Copy map colors
+    for (uint8_t i = 0; i < colors; i++)
+    {
+        _colorMap[i] = colorMap[i];
+    }
+}
+
+void TFT_eSprite::createPaletteWithArena(const uint16_t colorMap[], uint8_t colors, MemoryArena& arena)
+{
+    if (!_created) return;
+
+    if (colorMap == nullptr)
+    {
+        // Create a color map using the default FLASH map
+        colorMap = default_4bit_palette;
+    }
+
+    // Allocate and clear memory for 16 color map
+    if (_colorMap == nullptr)
+    {
+        _colorMap = (uint16_t*)arena.allocate(16 * sizeof(uint16_t));
+        memset(_colorMap, 0, 16 * sizeof(uint16_t));
+    }
+
+    if (colors > 16) colors = 16;
+
+    // Copy map colors
+    for (uint8_t i = 0; i < colors; i++)
+    {
+        _colorMap[i] = pgm_read_word(&colorMap[i]);
+    }
+}
+
+
+void* TFT_eSprite::callocSpriteWithArena(int16_t w, int16_t h, uint8_t frames, MemoryArena& arena) {
+    // Add one extra "off screen" pixel to point out-of-bounds setWindow() coordinates
+    uint8_t* ptr8 = nullptr;
+    if (frames > 2) frames = 2; // Currently restricted to 2 frame buffers
+    if (frames < 1) frames = 1;
+
+    if (_bpp == 16)
+        ptr8 = (uint8_t*)arena.allocate(frames * w * h * sizeof(uint16_t) + frames);
+    else if (_bpp == 8)
+        ptr8 = (uint8_t*)arena.allocate(frames * w * h * sizeof(uint8_t) + frames);
+    else if (_bpp == 4)
+    {
+        w = (w + 1) & 0xFFFE; // width needs to be multiple of 2, with an extra "off screen" pixel
+        _iwidth = w;
+        ptr8 = (uint8_t*)arena.allocate(((frames * w * h) >> 1) + frames);
+    }
+    else // Must be 1 bpp
+    {
+        //_dwidth and _dheight will be set by createSprite()
+        w =  (w+7) & 0xFFF8; // width should be the multiple of 8 bits to be compatible with epdpaint
+        _iwidth = w;
+        ptr8 = (uint8_t*)arena.allocate(frames * (w>>3) * h + frames);
+    }
+
+    return ptr8;
+}
+
+void* TFT_eSprite::createSpriteWithArena(int16_t w, int16_t h, uint8_t frames, MemoryArena& arena) {
+
+  if ( _created ) return _img8_1;
+
+  if ( w < 1 || h < 1 ) return nullptr;
+
+  _iwidth  = _dwidth  = _bitwidth = w;
+  _iheight = _dheight = h;
+
+  cursor_x = 0;
+  cursor_y = 0;
+
+  // Default scroll rectangle and gap fill colour
+  _sx = 0;
+  _sy = 0;
+  _sw = w;
+  _sh = h;
+  _scolor = TFT_BLACK;
+
+  _img8   = (uint8_t*) callocSpriteWithArena(w, h, frames, arena);
   _img8_1 = _img8;
   _img8_2 = _img8;
   _img    = (uint16_t*) _img8;
@@ -374,13 +519,13 @@ void TFT_eSprite::deleteSprite(void)
 {
   if (_colorMap != nullptr)
   {
-    free(_colorMap);
+    (_isArenaAllocated)? nullptr : free(_colorMap);
     _colorMap = nullptr;
   }
 
   if (_created)
   {
-    free(_img8_1);
+    (_isArenaAllocated)? nullptr : free(_img8_1);
     _img8 = nullptr;
     _created = false;
     _vpOoB   = true;  // TFT_eSPI class write() uses this to check for valid sprite
@@ -395,7 +540,6 @@ void TFT_eSprite::deleteSprite(void)
 #define FP_SCALE 10
 bool TFT_eSprite::pushRotated(int16_t angle, uint32_t transp)
 {
-  if ( !_created || _tft->_vpOoB) return false;
 
   // Bounding box parameters
   int16_t min_x;
