@@ -200,6 +200,8 @@ void* TFT_eSprite::createSpriteWithArena(int16_t w, int16_t h, uint8_t frames, M
 
   if ( w < 1 || h < 1 ) return nullptr;
 
+  _isArenaAllocated = true;
+
   _iwidth  = _dwidth  = _bitwidth = w;
   _iheight = _dheight = h;
 
