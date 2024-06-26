@@ -244,7 +244,7 @@ void* TFT_eSprite::createSpriteWithArena(int16_t w, int16_t h, uint8_t frames, M
   if (_img8)
   {
     _created = true;
-    if ( (_bpp == 4) && (_colorMap == nullptr)) createPalette(default_4bit_palette);
+    if ( (_bpp == 4) && (_colorMap == nullptr)) createPaletteWithArena(default_4bit_palette, 0, arena);
 
     rotation = 0;
     setViewport(0, 0, _dwidth, _dheight);
@@ -360,6 +360,7 @@ void* TFT_eSprite::callocSprite(int16_t w, int16_t h, uint8_t frames)
 
   return ptr8;
 }
+
 
 
 /***************************************************************************************
@@ -519,13 +520,13 @@ void TFT_eSprite::deleteSprite(void)
 {
   if (_colorMap != nullptr)
   {
-    (_isArenaAllocated)? nullptr : free(_colorMap);
+    if (not _isArenaAllocated) free(_colorMap);
     _colorMap = nullptr;
   }
 
   if (_created)
   {
-    (_isArenaAllocated)? nullptr : free(_img8_1);
+    if (not _isArenaAllocated) free(_img8_1);
     _img8 = nullptr;
     _created = false;
     _vpOoB   = true;  // TFT_eSPI class write() uses this to check for valid sprite

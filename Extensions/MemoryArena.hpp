@@ -6,7 +6,7 @@
 
 class MemoryArena {
 public:
-    MemoryArena(size_t initialSize = 1024 * 1024);  // Default 1MB
+    MemoryArena(size_t initialSize = 10 * 1024);  
     ~MemoryArena();
 
     void* allocate(size_t size);
