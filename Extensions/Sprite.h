@@ -5,7 +5,7 @@
 // graphics are written to the Sprite rather than the TFT.
 ***************************************************************************************/
 
-#include "MemoryArena.h"
+#include "MemoryArena.hpp"
 
 class TFT_eSprite : public TFT_eSPI {
 
@@ -22,7 +22,7 @@ class TFT_eSprite : public TFT_eSPI {
            //  - 1 byte per pixel for 8-bit colour (332 RGB format)
            //  - 2 bytes per pixel for 16-bit color depth (565 RGB format)
   void*    createSprite(int16_t width, int16_t height, uint8_t frames = 1);
-  
+
   void     createPaletteWithArena(uint16_t colorMap[], uint8_t colors, MemoryArena& arena);
   void     createPaletteWithArena(const uint16_t colorMap[], uint8_t colors, MemoryArena& arena);
 
