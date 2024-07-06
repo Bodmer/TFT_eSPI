@@ -4697,7 +4697,7 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
 ** Function name:           fillRectVGradient
 ** Description:             draw a filled rectangle with a vertical colour gradient
 ***************************************************************************************/
-void TFT_eSPI::fillRectVGradient(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color1, uint32_t color2)
+void TFT_eSPI::fillRectVGradient(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color1, uint32_t color2)
 {
   if (_vpOoB) return;
 
@@ -4735,7 +4735,7 @@ void TFT_eSPI::fillRectVGradient(int16_t x, int16_t y, int16_t w, int16_t h, uin
 ** Function name:           fillRectHGradient
 ** Description:             draw a filled rectangle with a horizontal colour gradient
 ***************************************************************************************/
-void TFT_eSPI::fillRectHGradient(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color1, uint32_t color2)
+void TFT_eSPI::fillRectHGradient(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color1, uint32_t color2)
 {
   if (_vpOoB) return;
 
