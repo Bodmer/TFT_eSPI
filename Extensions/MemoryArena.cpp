@@ -21,3 +21,8 @@ void* MemoryArena::allocate(size_t size) {
 void MemoryArena::reset() {
     currentOffset = 0;
 }
+
+void MemoryArena::resetToZero() {
+    std::fill(memory.begin(), memory.end(), 0);
+    currentOffset = 0;
+}

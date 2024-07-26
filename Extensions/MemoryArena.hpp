@@ -1,18 +1,17 @@
-// MemoryArena.h
+// MemoryArena.hpp
 #pragma once
-#include <cstddef>
-#include <cstdint>
 #include <vector>
 
 class MemoryArena {
 public:
-    MemoryArena(size_t initialSize = 10 * 1024);  
+    explicit MemoryArena(size_t initialSize);
     ~MemoryArena();
 
     void* allocate(size_t size);
     void reset();
+    void resetToZero();
 
 private:
-    std::vector<uint8_t> memory;
+    std::vector<char> memory;
     size_t currentOffset;
 };
