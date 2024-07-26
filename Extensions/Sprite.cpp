@@ -18,8 +18,6 @@ TFT_eSprite::TFT_eSprite(TFT_eSPI *tft)
 {
   _tft = tft;     // Pointer to tft class so we can call member functions
 
-  uint8_t* _memoryArena;
-
   _iwidth    = 0; // Initialise width and height to 0 (it does not exist yet)
   _iheight   = 0;
   _bpp = 16;
