@@ -16,9 +16,9 @@
 #include "TFT_eSPI.h"
 
 #if defined (ESP32)
-  #if defined(CONFIG_IDF_TARGET_ESP32S3)
+  #if defined(CONFIG_IDF_TARGET_ESP32S3) && CONFIG_IDF_TARGET_ESP32S3
     #include "Processors/TFT_eSPI_ESP32_S3.c" // Tested with SPI and 8-bit parallel
-  #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  #elif defined(CONFIG_IDF_TARGET_ESP32C3) && CONFIG_IDF_TARGET_ESP32C3
     #include "Processors/TFT_eSPI_ESP32_C3.c" // Tested with SPI (8-bit parallel will probably work too!)
   #else
     #include "Processors/TFT_eSPI_ESP32.c"
@@ -3950,7 +3950,7 @@ void TFT_eSPI::drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t
 constexpr float PixelAlphaGain   = 255.0;
 constexpr float LoAlphaTheshold  = 1.0/32.0;
 constexpr float HiAlphaTheshold  = 1.0 - LoAlphaTheshold;
-constexpr float deg2rad      = 3.14159265359/180.0;
+constexpr float deg2rad      = 3.14159265359f/180.0f;
 
 /***************************************************************************************
 ** Function name:           drawPixel (alpha blended)
@@ -3988,13 +3988,13 @@ void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32
 
     if (roundEnds)
     { // Round ends
-      sx = sx * (r + ir)/2.0 + x;
-      sy = sy * (r + ir)/2.0 + y;
-      drawSpot(sx, sy, (r - ir)/2.0, fg_color, bg_color);
+      sx = sx * (r + ir)/2.0f + x;
+      sy = sy * (r + ir)/2.0f + y;
+      drawSpot(sx, sy, (r - ir)/2.0f, fg_color, bg_color);
 
-      ex = ex * (r + ir)/2.0 + x;
-      ey = ey * (r + ir)/2.0 + y;
-      drawSpot(ex, ey, (r - ir)/2.0, fg_color, bg_color);
+      ex = ex * (r + ir)/2.0f + x;
+      ey = ey * (r + ir)/2.0f + y;
+      drawSpot(ex, ey, (r - ir)/2.0f, fg_color, bg_color);
     }
     else
     { // Square ends
@@ -4002,13 +4002,13 @@ void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32
       float asy = sy * ir + y;
       float aex = sx *  r + x;
       float aey = sy *  r + y;
-      drawWedgeLine(asx, asy, aex, aey, 0.3, 0.3, fg_color, bg_color);
+      drawWedgeLine(asx, asy, aex, aey, 0.3f, 0.3f, fg_color, bg_color);
 
       asx = ex * ir + x;
       asy = ey * ir + y;
       aex = ex *  r + x;
       aey = ey *  r + y;
-      drawWedgeLine(asx, asy, aex, aey, 0.3, 0.3, fg_color, bg_color);
+      drawWedgeLine(asx, asy, aex, aey, 0.3f, 0.3f, fg_color, bg_color);
     }
 
     // Draw arc
@@ -4466,7 +4466,7 @@ void TFT_eSPI::drawSpot(float ax, float ay, float r, uint32_t fg_color, uint32_t
 ***************************************************************************************/
 void TFT_eSPI::drawWideLine(float ax, float ay, float bx, float by, float wd, uint32_t fg_color, uint32_t bg_color)
 {
-  drawWedgeLine( ax, ay, bx, by, wd/2.0, wd/2.0, fg_color, bg_color);
+  drawWedgeLine( ax, ay, bx, by, wd/2.0f, wd/2.0f, fg_color, bg_color);
 }
 
 /***************************************************************************************
@@ -4717,8 +4717,8 @@ void TFT_eSPI::fillRectVGradient(int16_t x, int16_t y, int16_t w, int16_t h, uin
 
   begin_nin_write();
 
-  float delta = -255.0/h;
-  float alpha = 255.0;
+  float delta = -255.0f/h;
+  float alpha = 255.0f;
   uint32_t color = color1;
 
   while (h--) {
@@ -4755,8 +4755,8 @@ void TFT_eSPI::fillRectHGradient(int16_t x, int16_t y, int16_t w, int16_t h, uin
 
   begin_nin_write();
 
-  float delta = -255.0/w;
-  float alpha = 255.0;
+  float delta = -255.0f/w;
+  float alpha = 255.0f;
   uint32_t color = color1;
 
   while (w--) {
