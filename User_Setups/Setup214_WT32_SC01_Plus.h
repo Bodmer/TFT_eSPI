@@ -18,6 +18,7 @@
 
 #define TFT_INVERSION_ON
 #define TFT_ROTATION_ON
+#define TFT_BACKLIGHT_ON HIGH
 
 //#define TFT_CS   -1  // Do not define, chip select control pin permanently connected to 0V
 
