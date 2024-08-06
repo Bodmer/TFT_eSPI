@@ -24,7 +24,7 @@
 #endif
 
 #ifndef VSPI
-  #define VSPI FSPI
+  #define FSPI FSPI
 #endif
 
 // Fix IDF problems with ESP32C6
