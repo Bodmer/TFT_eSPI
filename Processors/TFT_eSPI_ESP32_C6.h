@@ -23,7 +23,7 @@
   #define CONFIG_IDF_TARGET_ESP32
 #endif
 
-#ifndef VSPI
+#ifndef FSPI
   #define FSPI FSPI
 #endif
 
