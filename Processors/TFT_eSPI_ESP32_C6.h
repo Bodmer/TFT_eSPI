@@ -269,7 +269,7 @@ SPI3_HOST = 2
 ////////////////////////////////////////////////////////////////////////////////////////
 #if !defined (TFT_PARALLEL_8_BIT)
 
-  #ifdef USE_HSPI_PORT
+  #ifdef USE_FSPI_PORT
 
     #ifndef TFT_MISO
       #define TFT_MISO -1
