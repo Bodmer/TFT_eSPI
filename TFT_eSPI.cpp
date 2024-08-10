@@ -127,10 +127,12 @@ inline void TFT_eSPI::end_nin_write(void){
   }
 }
 
-/***************************************************************************************
-** Function name:           begin_tft_read  (was called spi_begin_read)
-** Description:             Start transaction for reads and select TFT
-***************************************************************************************/
+/**
+ * @brief Starts a transaction for reading operations and selects the TFT display.
+ * 
+ * This function initiates the necessary setup for reading data and selects the TFT display
+ * to ensure proper communication.
+ */
 // Reads require a lower SPI clock rate than writes
 inline void TFT_eSPI::begin_tft_read(void){
   DMA_BUSY_CHECK; // Wait for any DMA transfer to complete before changing SPI settings
@@ -149,10 +151,13 @@ inline void TFT_eSPI::begin_tft_read(void){
   SET_BUS_READ_MODE;
 }
 
-/***************************************************************************************
-** Function name:           end_tft_read (was called spi_end_read)
-** Description:             End transaction for reads and deselect TFT
-***************************************************************************************/
+/**
+ * @brief Ends the transaction for reading operations and deselects the TFT display.
+ * 
+ * This function concludes the read operation and deselects the TFT display to finalize
+ * communication and release the bus.
+ */
+
 inline void TFT_eSPI::end_tft_read(void){
 #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS) && !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
   if(!inTransaction) {
@@ -171,10 +176,19 @@ inline void TFT_eSPI::end_tft_read(void){
   SET_BUS_WRITE_MODE;
 }
 
-/***************************************************************************************
-** Function name:           setViewport
-** Description:             Set the clipping region for the TFT screen
-***************************************************************************************/
+/**
+ * @brief Sets the clipping region (viewport) for the TFT screen.
+ * 
+ * This function defines the area of the TFT screen where drawing operations will be confined,
+ * effectively setting the viewport for rendering.
+ * 
+ * @param x The x-coordinate of the top-left corner of the clipping region.
+ * @param y The y-coordinate of the top-left corner of the clipping region.
+ * @param w The width of the clipping region.
+ * @param h The height of the clipping region.
+ * @param vpDatum A boolean flag to set the datum position for the viewport.
+ */
+
 void TFT_eSPI::setViewport(int32_t x, int32_t y, int32_t w, int32_t h, bool vpDatum)
 {
   // Viewport metrics (not clipped)
@@ -234,10 +248,20 @@ void TFT_eSPI::setViewport(int32_t x, int32_t y, int32_t w, int32_t h, bool vpDa
   //Serial.print(", _vpW=");Serial.print(_vpW);Serial.print(", _vpH=");Serial.println(_vpH);
 }
 
-/***************************************************************************************
-** Function name:           checkViewport
-** Description:             Check if any part of specified area is visible in viewport
-***************************************************************************************/
+/**
+ * @brief Checks if any part of the specified area is visible within the viewport.
+ * 
+ * This function determines whether the given area intersects with the current clipping 
+ * region (viewport) on the TFT screen.
+ * 
+ * @param x The x-coordinate of the top-left corner of the specified area.
+ * @param y The y-coordinate of the top-left corner of the specified area.
+ * @param w The width of the specified area.
+ * @param h The height of the specified area.
+ * 
+ * @return True if any part of the specified area is visible within the viewport; otherwise, false.
+ */
+
 // Note: Setting w and h to 1 will check if coordinate x,y is in area
 bool TFT_eSPI::checkViewport(int32_t x, int32_t y, int32_t w, int32_t h)
 {
@@ -263,10 +287,13 @@ bool TFT_eSPI::checkViewport(int32_t x, int32_t y, int32_t w, int32_t h)
   return true;
 }
 
-/***************************************************************************************
-** Function name:           resetViewport
-** Description:             Reset viewport to whole TFT screen, datum at 0,0
-***************************************************************************************/
+/**
+ * @brief Resets the viewport to cover the entire TFT screen, with the origin at (0,0).
+ * 
+ * This function restores the viewport to its default state, encompassing the full screen area 
+ * with the top-left corner set to the coordinate (0,0).
+ */
+
 void TFT_eSPI::resetViewport(void)
 {
   // Reset viewport to the whole screen (or sprite) area
@@ -282,55 +309,62 @@ void TFT_eSPI::resetViewport(void)
   _yHeight = height();
 }
 
-/***************************************************************************************
-** Function name:           getViewportX
-** Description:             Get x position of the viewport datum
-***************************************************************************************/
+/**
+ * @brief Retrieves the x-coordinate of the viewport's origin.
+ * 
+ * @return The x-coordinate of the top-left corner of the current viewport.
+ */
+
 int32_t  TFT_eSPI::getViewportX(void)
 {
   return _xDatum;
 }
 
-/***************************************************************************************
-** Function name:           getViewportY
-** Description:             Get y position of the viewport datum
-***************************************************************************************/
+/**
+ * @brief Retrieves the y-coordinate of the viewport's origin.
+ * 
+ * @return The y-coordinate of the top-left corner of the current viewport.
+ */
 int32_t  TFT_eSPI::getViewportY(void)
 {
   return _yDatum;
 }
 
-/***************************************************************************************
-** Function name:           getViewportWidth
-** Description:             Get width of the viewport
-***************************************************************************************/
+/**
+ * @brief Retrieves the width of the viewport.
+ * 
+ * @return The width of the current viewport.
+ */
 int32_t TFT_eSPI::getViewportWidth(void)
 {
   return _xWidth;
 }
 
-/***************************************************************************************
-** Function name:           getViewportHeight
-** Description:             Get height of the viewport
-***************************************************************************************/
+/**
+ * @brief Retrieves the height of the viewport.
+ * 
+ * @return The height of the current viewport.
+ */
 int32_t TFT_eSPI::getViewportHeight(void)
 {
   return _yHeight;
 }
 
-/***************************************************************************************
-** Function name:           getViewportDatum
-** Description:             Get datum flag of the viewport (true = viewport corner)
-***************************************************************************************/
+/**
+ * @brief Retrieves the x-coordinate of the top-left corner of the viewport.
+ * 
+ * @return The x-coordinate of the top-left corner of the current viewport.
+ */
 bool  TFT_eSPI::getViewportDatum(void)
 {
   return _vpDatum;
 }
 
-/***************************************************************************************
-** Function name:           frameViewport
-** Description:             Draw a frame inside or outside the viewport of width w
-***************************************************************************************/
+/**
+ * @brief Retrieves the x-coordinate of the top-left corner of the viewport.
+ * 
+ * @return The x-coordinate of the top-left corner of the current viewport.
+ */
 void TFT_eSPI::frameViewport(uint16_t color, int32_t w)
 {
   // Save datum position
@@ -406,10 +440,18 @@ bool TFT_eSPI::clipAddrWindow(int32_t *x, int32_t *y, int32_t *w, int32_t *h)
   return true;  // Area is wholly or partially inside viewport
 }
 
-/***************************************************************************************
-** Function name:           clipWindow
-** Description:             Clip window xs,yx,xe,ye to screen and viewport
-***************************************************************************************/
+/**
+ * @brief Clips a window to fit within the screen and viewport boundaries.
+ * 
+ * This function adjusts the specified window coordinates to ensure they are within 
+ * the limits of the screen and the current viewport.
+ * 
+ * @param xs The x-coordinate of the top-left corner of the window.
+ * @param ys The y-coordinate of the top-left corner of the window.
+ * @param xe The x-coordinate of the bottom-right corner of the window.
+ * @param ye The y-coordinate of the bottom-right corner of the window.
+ */
+
 bool TFT_eSPI::clipWindow(int32_t *xs, int32_t *ys, int32_t *xe, int32_t *ye)
 {
   if (_vpOoB) return false; // Area is outside of viewport
@@ -432,10 +474,12 @@ bool TFT_eSPI::clipWindow(int32_t *xs, int32_t *ys, int32_t *xe, int32_t *ye)
   return true;  // Area is wholly or partially inside viewport
 }
 
-/***************************************************************************************
-** Function name:           TFT_eSPI
-** Description:             Constructor , we must use hardware SPI pins
-***************************************************************************************/
+/**
+ * @brief Constructor for the TFT_eSPI class.
+ * 
+ * Initializes the TFT_eSPI object. Hardware SPI pins must be used for proper operation.
+ */
+
 TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 {
   _init_width  = _width  = w; // Set by specific xxxxx_Defines.h file or by users sketch
@@ -526,10 +570,13 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 #endif
 }
 
-/***************************************************************************************
-** Function name:           initBus
-** Description:             initialise the SPI or parallel bus
-***************************************************************************************/
+/**
+ * @brief Initializes the SPI or parallel bus for communication.
+ * 
+ * This function sets up the necessary configurations for the SPI or parallel bus,
+ * depending on the hardware interface being used.
+ */
+
 void TFT_eSPI::initBus(void) {
 
 #ifdef TFT_CS
@@ -594,20 +641,22 @@ void TFT_eSPI::initBus(void) {
 #endif
 }
 
-/***************************************************************************************
-** Function name:           begin
-** Description:             Included for backwards compatibility
-***************************************************************************************/
+/**
+ * @brief Included for backwards compatibility.
+ * 
+ * @param tc An 8-bit value for backward compatibility.
+ */
 void TFT_eSPI::begin(uint8_t tc)
 {
  init(tc);
 }
 
 
-/***************************************************************************************
-** Function name:           init (tc is tab colour for ST7735 displays only)
-** Description:             Reset, then initialise the TFT display registers
-***************************************************************************************/
+/**
+ * @brief Resets and initializes the TFT display registers.
+ * 
+ * @param tc Tab color for ST7735 displays only (8-bit value).
+ */
 void TFT_eSPI::init(uint8_t tc)
 {
   if (_booted)
@@ -800,10 +849,13 @@ void TFT_eSPI::init(uint8_t tc)
 }
 
 
-/***************************************************************************************
-** Function name:           setRotation
-** Description:             rotate the screen orientation m = 0-3 or 4-7 for BMP drawing
-***************************************************************************************/
+/**
+ * @brief Rotates the screen orientation.
+ * 
+ * @param m An 8-bit value to set the screen orientation. 
+ *          Values can range from 0 to 3 for standard screen rotation, 
+ *          or from 4 to 7 for BMP drawing orientation.
+ */
 void TFT_eSPI::setRotation(uint8_t m)
 {
 
@@ -884,20 +936,28 @@ void TFT_eSPI::setRotation(uint8_t m)
 }
 
 
-/***************************************************************************************
-** Function name:           getRotation
-** Description:             Return the rotation value (as used by setRotation())
-***************************************************************************************/
+/**
+ * @brief Returns the current rotation value.
+ * 
+ * This value corresponds to the rotation setting applied by the `setRotation()` function.
+ * 
+ * @return The current rotation value.
+ */
 uint8_t TFT_eSPI::getRotation(void)
 {
   return rotation;
 }
 
 
-/***************************************************************************************
-** Function name:           setOrigin
-** Description:             Set graphics origin to position x,y wrt to top left corner
-***************************************************************************************/
+/**
+ * @brief Sets the graphics origin to a specified position relative to the top-left corner.
+ * 
+ * This function adjusts the graphics origin so that subsequent drawing operations
+ * are relative to the specified (x, y) position.
+ * 
+ * @param x The x-coordinate of the new graphics origin.
+ * @param y The y-coordinate of the new graphics origin.
+ */
 //Note: setRotation, setViewport and resetViewport will revert origin to top left
 void TFT_eSPI::setOrigin(int32_t x, int32_t y)
 {
@@ -906,30 +966,38 @@ void TFT_eSPI::setOrigin(int32_t x, int32_t y)
 }
 
 
-/***************************************************************************************
-** Function name:           getOriginX
-** Description:             Set graphics origin to position x
-***************************************************************************************/
+/**
+ * @brief Retrieves the x-coordinate of the graphics origin.
+ * 
+ * This function returns the x-coordinate of the current graphics origin position.
+ * 
+ * @return The x-coordinate of the graphics origin.
+ */
 int32_t TFT_eSPI::getOriginX(void)
 {
   return _xDatum;
 }
 
 
-/***************************************************************************************
-** Function name:           getOriginY
-** Description:             Set graphics origin to position y
-***************************************************************************************/
+/**
+ * @brief Retrieves the u-coordinate of the graphics origin.
+ * 
+ * This function returns the u-coordinate of the current graphics origin position.
+ * 
+ * @return The u-coordinate of the graphics origin.
+ */
 int32_t TFT_eSPI::getOriginY(void)
 {
   return _yDatum;
 }
 
 
-/***************************************************************************************
-** Function name:           commandList, used for FLASH based lists only (e.g. ST7735)
-** Description:             Get initialisation commands from FLASH and send to TFT
-***************************************************************************************/
+/**
+ * @brief Sends initialization commands from FLASH to the TFT display.
+ * 
+ * This function retrieves a list of initialization commands stored in FLASH memory 
+ * (e.g., for ST7735 displays) and sends them to the TFT display to set it up.
+ */
 void TFT_eSPI::commandList (const uint8_t *addr)
 {
   uint8_t  numCommands;
@@ -960,10 +1028,15 @@ void TFT_eSPI::commandList (const uint8_t *addr)
 }
 
 
-/***************************************************************************************
-** Function name:           spiwrite
-** Description:             Write 8 bits to SPI port (legacy support only)
-***************************************************************************************/
+/**
+ * @brief Writes 8 bits of data to the SPI port.
+ * 
+ * This function sends 8 bits of data to the SPI port. It is included for legacy support
+ * and may be used in older implementations.
+ * 
+ * @param c The 8-bit data to be written to the SPI port.
+ */
+
 void TFT_eSPI::spiwrite(uint8_t c)
 {
   begin_tft_write();
@@ -972,10 +1045,15 @@ void TFT_eSPI::spiwrite(uint8_t c)
 }
 
 
-/***************************************************************************************
-** Function name:           writecommand
-** Description:             Send an 8-bit command to the TFT
-***************************************************************************************/
+/**
+ * @brief Sends an 8-bit command to the TFT display.
+ * 
+ * This function transmits an 8-bit command to the TFT display to control its operation
+ * or configuration.
+ * 
+ * @param c The 8-bit command to be sent to the TFT display.
+ */
+
 #ifndef RM68120_DRIVER
 void TFT_eSPI::writecommand(uint8_t c)
 {
@@ -1036,10 +1114,15 @@ void TFT_eSPI::writeRegister16(uint16_t c, uint16_t d)
 
 #endif
 
-/***************************************************************************************
-** Function name:           writedata
-** Description:             Send a 8-bit data value to the TFT
-***************************************************************************************/
+/**
+ * @brief Sends an 8-bit data value to the TFT display.
+ * 
+ * This function transmits an 8-bit data value to the TFT display, typically following
+ * a command to set the data that will be displayed.
+ * 
+ * @param c The 8-bit data value to be sent to the TFT display.
+ */
+
 void TFT_eSPI::writedata(uint8_t d)
 {
   begin_tft_write();
@@ -1054,10 +1137,17 @@ void TFT_eSPI::writedata(uint8_t d)
 }
 
 
-/***************************************************************************************
-** Function name:           readcommand8
-** Description:             Read a 8-bit data value from an indexed command register
-***************************************************************************************/
+/**
+ * @brief Reads an 8-bit data value from an indexed command register.
+ * 
+ * This function retrieves an 8-bit data value from a specific command register of the TFT
+ * display, based on the provided command function and index.
+ * 
+ * @param cmd_function The command function that specifies the register to read from.
+ * @param index The index of the command register to read.
+ * 
+ * @return The 8-bit data value read from the specified command register.
+ */
 uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
 {
   uint8_t reg = 0;
@@ -1097,10 +1187,17 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
 }
 
 
-/***************************************************************************************
-** Function name:           readcommand16
-** Description:             Read a 16-bit data value from an indexed command register
-***************************************************************************************/
+/**
+ * @brief Reads a 16-bit data value from an indexed command register.
+ * 
+ * This function retrieves a 16-bit data value from a specific command register of the TFT
+ * display, based on the provided command function and index.
+ * 
+ * @param cmd_function The command function that specifies the register to read from.
+ * @param index The index of the command register to read.
+ * 
+ * @return The 16-bit data value read from the specified command register.
+ */
 uint16_t TFT_eSPI::readcommand16(uint8_t cmd_function, uint8_t index)
 {
   uint32_t reg;
@@ -1112,10 +1209,17 @@ uint16_t TFT_eSPI::readcommand16(uint8_t cmd_function, uint8_t index)
 }
 
 
-/***************************************************************************************
-** Function name:           readcommand32
-** Description:             Read a 32-bit data value from an indexed command register
-***************************************************************************************/
+/**
+ * @brief Reads a 32-bit data value from an indexed command register.
+ * 
+ * This function retrieves a 32-bit data value from a specific command register of the TFT
+ * display, based on the provided command function and index.
+ * 
+ * @param cmd_function The command function that specifies the register to read from.
+ * @param index The index of the command register to read.
+ * 
+ * @return The 32-bit data value read from the specified command register.
+ */
 uint32_t TFT_eSPI::readcommand32(uint8_t cmd_function, uint8_t index)
 {
   uint32_t reg;
@@ -1129,10 +1233,18 @@ uint32_t TFT_eSPI::readcommand32(uint8_t cmd_function, uint8_t index)
 }
 
 
-/***************************************************************************************
-** Function name:           read pixel (for SPI Interface II i.e. IM [3:0] = "1101")
-** Description:             Read 565 pixel colours from a pixel
-***************************************************************************************/
+/**
+ * @brief Reads 565 pixel colors from a specific pixel.
+ * 
+ * This function retrieves 565-format pixel color data from a pixel on the TFT display.
+ * This is applicable for SPI Interface II, where the interface mode is "1101".
+ * 
+ * @param x0 The x-coordinate of the pixel to read.
+ * @param y0 The y-coordinate of the pixel to read.
+ * 
+ * @return The 16-bit color value of the specified pixel in 565 format.
+ */
+
 uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
 {
   if (_vpOoB) return 0;
@@ -1266,10 +1378,20 @@ void TFT_eSPI::setCallback(getColorCallback getCol)
 }
 
 
-/***************************************************************************************
-** Function name:           read rectangle (for SPI Interface II i.e. IM [3:0] = "1101")
-** Description:             Read 565 pixel colours from a defined area
-***************************************************************************************/
+/**
+ * @brief Reads 565-format pixel colors from a defined rectangular area.
+ * 
+ * This function retrieves pixel color data in 565 format from a specified rectangular
+ * area on the TFT display. This is applicable for SPI Interface II, where the interface
+ * mode is "1101".
+ * 
+ * @param x The x-coordinate of the top-left corner of the rectangle.
+ * @param y The y-coordinate of the top-left corner of the rectangle.
+ * @param w The width of the rectangle.
+ * @param h The height of the rectangle.
+ * @param data A pointer to an array where the pixel colors will be stored.
+ */
+
 void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data)
 {
   PI_CLIP ;
@@ -1429,10 +1551,19 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 }
 
 
-/***************************************************************************************
-** Function name:           push rectangle
-** Description:             push 565 pixel colours into a defined area
-***************************************************************************************/
+/**
+ * @brief Pushes 565-format pixel colors into a defined rectangular area.
+ * 
+ * This function sends pixel color data in 565 format to a specified rectangular area
+ * on the TFT display, updating the display with the provided colors.
+ * 
+ * @param x The x-coordinate of the top-left corner of the rectangle.
+ * @param y The y-coordinate of the top-left corner of the rectangle.
+ * @param w The width of the rectangle.
+ * @param h The height of the rectangle.
+ * @param data A pointer to an array containing the pixel colors to be pushed.
+ */
+
 void TFT_eSPI::pushRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data)
 {
   bool swap = _swapBytes; _swapBytes = false;
@@ -1441,10 +1572,19 @@ void TFT_eSPI::pushRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
 }
 
 
-/***************************************************************************************
-** Function name:           pushImage
-** Description:             plot 16-bit colour sprite or image onto TFT
-***************************************************************************************/
+/**
+ * @brief Plots a 16-bit color sprite or image onto the TFT display.
+ * 
+ * This function draws a 16-bit color image or sprite onto the TFT display at the specified
+ * coordinates. The image data is provided in an array, where each element represents a pixel's
+ * color in 16-bit format.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image will be drawn.
+ * @param w The width of the image in pixels.
+ * @param h The height of the image in pixels.
+ * @param data A pointer to an array containing the 16-bit color values of the image.
+ */
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data)
 {
   PI_CLIP;
@@ -1471,11 +1611,22 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
   end_tft_write();
 }
 
-/***************************************************************************************
-** Function name:           pushImage
-** Description:             plot 16-bit sprite or image with 1 colour being transparent
-***************************************************************************************/
+/**
+ * @brief Plots a 16-bit sprite or image onto the TFT display with a transparent color.
+ * 
+ * This function draws a 16-bit color image or sprite onto the TFT display at the specified
+ * coordinates, treating a specific color as transparent. The color to be treated as transparent
+ * is provided as a parameter.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image will be drawn.
+ * @param w The width of the image in pixels.
+ * @param h The height of the image in pixels.
+ * @param data A pointer to an array containing the 16-bit color values of the image.
+ * @param transp The 16-bit color value that will be treated as transparent.
+ */
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *data, uint16_t transp)
+
 {
   PI_CLIP;
 
@@ -1530,10 +1681,18 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 }
 
 
-/***************************************************************************************
-** Function name:           pushImage - for FLASH (PROGMEM) stored images
-** Description:             plot 16-bit image
-***************************************************************************************/
+/**
+ * @brief Plots a 16-bit image stored in FLASH (PROGMEM) onto the TFT display.
+ * 
+ * This function draws a 16-bit color image stored in FLASH memory onto the TFT display at
+ * the specified coordinates. The image data is accessed directly from PROGMEM to save RAM.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image will be drawn.
+ * @param w The width of the image in pixels.
+ * @param h The height of the image in pixels.
+ * @param data A pointer to the 16-bit color values of the image stored in FLASH (PROGMEM).
+ */
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint16_t *data)
 {
   // Requires 32-bit aligned access, so use PROGMEM 16-bit word functions
@@ -1560,11 +1719,22 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
   end_tft_write();
 }
 
-/***************************************************************************************
-** Function name:           pushImage - for FLASH (PROGMEM) stored images
-** Description:             plot 16-bit image with 1 colour being transparent
-***************************************************************************************/
+/**
+ * @brief Plots a 16-bit image stored in FLASH (PROGMEM) onto the TFT display with a transparent color.
+ * 
+ * This function draws a 16-bit color image stored in FLASH memory onto the TFT display at
+ * the specified coordinates. The specified color will be treated as transparent, allowing
+ * the background or underlying graphics to show through.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image will be drawn.
+ * @param w The width of the image in pixels.
+ * @param h The height of the image in pixels.
+ * @param data A pointer to the 16-bit color values of the image stored in FLASH (PROGMEM).
+ * @param transp The 16-bit color value to be treated as transparent.
+ */
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint16_t *data, uint16_t transp)
+
 {
   // Requires 32-bit aligned access, so use PROGMEM 16-bit word functions
   PI_CLIP;
@@ -1616,10 +1786,21 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
   end_tft_write();
 }
 
-/***************************************************************************************
-** Function name:           pushImage
-** Description:             plot 8-bit or 4-bit or 1 bit image or sprite using a line buffer
-***************************************************************************************/
+/**
+ * @brief Plots an 8-bit, 4-bit, or 1-bit image or sprite onto the TFT display using a line buffer.
+ * 
+ * This function draws an image or sprite onto the TFT display at the specified coordinates. 
+ * The image data can be in 8-bit, 4-bit, or 1-bit format, and a line buffer is used for 
+ * efficient rendering. Optionally, a color map can be provided for color translation.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image will be drawn.
+ * @param w The width of the image in pixels.
+ * @param h The height of the image in pixels.
+ * @param data A pointer to the image data.
+ * @param bpp8 A boolean indicating if the image data is 8 bits per pixel (true) or not (false).
+ * @param cmap A pointer to a color map for translating image colors, or NULL if no color map is used.
+ */
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *data, bool bpp8,  uint16_t *cmap)
 {
   PI_CLIP;
@@ -1749,11 +1930,22 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint8
 }
 
 
-/***************************************************************************************
-** Function name:           pushImage
-** Description:             plot 8-bit or 4-bit or 1 bit image or sprite using a line buffer
-***************************************************************************************/
-void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data, bool bpp8,  uint16_t *cmap)
+/**
+ * @brief Plots an 8-bit, 4-bit, or 1-bit image or sprite onto the TFT display using a line buffer.
+ * 
+ * This function renders an image or sprite onto the TFT display at the specified coordinates. 
+ * The image data can be in 8-bit, 4-bit, or 1-bit format. A line buffer is used to facilitate
+ * efficient drawing. A color map can be provided for color translation if needed.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image or sprite will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image or sprite will be drawn.
+ * @param w The width of the image or sprite in pixels.
+ * @param h The height of the image or sprite in pixels.
+ * @param data A pointer to the image or sprite data.
+ * @param bpp8 A boolean indicating whether the image data is 8 bits per pixel (true) or not (false).
+ * @param cmap A pointer to a color map for translating image colors, or NULL if no color map is used.
+ */
+void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data, bool bpp8, uint16_t *cmap)
 {
   PI_CLIP;
 
@@ -1882,10 +2074,22 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 }
 
 
-/***************************************************************************************
-** Function name:           pushImage
-** Description:             plot 8 or 4 or 1 bit image or sprite with a transparent colour
-***************************************************************************************/
+/**
+ * @brief Plots an 8-bit, 4-bit, or 1-bit image or sprite onto the TFT display with a transparent color.
+ * 
+ * This function renders an image or sprite onto the TFT display at the specified coordinates, 
+ * using a transparent color to make certain pixels invisible. The image data can be in 8-bit, 
+ * 4-bit, or 1-bit format. A color map can be provided for color translation if needed.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image or sprite will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image or sprite will be drawn.
+ * @param w The width of the image or sprite in pixels.
+ * @param h The height of the image or sprite in pixels.
+ * @param data A pointer to the image or sprite data.
+ * @param transp The color value to be treated as transparent.
+ * @param bpp8 A boolean indicating whether the image data is 8 bits per pixel (true) or not (false).
+ * @param cmap A pointer to a color map for translating image colors, or NULL if no color map is used.
+ */
 void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *data, uint8_t transp, bool bpp8, uint16_t *cmap)
 {
   PI_CLIP;
@@ -2173,32 +2377,50 @@ void TFT_eSPI::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint1
 }
 
 
-/***************************************************************************************
-** Function name:           setSwapBytes
-** Description:             Used by 16-bit pushImage() to swap byte order in colours
-***************************************************************************************/
+/**
+ * @brief Sets whether to swap byte order for 16-bit color values.
+ * 
+ * This function configures the byte order for 16-bit color values used in functions like
+ * `pushImage()`. Swapping byte order is necessary when dealing with different color formats
+ * or byte order conventions.
+ * 
+ * @param swap A boolean value indicating whether to swap the byte order (true) or not (false).
+ */
 void TFT_eSPI::setSwapBytes(bool swap)
 {
   _swapBytes = swap;
 }
 
 
-/***************************************************************************************
-** Function name:           getSwapBytes
-** Description:             Return the swap byte order for colours
-***************************************************************************************/
+/**
+ * @brief Returns the current byte order swap setting for 16-bit color values.
+ * 
+ * This function retrieves the current configuration for byte order swapping, which is used
+ * by functions that handle 16-bit color values, such as `pushImage()`.
+ * 
+ * @return A boolean value indicating whether byte order swapping is enabled (true) or not (false).
+ */
 bool TFT_eSPI::getSwapBytes(void)
 {
   return _swapBytes;
 }
 
 
-/***************************************************************************************
-** Function name:           read rectangle (for SPI Interface II i.e. IM [3:0] = "1101")
-** Description:             Read RGB pixel colours from a defined area
-***************************************************************************************/
+/**
+ * @brief Reads RGB pixel colors from a defined rectangular area.
+ * 
+ * This function reads the RGB color values from a specified rectangular region on the TFT display.
+ * The data is stored in the provided buffer, with each pixel's color requiring 3 bytes (RGB).
+ * 
+ * @param x0 The x-coordinate of the top-left corner of the rectangular area.
+ * @param y0 The y-coordinate of the top-left corner of the rectangular area.
+ * @param w The width of the rectangular area in pixels.
+ * @param h The height of the rectangular area in pixels.
+ * @param data A pointer to the buffer where the RGB color values will be stored. The size of the buffer 
+ *             must be 3 bytes per pixel (i.e., width * height * 3 bytes).
+ */
 // If w and h are 1, then 1 pixel is read, *data array size must be 3 bytes per pixel
-void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t *data)
+void TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_t *data)
 {
 #if defined(TFT_PARALLEL_8_BIT) || defined(RP2040_PIO_INTERFACE)
 
@@ -2267,11 +2489,17 @@ void  TFT_eSPI::readRectRGB(int32_t x0, int32_t y0, int32_t w, int32_t h, uint8_
 }
 
 
-/***************************************************************************************
-** Function name:           drawCircle
-** Description:             Draw a circle outline
-***************************************************************************************/
-// Optimised midpoint circle algorithm
+/**
+ * @brief Draws the outline of a circle.
+ * 
+ * This function draws the outline of a circle using an optimized midpoint circle algorithm.
+ * The circle is centered at the specified coordinates with the given radius.
+ * 
+ * @param x0 The x-coordinate of the circle's center.
+ * @param y0 The y-coordinate of the circle's center.
+ * @param r The radius of the circle.
+ * @param color The color of the circle's outline.
+ */
 void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 {
   if ( r <= 0 ) return;
@@ -2336,11 +2564,19 @@ void TFT_eSPI::drawCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 }
 
 
-/***************************************************************************************
-** Function name:           drawCircleHelper
-** Description:             Support function for drawRoundRect()
-***************************************************************************************/
-void TFT_eSPI::drawCircleHelper( int32_t x0, int32_t y0, int32_t rr, uint8_t cornername, uint32_t color)
+/**
+ * @brief Helper function for drawing rounded rectangles.
+ * 
+ * This function assists in drawing rounded rectangles by handling the circle segments at the 
+ * corners. It draws a portion of a circle based on the specified parameters.
+ * 
+ * @param x0 The x-coordinate of the circle's center.
+ * @param y0 The y-coordinate of the circle's center.
+ * @param rr The radius of the circle segment.
+ * @param cornername An identifier for the specific corner to draw (e.g., which corner of the rectangle).
+ * @param color The color of the circle segment.
+ */
+void TFT_eSPI::drawCircleHelper(int32_t x0, int32_t y0, int32_t rr, uint8_t cornername, uint32_t color)
 {
   if (rr <= 0) return;
   int32_t f     = 1 - rr;
@@ -2405,12 +2641,18 @@ void TFT_eSPI::drawCircleHelper( int32_t x0, int32_t y0, int32_t rr, uint8_t cor
   end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
-/***************************************************************************************
-** Function name:           fillCircle
-** Description:             draw a filled circle
-***************************************************************************************/
-// Optimised midpoint circle algorithm, changed to horizontal lines (faster in sprites)
-// Improved algorithm avoids repetition of lines
+/**
+ * @brief Draws a filled circle.
+ * 
+ * This function draws a filled circle using an optimized midpoint circle algorithm. It
+ * utilizes horizontal lines to improve performance, particularly when rendering sprites,
+ * and includes an improved algorithm to avoid redundant lines.
+ * 
+ * @param x0 The x-coordinate of the circle's center.
+ * @param y0 The y-coordinate of the circle's center.
+ * @param r The radius of the circle.
+ * @param color The color of the filled circle.
+ */
 void TFT_eSPI::fillCircle(int32_t x0, int32_t y0, int32_t r, uint32_t color)
 {
   int32_t  x  = 0;
@@ -2479,10 +2721,18 @@ void TFT_eSPI::fillCircleHelper(int32_t x0, int32_t y0, int32_t r, uint8_t corne
 }
 
 
-/***************************************************************************************
-** Function name:           drawEllipse
-** Description:             Draw a ellipse outline
-***************************************************************************************/
+/**
+ * @brief Draws the outline of an ellipse.
+ * 
+ * This function draws the outline of an ellipse centered at the specified coordinates
+ * with the given radii. The ellipse is drawn using the specified color.
+ * 
+ * @param x0 The x-coordinate of the ellipse's center.
+ * @param y0 The y-coordinate of the ellipse's center.
+ * @param rx The horizontal radius of the ellipse.
+ * @param ry The vertical radius of the ellipse.
+ * @param color The color of the ellipse's outline.
+ */
 void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color)
 {
   if (rx<2) return;
@@ -2531,10 +2781,18 @@ void TFT_eSPI::drawEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint1
 }
 
 
-/***************************************************************************************
-** Function name:           fillEllipse
-** Description:             draw a filled ellipse
-***************************************************************************************/
+/**
+ * @brief Draws a filled ellipse.
+ * 
+ * This function draws a filled ellipse centered at the specified coordinates with the 
+ * given radii. The ellipse is filled with the specified color.
+ * 
+ * @param x0 The x-coordinate of the ellipse's center.
+ * @param y0 The y-coordinate of the ellipse's center.
+ * @param rx The horizontal radius of the ellipse.
+ * @param ry The vertical radius of the ellipse.
+ * @param color The color used to fill the ellipse.
+ */
 void TFT_eSPI::fillEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint16_t color)
 {
   if (rx<2) return;
@@ -2576,20 +2834,28 @@ void TFT_eSPI::fillEllipse(int16_t x0, int16_t y0, int32_t rx, int32_t ry, uint1
 }
 
 
-/***************************************************************************************
-** Function name:           fillScreen
-** Description:             Clear the screen to defined colour
-***************************************************************************************/
+/**
+ * @brief Clears the screen and fills it with the specified color.
+ * 
+ * @param color The color used to fill the screen.
+ */
+
 void TFT_eSPI::fillScreen(uint32_t color)
 {
   fillRect(0, 0, _width, _height, color);
 }
 
 
-/***************************************************************************************
-** Function name:           drawRect
-** Description:             Draw a rectangle outline
-***************************************************************************************/
+/**
+ * @brief Draws a rectangle outline on the screen.
+ * 
+ * @param x The x-coordinate of the top-left corner of the rectangle.
+ * @param y The y-coordinate of the top-left corner of the rectangle.
+ * @param w The width of the rectangle.
+ * @param h The height of the rectangle.
+ * @param color The color of the rectangle outline.
+ */
+
 // Draw a rectangle
 void TFT_eSPI::drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
@@ -2607,10 +2873,17 @@ void TFT_eSPI::drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
 }
 
 
-/***************************************************************************************
-** Function name:           drawRoundRect
-** Description:             Draw a rounded corner rectangle outline
-***************************************************************************************/
+/**
+ * @brief Draws a rectangle outline with rounded corners on the screen.
+ * 
+ * @param x The x-coordinate of the top-left corner of the rectangle.
+ * @param y The y-coordinate of the top-left corner of the rectangle.
+ * @param w The width of the rectangle.
+ * @param h The height of the rectangle.
+ * @param r The radius of the rounded corners.
+ * @param color The color of the rectangle outline.
+ */
+
 // Draw a rounded rectangle
 void TFT_eSPI::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint32_t color)
 {
@@ -2632,11 +2905,17 @@ void TFT_eSPI::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t
   end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
+/**
+ * @brief Draws a filled rectangle with rounded corners on the screen.
+ * 
+ * @param x The x-coordinate of the top-left corner of the rectangle.
+ * @param y The y-coordinate of the top-left corner of the rectangle.
+ * @param w The width of the rectangle.
+ * @param h The height of the rectangle.
+ * @param r The radius of the rounded corners.
+ * @param color The color used to fill the rectangle.
+*/
 
-/***************************************************************************************
-** Function name:           fillRoundRect
-** Description:             Draw a rounded corner filled rectangle
-***************************************************************************************/
 // Fill a rounded rectangle, changed to horizontal lines (faster in sprites)
 void TFT_eSPI::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint32_t color)
 {
@@ -2655,10 +2934,18 @@ void TFT_eSPI::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t
 }
 
 
-/***************************************************************************************
-** Function name:           drawTriangle
-** Description:             Draw a triangle outline using 3 arbitrary points
-***************************************************************************************/
+/**
+ * @brief Draws a triangle outline on the screen using three arbitrary points.
+ * 
+ * @param x0 The x-coordinate of the first point.
+ * @param y0 The y-coordinate of the first point.
+ * @param x1 The x-coordinate of the second point.
+ * @param y1 The y-coordinate of the second point.
+ * @param x2 The x-coordinate of the third point.
+ * @param y2 The y-coordinate of the third point.
+ * @param color The color of the triangle outline.
+ */
+
 // Draw a triangle
 void TFT_eSPI::drawTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint32_t color)
 {
@@ -2674,10 +2961,17 @@ void TFT_eSPI::drawTriangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int3
 }
 
 
-/***************************************************************************************
-** Function name:           fillTriangle
-** Description:             Draw a filled triangle using 3 arbitrary points
-***************************************************************************************/
+/**
+ * @brief Draws a filled triangle on the screen using three arbitrary points.
+ * 
+ * @param x0 The x-coordinate of the first vertex of the triangle.
+ * @param y0 The y-coordinate of the first vertex of the triangle.
+ * @param x1 The x-coordinate of the second vertex of the triangle.
+ * @param y1 The y-coordinate of the second vertex of the triangle.
+ * @param x2 The x-coordinate of the third vertex of the triangle.
+ * @param y2 The y-coordinate of the third vertex of the triangle.
+ * @param color The color used to fill the triangle.
+ */
 // Fill a triangle - original Adafruit function works well and code footprint is small
 void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint32_t color)
 {
@@ -2755,10 +3049,16 @@ void TFT_eSPI::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_t y1, in
 }
 
 
-/***************************************************************************************
-** Function name:           drawBitmap
-** Description:             Draw an image stored in an array on the TFT
-***************************************************************************************/
+/**
+ * @brief Draws an image stored in an array on the TFT display.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image will be drawn.
+ * @param bitmap A pointer to an array containing the image data.
+ * @param w The width of the image.
+ * @param h The height of the image.
+ * @param color The color used to draw the image.
+ */
 void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color)
 {
   //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
@@ -2779,10 +3079,17 @@ void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w
 }
 
 
-/***************************************************************************************
-** Function name:           drawBitmap
-** Description:             Draw an image stored in an array on the TFT
-***************************************************************************************/
+/**
+ * @brief Draws an image stored in an array on the TFT display.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image will be drawn.
+ * @param bitmap A pointer to an array containing the image data.
+ * @param w The width of the image in pixels.
+ * @param h The height of the image in pixels.
+ * @param fgcolor The color used to draw the image.
+ * @param bgcolor The color used to draw the background.
+ */
 void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t fgcolor, uint16_t bgcolor)
 {
   //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
@@ -2802,10 +3109,17 @@ void TFT_eSPI::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w
   end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
-/***************************************************************************************
-** Function name:           drawXBitmap
-** Description:             Draw an image stored in an XBM array onto the TFT
-***************************************************************************************/
+/**
+ * @brief Draws an image stored in an XBM array on the TFT display.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image will be drawn.
+ * @param bitmap A pointer to an XBM array containing the image data.
+ * @param w The width of the image in pixels.
+ * @param h The height of the image in pixels.
+ * @param color The color used to draw the image.
+ */
+
 void TFT_eSPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color)
 {
   //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
@@ -2826,10 +3140,17 @@ void TFT_eSPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t 
 }
 
 
-/***************************************************************************************
-** Function name:           drawXBitmap
-** Description:             Draw an XBM image with foreground and background colors
-***************************************************************************************/
+/**
+ * @brief Draws an image stored in an XBM array on the TFT display.
+ * 
+ * @param x The x-coordinate of the top-left corner where the image will be drawn.
+ * @param y The y-coordinate of the top-left corner where the image will be drawn.
+ * @param bitmap A pointer to an XBM array containing the image data.
+ * @param w The width of the image in pixels.
+ * @param h The height of the image in pixels.
+ * @param color The color used to draw the image.
+ * @param bgcolor The color used to draw the background.
+ */
 void TFT_eSPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bgcolor)
 {
   //begin_tft_write();          // Sprite class can use this function, avoiding begin_tft_write()
@@ -2850,10 +3171,12 @@ void TFT_eSPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t 
 }
 
 
-/***************************************************************************************
-** Function name:           setCursor
-** Description:             Set the text cursor x,y position
-***************************************************************************************/
+/**
+ * @brief Sets the Cursor to a point on the screen where text will be drawn.
+ * 
+ * @param x The x-coordinate of the cursor position.
+ * @param y The y-coordinate of the cursor position.
+ */
 void TFT_eSPI::setCursor(int16_t x, int16_t y)
 {
   cursor_x = x;
@@ -2861,10 +3184,13 @@ void TFT_eSPI::setCursor(int16_t x, int16_t y)
 }
 
 
-/***************************************************************************************
-** Function name:           setCursor
-** Description:             Set the text cursor x,y position and font
-***************************************************************************************/
+/**
+ * @brief Sets the Cursor to a point on the screen where text will be drawn.
+ * 
+ * @param x The x-coordinate of the cursor position.
+ * @param y The y-coordinate of the cursor position.
+ * @param font The font used for the text.
+ */
 void TFT_eSPI::setCursor(int16_t x, int16_t y, uint8_t font)
 {
   setTextFont(font);
@@ -2873,29 +3199,33 @@ void TFT_eSPI::setCursor(int16_t x, int16_t y, uint8_t font)
 }
 
 
-/***************************************************************************************
-** Function name:           getCursorX
-** Description:             Get the text cursor x position
-***************************************************************************************/
+/**
+ * @brief Retrieves the x-coordinate of the current cursor position.
+ * 
+ * @return The x-coordinate of the current cursor position.
+ */
 int16_t TFT_eSPI::getCursorX(void)
 {
   return cursor_x;
 }
 
-/***************************************************************************************
-** Function name:           getCursorY
-** Description:             Get the text cursor y position
-***************************************************************************************/
+/**
+ * @brief Retrieves the y-coordinate of the current cursor position.
+ * 
+ * @return The y-coordinate of the current cursor position.
+ */
 int16_t TFT_eSPI::getCursorY(void)
 {
   return cursor_y;
 }
 
 
-/***************************************************************************************
-** Function name:           setTextSize
-** Description:             Set the text size multiplier
-***************************************************************************************/
+/**
+ * @brief Sets the text size multiplier.
+ * 
+ * @param s The multiplier for the text size. For example, a size of 1 represents the default text size, while a size of 2 represents double the default text size.
+ */
+
 void TFT_eSPI::setTextSize(uint8_t s)
 {
   if (s>7) s = 7; // Limit the maximum size multiplier so byte variables can be used for rendering
@@ -2903,10 +3233,12 @@ void TFT_eSPI::setTextSize(uint8_t s)
 }
 
 
-/***************************************************************************************
-** Function name:           setTextColor
-** Description:             Set the font foreground colour (background is transparent)
-***************************************************************************************/
+/**
+ * @brief Sets the font foreground color with a transparent background.
+ * 
+ * @param color The color to use for the font's foreground. The background remains transparent.
+ */
+
 void TFT_eSPI::setTextColor(uint16_t c)
 {
   // For 'transparent' background, we'll set the bg
@@ -2915,10 +3247,14 @@ void TFT_eSPI::setTextColor(uint16_t c)
 }
 
 
-/***************************************************************************************
-** Function name:           setTextColor
-** Description:             Set the font foreground and background colour
-***************************************************************************************/
+/**
+ * @brief Sets the font foreground and background colors.
+ * 
+ * @param c The color to use for the font's foreground.
+ * @param b The color to use for the font's background.
+ * @param bgfill Whether the background should be filled with the background color.
+ */
+
 // Smooth fonts use the background colour for anti-aliasing and by default the
 // background is not filled. If bgfill = true, then a smooth font background fill will
 // be used.
@@ -2930,10 +3266,13 @@ void TFT_eSPI::setTextColor(uint16_t c, uint16_t b, bool bgfill)
 }
 
 
-/***************************************************************************************
-** Function name:           setPivot
-** Description:             Set the pivot point on the TFT
-*************************************************************************************x*/
+/**
+ * @brief Sets the pivot point on the TFT display.
+ * 
+ * @param x The x-coordinate of the pivot point.
+ * @param y The y-coordinate of the pivot point.
+ */
+
 void TFT_eSPI::setPivot(int16_t x, int16_t y)
 {
   _xPivot = x;
@@ -2941,30 +3280,37 @@ void TFT_eSPI::setPivot(int16_t x, int16_t y)
 }
 
 
-/***************************************************************************************
-** Function name:           getPivotX
-** Description:             Get the x pivot position
-***************************************************************************************/
+/**
+ * @brief Retrieves the x-coordinate of the pivot point.
+ * 
+ * @return The x-coordinate of the current pivot position.
+ */
+
 int16_t TFT_eSPI::getPivotX(void)
 {
   return _xPivot;
 }
 
 
-/***************************************************************************************
-** Function name:           getPivotY
-** Description:             Get the y pivot position
-***************************************************************************************/
+/**
+ * @brief Retrieves the y-coordinate of the pivot point.
+ * 
+ * @return The y-coordinate of the current pivot position.
+ */
+
 int16_t TFT_eSPI::getPivotY(void)
 {
   return _yPivot;
 }
 
 
-/***************************************************************************************
-** Function name:           setBitmapColor
-** Description:             Set the foreground foreground and background colour
-***************************************************************************************/
+/**
+ * @brief Sets the foreground and background colors for bitmap drawing.
+ * 
+ * @param c The color to use for the foreground of the bitmap.
+ * @param b The color to use for the background of the bitmap.
+ */
+
 void TFT_eSPI::setBitmapColor(uint16_t c, uint16_t b)
 {
   if (c == b) b = ~c;
@@ -2973,10 +3319,15 @@ void TFT_eSPI::setBitmapColor(uint16_t c, uint16_t b)
 }
 
 
-/***************************************************************************************
-** Function name:           setTextWrap
-** Description:             Define if text should wrap at end of line
-***************************************************************************************/
+/**
+ * @brief Defines whether text should wrap at the end of a line.
+ * 
+ * This function sets the text wrapping behavior. If enabled, text will automatically
+ * wrap to the next line when it reaches the end of the current line.
+ * 
+ * @param wrapX Whether text should wrap at the end of a line.
+ * @param wrapY Whether text should wrap at the end of the screen.
+ */
 void TFT_eSPI::setTextWrap(bool wrapX, bool wrapY)
 {
   textwrapX = wrapX;
@@ -2984,48 +3335,59 @@ void TFT_eSPI::setTextWrap(bool wrapX, bool wrapY)
 }
 
 
-/***************************************************************************************
-** Function name:           setTextDatum
-** Description:             Set the text position reference datum
-***************************************************************************************/
+/**
+ * @brief Sets the text position reference datum.
+ * 
+ * This function defines the reference point used for positioning text on the display.
+ * The datum determines where the text will be placed relative to its specified position.
+ * 
+ * @param d The reference datum to use for text positioning. This could be one of several predefined constants indicating different alignment options.
+ */
 void TFT_eSPI::setTextDatum(uint8_t d)
 {
   textdatum = d;
 }
 
 
-/***************************************************************************************
-** Function name:           setTextPadding
-** Description:             Define padding width (aids erasing old text and numbers)
-***************************************************************************************/
+/**
+ * @brief Defines the padding width for text.
+ * 
+ * This function sets the padding width around the text, which helps in erasing old text
+ * and numbers by ensuring a clear separation between the current and previous content.
+ * 
+ * @param x_width The padding width to use around the text.
+ */
 void TFT_eSPI::setTextPadding(uint16_t x_width)
 {
   padX = x_width;
 }
 
-/***************************************************************************************
-** Function name:           setTextPadding
-** Description:             Define padding width (aids erasing old text and numbers)
-***************************************************************************************/
+/**
+ * @brief Retrieves the padding width for text.
+ * 
+ * @return The padding width used around the text.
+ */
 uint16_t TFT_eSPI::getTextPadding(void)
 {
   return padX;
 }
 
-/***************************************************************************************
-** Function name:           getTextDatum
-** Description:             Return the text datum value (as used by setTextDatum())
-***************************************************************************************/
+/**
+ * @brief Retrieves the text size multiplier.
+ * 
+ * @return The multiplier for the text size set by the `setTextSize()` function.
+ */
 uint8_t TFT_eSPI::getTextDatum(void)
 {
   return textdatum;
 }
 
 
-/***************************************************************************************
-** Function name:           width
-** Description:             Return the pixel width of display (per current rotation)
-***************************************************************************************/
+/**
+ * @brief Retrieves the width of the display.
+ * 
+ * @return The width of the display in pixels.
+ */
 // Return the size of the display (per current rotation)
 int16_t TFT_eSPI::width(void)
 {
@@ -3033,11 +3395,11 @@ int16_t TFT_eSPI::width(void)
   return _width;
 }
 
-
-/***************************************************************************************
-** Function name:           height
-** Description:             Return the pixel height of display (per current rotation)
-***************************************************************************************/
+/**
+ * @brief Retrieves the height of the display.
+ * 
+ * @return The height of the display in pixels.
+ */
 int16_t TFT_eSPI::height(void)
 {
   if (_vpDatum) return _yHeight;
@@ -3045,10 +3407,13 @@ int16_t TFT_eSPI::height(void)
 }
 
 
-/***************************************************************************************
-** Function name:           textWidth
-** Description:             Return the width in pixels of a string in a given font
-***************************************************************************************/
+/**
+ * @brief Retrieves the width of the display in the current orientation.
+ * 
+ * @param string The string to measure.
+ * 
+ * @return The width of the display in pixels.
+ */
 int16_t TFT_eSPI::textWidth(const String& string)
 {
   int16_t len = string.length() + 2;
@@ -3136,23 +3501,29 @@ int16_t TFT_eSPI::textWidth(const char *string, uint8_t font)
   isDigits = false;
   return str_width * textsize;
 }
-
-
-/***************************************************************************************
-** Function name:           fontsLoaded
-** Description:             return an encoded 16-bit value showing the fonts loaded
-***************************************************************************************/
+/**
+ * @brief Retrieves a value showing which fonts are loaded.
+ * 
+ * This function returns a 16-bit value showing which fonts are loaded. Each bit in the
+ * 
+ * @return A 16-bit value showing which fonts are loaded.
+ * 
+ */
 // Returns a value showing which fonts are loaded (bit N set =  Font N loaded)
 uint16_t TFT_eSPI::fontsLoaded(void)
 {
   return fontsloaded;
 }
 
-
-/***************************************************************************************
-** Function name:           fontHeight
-** Description:             return the height of a font (yAdvance for free fonts)
-***************************************************************************************/
+/**
+ * @brief Retrieves the height of a font.
+ * 
+ * This function returns the height of a font in pixels. For free fonts, the height is
+ * given by the yAdvance value.
+ * 
+ * @param font The font to measure.
+ * @returns The height of the font in pixels.
+ */
 int16_t TFT_eSPI::fontHeight(uint8_t font)
 {
   if (font > 8) return 0;
@@ -3176,10 +3547,19 @@ int16_t TFT_eSPI::fontHeight(void)
   return fontHeight(textfont);
 }
 
-/***************************************************************************************
-** Function name:           drawChar
-** Description:             draw a single character in the GLCD or GFXFF font
-***************************************************************************************/
+/**
+ * @brief Draws a single character on the screen.
+ * 
+ * This function draws a single character on the screen at the current cursor position.
+ * The character is drawn using the current text color and background color.
+ * 
+ * @param x The x-coordinate of the character position.
+ * @param y The y-coordinate of the character position.
+ * @param c The character to draw.
+ * @param color The color of the character.
+ * @param bg The background color of the character.
+ * @param size The size of the character.
+ */
 void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32_t bg, uint8_t size)
 {
   if (_vpOoB) return;
@@ -3337,11 +3717,19 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
 }
 
 
-/***************************************************************************************
-** Function name:           setAddrWindow
-** Description:             define an area to receive a stream of pixels
-***************************************************************************************/
-// Chip select is high at the end of this function
+/**
+ * @brief Defines an area on the display to receive a stream of pixels.
+ * 
+ * This function sets the address window for drawing or writing pixel data to the display. 
+ * The specified window defines the rectangular area where the pixel data will be written.
+ * 
+ * @param x0 The x-coordinate of the top-left corner of the address window.
+ * @param y0 The y-coordinate of the top-left corner of the address window.
+ * @param w The width of the address window in pixels.
+ * @param h The height of the address window in pixels.
+ * 
+ * @note The chip select line is set high at the end of this function.
+ */
 void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t w, int32_t h)
 {
   begin_tft_write();
@@ -5877,7 +6265,14 @@ int16_t TFT_eSPI::drawFloat(float floatNumber, uint8_t dp, int32_t poX, int32_t 
 ***************************************************************************************/
 
 #ifdef LOAD_GFXFF
-
+/**
+ * @brief Sets the GFX free font to use.
+ * 
+ * This function allows you to set a specific GFX free font for rendering text on the display.
+ * The selected font will be used for subsequent text drawing operations.
+ * 
+ * @param f A pointer to the `GFXfont` structure that defines the font to use.
+ */
 void TFT_eSPI::setFreeFont(const GFXfont *f)
 {
   if (f == nullptr) { // Fix issue #400 (ESP32 crash)
@@ -5903,10 +6298,14 @@ void TFT_eSPI::setFreeFont(const GFXfont *f)
 }
 
 
-/***************************************************************************************
-** Function name:           setTextFont
-** Description:             Set the font for the print stream
-***************************************************************************************/
+/**
+ * @brief Sets the font for text rendering.
+ * 
+ * This function sets the font to be used for text rendering in the print stream. 
+ * The specified font will be applied to all subsequent text output.
+ * 
+ * @param f The font identifier. The value corresponds to a predefined font or a custom font.
+ */
 void TFT_eSPI::setTextFont(uint8_t f)
 {
   textfont = (f > 0) ? f : 1; // Don't allow font 0
