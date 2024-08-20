@@ -1085,7 +1085,7 @@
 #elif  defined (SPI_18BIT_DRIVER) // SPI 18-bit colour
 
   #define SPI_TXE_CHECK  while(!__HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_TXE)){}
-                         //BSY check must allow for APB clock delay by checking TXE flag first
+  //BSY check must allow for APB clock delay by checking TXE flag first
   #define SPI_BUSY_CHECK SPI_TXE_CHECK; while( __HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_BSY)){}
   #define TX_FIFO        SPI_TXE_CHECK; *((__IO uint8_t *)&SPIX->DR)
 
