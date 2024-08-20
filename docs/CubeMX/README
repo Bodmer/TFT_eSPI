@@ -7,16 +7,17 @@ make use of these pinnames and setup.
 
 The use of CubeMX will be described in the next staps. It is assumed the user
 is known with the use of CubeMX and how to create a base project and how to
-create a stm32cube project with the <project>.ioc file from CubeMX
+create a stm32cube project with the <project>.ioc file from CubeMX.
 
 1:  Create a new project in CubeMX and give it some name. Do the basic clock
     configuration.
 
 2:  Define all pins which shall be used in your project. For now stick to the
     basic naming of the pins (TFT_DC, TFT_RST, TFT_CS, TFT_BL, TFT_D(0-7))
-    for the parallel usage. For SPI pins use (TFT_MOSI, TFT_MISO and TFT_SCLK).
-    GPIO_INPUT / GPIO_OUTPUT according to the use of the TFT_* port.
+    for the parallel usage. For SPI pins use (TFT_MOSI, TFT_MISO, TFT_SCLK, TFT_RST, TFT_DC and TFT_CS).
+    GPIO_INPUT / GPIO_OUTPUT according to the use of the TFT_* port. Use LL_  variant of the GPIO functions.
     And further more the pins you want to use.
+2a: For SPI use 8bit for data.
 
 3:  Save and generate the code.
 
@@ -56,9 +57,3 @@ Platformio
     src_dir = Src
 
     Compile and run.
-
-Note: If you use GPIO pins be sure to generate the LL_* GPIO functions.
-It is under ProjectManager / Advanced.
-
-
-
