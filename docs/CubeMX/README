@@ -57,6 +57,8 @@ Platformio
 
     Compile and run.
 
+Note: If you use GPIO pins be sure to generate the LL_* GPIO functions.
+It is under ProjectManager / Advanced.
 
 
 

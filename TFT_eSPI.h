@@ -29,11 +29,12 @@
 //Standard support
 #ifndef CONFIG_TFT_eSPI_STM32CUBE
   #include <Arduino.h>
-
-  #if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
-    #include <SPI.h>
-  #endif
 #endif
+
+#if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
+  #include <SPI.h>
+#endif
+
 #include <Print.h>
 
 /***************************************************************************************
