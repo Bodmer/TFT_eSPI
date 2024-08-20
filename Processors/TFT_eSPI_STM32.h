@@ -15,6 +15,7 @@
   #include <WString.h>
   #include <math.h>
   #include <itoa.h>
+  #include <macro.h>
 #endif
 
 // RPi support not tested - Fast RPi not supported
@@ -1186,24 +1187,6 @@
 #elif !defined (TFT_PARALLEL_8_BIT)
   // Use a SPI read transfer
   #define tft_Read_8() spi.transfer(0)
-#endif
-
-////////////////////////////////////////////////////////////////////////////////////////
-// Other Macros to support Arduino functions
-////////////////////////////////////////////////////////////////////////////////////////
-#ifdef CONFIG_TFT_eSPI_STM32CUBE
-  #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
-  #define pgm_read_word(addr) (*(const unsigned short *)(addr))
-  #define pgm_read_dword(addr) (*(const unsigned long *)(addr))
-  #define pgm_read_float(addr) (*(const float *)(addr))
-
-  #define delay(x)  HAL_Delay(x)
-  #define random(x) random()*x
-  #define yield()
-
-  #define min(a,b) (((a)<(b))?(a):(b))
-  #define max(a,b) (((a)>(b))?(a):(b))
-
 #endif
 
 #endif // Header end
