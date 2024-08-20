@@ -11,7 +11,7 @@
 
 // User defined information reported by "Read_User_Setup" test & diagnostics example
 #define USER_SETUP_LOADED
-#define USER_SETUP_INFO "User_Setup"
+#define USER_SETUP_INFO "CubeMX_Setup"
 
 #define INPUT         0x0
 #define OUTPUT        0x1
@@ -34,8 +34,11 @@
 //#define STM_PORTA_DATA_BUS
 //#define STM_PORTB_DATA_BUS
 
+// Specify the processor which is used
+// #define STM32F4XXX
+
 // Tell the library to use parallel mode (otherwise SPI is assumed)
-#define TFT_PARALLEL_8_BIT
+// #define TFT_PARALLEL_8_BIT
 
 // Display type -  only define if RPi display
 //#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
@@ -48,9 +51,9 @@
 //#define S6D02A1_DRIVER
 //#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
 //#define HX8357D_DRIVER
-#define ILI9481_DRIVER
+//#define ILI9481_DRIVER
 //#define ILI9486_DRIVER
-//#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
+#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
 //#define ST7789_DRIVER      // Full configuration option, define additional parameters below for this display
 //#define ST7789_2_DRIVER    // Minimal configuration option, define additional parameters below for this display
 //#define R61581_DRIVER
@@ -110,59 +113,7 @@
 
 // #define TFT_INVERSION_ON
 // #define TFT_INVERSION_OFF
-
-
-// ##################################################################################
-//
-// Section 2. Define the pins that are used to interface with the display here
-//
-// ##################################################################################
-
-// If a backlight control signal is available then define the TFT_BL pin in Section 2
-// below. The backlight will be turned ON when tft.begin() is called, but the library
-// needs to know if the LEDs are ON with the pin HIGH or LOW. If the LEDs are to be
-// driven with a PWM signal or turned OFF/ON then this must be handled by the user
-// sketch. e.g. with digitalWrite(TFT_BL, LOW);
-
-#define TFT_BL_   32         // LED back-light control pin
 #define TFT_BACKLIGHT_ON 1  // Level to turn ON back-light (1 or 0)
-
-// We must use hardware SPI, a minimum of 3 GPIO pins is needed.
-// The TFT RESET pin can be connected to the NodeMCU RST pin or 3.3V to free up a control pin
-//
-// The DC (Data Command) pin may be labelled AO or RS (Register Select)
-//
-// With some displays such as the ILI9341 the TFT CS pin can be connected to GND if no more
-// SPI devices (e.g. an SD Card) are connected, in this case comment out the #define TFT_CS
-// line below so it is NOT defined. Other displays such at the ST7735 require the TFT CS pin
-// to be toggled during setup, so in these cases the TFT_CS line must be defined and connected.
-
-// ######       EDIT THE PINs BELOW TO SUIT YOUR STM32 SPI TFT SETUP        ######
-
-// The TFT can be connected to SPI port 1 or 2
-//#define TFT_SPI_PORT 1 // SPI port 1 maximum clock rate is 55MHz
-//define TFT_MOSI PA7
-//define TFT_MISO PA6
-//define TFT_SCLK PA5
-
-//#define TFT_SPI_PORT 2 // SPI port 2 maximum clock rate is 27MHz
-//#define TFT_MOSI PB15
-//#define TFT_MISO PB14
-//#define TFT_SCLK PB13
-
-// Can use Ardiuno pin references, arbitrary allocation, TFT_eSPI controls chip select
-//#define TFT_CS   D5 // Chip select control pin to TFT CS
-//#define TFT_DC   D6 // Data Command control pin to TFT DC (may be labelled RS = Register Select)
-//#define TFT_RST  D7 // Reset pin to TFT RST (or RESET)
-// OR alternatively, we can use STM32 port reference names PXnn
-
-//#define TFT_CS   PE11 // Nucleo-F767ZI equivalent of D5
-//#define TFT_DC   PE9  // Nucleo-F767ZI equivalent of D6
-//#define TFT_RST  PF13 // Nucleo-F767ZI equivalent of D7
-
-//#define TFT_RST  -1   // Set TFT_RST to -1 if the display RESET is connected to processor reset
-                        // Use an Arduino pin for initial testing as connecting to processor reset
-                        // may not work (pulse too short at power up?)
 
 // ##################################################################################
 //
@@ -195,25 +146,14 @@
 // ##################################################################################
 
 // For the STM32 processor define the SPI port channel used (default 1 if undefined)
-//#define TFT_SPI_PORT 1 // Set to 1 for SPI port 1, or 2 for SPI port 2
+#define TFT_SPI_PORT 1 // Set to 1 for SPI port 1, or 2 for SPI port 2
 
-// Define the SPI clock frequency, this affects the graphics rendering speed. Too
+// The SPI clock frequency affects the graphics rendering speed. Too
 // fast and the TFT driver will not keep up and display corruption appears.
 // With an ILI9341 display 40MHz works OK, 80MHz sometimes fails
 // With a ST7735 display more than 27MHz may not work (spurious pixels and lines)
 // With an ILI9163 display 27 MHz works OK.
 
-// #define SPI_FREQUENCY   1000000
-// #define SPI_FREQUENCY   5000000
-// #define SPI_FREQUENCY  10000000
-// #define SPI_FREQUENCY  20000000
-// #define SPI_FREQUENCY  27000000
-// #define SPI_FREQUENCY  40000000
-//#define SPI_FREQUENCY  55000000 // STM32 SPI1 only (SPI2 maximum is 27MHz)
-// #define SPI_FREQUENCY  80000000
-
-// Optional reduced SPI frequency for reading TFT
-//#define SPI_READ_FREQUENCY  20000000
 
 // Comment out the following #define if "SPI Transactions" do not need to be
 // supported. When commented out the code size will be smaller and sketches will
