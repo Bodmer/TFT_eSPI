@@ -35,7 +35,7 @@
 //#define STM_PORTB_DATA_BUS
 
 // Specify the processor which is used
-// #define STM32F4XXX
+#define STM32F7xx
 
 // Tell the library to use parallel mode (otherwise SPI is assumed)
 // #define TFT_PARALLEL_8_BIT
