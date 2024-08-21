@@ -692,7 +692,11 @@ void TFT_eSPI::init(uint8_t tc)
     spi.pins(6, 7, 8, 0);
   #endif
 
+#if defined (CONFIG_TFT_eSPI_STM32CUBE)
+  spi.begin(SPIX);
+#else
   spi.begin(); // This will set HMISO to input
+#endif
 
 #else
   #if !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
