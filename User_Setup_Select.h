@@ -118,6 +118,8 @@
 
 //#include <User_Setups/Setup138_Pico_Explorer_Base_RP2040_ST7789.h> // Setup file for Pico Explorer Base by Pimoroni for RP2040 (ST7789 on SPI bus with 240x240 TFT)
 
+//#include <User_Setups/Setup139_LilyGo_TDongle.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT on LilyGo T-Dongle [not T-Dongle S3].
+
 //#include <User_Setups/Setup200_GC9A01.h>           // Setup file for ESP32 and GC9A01 240 x 240 TFT
 
 //#include <User_Setups/Setup201_WT32_SC01.h>        // Setup file for ESP32 based WT32_SC01 from Seeed
