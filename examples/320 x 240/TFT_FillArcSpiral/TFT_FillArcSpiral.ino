@@ -13,7 +13,7 @@ int segment = 0;
 unsigned int col = 0;
 int delta = -1;
 
-  byte red = 31; // Red is the top 5 bits of a 16 bit colour value
+  byte red = 31; // Red is the top 5 bits of a 16-bit colour value
   byte green = 0;// Green is the middle 6 bits
   byte blue = 0; // Blue is the bottom 5 bits
   byte state = 0;
@@ -48,10 +48,10 @@ void loop() {
 // rx = x axis radius
 // yx = y axis radius
 // w  = width (thickness) of arc in pixels
-// colour = 16 bit colour value
+// colour = 16-bit colour value
 // Note if rx and ry are the same an arc of a circle is drawn
 
-int fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour)
+void fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour)
 {
 
   // Make the segment size 7 degrees to prevent gaps when drawing spirals
@@ -82,7 +82,7 @@ int fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w,
 }
 
 // #########################################################################
-// Return a 16 bit colour with brightness 0 - 100%
+// Return a 16-bit colour with brightness 0 - 100%
 // #########################################################################
 unsigned int brightness(unsigned int colour, int brightness)
 {
@@ -98,7 +98,7 @@ unsigned int brightness(unsigned int colour, int brightness)
 }
 
 // #########################################################################
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // #########################################################################
 unsigned int rainbow(byte value)
 {

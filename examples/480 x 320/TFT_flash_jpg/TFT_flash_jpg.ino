@@ -1,8 +1,8 @@
 // Sketch to display images on a 480 x 320 ILI9486 Raspberry Pi 3.5" TFT (Waveshare design)
-// which has a 16 bit serial interface based on 74HC04, 74HC4040 and 2 x 74HC4094 logic chips
+// which has a 16-bit serial interface based on 74HC04, 74HC4040 and 2 x 74HC4094 logic chips
 
 // Renders images stored in an array in program (FLASH)JPEG images are stored in header files
-// (see jpeg1.h etc)
+// (see jpeg1.h etc.)
 
 // The sketch does not need the SD or sdFat libraries since it does not access an SD Card.
 
@@ -108,7 +108,7 @@ void drawArrayJpeg(const uint8_t arrayname[], uint32_t array_size, int xpos, int
 // fit totally on the screen are cropped to the nearest MCU size and may leave right/bottom borders.
 void renderJPEG(int xpos, int ypos) {
 
-  // retrieve infomration about the image
+  // retrieve information about the image
   uint16_t *pImg;
   uint16_t mcu_w = JpegDec.MCUWidth;
   uint16_t mcu_h = JpegDec.MCUHeight;
@@ -171,11 +171,14 @@ void renderJPEG(int xpos, int ypos) {
     // calculate how many pixels must be drawn
     uint32_t mcu_pixels = win_w * win_h;
 
+    tft.startWrite();
+
     // draw image MCU block only if it will fit on the screen
     if (( mcu_x + win_w ) <= tft.width() && ( mcu_y + win_h ) <= tft.height())
     {
+
       // Now set a MCU bounding window on the TFT to push pixels into (x, y, x + width - 1, y + height - 1)
-      tft.setWindow(mcu_x, mcu_y, mcu_x + win_w - 1, mcu_y + win_h - 1);
+      tft.setAddrWindow(mcu_x, mcu_y, win_w, win_h);
 
       // Write all MCU pixels to the TFT window
       while (mcu_pixels--) {
@@ -185,6 +188,8 @@ void renderJPEG(int xpos, int ypos) {
 
     }
     else if ( (mcu_y + win_h) >= tft.height()) JpegDec.abort(); // Image has run off bottom of screen so abort decoding
+
+    tft.endWrite();
   }
 
   // calculate how long it took to draw the image
@@ -217,7 +222,7 @@ void jpegInfo() {
 // Show the execution time (optional)
 //####################################################################################################
 // WARNING: for UNO/AVR legacy reasons printing text to the screen with the Mega might not work for
-// sketch sizes greater than ~70KBytes because 16 bit address pointers are used in some libraries.
+// sketch sizes greater than ~70KBytes because 16-bit address pointers are used in some libraries.
 
 // The Due will work fine with the HX8357_Due library.
 

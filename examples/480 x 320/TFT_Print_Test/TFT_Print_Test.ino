@@ -1,9 +1,9 @@
 /*  
- Test the tft.print() viz the libraries embedded write() function
+ Test the tft.print() viz. the libraries embedded write() function
 
  This sketch used font 2, 4, 7
  
- Make sure all the required fonts are loaded by editting the
+ Make sure all the required fonts are loaded by editing the
  User_Setup.h file in the TFT_eSPI library folder.
 
   #########################################################################

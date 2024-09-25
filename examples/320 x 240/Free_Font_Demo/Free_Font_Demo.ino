@@ -38,10 +38,10 @@
   #########################################################################
 */
 
-#include "Free_Fonts.h" // Include the header file attached to this sketch
-
 #include "SPI.h"
 #include "TFT_eSPI.h"
+
+#include "Free_Fonts.h" // Include the header file attached to this sketch
 
 // Use hardware SPI
 TFT_eSPI tft = TFT_eSPI();
@@ -280,7 +280,7 @@ void drawDatumMarker(int x, int y)
 
 
 // There follows a crude way of flagging that this example sketch needs fonts which
-// have not been enbabled in the User_Setup.h file inside the TFT_HX8357 library.
+// have not been enabled in the User_Setup.h file inside the TFT_HX8357 library.
 //
 // These lines produce errors during compile time if settings in User_Setup are not correct
 //

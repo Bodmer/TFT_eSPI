@@ -13,9 +13,9 @@
 #define GREEN2RED 4
 #define RED2GREEN 5
 
-#define TFT_GREY 0x2104 // Dark grey 16 bit colour
+#define TFT_GREY 0x2104 // Dark grey 16-bit colour
 
-#include "alert.h" // Out of range alert icon
+#include "Alert.h" // Out of range alert icon
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
@@ -26,7 +26,7 @@ uint32_t runTime = -99999;       // time for next update
 
 int reading = 0; // Value to be displayed
 int d = 0; // Variable used for the sinewave test waveform
-boolean range_error = 0;
+bool range_error = 0;
 int8_t ramp = 1;
 
 void setup(void) {
@@ -127,8 +127,8 @@ int ringMeter(int value, int vmin, int vmax, int x, int y, int r, const char *un
         case 1: colour = TFT_GREEN; break; // Fixed colour
         case 2: colour = TFT_BLUE; break; // Fixed colour
         case 3: colour = rainbow(map(i, -angle, angle, 0, 127)); break; // Full spectrum blue to red
-        case 4: colour = rainbow(map(i, -angle, angle, 70, 127)); break; // Green to red (high temperature etc)
-        case 5: colour = rainbow(map(i, -angle, angle, 127, 63)); break; // Red to green (low battery etc)
+        case 4: colour = rainbow(map(i, -angle, angle, 70, 127)); break; // Green to red (high temperature etc.)
+        case 5: colour = rainbow(map(i, -angle, angle, 127, 63)); break; // Red to green (low battery etc.)
         default: colour = TFT_BLUE; break; // Fixed colour
       }
       tft.fillTriangle(x0, y0, x1, y1, x2, y2, colour);
@@ -180,7 +180,7 @@ int ringMeter(int value, int vmin, int vmax, int x, int y, int r, const char *un
   return x + r;
 }
 
-void drawAlert(int x, int y , int side, boolean draw)
+void drawAlert(int x, int y , int side, bool draw)
 {
   if (draw && !range_error) {
     drawIcon(alert, x - alertWidth/2, y - alertHeight/2, alertWidth, alertHeight);
@@ -193,14 +193,14 @@ void drawAlert(int x, int y , int side, boolean draw)
 }
 
 // #########################################################################
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // #########################################################################
 unsigned int rainbow(byte value)
 {
   // Value is expected to be in range 0-127
   // The value is converted to a spectrum colour from 0 = blue through to 127 = red
 
-  byte red = 0; // Red is the top 5 bits of a 16 bit colour value
+  byte red = 0; // Red is the top 5 bits of a 16-bit colour value
   byte green = 0;// Green is the middle 6 bits
   byte blue = 0; // Blue is the bottom 5 bits
 
@@ -251,8 +251,10 @@ void drawIcon(const unsigned short* icon, int16_t x, int16_t y, int8_t width, in
 
   uint16_t  pix_buffer[BUFF_SIZE];   // Pixel buffer (16 bits per pixel)
 
+  tft.startWrite();
+
   // Set up a window the right size to stream pixels into
-  tft.setWindow(x, y, x + width - 1, y + height - 1);
+  tft.setAddrWindow(x, y, width, height);
 
   // Work out the number whole buffers to send
   uint16_t nb = ((uint16_t)height * width) / BUFF_SIZE;
@@ -273,5 +275,7 @@ void drawIcon(const unsigned short* icon, int16_t x, int16_t y, int8_t width, in
     for (int i = 0; i < np; i++) pix_buffer[i] = pgm_read_word(&icon[nb * BUFF_SIZE + i]);
     tft.pushColors(pix_buffer, np);
   }
+
+  tft.endWrite();
 }
 

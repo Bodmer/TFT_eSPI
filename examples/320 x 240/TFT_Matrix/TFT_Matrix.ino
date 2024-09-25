@@ -5,8 +5,8 @@
 // Needs GLCD font
 
 /*
- Make sure all the display driver and pin comnenctions are correct by
- editting the User_Setup.h file in the TFT_eSPI library folder.
+ Make sure all the display driver and pin connections are correct by
+ editing the User_Setup.h file in the TFT_eSPI library folder.
 
  #########################################################################
  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
@@ -32,7 +32,7 @@ void setup() {
   Serial.begin(115200);
   randomSeed(analogRead(A0));
   tft.init();
-  tft.setRotation(2);
+  tft.setRotation(0);
   tft.fillScreen(ILI9341_BLACK);
   setupScrollArea(TOP_FIXED_AREA, BOT_FIXED_AREA);
 }

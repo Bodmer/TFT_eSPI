@@ -4,12 +4,14 @@
 // Bit bashes SPI so it does NOT assume hardware SPI wired up
 // No other libraries are needed
 
+// NOTE: This sketch does not work with parallel displays!
+
 // Original author unknown
 // Adapted by Bodmer 22/5/16, updated 16/9/16
 
 // Change the pin settings to suit your hardware
 
-// UNO etc
+// UNO etc.
 //#define TFT_MOSI  11
 //#define TFT_SCK 13
 //#define TFT_CS 9
@@ -114,7 +116,7 @@ void setup() {
     uint32_t ID = 0;
     Serial.begin(115200);
 
-    delay(4000); // Delay to allow USB to connect to a Leonardo etc
+    delay(4000); // Delay to allow USB to connect to a Leonardo etc.
     
     Serial.println("TFT driver register values:");
     Serial.println("===========================");

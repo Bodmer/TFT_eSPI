@@ -9,13 +9,16 @@
 
 
 // Enumerate the different configurations
-#define INITR_GREENTAB  0x0
-#define INITR_REDTAB    0x1
-#define INITR_BLACKTAB  0x2
-#define INITR_GREENTAB2 0x3 // Use if you get random pixels on two edges of green tab display
-#define INITR_GREENTAB3 0x4 // Use if you get random pixels on edge(s) of 128x128 screen
-#define INITR_GREENTAB128 0x5 // Use if you only get part of 128x128 screen in rotation 0 & 1
-#define INITB           0xB
+#define INITR_GREENTAB       0x0
+#define INITR_REDTAB         0x1
+#define INITR_BLACKTAB       0x2 // Display with no offsets
+#define INITR_GREENTAB2      0x3 // Use if you get random pixels on two edges of green tab display
+#define INITR_GREENTAB3      0x4 // Use if you get random pixels on edge(s) of 128x128 screen
+#define INITR_GREENTAB128    0x5 // Use if you only get part of 128x128 screen in rotation 0 & 1
+#define INITR_GREENTAB160x80 0x6 // Use if you only get part of 128x128 screen in rotation 0 & 1
+#define INITR_REDTAB160x80   0x7 // Added for https://www.aliexpress.com/item/ShengYang-1pcs-IPS-0-96-inch-7P-SPI-HD-65K-Full-Color-OLED-Module-ST7735-Drive/32918394604.html
+#define INITR_ROBOTLCD       0x8
+#define INITB                0xB
 
 
 // Setup the tab color that will be used by the library setRotation() and setup command list
@@ -36,6 +39,18 @@
 
 #elif defined (ST7735_GREENTAB128)
   #define TAB_COLOUR INITR_GREENTAB128
+  #define CGRAM_OFFSET
+ 
+#elif defined (ST7735_GREENTAB160x80)
+  #define TAB_COLOUR INITR_GREENTAB160x80
+  #define CGRAM_OFFSET
+
+#elif defined (ST7735_ROBOTLCD)
+  #define TAB_COLOUR INITR_ROBOTLCD
+  #define CGRAM_OFFSET
+
+#elif defined (ST7735_REDTAB160x80)
+  #define TAB_COLOUR INITR_REDTAB160x80
   #define CGRAM_OFFSET
  
 #elif defined (ST7735_REDTAB)
@@ -80,6 +95,12 @@
 #define TFT_NOP     0x00
 #define TFT_SWRST   0x01
 
+#define TFT_INVOFF  0x20
+#define TFT_INVON   0x21
+
+#define TFT_DISPOFF 0x28
+#define TFT_DISPON  0x29
+
 #define TFT_CASET   0x2A
 #define TFT_PASET   0x2B
 #define TFT_RAMWR   0x2C
@@ -96,8 +117,19 @@
 #define TFT_MAD_MH  0x04
 #define TFT_MAD_RGB 0x00
 
-#define TFT_INVOFF  0x20
-#define TFT_INVON   0x21
+#ifndef TFT_RGB_ORDER
+  #if defined(ST7735_BLACKTAB) || defined(ST7735_GREENTAB2) || defined(ST7735_INITB)
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_RGB
+  #else
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_BGR
+  #endif
+#else
+  #if (TFT_RGB_ORDER == 1)
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_RGB
+  #else
+    #define TFT_MAD_COLOR_ORDER TFT_MAD_BGR
+  #endif
+#endif
 
 // ST7735 specific commands used in init
 #define ST7735_NOP     0x00

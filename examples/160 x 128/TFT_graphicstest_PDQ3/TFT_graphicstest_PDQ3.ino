@@ -3,8 +3,8 @@
 
  This sketch uses the GLCD font only.
 
- Make sure all the display driver and pin comnenctions are correct by
- editting the User_Setup.h file in the TFT_eSPI library folder.
+ Make sure all the display driver and pin connections are correct by
+ editing the User_Setup.h file in the TFT_eSPI library folder.
 
  Note that yield() or delay(0) must be called in long duration for/while
  loops to stop the ESP8266 watchdog triggering.
@@ -234,7 +234,7 @@ void loop(void)
 void printnice(int32_t v)
 {
   char  str[32] = { 0 };
-  sprintf(str, "%lu", v);
+  sprintf(str, "%d", v);
   for (char *p = (str+strlen(str))-3; p > str; p -= 3)
   {
     memmove(p+1, p, strlen(p)+1);
@@ -308,21 +308,23 @@ uint32_t testHaD()
     0x0a, 0x2b, 0x0b, 0x41, 0x0a, 0x29, 0x0b, 0x43, 0x0a, 0x27, 0x0a, 0x46, 0x0a, 0x25, 0x0a, 0x49, 
     0x09, 0x23, 0x08, 0x4e, 0x08, 0x96, 0x12 
   };
-  
+
   tft.fillScreen(TFT_BLACK);
 
   uint32_t start = micros_start();
-  
+
+  tft.startWrite();
+
   for (int i = 0; i < 0x10; i++)
   {
-    tft.setAddrWindow(0, 0, tft.width()-1, tft.height()-1);
+    tft.setAddrWindow(0, 0, tft.width(), tft.height());
 
     uint16_t cnt = 0;
     uint16_t color = tft.color565((i << 4) | i, (i << 4) | i, (i << 4) | i);
     uint16_t curcolor = 0;
 
     const uint8_t *cmp = &HaD_128x160[0];
-
+    tft.startWrite();
     while (cmp < &HaD_128x160[sizeof(HaD_128x160)])
     {
       cnt = pgm_read_byte(cmp++);
@@ -333,7 +335,10 @@ uint32_t testHaD()
 
       curcolor ^= color;
     }
+    tft.endWrite();
   }
+
+  tft.endWrite();
 
   uint32_t t = micros() - start;
 
@@ -405,7 +410,7 @@ uint32_t testPixels()
   int32_t h = tft.height();
 
   uint32_t start = micros_start();
-
+  tft.startWrite();
   for (uint16_t y = 0; y < h; y++)
   {
     for (uint16_t x = 0; x < w; x++)
@@ -413,7 +418,7 @@ uint32_t testPixels()
       tft.drawPixel(x, y, tft.color565(x<<3, y<<3, x*y));
     }
   }
-  
+  tft.endWrite();
   return micros() - start;
 }
 

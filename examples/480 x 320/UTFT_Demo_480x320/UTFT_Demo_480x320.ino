@@ -8,7 +8,7 @@
  
  This sketch uses the GLCD and font 2 only.
 
- Make sure all the required fonts are loaded by editting the
+ Make sure all the required fonts are loaded by editing the
  User_Setup.h file in the TFT_eSPI library folder.
 
   #########################################################################

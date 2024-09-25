@@ -2,8 +2,8 @@
   An example showing rainbow colours on a 1.8" TFT LCD screen
   and to show a basic example of font use.
 
-  Make sure all the display driver and pin comnenctions are correct by
-  editting the User_Setup.h file in the TFT_eSPI library folder.
+  Make sure all the display driver and pin connections are correct by
+  editing the User_Setup.h file in the TFT_eSPI library folder.
 
   Note that yield() or delay(0) must be called in long duration for/while
   loops to stop the ESP8266 watchdog triggering.
@@ -96,7 +96,7 @@ void loop() {
     // The new larger fonts do not use the .setCursor call, coords are embedded
     tft.setTextColor(TFT_BLACK, TFT_BLACK); // Do not plot the background colour
 
-    // Overlay the black text on top of the rainbow plot (the advantage of not drawing the backgorund colour!)
+    // Overlay the black text on top of the rainbow plot (the advantage of not drawing the background colour!)
     tft.drawCentreString("Font size 2", 80, 14, 2); // Draw text centre at position 80, 12 using font 2
 
     //tft.drawCentreString("Font size 2",81,12,2); // Draw text centre at position 80, 12 using font 2

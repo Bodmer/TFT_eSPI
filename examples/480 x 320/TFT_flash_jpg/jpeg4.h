@@ -1,5 +1,4 @@
 // We need this header file to use FLASH as storage with PROGMEM directive
-#include <pgmspace.h>
 
 // Here is the 300 x 300 jpeg image data
 const uint8_t EagleEye[] PROGMEM = {

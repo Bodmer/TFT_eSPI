@@ -6,8 +6,8 @@
 
   This sketch uses the GLCD and font 2 only.
 
-  Make sure all the display driver and pin comnenctions are correct by
-  editting the User_Setup.h file in the TFT_eSPI library folder.
+  Make sure all the display driver and pin connections are correct by
+  editing the User_Setup.h file in the TFT_eSPI library folder.
 
   Note that yield() or delay(0) must be called in long duration for/while
   loops to stop the ESP8266 watchdog triggering.
@@ -311,7 +311,7 @@ void loop()
   // It takes 30ms to calculate the 30,000 random numbers so this is not a true drawPixel speed test
   for (int i=0; i<10000; i++)
   {
-    myGLCD.drawPixel(2+random(316), 16+random(209),random(0xFFFF));
+    myGLCD.drawPixel(2+random(TFT_W - 3), 16+random(TFT_H - 31),random(0xFFFF));
   }
 #else
   // Draw 10,000 pixels to fill a 100x100 pixel box, better drawPixel speed test
