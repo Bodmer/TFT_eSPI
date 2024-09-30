@@ -10,8 +10,7 @@
 #define _TFT_eSPI_ESP32H_
 
 #if !defined(DISABLE_ALL_LIBRARY_WARNINGS)
- //#warning >>>>------>> DMA is not supported on the ESP32 C3 (possible future update)	//?// ESP32-C6 + ESP32-H2
- #warning >>>>------>> DMA is not supported on the ESP32 C3, C6 + H2 (possible future update)
+ #warning >>>>------>> DMA is not supported on the ESP32 C3, C6(possible future update)
 #endif
 
 // Processor ID reported by getSetup()
@@ -90,7 +89,7 @@ SPI2_HOST = 1
 SPI3_HOST = 2
 */
 
-// ESP32 specific SPI port selection - only SPI2_HOST available on C3 //?// and ESP32-C6 + ESP32-H2
+// ESP32 specific SPI port selection - only SPI2_HOST available on C3 
  #if ESP_ARDUINO_VERSION_MAJOR < 3
   #define SPI_PORT 2
 #else
