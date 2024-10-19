@@ -662,6 +662,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            setTextSize(uint8_t size);                       // Set character size multiplier (this increases pixel size)
   
   void     invertColors();                                  //invert textcolor and textbgcolor
+  uint16_t getTextColor();                                  //get the textcolor
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
 

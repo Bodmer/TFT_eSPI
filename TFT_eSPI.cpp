@@ -2930,6 +2930,14 @@ void TFT_eSPI::setTextColor(uint16_t c, uint16_t b, bool bgfill)
 }
 
 /***************************************************************************************
+** Function name:           getTextColor
+** Description:             get the font foreground colour
+***************************************************************************************/
+uint16_t TFT_eSPI::getTextColor()
+{
+  return textcolor;
+}
+/***************************************************************************************
 ** Function name:           invertColors
 ** Description:             Changes foreground and background colors
 ***************************************************************************************/
