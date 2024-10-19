@@ -2929,6 +2929,18 @@ void TFT_eSPI::setTextColor(uint16_t c, uint16_t b, bool bgfill)
   _fillbg     = bgfill;
 }
 
+/***************************************************************************************
+** Function name:           invertColors
+** Description:             Changes foreground and background colors
+***************************************************************************************/
+void TFT_eSPI::invertColors()
+{
+  uint16_t cor = textcolor;
+
+  textcolor   = textbgcolor;
+  textbgcolor = cor;
+
+}
 
 /***************************************************************************************
 ** Function name:           setPivot
