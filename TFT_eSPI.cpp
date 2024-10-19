@@ -2937,6 +2937,16 @@ uint16_t TFT_eSPI::getTextColor()
 {
   return textcolor;
 }
+
+/***************************************************************************************
+** Function name:           getTextBgColor
+** Description:             get the font background colour
+***************************************************************************************/
+uint16_t TFT_eSPI::getTextBgColor()
+{
+  return textbgcolor;
+}
+
 /***************************************************************************************
 ** Function name:           invertColors
 ** Description:             Changes foreground and background colors

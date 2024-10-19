@@ -663,6 +663,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   
   void     invertColors();                                  //invert textcolor and textbgcolor
   uint16_t getTextColor();                                  //get the textcolor
+  uint16_t getTextBgColor();                                //get the textbgcolor
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
 
