@@ -138,82 +138,82 @@
 // Typical setup for ESP8266 NodeMCU ESP-12 is :
 //
 // Display SDO/MISO  to NodeMCU pin D6 (or leave disconnected if not reading TFT)
-// Display LED       to NodeMCU pin VIN (or 5V, see below)
-// Display SCK       to NodeMCU pin D5
-// Display SDI/MOSI  to NodeMCU pin D7
-// Display DC (RS/AO)to NodeMCU pin D3
-// Display RESET     to NodeMCU pin D4 (or RST, see below)
-// Display CS        to NodeMCU pin D8 (or GND, see below)
-// Display GND       to NodeMCU pin GND (0V)
-// Display VCC       to NodeMCU 5V or 3.3V
+// 将 LED 显示到 NodeMCU 引脚 VIN（或 5V，见下文）
+// 将 SCK 显示到 NodeMCU 引脚 D5
+// 将 SDI/MOSI 显示到 NodeMCU 引脚 D7
+// 显示到 NodeMCU 引脚 D3 的 DC (RS/AO)
+// 将 RESET 显示到 NodeMCU 引脚 D4（或 RST，见下文）
+// 将 CS 显示到 NodeMCU 引脚 D8（或 GND，见下文）
+// 显示 GND 到 NodeMCU 引脚 GND (0V)
+// 显示VCC到NodeMCU 5V或3.3V
 //
-// The TFT RESET pin can be connected to the NodeMCU RST pin or 3.3V to free up a control pin
+// TFT RESET 引脚可以连接到 NodeMCU RST 引脚或 3.3V 以释放控制引脚
 //
-// The DC (Data Command) pin may be labelled AO or RS (Register Select)
+// DC（数据命令）引脚可能标记为 AO 或 RS（注册选择）
 //
-// With some displays such as the ILI9341 the TFT CS pin can be connected to GND if no more
-// SPI devices (e.g. an SD Card) are connected, in this case comment out the #define TFT_CS
-// line below so it is NOT defined. Other displays such at the ST7735 require the TFT CS pin
-// to be toggled during setup, so in these cases the TFT_CS line must be defined and connected.
+// 对于某些显示器，例如ILI9341，如果没有更多的话，TFT CS引脚可以连接到GND
+// SPI 设备（例如 SD 卡）已连接，在本例中注释掉#define TFT_CS
+// 下面一行，所以没有定义。 ST7735 等其他显卡需要 TFT CS 引脚
+// 在设置切换期间，因此在这些情况下必须定义并连接 TFT_CS 线。
 //
-// The NodeMCU D0 pin can be used for RST
+// NodeMCU D0 引脚可用于 RST
 //
 //
-// Note: only some versions of the NodeMCU provide the USB 5V on the VIN pin
-// If 5V is not available at a pin you can use 3.3V but backlight brightness
-// will be lower.
+// 注意：只有某些版本的 NodeMCU 在 VIN 引脚上提供 USB 5V
+// 如果你的引脚上没有5V，可以使用3.3V，但背光本身
+// 会现场。
 
 
-// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP8266 SETUP ######
+// ###### 编辑以下行中的引脚号以适合您的ESP8266 ######
 
-// For NodeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
-#define TFT_MISO  PIN_D6  // Automatically assigned with ESP8266 if not defined
-#define TFT_MOSI  PIN_D7  // Automatically assigned with ESP8266 if not defined
-#define TFT_SCLK  PIN_D5  // Automatically assigned with ESP8266 if not defined
+// 对于 NodeMCU - 使用 PIN_Dx 形式的引脚号，其中 Dx 是 NodeMCU 引脚名称
+＃定义 TFT_MISO PIN_D6     // 如果未定义则自动分配给ESP8266
+＃定义 TFT_MOSI PIN_D7       // 如果未定义则自动分配给ESP8266
+＃定义 TFT_SCLK PIN_D5        // 如果未定义则自动由 ESP8266 分配
 
-#define TFT_CS    PIN_D8  // Chip select control pin D8
-#define TFT_DC    PIN_D3  // Data Command control pin
-#define TFT_RST   PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
-//#define TFT_RST  -1     // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
-
-
-//#define TFT_BL PIN_D1  // LED back-light (only for ST7789 with backlight control pin)
-
-//#define TOUCH_CS PIN_D2     // Chip select pin (T_CS) of touch screen
-
-//#define TFT_WR PIN_D2       // Write strobe for modified Raspberry Pi TFT only
+＃定义 TFT_CS PIN_D8       //片选控制引脚D8
+＃定义 TFT_DC PIN_D3      // 数据命令控制引脚
+＃定义TFT_RST PIN_D4     //复位引脚（可以连接到NodeMCU RST，见下一行）
+//#define TFT_RST -1 //如果显示器RESET连接到NodeMCU RST或3.3V，则将TFT_RST设置为-1
 
 
-// ######  FOR ESP8266 OVERLAP MODE EDIT THE PIN NUMBERS IN THE FOLLOWING LINES  ######
+//#define TFT_BL PIN_D1 // LED背光（仅适用于带背光控制引脚的ST7789）
 
-// Overlap mode shares the ESP8266 FLASH SPI bus with the TFT so has a performance impact
-// but saves pins for other functions. It is best not to connect MISO as some displays
-// do not tristate that line when chip select is high!
-// Note: Only one SPI device can share the FLASH SPI lines, so a SPI touch controller
-// cannot be connected as well to the same SPI signals.
-// On NodeMCU 1.0 SD0=MISO, SD1=MOSI, CLK=SCLK to connect to TFT in overlap mode
-// On NodeMCU V3  S0 =MISO, S1 =MOSI, S2 =SCLK
-// In ESP8266 overlap mode the following must be defined
+#define TOUCH_CS PIN_D2 //触摸屏片选引脚（T_CS）
 
-//#define TFT_SPI_OVERLAP
-
-// In ESP8266 overlap mode the TFT chip select MUST connect to pin D3
-//#define TFT_CS   PIN_D3
-//#define TFT_DC   PIN_D5  // Data Command control pin
-//#define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
-//#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
+//#define TFT_WR PIN_D2 //仅针对修改后的Raspberry Pi TFT写入选脉冲通
 
 
-// ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP32 SETUP   ######
+// ######对于ESP8266重叠模式，编辑以下行中的引脚号######
 
-// For ESP32 Dev board (only tested with ILI9341 display)
-// The hardware SPI can be mapped to any pins
+// 重叠模式与TFT共享ESP8266 FLASH SPI唤醒，对性能有影响
+//但为其他功能保存引脚。有些显示器最好不要连接MISO
+//当片选为高电平时，不要将线路置于三态！
+//注意：只有一个SPI设备可以共享FLASH SPI线，所以一个SPI触摸控制器
+// 不能同时连接到相同的SPI信号。
+// 在 NodeMCU 1.0 上 SD0=MISO, SD1=MOSI, CLK=SCLK 以重叠模式连接到 TFT
+// 在 NodeMCU V3 上 S0 =MISO，S1 =MOSI，S2 =SCLK
+// 在 ESP8266 重叠模式下，必须定义以下内容
 
-//#define TFT_MISO 19
-//#define TFT_MOSI 23
-//#define TFT_SCLK 18
-//#define TFT_CS   15  // Chip select control pin
-//#define TFT_DC    2  // Data Command control pin
+//#定义TFT_SPI_OVERLAP
+
+// 在ESP8266重叠模式下，TFT片选必须连接到引脚D3
+//#定义TFT_CS PIN_D3
+//#define TFT_DC PIN_D5 //数据命令控制引脚
+//#define TFT_RST PIN_D4 //复位引脚（可以连接到NodeMCU RST，见下一行）
+//#define TFT_RST -1 //如果显示器RESET连接到NodeMCU RST或3.3V，则将TFT_RST设置为-1
+
+
+// ###### 编辑以下行中的引脚号以适合您的ESP32 ######
+
+// 适用于ESP32开发板（仅使用ILI9341显示屏进行测试）
+//硬件SPI可以映射到任何引脚
+
+//#定义TFT_MISO 19
+//#定义TFT_MOSI 23
+//#定义TFT_SCLK 18
+//#define TFT_CS 15 //片选控制引脚
+//#define TFT_DC 2 //数据命令控制引脚
 //#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
