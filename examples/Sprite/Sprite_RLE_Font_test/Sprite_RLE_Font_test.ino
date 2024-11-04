@@ -9,7 +9,7 @@
  #########################################################################
 */
 
-// Specify sprite 160 x 128 pixels (needs 40Kbytes of RAM for 16 bit colour)
+// Specify sprite 160 x 128 pixels (needs 40Kbytes of RAM for 16-bit colour)
 #define IWIDTH  160
 #define IHEIGHT 128
 

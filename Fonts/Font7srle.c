@@ -1,6 +1,6 @@
 // Font 7
 //
-// This font has been 8 bit Run Length Encoded to save FLASH space
+// This font has been 8-bit Run Length Encoded to save FLASH space
 //
 // This is a 7 segment font intended to display numbers and time
 // This font only contains characters [space] 0 1 2 3 4 5 6 7 8 9 : . -

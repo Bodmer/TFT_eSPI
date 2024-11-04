@@ -14,7 +14,7 @@
 //#define STM_PORTC_DATA_BUS // Pins below must re re-allocated to use this option
 //#define STM_PORTD_DATA_BUS // Pins below must re re-allocated to use this option
 
-// Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
+// Tell the library to use 8-bit parallel mode (otherwise SPI is assumed)
 #define TFT_PARALLEL_8_BIT
 
 // Define ONE of the the TFT display drivers
@@ -30,7 +30,7 @@
 #define TFT_WR  PB9 // Write strobe control pin
 #define TFT_RD  PB1 // Read pin
 
-#define TFT_D0 PA0 // 8 bit Port A parallel bus to TFT
+#define TFT_D0 PA0 // 8-bit Port A parallel bus to TFT
 #define TFT_D1 PA1
 #define TFT_D2 PA2
 #define TFT_D3 PA3

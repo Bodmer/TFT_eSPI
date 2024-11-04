@@ -3,6 +3,10 @@
 // ESP32, ESP8266). It renders a png file that is stored in LittleFS
 // using the PNGdec library (available via library manager).
 
+// Note: The PNGDEC required lots of RAM to work (~40kbytes) so
+// this sketch is will not run on smaller memory processors (e.g.
+// ESP8266, STM32F103 etc.)
+
 // It uses DMA to send image data to the TFT while the decoding takes
 // place. The processor and display combination must support DMA to
 // run this sketch! The decode time dominates so DMA is mainly an advantage

@@ -1,5 +1,5 @@
 //                            USER DEFINED SETTINGS
-//   Set driver type, fonts to be loaded, pins used and SPI control method etc
+//   Set driver type, fonts to be loaded, pins used and SPI control method etc.
 //
 //   See the User_Setup_Select.h file if you wish to be able to define multiple
 //   setups and then easily select which setup file is used by the compiler.
@@ -27,15 +27,15 @@
 //#define NUCLEO_64_TFT
 //#define NUCLEO_144_TFT
 
-// STM32 8 bit parallel only:
-// If STN32 Port A or B pins 0-7 are used for 8 bit parallel data bus bits 0-7
+// STM32 8-bit parallel only:
+// If STN32 Port A or B pins 0-7 are used for 8-bit parallel data bus bits 0-7
 // then this will improve rendering performance by a factor of ~8x
 //#define STM_PORTA_DATA_BUS
 //#define STM_PORTB_DATA_BUS
 
-// Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
+// Tell the library to use 8-bit parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
-//#define TFT_PARALLEL_16_BIT // **** 16 bit parallel ONLY with RP2040 processor ****
+//#define TFT_PARALLEL_16_BIT // **** 16-bit parallel ONLY with RP2040 processor ****
  
 // Display type -  only define if RPi display
 //#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
@@ -236,7 +236,7 @@
 
 // ######       EDIT THE PINs BELOW TO SUIT YOUR ESP32 PARALLEL TFT SETUP        ######
 
-// The library supports 8 bit parallel TFTs with the ESP32, the pin
+// The library supports 8-bit parallel TFTs with the ESP32, the pin
 // selection below is compatible with ESP32 boards in UNO format.
 // Wemos D32 boards need to be modified, see diagram in Tools folder.
 // Only ILI9481 and ILI9341 based displays have been tested!
@@ -244,7 +244,7 @@
 // Parallel bus is only supported for the STM32 and ESP32
 // Example below is for ESP32 Parallel interface with UNO displays
 
-// Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
+// Tell the library to use 8-bit parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
 
 // The ESP32 and TFT the pins used for testing are:

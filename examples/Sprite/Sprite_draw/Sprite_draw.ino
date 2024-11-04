@@ -14,12 +14,12 @@
   any position. If there is sufficient RAM then the Sprite can
   be the same size as the screen and used as a frame buffer.
 
-  A 16 bit Sprite occupies (2 * width * height) bytes in RAM.
+  A 16-bit Sprite occupies (2 * width * height) bytes in RAM.
 
   On a ESP8266 Sprite sizes up to 126 x 160 can be accommodated,
-  this size requires 40kBytes of RAM for a 16 bit colour depth.
+  this size requires 40kBytes of RAM for a 16-bit colour depth.
   
-  When 8 bit colour depth sprites are created they occupy
+  When 8-bit colour depth sprites are created they occupy
   (width * height) bytes in RAM, so larger sprites can be
   created, or the RAM required is halved.
 

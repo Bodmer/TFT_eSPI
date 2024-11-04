@@ -1,7 +1,7 @@
 
 // This is the command sequence that initialises the ILI9486 driver
 //
-// This setup information uses simple 8 bit SPI writecommand() and writedata() functions
+// This setup information uses simple 8-bit SPI writecommand() and writedata() functions
 //
 // See ST7735_Setup.h file for an alternative format
 
@@ -16,9 +16,9 @@
 
     writecommand(0x3A);
     #if defined (TFT_PARALLEL_8_BIT) || defined (TFT_PARALLEL_16_BIT) || defined (RPI_DISPLAY_TYPE)
-      writedata(0x55);           // 16 bit colour interface
+      writedata(0x55);           // 16-bit colour interface
     #else
-      writedata(0x66);           // 18 bit colour interface
+      writedata(0x66);           // 18-bit colour interface
     #endif
 
     writecommand(0xC0); //                          1100.0000 Power Control 1

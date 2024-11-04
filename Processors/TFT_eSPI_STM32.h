@@ -151,6 +151,15 @@
     #define TFT_SPI_PORT 1
   #endif
 
+  #if (TFT_SPI_PORT == 1)
+    #define SPIX SPI1
+  #elif (TFT_SPI_PORT == 2)
+    #define SPIX SPI2
+  #elif (TFT_SPI_PORT == 3)
+    #define SPIX SPI3
+  #elif (TFT_SPI_PORT == 4)
+    #define SPIX SPI4
+  #endif
   // Global define is _VARIANT_ARDUINO_STM32_, see board package stm32_def.h for specific variants
   #if defined (STM32F2xx) || defined (STM32F4xx) || defined (STM32F7xx)
 
@@ -226,8 +235,8 @@
   #define DC_PORT     digitalPinToPort(TFT_DC)
   #define DC_PIN_MASK digitalPinToBitMask(TFT_DC)
   // Use bit set reset register
-  #define DC_C DC_PORT->BSRR = DC_PIN_MASK<<16
-  #define DC_D DC_PORT->BSRR = DC_PIN_MASK
+  #define DC_C DC_DELAY; DC_PORT->BSRR = DC_PIN_MASK<<16
+  #define DC_D DC_DELAY; DC_PORT->BSRR = DC_PIN_MASK
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -401,7 +410,7 @@
     #define  D5_BSR_MASK(B) ((D5_PIN_MASK<<16)>>(((B)>> 1)&0x10))
     #define  D6_BSR_MASK(B) ((D6_PIN_MASK<<16)>>(((B)>> 2)&0x10))
     #define  D7_BSR_MASK(B) ((D7_PIN_MASK<<16)>>(((B)>> 3)&0x10))
-    // Create bit set/reset mask for top byte of 16 bit value B
+    // Create bit set/reset mask for top byte of 16-bit value B
     #define  D8_BSR_MASK(B) ((D0_PIN_MASK<<16)>>(((B)>> 4)&0x10))
     #define  D9_BSR_MASK(B) ((D1_PIN_MASK<<16)>>(((B)>> 5)&0x10))
     #define D10_BSR_MASK(B) ((D2_PIN_MASK<<16)>>(((B)>> 6)&0x10))
@@ -420,7 +429,7 @@
 
     #if defined (SSD1963_DRIVER)
 
-      // Write 18 bit color to TFT (untested)
+      // Write 18-bit color to TFT (untested)
       #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
                                GPIOA->BSRR = D0_BSR_MASK(r6) | D2_BSR_MASK(r6) | D7_BSR_MASK(r6); \
                                WR_L; \
@@ -438,7 +447,7 @@
                                GPIOB->BSRR = D3_BSR_MASK(b6) | D4_BSR_MASK(b6) | D5_BSR_MASK(b6) | D6_BSR_MASK(b6); \
                                WR_STB // Need to slow down strobe
 
-      // 18 bit color write with swapped bytes
+      // 18-bit color write with swapped bytes
       #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
     #else
@@ -454,7 +463,7 @@
                                GPIOB->BSRR = D3_BSR_MASK(C) | D4_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
                                WR_STB // Need to slow down strobe
 
-      // 16 bit write with swapped bytes
+      // 16-bit write with swapped bytes
       #define tft_Write_16S(C) GPIOA->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D7_BSR_MASK(C); \
                                WR_L; \
                                GPIOC->BSRR = D1_BSR_MASK(C); \
@@ -541,7 +550,7 @@
       #define  D5_BSR_MASK(B) ((D5_PIN_MASK<<16)>>(((B)>> 1)&0x10))
       #define  D6_BSR_MASK(B) ((D6_PIN_MASK<<16)>>(((B)>> 2)&0x10))
       #define  D7_BSR_MASK(B) ((D7_PIN_MASK<<16)>>(((B)>> 3)&0x10))
-      // Create bit set/reset mask for top byte of 16 bit value B
+      // Create bit set/reset mask for top byte of 16-bit value B
       #define  D8_BSR_MASK(B) ((D0_PIN_MASK<<16)>>(((B)>> 4)&0x10))
       #define  D9_BSR_MASK(B) ((D1_PIN_MASK<<16)>>(((B)>> 5)&0x10))
       #define D10_BSR_MASK(B) ((D2_PIN_MASK<<16)>>(((B)>> 6)&0x10))
@@ -561,7 +570,7 @@
 
       #if defined (SSD1963_DRIVER)
 
-        // Write 18 bit color to TFT (untested)
+        // Write 18-bit color to TFT (untested)
         #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
                                  GPIOF->BSRR = D0_BSR_MASK(r6) | D2_BSR_MASK(r6) | D4_BSR_MASK(r6) | D7_BSR_MASK(r6); \
                                  WR_L; \
@@ -579,7 +588,7 @@
                                  GPIOE->BSRR = D3_BSR_MASK(b6) | D5_BSR_MASK(b6) | D6_BSR_MASK(b6); \
                                  WR_STB // Need to slow down strobe
 
-        // 18 bit color write with swapped bytes
+        // 18-bit color write with swapped bytes
         #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
       #else
@@ -596,7 +605,7 @@
                                  GPIOE->BSRR = D3_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
                                  WR_STB
 
-        // 16 bit write with swapped bytes
+        // 16-bit write with swapped bytes
         #define tft_Write_16S(C) GPIOF->BSRR = D0_BSR_MASK(C) | D2_BSR_MASK(C) | D4_BSR_MASK(C) | D7_BSR_MASK(C); \
                                  WR_L; \
                                  GPIOD->BSRR = D1_BSR_MASK(C); \
@@ -659,7 +668,7 @@
       #define  D5_BSR_MASK(B) ((D5_PIN_MASK<<16)>>(((B)>> 1)&0x10))
       #define  D6_BSR_MASK(B) ((D6_PIN_MASK<<16)>>(((B)>> 2)&0x10))
       #define  D7_BSR_MASK(B) ((D7_PIN_MASK<<16)>>(((B)>> 3)&0x10))
-      // Create bit set/reset mask for top byte of 16 bit value B
+      // Create bit set/reset mask for top byte of 16-bit value B
       #define  D8_BSR_MASK(B) ((D0_PIN_MASK<<16)>>(((B)>> 4)&0x10))
       #define  D9_BSR_MASK(B) ((D1_PIN_MASK<<16)>>(((B)>> 5)&0x10))
       #define D10_BSR_MASK(B) ((D2_PIN_MASK<<16)>>(((B)>> 6)&0x10))
@@ -692,7 +701,7 @@
                                GPIOE->BSRR = D3_BSR_MASK(C) | D4_BSR_MASK(C) | D5_BSR_MASK(C) | D6_BSR_MASK(C); \
                                WR_STB
 
-      // 16 bit write with swapped bytes
+      // 16-bit write with swapped bytes
       #define tft_Write_16S(C) GPIOF->BSRR = D0_BSR_MASK(C); \
                                GPIOG->BSRR = D2_BSR_MASK(C) | D7_BSR_MASK(C); \
                                WR_L; \
@@ -743,14 +752,14 @@
 
       #if defined (SSD1963_DRIVER)
 
-        // Write 18 bit color to TFT (untested)
+        // Write 18-bit color to TFT (untested)
 
         #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
                              GPIOX->BSRR = (0x00FF0000 | (uint8_t)(r6)); WR_L; WR_STB; \
                              GPIOX->BSRR = (0x00FF0000 | (uint8_t)(g6)); WR_L; WR_STB; \
                              GPIOX->BSRR = (0x00FF0000 | (uint8_t)(b6)); WR_L; WR_STB
 
-        // 18 bit color write with swapped bytes
+        // 18-bit color write with swapped bytes
         #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
       #else
@@ -759,7 +768,7 @@
           #define tft_Write_16(C)  GPIOX->BSRR = (0x00FF0000 | (uint8_t)(C>>8)); WR_L; WR_STB; \
                                    GPIOX->BSRR = (0x00FF0000 | (uint8_t)(C>>0)); WR_L; WR_STB
 
-          // 16 bit write with swapped bytes
+          // 16-bit write with swapped bytes
           #define tft_Write_16S(C) GPIOX->BSRR = (0x00FF0000 | (uint8_t)(C>>0)); WR_L; WR_STB; \
                                    GPIOX->BSRR = (0x00FF0000 | (uint8_t)(C>>8)); WR_L; WR_STB
       #endif
@@ -832,7 +841,7 @@
       #define  D5_BSR_MASK(B) ((D5_PIN_MASK<<16)>>(((B)>> 1)&0x10))
       #define  D6_BSR_MASK(B) ((D6_PIN_MASK<<16)>>(((B)>> 2)&0x10))
       #define  D7_BSR_MASK(B) ((D7_PIN_MASK<<16)>>(((B)>> 3)&0x10))
-      // Create bit set/reset mask for top byte of 16 bit value B
+      // Create bit set/reset mask for top byte of 16-bit value B
       #define  D8_BSR_MASK(B) ((D0_PIN_MASK<<16)>>(((B)>> 4)&0x10))
       #define  D9_BSR_MASK(B) ((D1_PIN_MASK<<16)>>(((B)>> 5)&0x10))
       #define D10_BSR_MASK(B) ((D2_PIN_MASK<<16)>>(((B)>> 6)&0x10))
@@ -857,7 +866,7 @@
 
       #if defined (SSD1963_DRIVER)
 
-        // Write 18 bit color to TFT (untested)
+        // Write 18-bit color to TFT (untested)
         #define tft_Write_16(C)  r6 = (((C) & 0xF800)>> 8); g6 = (((C) & 0x07E0)>> 3); b6 = (((C) & 0x001F)<< 3); \
                                  D0_PIN_PORT->BSRR = D8_BSR_MASK(r6);  \
                                  D1_PIN_PORT->BSRR = D9_BSR_MASK(r6);  \
@@ -890,7 +899,7 @@
                                  D7_PIN_PORT->BSRR = D7_BSR_MASK(b6); \
                                  WR_STB
 
-        // 18 bit color write with swapped bytes
+        // 18-bit color write with swapped bytes
         #define tft_Write_16S(C) Cswap = ((C) >>8 | (C) << 8); tft_Write_16(Cswap)
 
       #else
@@ -917,7 +926,7 @@
                                  D7_PIN_PORT->BSRR = D7_BSR_MASK(C); \
                                  WR_STB
 
-        // 16 bit write with swapped bytes
+        // 16-bit write with swapped bytes
         #define tft_Write_16S(C) D0_PIN_PORT->BSRR = D0_BSR_MASK(C); \
                                  D1_PIN_PORT->BSRR = D1_BSR_MASK(C); \
                                  D2_PIN_PORT->BSRR = D2_BSR_MASK(C); \
@@ -960,66 +969,58 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to a SPI ILI948x TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+#elif  defined (SPI_18BIT_DRIVER) // SPI 18-bit colour
 
-  // Write 8 bits to TFT
-  #define tft_Write_8(C) \
-  { spiBuffer[0] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 1, 10); }
+  #define SPI_TXE_CHECK  while(!__HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_TXE)){}
+                         //BSY check must allow for APB clock delay by checking TXE flag first
+  #define SPI_BUSY_CHECK SPI_TXE_CHECK; while( __HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_BSY)){}
+  #define TX_FIFO        SPI_TXE_CHECK; *((__IO uint8_t *)&SPIX->DR)
 
-  // Convert 16 bit colour to 18 bit and write in 3 bytes
-  #define tft_Write_16(C) \
-  { spiBuffer[0] = ((C) & 0xF800)>>8; spiBuffer[1] = ((C) & 0x07E0)>>3; spiBuffer[2] = ((C) & 0x001F)<<3; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 3, 10); }
+  //#define tft_Write_8(C)   spi.transfer(C)
+  #define tft_Write_8(C)   TX_FIFO = (C); SPI_BUSY_CHECK
+  #define tft_Write_16(C)  TX_FIFO = ((C) & 0xF800)>>8; TX_FIFO = ((C) & 0x07E0)>>3; TX_FIFO = ((C) & 0x001F)<<3; SPI_BUSY_CHECK
+  #define tft_Write_16S(C) TX_FIFO = (C) & 0xF8; TX_FIFO = ((C) & 0xE000)>>11 | ((C) & 0x07)<<5; TX_FIFO = ((C) & 0x1F00)>>5; SPI_BUSY_CHECK
+  #define tft_Write_16N(C) TX_FIFO = ((C) & 0xF800)>>8; TX_FIFO = ((C) & 0x07E0)>>3; TX_FIFO = ((C) & 0x001F)<<3
 
-  // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
-  #define tft_Write_16S(C) \
-  { spiBuffer[0] = (C) & 0xF8; spiBuffer[1] = ((C) & 0xE000)>>11 | ((C) & 0x07)<<5; spiBuffer[2] = ((C) & 0x1F00)>>5; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 3, 10); }
-
-  // Write 32 bits to TFT
   #define tft_Write_32(C) \
-  { spiBuffer[0] = (C)>>24; spiBuffer[1] = (C)>>16; spiBuffer[2] = (C)>>8; spiBuffer[3] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 4, 10); }
+    TX_FIFO = (C)>>24; TX_FIFO = (C)>>16; \
+    TX_FIFO = (C)>>8; TX_FIFO = (C); SPI_BUSY_CHECK
 
-  // Write two address coordinates
   #define tft_Write_32C(C,D) \
-  { spiBuffer[0] = (C)>>8; spiBuffer[1] = C; spiBuffer[2] = (D)>>8; spiBuffer[3] = D; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 4, 10); }
+    TX_FIFO = (C)>>8; TX_FIFO = (C); \
+    TX_FIFO = (D)>>8; TX_FIFO = (D); SPI_BUSY_CHECK
 
-  // Write same value twice
   #define tft_Write_32D(C) \
-  { spiBuffer[0] = spiBuffer[2] = (C)>>8; spiBuffer[1] = spiBuffer[3] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 4, 10); }
+    TX_FIFO = (C)>>8; TX_FIFO = (C); \
+    TX_FIFO = (C)>>8; TX_FIFO = (C); SPI_BUSY_CHECK
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to a SPI Raspberry Pi TFT
 ////////////////////////////////////////////////////////////////////////////////////////
 #elif  defined (RPI_DISPLAY_TYPE)
 
-  #define tft_Write_8(C) \
-  { spiBuffer[0] = 0; spiBuffer[1] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
+  #define SPI_TXE_CHECK  while(!__HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_TXE)){}
+                         //BSY check must allow for APB clock delay by checking TXE flag first
+  #define SPI_BUSY_CHECK SPI_TXE_CHECK; while( __HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_BSY)){}
+  #define TX_FIFO        SPI_TXE_CHECK; *((__IO uint8_t *)&SPIX->DR)
 
-  #define tft_Write_16(C) \
-  { spiBuffer[0] = (C)>>8; spiBuffer[1] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
-
-  #define tft_Write_16S(C) \
-  { spiBuffer[0] = C; spiBuffer[1] = (C)>>8; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
+  //#define tft_Write_8(C)   spi.transfer(C)
+  #define tft_Write_8(C)   TX_FIFO = (0); TX_FIFO = (C); SPI_BUSY_CHECK
+  #define tft_Write_16(C)  TX_FIFO = (C)>>8; TX_FIFO = (C); SPI_BUSY_CHECK
+  #define tft_Write_16S(C) TX_FIFO = (C); TX_FIFO = (C)>>8; SPI_BUSY_CHECK
+  #define tft_Write_16N(C) TX_FIFO = (C)>>8; TX_FIFO = (C)
 
   #define tft_Write_32(C) \
-  { spiBuffer[0] = (C)>>24; spiBuffer[1] = (C)>>16; spiBuffer[2] = (C)>>8; spiBuffer[3] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 4, 10); }
+    TX_FIFO = (C)>>24; TX_FIFO = (C)>>16; \
+    TX_FIFO = (C)>>8; TX_FIFO = (C); SPI_BUSY_CHECK
 
   #define tft_Write_32C(C,D) \
-  { spiBuffer[1] = ((C)>>8); spiBuffer[3] = (C); spiBuffer[5] = ((D)>>8); spiBuffer[7] = D; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 8, 10); }
+    TX_FIFO = (0); TX_FIFO = (C)>>8; TX_FIFO = (0); TX_FIFO = (C); \
+    TX_FIFO = (0); TX_FIFO = (D)>>8; TX_FIFO = (0); TX_FIFO = (D); SPI_BUSY_CHECK
 
   #define tft_Write_32D(C) \
-  { spiBuffer[1] = ((C)>>8); spiBuffer[3] = (C); spiBuffer[5] = ((C)>>8); spiBuffer[7] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 8, 10); }
+    TX_FIFO = (0); TX_FIFO = (C)>>8; TX_FIFO = (0); TX_FIFO = (C); \
+    TX_FIFO = (0); TX_FIFO = (C)>>8; TX_FIFO = (0); TX_FIFO = (C); SPI_BUSY_CHECK
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros for all other SPI displays
@@ -1027,35 +1028,35 @@
 
 #else
 
-  #if defined(ST7789_DRIVER) || defined(ST7789_2_DRIVER)
-    // Temporary workaround for issue #510 part 2
-    #define tft_Write_8(C)   spi.transfer(C)
-  #else
-    #define tft_Write_8(C) \
-    { spiBuffer[0] = C; \
-    HAL_SPI_Transmit(&spiHal, spiBuffer, 1, 10); delayMicroseconds(1);}
-  #endif
+  //#define DC_DELAY delayMicroseconds(1) // Premature BSY clear Hardware bug?
 
-  #define tft_Write_16(C) \
-  { spiBuffer[0] = (C)>>8; spiBuffer[1] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
+  #define SPI_TXE_CHECK  while(!__HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_TXE)){}
+                         //BSY check must allow for APB clock delay by checking TXE flag first
+  #define SPI_BUSY_CHECK SPI_TXE_CHECK; while( __HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_BSY)){}
+  #define TX_FIFO        SPI_TXE_CHECK; *((__IO uint8_t *)&SPIX->DR)
 
-  #define tft_Write_16S(C) \
-  { spiBuffer[0] = C; spiBuffer[1] = (C)>>8; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 2, 10); }
+  #define tft_Write_8(C)   TX_FIFO = (C); SPI_BUSY_CHECK
+  #define tft_Write_16(C)  TX_FIFO = (C)>>8; TX_FIFO = (C); SPI_BUSY_CHECK
+  #define tft_Write_16S(C) TX_FIFO = (C); TX_FIFO = (C)>>8; SPI_BUSY_CHECK
+  #define tft_Write_16N(C) TX_FIFO = (C)>>8; TX_FIFO = (C)
 
   #define tft_Write_32(C) \
-  { spiBuffer[0] = (C)>>24; spiBuffer[1] = (C)>>16; spiBuffer[2] = (C)>>8; spiBuffer[3] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 4, 10); }
+    TX_FIFO = (C)>>24; TX_FIFO = (C)>>16; \
+    tft_Write_16((uint16_t) ((C)>>0))
 
   #define tft_Write_32C(C,D) \
-  { spiBuffer[0] = (C)>>8; spiBuffer[1] = C; spiBuffer[2] = (D)>>8; spiBuffer[3] = D; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 4, 10); }
+    TX_FIFO = (C)>>8; TX_FIFO = (C); \
+    tft_Write_16((uint16_t) (D))
 
   #define tft_Write_32D(C) \
-  { spiBuffer[0] = spiBuffer[2] = (C)>>8; spiBuffer[1] = spiBuffer[3] = C; \
-  HAL_SPI_Transmit(&spiHal, spiBuffer, 4, 10); }
+    TX_FIFO = (C)>>8; TX_FIFO = (C); \
+    tft_Write_16((uint16_t) (C))
 
+#endif
+
+#ifndef DC_DELAY
+  //#define DC_DELAY delayMicroseconds(1) // Premature BSY clear hardware bug?
+  #define DC_DELAY
 #endif
 
 #ifndef tft_Write_16N

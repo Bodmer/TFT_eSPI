@@ -100,7 +100,7 @@ void TFT_eSPI::end_SDA_Read(void)
 
 /***************************************************************************************
 ** Function name:           read byte  - supports class functions
-** Description:             Read a byte from ESP32 8 bit data port
+** Description:             Read a byte from ESP32 8-bit data port
 ***************************************************************************************/
 // Parallel bus MUST be set to input before calling this function!
 uint8_t TFT_eSPI::readByte(void)
@@ -415,7 +415,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+#elif defined (SPI_18BIT_DRIVER) // SPI 18-bit colour
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -428,7 +428,7 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len)
   uint32_t r = (color & 0xF800)>>8;
   uint32_t g = (color & 0x07E0)<<5;
   uint32_t b = (color & 0x001F)<<19;
-  // Concatenate 4 pixels into three 32 bit blocks
+  // Concatenate 4 pixels into three 32-bit blocks
   uint32_t r0 = r<<24 | b | g | r;
   uint32_t r1 = r0>>8 | g<<16;
   uint32_t r2 = r1>>8 | b<<8;
@@ -512,7 +512,7 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif defined (TFT_PARALLEL_8_BIT) // Now the code for ESP32 8 bit parallel
+#elif defined (TFT_PARALLEL_8_BIT) // Now the code for ESP32 8-bit parallel
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -793,7 +793,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .sclk_io_num = TFT_SCLK,
     .quadwp_io_num = -1,
     .quadhd_io_num = -1,
-    #ifdef CONFIG_IDF_TARGET_ESP32S2
+    #ifdef xCONFIG_IDF_TARGET_ESP32S2
       .data4_io_num = -1,
       .data5_io_num = -1,
       .data6_io_num = -1,

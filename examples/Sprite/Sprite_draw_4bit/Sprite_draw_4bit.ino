@@ -1,9 +1,9 @@
 /*
-  Sketch to show how a 4 bit Sprite is created, how to draw pixels
+  Sketch to show how a 4-bit Sprite is created, how to draw pixels
   and text within the Sprite and then push the Sprite onto
   the display screen.
 
-  The advantage of 4 bit sprites is:
+  The advantage of 4-bit sprites is:
     1. Small memory footprint
     2. Any set of 16 colours can be specified
     3. Colours can be changed without redrawing in Sprite
@@ -21,7 +21,7 @@
   any position. If there is sufficient RAM then the Sprite can
   be the same size as the screen and used as a frame buffer.
 
-  A 4 bit Sprite occupies (width * height)/2 bytes in RAM.
+  A 4-bit Sprite occupies (width * height)/2 bytes in RAM.
 
 */
 
@@ -64,7 +64,7 @@ void loop(void)
   // Fill the whole sprite with color 0 (Sprite is in memory so not visible yet)
   spr.fillSprite(0);
 
-   // create a color map with known colors (16 maximum for 4 bit Sprite
+   // create a color map with known colors (16 maximum for 4-bit Sprite
   uint16_t cmap[16];
 
 

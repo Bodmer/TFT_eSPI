@@ -14,9 +14,9 @@
   any position. If there is sufficient RAM then the Sprite can
   be the same size as the screen and used as a frame buffer.
 
-  A 16 bit Sprite occupies (2 * width * height) bytes in RAM.
+  A 16-bit Sprite occupies (2 * width * height) bytes in RAM.
 
-  An 8 bit Sprite occupies (width * height) bytes in RAM.
+  An 8-bit Sprite occupies (width * height) bytes in RAM.
 
 */
 

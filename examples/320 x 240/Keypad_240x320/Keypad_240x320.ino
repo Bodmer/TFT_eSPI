@@ -3,8 +3,8 @@
   button handling class, this sketch is based on the Arduin-o-phone
   example.
 
-  This example diplays a keypad where numbers can be entered and
-  send to the Serial Monitor window.
+  This example displays a keypad where numbers can be entered and
+  sent to the Serial Monitor window.
 
   The sketch has been tested on the ESP8266 (which supports SPIFFS)
 
@@ -164,7 +164,7 @@ void loop(void) {
 
       // Update the number display field
       tft.setTextDatum(TL_DATUM);        // Use top left corner as text coord datum
-      tft.setFreeFont(&FreeSans18pt7b);  // Choose a nicefont that fits box
+      tft.setFreeFont(&FreeSans18pt7b);  // Choose a nice font that fits box
       tft.setTextColor(DISP_TCOLOR);     // Set the font colour
 
       // Draw the string, the value returned is the width in pixels
@@ -209,7 +209,7 @@ void touch_calibrate()
 
   // check file system exists
   if (!SPIFFS.begin()) {
-    Serial.println("Formating file system");
+    Serial.println("formatting file system");
     SPIFFS.format();
     SPIFFS.begin();
   }

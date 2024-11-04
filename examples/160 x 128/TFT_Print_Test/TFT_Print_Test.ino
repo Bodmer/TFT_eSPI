@@ -1,5 +1,5 @@
 /*  
- Test the tft.print() viz embedded tft.write() function
+ Test the tft.print() viz. embedded tft.write() function
 
  This sketch used font 2, 4, 7
  

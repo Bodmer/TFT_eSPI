@@ -1,6 +1,6 @@
 // Font 6 is intended to display numbers and time
 //
-// This font has been 8 bit Run Length Encoded to save FLASH space
+// This font has been 8-bit Run Length Encoded to save FLASH space
 //
 // This font only contains characters [space] 0 1 2 3 4 5 6 7 8 9 : - . a p m
 // The Pipe character | is a narrow space to aid formatting

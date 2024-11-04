@@ -43,7 +43,7 @@ OpenFontRender ofr;
 uint32_t runTime = 0;       // time for next update
 
 int reading = 0; // Value to be displayed
-int d = 0; // Variable used for the sinewave test waveform
+int d = 0; // Variable used for the sine wave test waveform
 bool range_error = 0;
 int8_t ramp = 1;
 
@@ -109,12 +109,12 @@ void loop() {
   }
 
 #ifdef DRAW_DIGITS
-  ofr.unloadFont(); // Recover space used by font metrics etc
+  ofr.unloadFont(); // Recover space used by font metrics etc.
 #endif
 }
 
 // #########################################################################
-//  Draw the meter on the screen, returns x coord of righthand side
+//  Draw the meter on the screen, returns x coord of right-hand side
 // #########################################################################
 // x,y is centre of meter, r the radius, val a number in range 0-100
 // units is the meter scale label
@@ -154,10 +154,10 @@ void ringMeter(int x, int y, int r, int val, const char *units)
 
 
       // The OpenFontRender library only has simple print functions...
-      // Digit jiggle for chaging values often happens with proportional fonts because
+      // Digit jiggle for changing values often happens with proportional fonts because
       // digit glyph width varies ( 1 narrower that 4 for example). This code prints up to
       // 3 digits with even spacing.
-      // A few experiemntal fudge factors are used here to position the
+      // A few experimental fudge factors are used here to position the
       // digits in the sprite...
       // Create a sprite to draw the digits into
       uint8_t w = ofr.getTextWidth("444");
@@ -167,12 +167,12 @@ void ringMeter(int x, int y, int r, int val, const char *units)
       char str_buf[8];         // Buffed for string
       itoa (val, str_buf, 10); // Convert value to string (null terminated)
       uint8_t ptr = 0;         // Pointer to a digit character
-      uint8_t dx = 4;          // x offfset for cursor position
+      uint8_t dx = 4;          // x offset for cursor position
       if (val < 100) dx = ofr.getTextWidth("4") / 2; // Adjust cursor x for 2 digits
       if (val < 10) dx = ofr.getTextWidth("4");      // Adjust cursor x for 1 digit
       while ((uint8_t)str_buf[ptr] != 0) ptr++;      // Count the characters
       while (ptr) {
-        ofr.setCursor(w - dx - w / 20, -h / 2.5);    // Offset cursor position in sprtie
+        ofr.setCursor(w - dx - w / 20, -h / 2.5);    // Offset cursor position in sprite
         ofr.rprintf(str_buf + ptr - 1);              // Draw a character
         str_buf[ptr - 1] = 0;                        // Replace character with a null
         dx += 1 + w / 3;                             // Adjust cursor for next character
@@ -190,7 +190,7 @@ void ringMeter(int x, int y, int r, int val, const char *units)
     }
 #endif
 
-    //ofr.unloadFont(); // Recover space used by font metrics etc
+    //ofr.unloadFont(); // Recover space used by font metrics etc.
 
     // Allocate a value to the arc thickness dependant of radius
     uint8_t thickness = r / 5;

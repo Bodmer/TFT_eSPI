@@ -280,7 +280,7 @@ void drawDatumMarker(int x, int y)
 
 
 // There follows a crude way of flagging that this example sketch needs fonts which
-// have not been enbabled in the User_Setup.h file inside the TFT_HX8357 library.
+// have not been enabled in the User_Setup.h file inside the TFT_HX8357 library.
 //
 // These lines produce errors during compile time if settings in User_Setup are not correct
 //

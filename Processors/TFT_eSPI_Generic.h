@@ -3,7 +3,7 @@
         ////////////////////////////////////////////////////
 
 // This is a generic driver for Arduino boards, it supports SPI interface displays
-// 8 bit parallel interface to TFT is not supported for generic processors
+// 8-bit parallel interface to TFT is not supported for generic processors
 
 #ifndef _TFT_eSPI_GENERICH_
 #define _TFT_eSPI_GENERICH_
@@ -94,17 +94,17 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Macros to write commands/pixel colour data to a SPI ILI948x TFT
 ////////////////////////////////////////////////////////////////////////////////////////
-#if  defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+#if  defined (SPI_18BIT_DRIVER) // SPI 18-bit colour
 
   // Write 8 bits to TFT
   #define tft_Write_8(C)   spi.transfer(C)
 
-  // Convert 16 bit colour to 18 bit and write in 3 bytes
+  // Convert 16-bit colour to 18-bit and write in 3 bytes
   #define tft_Write_16(C)  spi.transfer(((C) & 0xF800)>>8); \
                            spi.transfer(((C) & 0x07E0)>>3); \
                            spi.transfer(((C) & 0x001F)<<3)
 
-  // Convert swapped byte 16 bit colour to 18 bit and write in 3 bytes
+  // Convert swapped byte 16-bit colour to 18-bit and write in 3 bytes
   #define tft_Write_16S(C) spi.transfer((C) & 0xF8); \
                            spi.transfer(((C) & 0xE000)>>11 | ((C) & 0x07)<<5); \
                            spi.transfer(((C) & 0x1F00)>>5)
@@ -121,7 +121,7 @@
 // Macros to write commands/pixel colour data to other displays
 ////////////////////////////////////////////////////////////////////////////////////////
 #else
-  #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16 bit transfers
+  #if  defined (RPI_DISPLAY_TYPE) // RPi TFT type always needs 16-bit transfers
     #define tft_Write_8(C)   spi.transfer(C); spi.transfer(C)
     #define tft_Write_16(C)  spi.transfer((uint8_t)((C)>>8));spi.transfer((uint8_t)((C)>>0))
     #define tft_Write_16S(C) spi.transfer((uint8_t)((C)>>0));spi.transfer((uint8_t)((C)>>8))
@@ -143,7 +143,7 @@
       spi.transfer(0); spi.transfer((C)>>0)
 
   #else
-    #ifdef __AVR__ // AVR processors do not have 16 bit transfer
+    #ifdef __AVR__ // AVR processors do not have 16-bit transfer
       #define tft_Write_8(C)   {SPDR=(C); while (!(SPSR&_BV(SPIF)));}
       #define tft_Write_16(C)  tft_Write_8((uint8_t)((C)>>8));tft_Write_8((uint8_t)((C)>>0))
       #define tft_Write_16S(C) tft_Write_8((uint8_t)((C)>>0));tft_Write_8((uint8_t)((C)>>8))

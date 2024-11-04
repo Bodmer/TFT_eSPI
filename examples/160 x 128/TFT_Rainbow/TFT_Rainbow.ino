@@ -96,7 +96,7 @@ void loop() {
     // The new larger fonts do not use the .setCursor call, coords are embedded
     tft.setTextColor(TFT_BLACK, TFT_BLACK); // Do not plot the background colour
 
-    // Overlay the black text on top of the rainbow plot (the advantage of not drawing the backgorund colour!)
+    // Overlay the black text on top of the rainbow plot (the advantage of not drawing the background colour!)
     tft.drawCentreString("Font size 2", 80, 14, 2); // Draw text centre at position 80, 12 using font 2
 
     //tft.drawCentreString("Font size 2",81,12,2); // Draw text centre at position 80, 12 using font 2

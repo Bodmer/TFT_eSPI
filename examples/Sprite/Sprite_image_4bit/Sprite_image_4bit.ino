@@ -14,12 +14,12 @@
   any position. If there is sufficient RAM then the Sprite can
   be the same size as the screen and used as a frame buffer.
 
-  A 16 bit Sprite occupies (2 * width * height) bytes in RAM.
+  A 16-bit Sprite occupies (2 * width * height) bytes in RAM.
 
   On a ESP8266 Sprite sizes up to 126 x 160 can be accommodated,
-  this size requires 40kBytes of RAM for a 16 bit color depth.
+  this size requires 40kBytes of RAM for a 16-bit color depth.
   
-  When 8 bit color depth sprites are created they occupy
+  When 8-bit color depth sprites are created they occupy
   (width * height) bytes in RAM, so larger sprites can be
   created, or the RAM required is halved.
 
@@ -39,7 +39,7 @@ TFT_eSPI    tft = TFT_eSPI();         // Declare object "tft"
 
 TFT_eSprite spr = TFT_eSprite(&tft);  // Declare Sprite object "spr" with pointer to "tft" object
 
-byte red = 31; // Red is the top 5 bits of a 16 bit colour value
+byte red = 31; // Red is the top 5 bits of a 16-bit colour value
 byte green = 0;// Green is the middle 6 bits
 byte blue = 0; // Blue is the bottom 5 bits
 byte state = 0;
@@ -99,7 +99,7 @@ void loop(void)
 }
 
 // #########################################################################
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // #########################################################################
 unsigned int rainbow()
 {

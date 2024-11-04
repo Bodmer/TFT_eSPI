@@ -13,7 +13,7 @@
 #define GREEN2RED 4
 #define RED2GREEN 5
 
-#define TFT_GREY 0x2104 // Dark grey 16 bit colour
+#define TFT_GREY 0x2104 // Dark grey 16-bit colour
 
 #include "Alert.h" // Out of range alert icon
 
@@ -127,8 +127,8 @@ int ringMeter(int value, int vmin, int vmax, int x, int y, int r, const char *un
         case 1: colour = TFT_GREEN; break; // Fixed colour
         case 2: colour = TFT_BLUE; break; // Fixed colour
         case 3: colour = rainbow(map(i, -angle, angle, 0, 127)); break; // Full spectrum blue to red
-        case 4: colour = rainbow(map(i, -angle, angle, 70, 127)); break; // Green to red (high temperature etc)
-        case 5: colour = rainbow(map(i, -angle, angle, 127, 63)); break; // Red to green (low battery etc)
+        case 4: colour = rainbow(map(i, -angle, angle, 70, 127)); break; // Green to red (high temperature etc.)
+        case 5: colour = rainbow(map(i, -angle, angle, 127, 63)); break; // Red to green (low battery etc.)
         default: colour = TFT_BLUE; break; // Fixed colour
       }
       tft.fillTriangle(x0, y0, x1, y1, x2, y2, colour);
@@ -193,14 +193,14 @@ void drawAlert(int x, int y , int side, bool draw)
 }
 
 // #########################################################################
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // #########################################################################
 unsigned int rainbow(byte value)
 {
   // Value is expected to be in range 0-127
   // The value is converted to a spectrum colour from 0 = blue through to 127 = red
 
-  byte red = 0; // Red is the top 5 bits of a 16 bit colour value
+  byte red = 0; // Red is the top 5 bits of a 16-bit colour value
   byte green = 0;// Green is the middle 6 bits
   byte blue = 0; // Blue is the bottom 5 bits
 

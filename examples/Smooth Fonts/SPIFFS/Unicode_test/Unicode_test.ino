@@ -15,7 +15,7 @@
   String okay = "5µA";   // Good
 
   This is because UTF-8 characters outside the basic Latin set occupy more than
-  1 byte per character! A 16 bit Unicode character occupies 3 bytes!
+  1 byte per character! A 16-bit Unicode character occupies 3 bytes!
 
 */
 

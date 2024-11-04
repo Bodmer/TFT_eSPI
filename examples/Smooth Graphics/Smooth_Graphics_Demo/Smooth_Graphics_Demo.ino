@@ -1,4 +1,4 @@
-// Sketch to demonstrate smooth (anti-aliased) graphics funtions:
+// Sketch to demonstrate smooth (anti-aliased) graphics functions:
 // Smooth graphics result in less pixel resolution jaggedness.
 
 #include <TFT_eSPI.h> // Master copy here: https://github.com/Bodmer/TFT_eSPI
@@ -35,7 +35,7 @@ void loop() {
   // drawSpot is for small anti-aliased circles, coordinates and radius are
   // floating point to allow sub-pixel positioning (large circles will
   // be slow to draw). Use fillSmoothCircle() for large circles.
-  // In this case black is the backgorund colour for the anti-aliasing
+  // In this case black is the background colour for the anti-aliasing
   float x = 10.5;
   float y = 10.5;
   float r = 8.6;
@@ -43,7 +43,7 @@ void loop() {
 
   // Fill sprite with a colour
   spr.fillSprite(TFT_RED);
-  // Draw spot in sprite, the backgorund colour is ommitted so function
+  // Draw spot in sprite, the background colour is omitted so function
   // reads background colour for aliasing. (To use this method with direct write
   // to TFT (tft.drawSpot...) requires the capability to read data from the TFT!)
   spr.drawSpot(x, y, r, TFT_WHITE);
@@ -144,14 +144,14 @@ void getCoord(int16_t x, int16_t y, float *xp1, float *yp1, float *xp2, float *y
 }
 
 // =========================================================================
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // =========================================================================
 unsigned int rainbow(byte value)
 {
   // Value is expected to be in range 0-127
   // The value is converted to a spectrum colour from 0 = blue through to 127 = red
 
-  byte red = 0; // Red is the top 5 bits of a 16 bit colour value
+  byte red = 0; // Red is the top 5 bits of a 16-bit colour value
   byte green = 0;// Green is the middle 6 bits
   byte blue = 0; // Blue is the bottom 5 bits
 

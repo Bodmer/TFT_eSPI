@@ -2,6 +2,10 @@
 // This example renders a png file that is stored in a FLASH array
 // using the PNGdec library (available via library manager).
 
+// Note: The PNGDEC required lots of RAM to work (~40kbytes) so
+// this sketch is will not run on smaller memory processors (e.g.
+// ESP8266, STM32F103 etc.)
+
 // Image files can be converted to arrays using the tool here:
 // https://notisrac.github.io/FileToCArray/
 // To use this tool:
@@ -14,9 +18,9 @@
 
 // Include the PNG decoder library
 #include <PNGdec.h>
-#include "panda.h" // Image is stored here in an 8 bit array
+#include "panda.h" // Image is stored here in an 8-bit array
 
-PNG png; // PNG decoder inatance
+PNG png; // PNG decoder instance
 
 #define MAX_IMAGE_WIDTH 240 // Adjust for your images
 

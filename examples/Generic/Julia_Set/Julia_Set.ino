@@ -51,7 +51,7 @@ void draw_Julia(float c_r, float c_i, float zoom) {
 
   /* Pour chaque pixel en X */
 
-  for(int16_t x = SCREEN_WIDTH/2 - 1; x >= 0; x--) { // Rely on inverted symettry
+  for(int16_t x = SCREEN_WIDTH/2 - 1; x >= 0; x--) { // Rely on inverted symmetry
     /* Pour chaque pixel en Y */
     for(uint16_t y = 0; y < SCREEN_HEIGHT; y++) {      
       old_r = 1.5 * (x - SCREEN_WIDTH / 2) / (0.5 * zoom * SCREEN_WIDTH);

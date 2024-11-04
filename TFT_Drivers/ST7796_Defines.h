@@ -1,11 +1,22 @@
 // Change the width and height if required (defined in portrait mode)
 // or use the constructor to over-ride defaults
+#ifndef TFT_WIDTH
 #define TFT_WIDTH  320
+#endif
+
+#ifndef TFT_HEIGHT
 #define TFT_HEIGHT 480
+#endif
 
 // Generic commands used by TFT_eSPI.cpp
 #define TFT_NOP     0x00
 #define TFT_SWRST   0x01
+
+#define TFT_INVOFF  0x20
+#define TFT_INVON   0x21
+
+#define TFT_DISPOFF 0x28
+#define TFT_DISPON  0x29
 
 #define TFT_CASET   0x2A
 #define TFT_PASET   0x2B
@@ -30,10 +41,6 @@
 #else
   #define TFT_MAD_COLOR_ORDER TFT_MAD_BGR
 #endif
-
-#define TFT_INVOFF  0x20
-#define TFT_INVON   0x21
-
 
 // ST7796 specific commands
 #define ST7796_NOP     0x00

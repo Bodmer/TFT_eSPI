@@ -1,6 +1,6 @@
 // Font 8
 //
-// This font has been 8 bit Run Length Encoded to save FLASH space
+// This font has been 8-bit Run Length Encoded to save FLASH space
 //
 // It is a Arial 75 pixel height font intended to display large numbers
 // Width for numerals reduced from 55 to 53 (to fit in 160 pixel screens)

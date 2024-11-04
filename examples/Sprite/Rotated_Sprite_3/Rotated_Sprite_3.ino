@@ -80,7 +80,7 @@ void setup()
   // Send jpeg info to serial port
   fex.jpegInfo("/Eye_80x64.jpg");
 
-  // Draw jpeg iamge in Sprite spr at 0,0
+  // Draw jpeg image in Sprite spr at 0,0
   fex.drawJpeg("/Eye_80x64.jpg", 0 , 0, &spr);
 }
 
@@ -105,7 +105,7 @@ void loop()
   delay(1000);
 
   // Push copies of Sprite rotated through increasing angles 0-360 degrees
-  // with 45 fegree increments
+  // with 45 degree increments
   for (int16_t angle = 0; angle <= 360; angle += 45) {
     spr.pushRotated(angle);
     delay(500);

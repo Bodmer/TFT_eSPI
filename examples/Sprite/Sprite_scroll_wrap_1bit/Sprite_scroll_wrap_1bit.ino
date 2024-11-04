@@ -1,5 +1,5 @@
 // This **ONLY** works for 1 bpp Sprites due to lack of bounds checking in the
-// Sprite pushImage() function for 8 and 16 bit Sprites (it is on the TO DO list)
+// Sprite pushImage() function for 8 and 16-bit Sprites (it is on the TO DO list)
 
 // Wrapping scroll example by Bodmer for the TFT_eSPI library
 

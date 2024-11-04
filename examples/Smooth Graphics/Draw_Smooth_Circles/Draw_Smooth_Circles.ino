@@ -44,7 +44,7 @@ void loop()
 
 
 // -------------------------------------------------------------------------
-// Return a 16 bit rainbow colour
+// Return a 16-bit rainbow colour
 // -------------------------------------------------------------------------
 unsigned int rainbow(byte value)
 {
@@ -54,7 +54,7 @@ unsigned int rainbow(byte value)
  
   value = value%192;
   
-  byte red   = 0; // Red is the top 5 bits of a 16 bit colour value
+  byte red   = 0; // Red is the top 5 bits of a 16-bit colour value
   byte green = 0; // Green is the middle 6 bits, but only top 5 bits used here
   byte blue  = 0; // Blue is the bottom 5 bits
 

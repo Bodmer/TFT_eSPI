@@ -2,7 +2,7 @@
 // https://en.wikipedia.org/wiki/Direct_memory_access
 
 // Tested with ESP32, Nucleo 64 STM32F446RE and Nucleo 144 STM32F767ZI
-// TFT's with SPI can use DMA, the sketch also works with 8 bit
+// TFT's with SPI can use DMA, the sketch also works with 8-bit
 // parallel TFT's (tested with ILI9341 and ILI9481)
 
 // The sketch will run on processors without DMA and also parallel
@@ -36,7 +36,7 @@
 // Color depth has to be 16 bits if DMA is used to render image
 #define COLOR_DEPTH 16
 
-// 128x128 for a 16 bit colour Sprite (32Kbytes RAM)
+// 128x128 for a 16-bit colour Sprite (32Kbytes RAM)
 // Maximum is 181x181 (64Kbytes) for DMA -  restricted by processor design
 #define IWIDTH  128
 #define IHEIGHT 128

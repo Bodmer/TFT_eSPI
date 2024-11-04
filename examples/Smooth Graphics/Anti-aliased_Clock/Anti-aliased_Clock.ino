@@ -74,7 +74,7 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
 
   // Create the clock face sprite
-  //face.setColorDepth(8); // 8 bit will work, but reduces effectiveness of anti-aliasing
+  //face.setColorDepth(8); // 8-bit will work, but reduces effectiveness of anti-aliasing
   face.createSprite(FACE_W, FACE_H);
 
   // Only 1 font used in the sprite, so can remain loaded

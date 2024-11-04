@@ -1,4 +1,4 @@
-// Demonstrate graph widget functions with two independant trace instances
+// Demonstrate graph widget functions with two independent trace instances
 // Multiple traces can be drawn at a time with multiple trace instances
 // Note: Traces are automatically clipped at graph boundaries by widget library
 

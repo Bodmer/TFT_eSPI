@@ -11,7 +11,10 @@
            // Get the screen touch coordinates, returns true if screen has been touched
            // if the touch coordinates are off screen then x and y are not updated
            // The returned value can be treated as a bool type, false or 0 means touch not detected
-           // In future the function may return an 8 "quality" (jitter) value.
+           // In future the function may return an 8-bit "quality" (jitter) value.
+           // The threshold value is optional, this must be higher than the bias level for z (pressure)
+           // reported by Test_Touch_Controller when the screen is NOT touched. When touched the z value
+           // must be higher than the threshold for a touch to be detected.
   uint8_t  getTouch(uint16_t *x, uint16_t *y, uint16_t threshold = 600);
 
            // Run screen calibration and test, report calibration values to the serial port

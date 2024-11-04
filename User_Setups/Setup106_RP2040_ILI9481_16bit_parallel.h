@@ -1,4 +1,4 @@
-// This setup is for the RP2040 processor when used with 8 bit parallel displays
+// This setup is for the RP2040 processor when used with 8-bit parallel displays
 // See SetupX_Template.h for all options available
 #define USER_SETUP_ID 106
 
@@ -11,7 +11,7 @@
 // The parallel interface write cycle period is derived from a division of the CPU clock
 // speed so scales with the processor clock. This means that the divider ratio may need
 // to be increased when overclocking. I may also need to be adjusted dependant on the
-// display controller type (ILI94341, HX8357C etc). If RP2040_PIO_CLK_DIV is not defined
+// display controller type (ILI94341, HX8357C etc.). If RP2040_PIO_CLK_DIV is not defined
 // the library will set default values which may not suit your display.
 // The display controller data sheet will specify the minimum write cycle period. The
 // controllers often work reliably for shorter periods, however if the period is too short

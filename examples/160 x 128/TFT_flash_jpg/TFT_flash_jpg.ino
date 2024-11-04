@@ -1,7 +1,7 @@
 // Sketch to display images on a 160 x 128 TFT
 
 // Renders images stored in an array in program (FLASH)
-// The JPEG images are stored in header files (see jpeg1.h etc)
+// The JPEG images are stored in header files (see jpeg1.h etc.)
 
 // As well as the TFT_eSPI library:
 // https://github.com/Bodmer/TFT_eSPI
@@ -95,7 +95,7 @@ void drawArrayJpeg(const uint8_t arrayname[], uint32_t array_size, int xpos, int
 // fit totally on the screen are cropped to the nearest MCU size and may leave right/bottom borders.
 void renderJPEG(int xpos, int ypos) {
 
-  // retrieve infomration about the image
+  // retrieve information about the image
   uint16_t *pImg;
   uint16_t mcu_w = JpegDec.MCUWidth;
   uint16_t mcu_h = JpegDec.MCUHeight;
@@ -193,7 +193,7 @@ void jpegInfo() {
 // Show the execution time (optional)
 //####################################################################################################
 // WARNING: for UNO/AVR legacy reasons printing text to the screen with the Mega might not work for
-// sketch sizes greater than ~70KBytes because 16 bit address pointers are used in some libraries.
+// sketch sizes greater than ~70KBytes because 16-bit address pointers are used in some libraries.
 
 // The Due will work fine with the HX8357_Due library.
 

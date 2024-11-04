@@ -11,7 +11,7 @@
   This sketch uses method 3, the font characters are first plotted in a Sprite, then the
   Sprite is pushed to the screen. This method is very flexible and the Sprite can be
   created, deleted, resized as needed. To render anti-aliased fonts well the Sprite
-  needs to be 16 bit.  The fonts will render in 1 bit per pixel sprites but there
+  needs to be 16-bit.  The fonts will render in 1 bit per pixel sprites but there
   will then be no anti-aliasing. Using 1 bit per pixel Sprites is however useful
   to use the extended Unicode range in fonts on mono displays like ePaper.
 
@@ -50,7 +50,7 @@ void setup(void) {
 
   tft.setRotation(1);
 
-  spr.setColorDepth(16); // 16 bit colour needed to show antialiased fonts
+  spr.setColorDepth(16); // 16-bit colour needed to show antialiased fonts
 }
 
 void loop() {
@@ -93,7 +93,7 @@ void loop() {
 
   tft.fillScreen(TFT_BLACK);
 
-  // Beware: Sprites are a differerent "class" to TFT, so different fonts can be loaded
+  // Beware: Sprites are a different "class" to TFT, so different fonts can be loaded
   // in the tft and sprite instances, so load the font in the class instance you use!
   // In this example this means the spr. instance.
 
@@ -181,7 +181,7 @@ void button(int x, int y, int num )
   #define IWIDTH  40
   #define IHEIGHT 25
 
-  // Create a 16 bit sprite 40 pixels wide, 25 high (2000 bytes of RAM needed)
+  // Create a 16-bit sprite 40 pixels wide, 25 high (2000 bytes of RAM needed)
   spr.setColorDepth(16);
   spr.createSprite(IWIDTH, IHEIGHT);
 

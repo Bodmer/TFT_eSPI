@@ -12,7 +12,7 @@
   sketch in the library Tools folder. The Processing sketch can convert
   TrueType fonts in *.ttf or *.otf files.
 
-  The library supports 16 bit Unicode characters:
+  The library supports 16-bit Unicode characters:
   https://en.wikipedia.org/wiki/Unicode_font
 
   The characters supported are in the in the Basic Multilingual Plane:

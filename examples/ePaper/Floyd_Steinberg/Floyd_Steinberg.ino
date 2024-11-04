@@ -106,7 +106,7 @@ void loop() {
 
   frame.fillSprite(PAPER);
 
-  // Draw 8 bit grey-scale bitmap using Floyd-Steinberg dithering at x,y
+  // Draw 8-bit grey-scale bitmap using Floyd-Steinberg dithering at x,y
   //           /File name      x  y
   //drawFSBmp("/TestCard.bmp", 0, 0); // 176 x 264 pixels
 

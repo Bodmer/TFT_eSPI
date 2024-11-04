@@ -1,5 +1,5 @@
 /*
-  Sketch to show creation of a 4 bit sprite with a transparent
+  Sketch to show creation of a 4-bit sprite with a transparent
   background, then plot it on the TFT. The palette setup and
   palette update functions are also shown in this example.
 
@@ -13,11 +13,11 @@
   any position. If there is sufficient RAM then the Sprite can
   be the same size as the screen and used as a frame buffer.
 
-  A 4 bit Sprite occupies (width * height)/2 bytes in RAM.
+  A 4-bit Sprite occupies (width * height)/2 bytes in RAM.
   For example the "star" 70x80 Sprite uses 2800 bytes.
 */
 
-// This is the default palette for 4 bit colour sprites
+// This is the default palette for 4-bit colour sprites
 // which is built into the library. You can create your
 // own palette (use a different array name!). The palette
 // is captured and stored in RAM by the Sprite class so a
@@ -80,25 +80,25 @@ void loop() {
   // spr.createPalette(default_4bit_palette, 12);
 
   // After rendering a Sprite you can change the palette to increase the range of colours
-  // plotted to the screen to the full 16 bit set.
+  // plotted to the screen to the full 16-bit set.
 
   // Change palette colour 11 to violet
   spr.setPaletteColor(11, TFT_VIOLET);
 
-  uint16_t color15 = spr.getPaletteColor(15); // The 16 bit colour in a palette can be read back
+  uint16_t color15 = spr.getPaletteColor(15); // The 16-bit colour in a palette can be read back
 
   // Draw 50 sprites containing a "transparent" colour
   for (int i = 0; i < 50; i++)
   {
     int x = random(tft.width() - 70);
     int y = random(tft.height() - 80);
-    int c = random(15); // Random colour 0-14 (4 bit index into color map).  Leave 15 for transparent.
+    int c = random(15); // Random colour 0-14 (4-bit index into color map).  Leave 15 for transparent.
     drawStar(x, y, c);
   }
 
   delay(2000);
 
-  // Change the palette to a 16 bit grey scale colour
+  // Change the palette to a 16-bit grey scale colour
   for (uint8_t i = 0; i < 16; i++) {
     // (i*16+i) produces a value in range 0-255 for the RGB colours
     //                                   Red    Green    Blue

@@ -6,7 +6,7 @@
 */
 
 // Note: At the time of writing there is a last character code definition bug in the
-// Squix font file format so do NOT try and print the tilda (~) symbol (ASCII 0x7E)
+// Squix font file format so do NOT try and print the tilde (~) symbol (ASCII 0x7E)
 // Alternatively look at the end of the font header file and edit:  0x7E to read 0x7D
 /* e.g.                                                                          vvvv
   (uint8_t  *)Orbitron_Light_32Bitmaps,(GFXglyph *)Orbitron_Light_32Glyphs,0x20, 0x7D, 32};
@@ -16,7 +16,7 @@
 // When font files are placed in the Custom folder (TFT_eSPI\Fonts\Custom) then they must
 // also be #included here:
 
-// The CF_OL24 etc are a shorthand reference, but this is not essential to use the fonts
+// The CF_OL24 etc. are a shorthand reference, but this is not essential to use the fonts
 
 #ifdef LOAD_GFXFF
 

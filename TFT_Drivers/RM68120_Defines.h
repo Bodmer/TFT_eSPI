@@ -17,6 +17,12 @@
 #define TFT_NOP      0x0000
 #define TFT_SWRST    0x0100
 
+#define TFT_INVOFF   0x2000
+#define TFT_INVON    0x2100
+
+#define TFT_DISPOFF  0x2800
+#define TFT_DISPON   0x2900
+
 #define TFT_CASET    0x2A00
 #define TFT_PASET    0x2B00
 #define TFT_RAMWR    0x2C00
@@ -44,6 +50,3 @@
 #else
   #define TFT_MAD_COLOR_ORDER TFT_MAD_RGB
 #endif
-
-#define TFT_INVOFF  0x2000
-#define TFT_INVON   0x2100

@@ -3,7 +3,7 @@
 
   This sketch scrolls a 1 bit per pixel (1 bpp) Sprite.
   
-  In a 1 bit Sprite any colour except TFT_BLACK turns a pixel "ON"
+  In a 1-bit Sprite any colour except TFT_BLACK turns a pixel "ON"
   TFT_BLACK turns a pixel "OFF".
 
   ON and OFF pixels can be set to any two colours before
@@ -24,7 +24,7 @@
   any position. If there is sufficient RAM then the Sprite can
   be the same size as the screen and used as a frame buffer.
 
-  A 1 bit Sprite occupies (width * height)/8 bytes in RAM.
+  A 1-bit Sprite occupies (width * height)/8 bytes in RAM.
 
 */
 

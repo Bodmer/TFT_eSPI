@@ -12,7 +12,7 @@
   any position. If there is sufficient RAM then the Sprite can
   be the same size as the screen and used as a frame buffer.
 
-  A 1 bit Sprite occupies (width * height)/8 bytes in RAM. So,
+  A 1-bit Sprite occupies (width * height)/8 bytes in RAM. So,
   for example, a 320 x 240 pixel Sprite occupies 9600 bytes.
 */
 // A new setBitmapColor(fg_color, bg_color) function allows

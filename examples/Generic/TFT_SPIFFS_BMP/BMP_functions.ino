@@ -46,7 +46,7 @@ void drawBmp(const char *filename, int16_t x, int16_t y) {
         bmpFS.read(lineBuffer, sizeof(lineBuffer));
         uint8_t*  bptr = lineBuffer;
         uint16_t* tptr = (uint16_t*)lineBuffer;
-        // Convert 24 to 16 bit colours
+        // Convert 24 to 16-bit colours
         for (uint16_t col = 0; col < w; col++)
         {
           b = *bptr++;

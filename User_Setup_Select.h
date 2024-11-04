@@ -100,15 +100,16 @@
 //#include <User_Setups/Setup71_ESP32_S2_ST7789.h>       // Setup file for ESP32 S2 with ST7789
 //#include <User_Setups/Setup72_ESP32_ST7789_172x320.h>  // Setup file for ESP32 with ST7789 1.47" 172x320
 
-//#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9488
-//#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9481
-//#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9341
-//#include <User_Setups/Setup103_RP2040_ILI9486_parallel.h> // Setup file for Pico/RP2040 with 8 bit parallel ILI9486
-//#include <User_Setups/Setup104_RP2040_ST7796_parallel.h>  // Setup file for Pico/RP2040 with 8 bit parallel ST7796
+//#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9488
+//#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9481
+//#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9341
+//#include <User_Setups/Setup103_RP2040_ILI9486_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9486
+//#include <User_Setups/Setup104_RP2040_ST7796_parallel.h>  // Setup file for Pico/RP2040 with 8-bit parallel ST7796
 
-//#include <User_Setups/Setup105_RP2040_ST7796_16bit_parallel.h>  // Setup file for RP2040 16 bit parallel display
-//#include <User_Setups/Setup106_RP2040_ILI9481_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
-//#include <User_Setups/Setup107_RP2040_ILI9341_16bit_parallel.h> // Setup file for RP2040 16 bit parallel display
+//#include <User_Setups/Setup105_RP2040_ST7796_16bit_parallel.h>  // Setup file for RP2040 16-bit parallel display
+//#include <User_Setups/Setup106_RP2040_ILI9481_16bit_parallel.h> // Setup file for RP2040 16-bit parallel display
+//#include <User_Setups/Setup107_RP2040_ILI9341_16bit_parallel.h> // Setup file for RP2040 16-bit parallel display
+//#include <User_Setups/Setup108_RP2040_ST7735.h> // Setup file for Waveshare RP2040 board with onboard ST7735 0.96" 160x80 display
 
 //#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
 
@@ -134,11 +135,14 @@
 //#include <User_Setups/Setup209_LilyGo_T_Dongle_S3.h>      // For the LilyGo T-Dongle S3 based ESP32 with ST7735 80 x 160 TFT
 //#include <User_Setups/Setup210_LilyGo_T_Embed_S3.h>         // For the LilyGo T-Embed S3 based ESP32S3 with ST7789 170 x 320 TFT
 //#include <User_Setups/Setup211_LilyGo_T_QT_Pro_S3.h>         // For the LilyGo T-QT Pro S3 based ESP32S3 with GC9A01 128 x 128 TFT
+// #include <User_Setups/Setup212_LilyGo_T_PicoPro.h>         // For the LilyGo T-PICO-Pro with ST7796 222 x 480 TFT
+// #include <User_Setups/Setup213_LilyGo_T_Beam_Shield.h>         // For the LilyGo T-BEAM V1.x with ST7796 222 x 480 TFT
 
 //#include <User_Setups/Setup250_ESP32_S3_Box_Lite.h>      // For the ESP32 S3 Box Lite
 //#include <User_Setups/Setup251_ESP32_S3_Box.h>            // For the ESP32 S3 Box
 
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
+//#include <User_Setups/Setup302_Waveshare_ESP32S3_GC9A01.h>            // Setup file for Waveshare ESP32-S3-Touch-LCD-1.28 board with GC9A01 240*240 TFT
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
@@ -165,7 +169,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-// Identical looking TFT displays may have a different colour ordering in the 16 bit colour
+// Identical looking TFT displays may have a different colour ordering in the 16-bit colour
 #define TFT_BGR 0   // Colour order Blue-Green-Red
 #define TFT_RGB 1   // Colour order Red-Green-Blue
 
@@ -187,7 +191,7 @@
   #endif
 #endif
 
-// Invoke 18 bit colour for selected displays
+// Invoke 18-bit colour for selected displays
 #if !defined (RPI_DISPLAY_TYPE) && !defined (TFT_PARALLEL_8_BIT) && !defined (TFT_PARALLEL_16_BIT) && !defined (ESP32_PARALLEL)
   #if defined (ILI9481_DRIVER) || defined (ILI9486_DRIVER) || defined (ILI9488_DRIVER)
     #define SPI_18BIT_DRIVER

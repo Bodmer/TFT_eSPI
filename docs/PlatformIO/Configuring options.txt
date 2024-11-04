@@ -29,7 +29,7 @@ build_flags =
   -DCORE_DEBUG_LEVEL=ARDUHAL_LOG_LEVEL_DEBUG
   -DUSER_SETUP_LOADED=1
   
-  ; Define the TFT driver, pins etc here:
+  ; Define the TFT driver, pins etc. here:
   -DST7789_DRIVER=1
   -DTFT_WIDTH=128
   -DTFT_HEIGHT=160

@@ -22,7 +22,7 @@
 
   #ifdef RP2040_PIO_SPI
     #if  defined (SPI_18BIT_DRIVER)
-      // SPI PIO code for 18 bit colour transmit
+      // SPI PIO code for 18-bit colour transmit
       #include "pio_SPI_18bit.pio.h"
     #else
       // SPI PIO code for 16-bit colour transmit
@@ -30,7 +30,7 @@
     #endif
   #elif defined (TFT_PARALLEL_8_BIT)
     #if defined (SSD1963_DRIVER)
-      // PIO code for 8-bit parallel interface (18 bit colour)
+      // PIO code for 8-bit parallel interface (18-bit colour)
       #include "pio_8bit_parallel_18bpp.pio.h"
     #else
       // PIO code for 8-bit parallel interface (16-bit colour)
@@ -458,7 +458,7 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#elif defined (SPI_18BIT_DRIVER) // SPI 18 bit colour
+#elif defined (SPI_18BIT_DRIVER) // SPI 18-bit colour
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************************
@@ -658,7 +658,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
     }
   }
   // else, if a buffer pointer has been provided copy whole image to the buffer
-  else if (buffer != image || _swapBytes) {
+  else if (buffer != image) {
     memcpy(buffer, image, len*2);
   }
 

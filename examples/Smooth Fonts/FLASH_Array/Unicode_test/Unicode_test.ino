@@ -8,14 +8,14 @@
   The library expects strings to be in UTF-8 encoded format:
   https://www.fileformat.info/info/unicode/utf8.htm
 
-  Creating varaibles needs to be done with care when using character arrays:
+  Creating variables needs to be done with care when using character arrays:
   char c = 'µ';          // Wrong
   char bad[4] = "5µA";   // Wrong
   char good[] = "5µA";   // Good
   String okay = "5µA";   // Good
 
   This is because UTF-8 characters outside the basic Latin set occupy more than
-  1 byte per character! A 16 bit Unicode character occupies 3 bytes!
+  1 byte per character! A 16-bit Unicode character occupies 3 bytes!
 
 */
 
@@ -89,7 +89,7 @@ void loop()
   //----------------------------------------------------------------------------
   // We can have any random mix of characters in the font
 
-  String test2 = "仝倀"; // Unicodes 0x4EDD, 0x5000
+  String test2 = "仝倀"; // Unicode 0x4EDD, 0x5000
 
   tft.loadFont(Unicode_Test_72);
 

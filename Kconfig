@@ -158,7 +158,7 @@ menu "TFT_eSPI"
         config TFT_SPI
             bool "SPI"
         config TFT_PARALLEL_8_BIT
-            bool "Parallel (8 bit)"
+            bool "Parallel (8-bit)"
     endchoice
     
     menu "Display Data pins"

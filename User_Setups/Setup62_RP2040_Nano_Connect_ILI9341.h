@@ -1,5 +1,5 @@
 //                            USER DEFINED SETTINGS
-//   Set driver type, fonts to be loaded, pins used and SPI control method etc
+//   Set driver type, fonts to be loaded, pins used and SPI control method etc.
 //
 //   See the User_Setup_Select.h file if you wish to be able to define multiple
 //   setups and then easily select which setup file is used by the compiler.
@@ -15,7 +15,7 @@
 //
 // ##################################################################################
 
-// Tell the library to use 8 bit parallel mode (otherwise SPI is assumed)
+// Tell the library to use 8-bit parallel mode (otherwise SPI is assumed)
 //#define TFT_PARALLEL_8_BIT
 
 // Display type -  only define if RPi display

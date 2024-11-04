@@ -11,7 +11,7 @@
 
 // Change the pin settings to suit your hardware
 
-// UNO etc
+// UNO etc.
 //#define TFT_MOSI  11
 //#define TFT_SCK 13
 //#define TFT_CS 9
@@ -116,7 +116,7 @@ void setup() {
     uint32_t ID = 0;
     Serial.begin(115200);
 
-    delay(4000); // Delay to allow USB to connect to a Leonardo etc
+    delay(4000); // Delay to allow USB to connect to a Leonardo etc.
     
     Serial.println("TFT driver register values:");
     Serial.println("===========================");

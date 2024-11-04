@@ -83,7 +83,7 @@ unsigned int colour = red << 11; // Colour order is RGB 5+6+5 bits each
 
 void rainbow_fill()
 {
-  // The colours and state are not initialised so the start colour changes each time the funtion is called
+  // The colours and state are not initialised so the start colour changes each time the function is called
   
   for (int i = 319; i >= 0; i--) {
     // Draw a vertical line 1 pixel wide in the selected colour
