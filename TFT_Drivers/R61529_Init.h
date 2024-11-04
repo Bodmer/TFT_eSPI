@@ -74,10 +74,11 @@
     writedata(0x00); // Spacial configuriation mode 1 (?). 1 line inversion mode (?).
 
     writecommand(0xC4); // Source/Gate Driving Timing Setting
-    writedata(0x57); // falling position (stop) of gate driver - 4 clocks... gate start position - 8 clocks...
+    writedata(0x45); // falling position (stop) of gate driver - 4 clocks... gate start position - 8 clocks...
     writedata(0x00); // nothing to set up according to the datasheet
-    writedata(0x05); // Source precharge period (GND) - 5 clocks.
-    writedata(0x03); // source precharge period (VCI) - 3 clocks.
+    writedata(0x00); // nothing to set up according to the datasheet
+    writedata(0x03); // Source precharge period (GND) - 3 clocks.
+    writedata(0x06); // source precharge period (VCI) - 6 clocks.
 
     writecommand(0xC6); //DPI polarity control
     writedata(0x04); // VSYNC -Active Low. HSYNC - Active Low. DE pin enable data write in when DE=1. Reads data on the rising edge of the PCLK signal.
