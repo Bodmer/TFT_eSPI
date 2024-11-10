@@ -62,6 +62,8 @@
     #define ST7789_DRIVER
 #elif defined (CONFIG_TFT_ST7789_2_DRIVER)
     #define ST7789_2_DRIVER
+#elif defined (CONFIG_TFT_R61529_DRIVER)
+    #define R61529_DRIVER
 #elif defined (CONFIG_TFT_R61581_DRIVER)
     #define R61581_DRIVER
 #elif defined (CONFIG_TFT_RM68140_DRIVER)

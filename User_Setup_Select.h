@@ -232,6 +232,9 @@
 #elif defined (ST7789_DRIVER)
      #include "TFT_Drivers/ST7789_Defines.h"
      #define  TFT_DRIVER 0x7789
+#elif defined (R61529_DRIVER)
+     #include "TFT_Drivers/R61529_Defines.h"
+     #define  TFT_DRIVER 0x6152
 #elif defined (R61581_DRIVER)
      #include "TFT_Drivers/R61581_Defines.h"
      #define  TFT_DRIVER 0x6158
