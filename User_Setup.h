@@ -66,6 +66,7 @@
 
 // Some displays support SPI reads via the MISO pin, other displays have a single
 // bi-directional SDA pin and the library will try to read this via the MOSI line.
+// DMA with SPI requires MISO pin defined or allocate it to be the same as the TFT_CS line and it will work. (https://github.com/Bodmer/TFT_eSPI/discussions/2233#discussioncomment-4870457) 
 // To use the SDA line for reading data from the TFT uncomment the following line:
 
 // #define TFT_SDA_READ      // This option is for ESP32 ONLY, tested with ST7789 and GC9A01 display only
