@@ -8,7 +8,7 @@
 #include "Free_Fonts.h" // Include the header file attached to this sketch
 
 #include <TFT_eSPI.h>
-#include <TFT_eWidget.h>           // Widget library
+#include "../lib/TFT_eSPI/TFT_eWidget/src/TFT_eWidget.h"       // Widget library
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite knob = TFT_eSprite(&tft); // Sprite for the slide knob
