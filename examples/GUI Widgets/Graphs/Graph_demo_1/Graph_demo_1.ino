@@ -7,7 +7,7 @@
 #include <TFT_eSPI.h>
 TFT_eSPI tft = TFT_eSPI();
 
-#include <TFT_eWidget.h>               // Widget library
+#include "../lib/TFT_eSPI/TFT_eWidget/src/TFT_eWidget.h"             // Widget library
 
 GraphWidget gr = GraphWidget(&tft);    // Graph widget gr instance with pointer to tft
 TraceWidget tr = TraceWidget(&gr);     // Graph trace tr with pointer to gr
