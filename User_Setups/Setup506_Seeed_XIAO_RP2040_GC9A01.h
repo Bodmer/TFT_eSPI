@@ -21,7 +21,7 @@
 
 #define SMOOTH_FONT                                                                                                                      
 
-#define SPI_FREQUENCY 12000000
+#define SPI_FREQUENCY 62500000
 #define SPI_READ_FREQUENCY 12000000
 
 

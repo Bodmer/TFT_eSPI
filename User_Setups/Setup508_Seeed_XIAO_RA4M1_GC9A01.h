@@ -1,4 +1,4 @@
-#define USER_SETUP_ID 507
+#define USER_SETUP_ID 508
 
 #define GC9A01_DRIVER
 
@@ -21,7 +21,7 @@
 
 #define SMOOTH_FONT                                                                                                                      
 
-#define SPI_FREQUENCY 62500000
+#define SPI_FREQUENCY 25000000
 #define SPI_READ_FREQUENCY 12000000
 
 
