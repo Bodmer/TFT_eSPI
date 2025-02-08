@@ -24,7 +24,7 @@
 
 // Only ONE line below should be uncommented to define your setup.  Add extra lines and files as needed.
 
-#include <User_Setup.h>           // Default setup is root library folder
+// #include <User_Setup.h>           // Default setup is root library folder
 
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file for ESP8266 configured for my ILI9341
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file for ESP8266 configured for my ST7735
@@ -151,11 +151,40 @@
 //#include <User_Setups/Dustin_ST7796.h>           // Setup file for Dustin Watts PCB with ST7796
 //#include <User_Setups/Dustin_ILI9488_Pico.h>     // Setup file for Dustin Watts Pico PCB with ST7796
 //#include <User_Setups/Dustin_ST7789_Pico.h>      // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
-//#include <User_Setups/Dustin_GC9A01_Pico.h>      // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_GC9A01_Pico.h>      // Setup file for Dustin Watts PCB wcon 3.3V adapter board
 //#include <User_Setups/Dustin_GC9A01_ESP32.h>     // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
 //#include <User_Setups/Dustin_STT7789_ESP32.h>    // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
 //#include <User_Setups/Dustin_ILI9341_ESP32.h>    // Setup file for Dustin Watts PCB with ILI9341
 //#include <User_Setups/ILI9225.h>
+
+#ifdef WIO_TERMINAL
+#include <User_Setups/Setup500_Seeed_Wio_Terminal.h>     // Setup file for Seeed Wio Terimal with SPI ILI9341 320x240
+#endif
+
+#ifdef SEEED_XIAO_M0 
+#include <User_Setups/Setup501_Seeed_XIAO_SAMD21_GC9A01.h>     // Setup file for Seeed XIAO SAMD21 with GC9A01 240x240
+#endif
+
+#ifdef ARDUINO_XIAO_ESP32S3
+#include  <User_Setups/Setup502_Seeed_XIAO_ESP32S3_GC9A01.h> // Setup file for Seeed XIAO ESP32S3 with GC9A01 240x240
+#endif
+
+#ifdef ARDUINO_XIAO_ESP32C3
+#include  <User_Setups/Setup503_Seeed_XIAO_ESP32C3_GC9A01.h> // Setup file for Seeed XIAO ESP32C3 with GC9A01 240x240
+#endif
+
+#ifdef ARDUINO_XIAO_ESP32C6
+#include  <User_Setups/Setup504_Seeed_XIAO_ESP32C6_GC9A01.h> // Setup file for Seeed XIAO ESP32C6 with GC9A01 240x240
+#endif
+
+#if defined(ARDUINO_SEEED_XIAO_NRF52840) || defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE) || defined(ARDUINO_Seeed_XIAO_nRF52840) || defined(ARDUINO_Seeed_XIAO_nRF52840_Sense)
+#include  <User_Setups/Setup505_Seeed_XIAO_NRF52840_GC9A01.h> // Setup file for Seeed XIAO ESP32C6 with GC9A01 240x240
+#endif
+
+#if defined(ARDUINO_SEEED_XIAO_RP2040)
+#include  <User_Setups/Setup506_Seeed_XIAO_RP2040_GC9A01.h> // Setup file for Seeed XIAO RP2040 with GC9A01 240x240
+#endif
+
 
 #endif // USER_SETUP_LOADED
 
