@@ -1,4 +1,4 @@
-#define USER_SETUP_ID 503
+#define USER_SETUP_ID 504
 
 #define GC9A01_DRIVER  // Full configuration option, define additional parameters below for this display
 

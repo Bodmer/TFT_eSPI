@@ -1,4 +1,4 @@
-#define USER_SETUP_ID 504
+#define USER_SETUP_ID 506
 
 #define GC9A01_DRIVER
 

@@ -1,8 +1,10 @@
-#define USER_SETUP_ID 505
+#define USER_SETUP_ID 507
 
 #define GC9A01_DRIVER
 
-#define TFT_SPI_PORT SPI
+#define TFT_SCLK D8
+#define TFT_MISO D9
+#define TFT_MOSI D10
 #define TFT_CS   D1  // Chip select control pin
 #define TFT_DC   D3  // Data Command control pin
 #define TFT_BL   D6
@@ -21,7 +23,5 @@
 
 #define SPI_FREQUENCY 12000000
 #define SPI_READ_FREQUENCY 12000000
-
-#define ltoa itoa
 
 

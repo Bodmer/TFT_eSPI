@@ -185,6 +185,11 @@
 #include  <User_Setups/Setup506_Seeed_XIAO_RP2040_GC9A01.h> // Setup file for Seeed XIAO RP2040 with GC9A01 240x240
 #endif
 
+#if defined(ARDUINO_SEEED_XIAO_RP2350)
+#include  <User_Setups/Setup507_Seeed_XIAO_RP2350_GC9A01.h> // Setup file for Seeed XIAO RP2350 with GC9A01 240x240
+#endif
+
+
 
 #endif // USER_SETUP_LOADED
 

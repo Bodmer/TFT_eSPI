@@ -20,8 +20,6 @@
     #include "Processors/TFT_eSPI_ESP32_S3.c" // Tested with SPI and 8-bit parallel
   #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     #include "Processors/TFT_eSPI_ESP32_C3.c" // Tested with SPI (8-bit parallel will probably work too!)
-  #elif defined(CONFIG_IDF_TARGET_ESP32C6)
-    #include "Processors/TFT_eSPI_ESP32_C6.c" 
   #else
     #include "Processors/TFT_eSPI_ESP32.c"
   #endif
