@@ -1,6 +1,9 @@
+#include <Wire.h>
+
 #define USER_SETUP_ID 501
 
 #define GC9A01_DRIVER
+
 
 #define TFT_RGB_ORDER TFT_RGB // Colour order Blue-Green-Red
 #define TFT_WIDTH 240
@@ -14,6 +17,11 @@
 #define TFT_BL D6
 #define TFT_BACKLIGHT_ON HIGH
 #define TFT_RST -1 // Reset pin (could connect to RST pin)
+
+// Touchscreen
+#define CHSCX6X_DRIVER
+#define TOUCH_INT D7
+#define TOUCH_WIRE Wire
 
 #define LOAD_GLCD  // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
 #define LOAD_FONT2 // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters

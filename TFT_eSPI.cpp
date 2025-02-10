@@ -797,6 +797,9 @@ void TFT_eSPI::init(uint8_t tc)
     }
   #endif
 #endif
+
+#include "Touch_Drivers/Touch_Init.cpp"
+
 }
 
 
@@ -6154,5 +6157,8 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 #ifdef AA_GRAPHICS
   #include "Extensions/AA_graphics.cpp"  // Loaded if SMOOTH_FONT is defined by user
 #endif
+
+#include "Touch_Drivers/Touch.cpp"
+
 ////////////////////////////////////////////////////////////////////////////////////////
 

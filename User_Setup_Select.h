@@ -161,7 +161,7 @@
 #ifdef WIO_TERMINAL
 #include <User_Setups/Setup500_Seeed_Wio_Terminal.h>     // Setup file for Seeed Wio Terimal with SPI ILI9341 320x240
 #else
-#include <User_Setups/Setup501_Seeed_XIAO_ROUND.h>     // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
+#include <User_Setups/Setup501_Seeed_XIAO_Round_Display.h>     // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
 #endif
 
 
@@ -288,6 +288,8 @@
 #else
      #define  TFT_DRIVER 0x0000
 #endif
+
+#include "Touch_Drivers/Touch_Defines.h"
 
 // These are the pins for ESP8266 boards
 //      Name   GPIO    NodeMCU      Function

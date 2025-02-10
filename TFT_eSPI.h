@@ -979,6 +979,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   #include "Extensions/Smooth_font.h"  // Loaded if SMOOTH_FONT is defined by user
 #endif
 
+#include "Touch_Drivers/Touch.h"
+
 }; // End of class TFT_eSPI
 
 // Swap any type
