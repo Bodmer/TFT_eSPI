@@ -6,7 +6,9 @@
 #define TFT_WIDTH 240
 #define TFT_HEIGHT 240 // GC9A01 240 x 240
 
-#define TFT_SPI_PORT SPI
+#define TFT_SCLK D8
+#define TFT_MISO D9
+#define TFT_MOSI D10
 #define TFT_CS D1 // Chip select control pin
 #define TFT_DC D3 // Data Command control pin
 #define TFT_BL D6
@@ -24,5 +26,32 @@
 
 #define SMOOTH_FONT
 
+
+#if defined(SEEED_XIAO_M0)
 #define SPI_FREQUENCY 12000000
 #define SPI_READ_FREQUENCY 4000000
+#elif  defined(ARDUINO_XIAO_ESP32S3)
+#define SPI_FREQUENCY 50000000
+#define SPI_READ_FREQUENCY  12000000
+#define USE_HSPI_PORT
+#elif  defined(ARDUINO_XIAO_ESP32C3)
+#define SPI_FREQUENCY 40000000
+#define SPI_READ_FREQUENCY  6000000
+#elif defined(ARDUINO_XIAO_ESP32C6)
+#define SPI_FREQUENCY 40000000
+#define SPI_READ_FREQUENCY  6000000
+#elif defined(ARDUINO_SEEED_XIAO_NRF52840) || defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE) || defined(ARDUINO_Seeed_XIAO_nRF52840) || defined(ARDUINO_Seeed_XIAO_nRF52840_Sense)
+#define SPI_FREQUENCY 12000000
+#define SPI_READ_FREQUENCY 4000000
+#define ltoa itoa
+#elif defined(ARDUINO_SEEED_XIAO_RP2040) || defined(ARDUINO_SEEED_XIAO_RP2350)
+#define SPI_FREQUENCY 62500000
+#define SPI_READ_FREQUENCY 12000000
+#elif defined(ARDUINO_XIAO_RA4M1)
+#define SPI_FREQUENCY 25000000
+#define SPI_READ_FREQUENCY 4000000
+#else
+#message "Unknown board using default SPI settings (25MHz)"
+#define SPI_FREQUENCY 25000000
+#define SPI_READ_FREQUENCY 4000000
+#endif
