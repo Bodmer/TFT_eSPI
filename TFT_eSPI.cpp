@@ -769,6 +769,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Init.h"
 
+#elif defined (GDEM075T7_DRIVER)
+    #include "TFT_Drivers/GDEM075T7_Init.h"
+
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -781,7 +784,7 @@ void TFT_eSPI::init(uint8_t tc)
 
   end_tft_write();
 
-  setRotation(rotation);
+  //setRotation(rotation);
 
 #if defined (TFT_BL) && defined (TFT_BACKLIGHT_ON)
   if (TFT_BL >= 0) {
@@ -872,6 +875,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Rotation.h"
+
+#elif defined (GDEM075T7_DRIVER)
+    #include "TFT_Drivers/GDEM075T7_Rotation.h"
 
 #endif
 
@@ -6159,6 +6165,10 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 #endif
 
 #include "Touch_Drivers/Touch.cpp"
+
+#ifdef GDEM075T7_DRIVER
+#include "Extensions/Epaper.cpp"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 

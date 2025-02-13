@@ -162,6 +162,7 @@
 #include <User_Setups/Setup500_Seeed_Wio_Terminal.h>     // Setup file for Seeed Wio Terimal with SPI ILI9341 320x240
 #else
 #include <User_Setups/Setup501_Seeed_XIAO_Round_Display.h>     // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
+//#include <User_Setups/Setup502_Seeed_XIAO_ePaper_7inch5.h>     // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
 #endif
 
 
@@ -279,6 +280,9 @@
 #elif defined (HX8357C_DRIVER)
      #include "TFT_Drivers/HX8357C_Defines.h"
      #define  TFT_DRIVER 0x835C
+#elif defined (GDEM075T7_DRIVER)
+     #include "TFT_Drivers/GDEM075T7_Defines.h"
+     #define  TFT_DRIVER 0x07507
 
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
                               // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp
