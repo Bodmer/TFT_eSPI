@@ -1,0 +1,25 @@
+name: 'Close stale issues and PRs'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * *'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout script repository
+        uses: actions/checkout@v4
+        with:
+            repository: Seeed-Studio/sync-github-all-issues
+            path: ci
+
+      - name: Run script
+        run: ./ci/tools/stale.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

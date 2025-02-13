@@ -1,0 +1,141 @@
+name: Run Ci Arduino
+
+on:
+  push:
+  pull_request:
+  repository_dispatch:
+    types: [trigger-workflow]
+
+jobs:
+  ci-arduino:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout script repository
+        uses: actions/checkout@v4
+        with:
+            repository: Seeed-Studio/ci-arduino
+            path: ci
+
+
+      - name: Setup arduino cli
+        uses: arduino/setup-arduino-cli@v2.0.0
+
+      - name: Create a depend.list file
+        run: |
+          # eg: echo "<repo>" >> depend.list
+ 
+
+
+
+      - name: Create a ignore.list file
+        run: |
+          # eg: echo "<path>,<fqbn>" >> ignore.list
+
+          # xiao m0 RAM is too small
+          echo "320x240/All_Free_Fonts_Demo,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "320x240/Cellular_Automata,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "480x320/Cellular_Automata,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+
+          # xiao m0 RAM is too small
+          echo "320x240/All_Free_Fonts_Demo,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "320x240/Cellular_Automata,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "480x320/Cellular_Automata,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+
+
+
+
+          # no Seeed_FS.h so can't compile
+          echo "SmoothFonts/Font_Demo_1,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "SmoothFonts/Font_Demo_1,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "SmoothFonts/Font_Demo_1,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "SmoothFonts/Font_Demo_1,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "SmoothFonts/Font_Demo_1,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "SmoothFonts/Font_Demo_1,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "SmoothFonts/Font_Demo_1,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "SmoothFonts/Font_Demo_1,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "SmoothFonts/Font_Demo_1,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "SmoothFonts/Font_Demo_2,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "SmoothFonts/Font_Demo_2,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "SmoothFonts/Font_Demo_2,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "SmoothFonts/Font_Demo_2,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "SmoothFonts/Font_Demo_2,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "SmoothFonts/Font_Demo_2,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "SmoothFonts/Font_Demo_2,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "SmoothFonts/Font_Demo_2,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "SmoothFonts/Font_Demo_2,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "SmoothFonts/Font_Demo_3,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "SmoothFonts/Font_Demo_3,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "SmoothFonts/Font_Demo_3,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "SmoothFonts/Font_Demo_3,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "SmoothFonts/Font_Demo_3,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "SmoothFonts/Font_Demo_3,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "SmoothFonts/Font_Demo_3,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "SmoothFonts/Font_Demo_3,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "SmoothFonts/Font_Demo_3,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "SmoothFonts/Font_Demo_4,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "SmoothFonts/Font_Demo_4,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "SmoothFonts/Font_Demo_4,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "SmoothFonts/Font_Demo_4,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "SmoothFonts/Font_Demo_4,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "SmoothFonts/Font_Demo_4,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "SmoothFonts/Font_Demo_4,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "SmoothFonts/Font_Demo_4,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "SmoothFonts/Font_Demo_4,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "SmoothFonts/Print_Smooth_Font,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "SmoothFonts/Print_Smooth_Font,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "SmoothFonts/Print_Smooth_Font,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "SmoothFonts/Print_Smooth_Font,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "SmoothFonts/Print_Smooth_Font,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "SmoothFonts/Print_Smooth_Font,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "SmoothFonts/Print_Smooth_Font,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "SmoothFonts/Print_Smooth_Font,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "SmoothFonts/Print_Smooth_Font,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "480x320/Touch_Controller_Demo,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "480x320/Touch_Controller_Demo,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "480x320/Touch_Controller_Demo,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "480x320/Touch_Controller_Demo,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "480x320/Touch_Controller_Demo,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "480x320/Touch_Controller_Demo,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "480x320/Touch_Controller_Demo,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "480x320/Touch_Controller_Demo,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "480x320/Touch_Controller_Demo,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+
+          echo "SmoothFonts/Unicode_test,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "SmoothFonts/Unicode_test,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "SmoothFonts/Unicode_test,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "SmoothFonts/Unicode_test,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "SmoothFonts/Unicode_test,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "SmoothFonts/Unicode_test,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "SmoothFonts/Unicode_test,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "SmoothFonts/Unicode_test,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "SmoothFonts/Unicode_test,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          
+
+
+      - name: Build sketch
+        run: |
+          ./ci/tools/compile.sh
+
+      - name: Build result
+        run: |
+            cat build.log
+            if [ ${{ github.event_name }} == 'pull_request' ] && [ -f compile.failed ]; then
+                exit 1
+            fi
+
+      - name: Generate issue
+        if: ${{ github.event_name != 'pull_request' }}
+        run: ./ci/tools/issue.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

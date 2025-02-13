@@ -1,0 +1,24 @@
+name: Automate Issue Management
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+      - assigned
+      - unassigned
+      - labeled
+      - unlabeled
+      - reopened
+
+jobs:
+  add_issue_to_project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to GitHub Project
+        uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/orgs/Seeed-Studio/projects/17
+          github-token: ${{ secrets.ISSUE_ASSEMBLE }}
+          labeled: bug
+          label-operator: NOT
