@@ -6167,7 +6167,7 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 #include "Touch_Drivers/Touch.cpp"
 
 #ifdef GDEM075T7_DRIVER
-#include "Extensions/Epaper.cpp"
+#include "Extensions/EPaper.cpp"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////

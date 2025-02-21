@@ -1,7 +1,12 @@
 #include <vector>
 #include <TFT_eSPI.h>
 #include <SPI.h>
+#if defined(SEEED_XIAO_M0) || defined(ARDUINO_XIAO_RA4M1) || defined(NRF52840_XXAA)
+#include <Seeed_Arduino_FS.h>
+#else
 #include <SD.h>
+#endif
+#include <string>
 
 #include "AnimatedGIF.h"
 
@@ -215,7 +220,7 @@ int getGifInventory( const char* basePath )
 
   while( file ) {
     if(!file.isDirectory()) {
-      GifFiles.push_back( file.name() );
+      GifFiles.push_back(std::string(file.name()));
       amount++;
       tft.drawString(String(amount), textPosX, textPosY );
       file.close();

@@ -11,6 +11,11 @@
 
 // Change the pin settings to suit your hardware
 
+
+#ifdef NRF52840_XXAA
+#include <Adafruit_TinyUSB.h>
+#endif
+
 // UNO etc.
 //#define TFT_MOSI  11
 //#define TFT_SCK 13
