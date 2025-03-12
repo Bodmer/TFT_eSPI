@@ -1,7 +1,7 @@
 bool TFT_eSPI::getTouch(int32_t *x, int32_t *y, uint16_t threshold)
 {
 
-  int32_t _x, _y;
+  int32_t _x = 0, _y = 0;
   uint8_t temp[CHSC6X_READ_POINT_LEN] = {0};
   uint8_t read_len = Wire.requestFrom(CHSC6X_I2C_ID, CHSC6X_READ_POINT_LEN);
 
@@ -66,4 +66,30 @@ bool TFT_eSPI::getTouch(int32_t *x, int32_t *y, uint16_t threshold)
   *y = *y - _yDatum;
 
   return true;
+}
+
+bool TFT_eSPI::getTouchRaw(int32_t *x, int32_t *y)
+{
+#pragma warning "This function is obsolete and is only implemented empty to maintain compatibility"
+  return false;
+}
+
+uint16_t TFT_eSPI::getTouchRawZ(void)
+{
+#pragma warning "This function is obsolete and is only implemented empty to maintain compatibility"
+  return 0;
+}
+
+void TFT_eSPI::convertRawXY(int32_t *x, int32_t *y)
+{
+#pragma warning "This function is obsolete and is only implemented empty to maintain compatibility"
+}
+void TFT_eSPI::calibrateTouch(uint16_t *data, uint32_t color_fg, uint32_t color_bg, uint8_t size)
+{
+#pragma warning "This function is obsolete and is only implemented empty to maintain compatibility"
+}
+
+void TFT_eSPI::setTouch(uint16_t *data)
+{
+#pragma warning "This function is obsolete and is only implemented empty to maintain compatibility"
 }

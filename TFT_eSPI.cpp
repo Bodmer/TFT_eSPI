@@ -29,6 +29,14 @@
   #include "Processors/TFT_eSPI_STM32.c"
 #elif defined (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_NRF52840)// Raspberry Pi Pico
   #include "Processors/TFT_eSPI_RP2040.c"
+#elif defined(SEEED_XIAO_M0)
+  #include "Processors/TFT_eSPI_SAMD21.c"
+#elif defined(ARDUINO_XIAO_RA4M1)
+  #include "Processors/TFT_eSPI_RA4M1.c"
+#elif defined(NRF52840_XXAA)
+  #include "Processors/TFT_eSPI_NRF52840.c"
+#elif defined (EFR32MG24B220F1536IM48)
+  #include "Processors/TFT_eSPI_MG24.cpp"
 #else
   #include "Processors/TFT_eSPI_Generic.c"
 #endif
@@ -614,7 +622,7 @@ void TFT_eSPI::init(uint8_t tc)
   {
     initBus();
 
-#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED)
+#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED) && !defined (EFR32MG24B220F1536IM48)
   // Legacy bitmasks for GPIO
   #if defined (TFT_CS) && (TFT_CS >= 0)
     cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
@@ -643,7 +651,7 @@ void TFT_eSPI::init(uint8_t tc)
 
 #else
   #if !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
-    #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED)
+    #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED) && !defined (EFR32MG24B220F1536IM48)
       spi.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1); // This will set MISO to input
     #else
       spi.begin(); // This will set MISO to input

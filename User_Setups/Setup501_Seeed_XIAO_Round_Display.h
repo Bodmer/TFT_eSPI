@@ -58,8 +58,11 @@
 #elif defined(ARDUINO_XIAO_RA4M1)
 #define SPI_FREQUENCY 25000000
 #define SPI_READ_FREQUENCY 4000000
+#elif defined (EFR32MG24B220F1536IM48)
+#define SPI_FREQUENCY 25000000
+#define SPI_READ_FREQUENCY 4000000
 #else
-#message "Unknown board using default SPI settings (25MHz)"
+#pragma message "Unknown board using default SPI settings (25MHz)"
 #define SPI_FREQUENCY 25000000
 #define SPI_READ_FREQUENCY 4000000
 #endif

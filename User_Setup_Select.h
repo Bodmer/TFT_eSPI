@@ -162,14 +162,14 @@
 #include <User_Setups/Setup500_Seeed_Wio_Terminal.h>     // Setup file for Seeed Wio Terimal with SPI ILI9341 320x240
 #else
 #include <User_Setups/Setup501_Seeed_XIAO_Round_Display.h>     // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
-#include <User_Setups/Setup502_Seeed_XIAO_EPaper_7inch5.h>     // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
+// #include <User_Setups/Setup502_Seeed_XIAO_EPaper_7inch5.h>     // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
 #endif
 
 
 #endif // USER_SETUP_LOADED
 
 // Compatible with some examples 
-#include "TFT_Drivers/ILI9341_Defines.h" 
+// #include "TFT_Drivers/ILI9341_Defines.h" 
 #ifdef NRF52840_XXAA
 #include <avr/dtostrf.h>
 #endif

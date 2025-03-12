@@ -1,11 +1,7 @@
 #include <vector>
 #include <TFT_eSPI.h>
 #include <SPI.h>
-#if defined(SEEED_XIAO_M0) || defined(ARDUINO_XIAO_RA4M1) || defined(NRF52840_XXAA)
-#include <Seeed_Arduino_FS.h>
-#else
 #include <SD.h>
-#endif
 #include <string>
 
 #include "AnimatedGIF.h"

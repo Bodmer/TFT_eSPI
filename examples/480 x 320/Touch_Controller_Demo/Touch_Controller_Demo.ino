@@ -1,4 +1,8 @@
+#if defined(SEEED_XIAO_M0) || defined(ARDUINO_XIAO_RA4M1) || defined(NRF52840_XXAA)
+#include <Seeed_Arduino_FS.h>
+#else
 #include "FS.h"
+#endif
 #include <SPI.h>
 #include <TFT_eSPI.h>
 TFT_eSPI tft = TFT_eSPI();
@@ -57,7 +61,7 @@ void setup(void) {
 }
 
 void loop() {
-  uint16_t x, y;
+  int32_t x, y;
   static uint16_t color;
 
   if (tft.getTouch(&x, &y)) {

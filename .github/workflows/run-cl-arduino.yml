@@ -38,6 +38,7 @@ jobs:
           echo PaulStoffregen/Time >> depend.list
           echo JChristensen/Timezone >> depend.list
           echo Seeed-Studio/Seeed_Arduino_FS >> depend.list
+          echo arduino-libraries/SD >> depend.list
  
 
 
@@ -52,7 +53,7 @@ jobs:
           echo "480 x 320/Cellular_Automata,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
           echo "PNG Images/Flash_PNG,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
           echo "PNG Images/Flash_transparent_PNG,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo " Round Display/Arduino_Life,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "Round Display/Arduino_Life,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
           echo "Round Display/GifPlayer ,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
 
 
@@ -117,6 +118,31 @@ jobs:
           echo "Sprite/Rotated_Sprite_3,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
           echo "Sprite/Rotated_Sprite_3,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
 
+          echo "Generic/On_Off_Button,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "Generic/On_Off_Button,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "Generic/On_Off_Button,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "Generic/On_Off_Button,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+
+          echo "Generic/TFT_Button_Label_Datum,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "Generic/TFT_Button_Label_Datum,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "Generic/TFT_Button_Label_Datum,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "Generic/TFT_Button_Label_Datum,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+
+          echo "320 x 240/Keypad_240x320,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "320 x 240/Keypad_240x320,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "320 x 240/Keypad_240x320,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "320 x 240/Keypad_240x320,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+
+          echo "480 x 320/Keypad_480x320,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "480 x 320/Keypad_480x320,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "480 x 320/Keypad_480x320,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "480 x 320/Keypad_480x320,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+
+          echo "480 x 320/Touch_Controller_Demo,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "480 x 320/Touch_Controller_Demo,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "480 x 320/Touch_Controller_Demo,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "480 x 320/Touch_Controller_Demo,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+
 
           # no LittleFS.h so can't compile
           echo "Smooth Fonts/FLASH_Array/Print_Smooth_Font,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
@@ -174,50 +200,15 @@ jobs:
           echo "PNG Images/LittleFS_PNG_DMA ,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
           echo "PNG Images/LittleFS_PNG_DMA ,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
 
-  
-          # TJpg_Decoder library need SD.h so can't compile
-          echo "Sprite/Animated_dial,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "Sprite/Animated_dial,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "Sprite/Animated_dial,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "Sprite/Animated_dial,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          
-          echo "160 x 128/TFT_flash_jpg,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "160 x 128/TFT_flash_jpg,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "160 x 128/TFT_flash_jpg,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "160 x 128/TFT_flash_jpg,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
 
-          echo "480 x 320/TFT_flash_jpg ,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "480 x 320/TFT_flash_jpg ,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "480 x 320/TFT_flash_jpg ,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "480 x 320/TFT_flash_jpg ,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-         
-          echo "Round Display/TFT_flash_jpg ,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "Round Display/TFT_flash_jpg ,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "Round Display/TFT_flash_jpg ,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "Round Display/TFT_flash_jpg ,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-    
-          
-          # TFT_eSPI miss function pushPixelsDMA and initDMA in seeed_XIAO_m0 xiaonRF52840 XIAO_RA4M1 so can't compile
-          echo "DMA test/boing_ball,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "DMA test/boing_ball,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "DMA test/boing_ball,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "DMA test/boing_ball,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          
-          echo "DMA test/Bouncy_Circles,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "DMA test/Bouncy_Circles,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "DMA test/Bouncy_Circles,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "DMA test/Bouncy_Circles,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          
-          echo "DMA test/Flash_Jpg_DMA,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "DMA test/Flash_Jpg_DMA,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "DMA test/Flash_Jpg_DMA,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "DMA test/Flash_Jpg_DMA,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          
-          echo "DMA test/SpriteRotatingCube,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "DMA test/SpriteRotatingCube,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "DMA test/SpriteRotatingCube,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "DMA test/SpriteRotatingCube,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list          
-
+          echo "GUI Widgets/Sliders/Slider_demo,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "GUI Widgets/Sliders/Slider_demo,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "GUI Widgets/Sliders/Slider_demo,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "GUI Widgets/Sliders/Slider_demo,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
 
           # TFT_eFEX library has compatibility issues with ESP32 so can't compile
           echo "Sprite/Rotated_Sprite_3,esp32:esp32:XIAO_ESP32C3" >> ignore.list
@@ -251,101 +242,6 @@ jobs:
           echo "Smooth Graphics/Anti-aliased_Clock,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
           echo "Smooth Graphics/Anti-aliased_Clock,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
           
-
-
-          # function setTouch and calibrateTouch are not currently supported, so can't compile
-          echo "Generic/On_Off_Button,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "Generic/On_Off_Button,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "Generic/On_Off_Button,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "Generic/On_Off_Button,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "Generic/On_Off_Button,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
-          echo "Generic/On_Off_Button,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
-          echo "Generic/On_Off_Button,esp32:esp32:XIAO_ESP32C3" >> ignore.list
-          echo "Generic/On_Off_Button,esp32:esp32:XIAO_ESP32C6" >> ignore.list
-          echo "Generic/On_Off_Button,esp32:esp32:XIAO_ESP32S3" >> ignore.list
-
-          echo "Generic/TFT_Button_Label_Datum,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "Generic/TFT_Button_Label_Datum,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "Generic/TFT_Button_Label_Datum,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "Generic/TFT_Button_Label_Datum,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "Generic/TFT_Button_Label_Datum,Seeeduino:rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
-          echo "Generic/TFT_Button_Label_Datum,Seeeduino:rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
-          echo "Generic/TFT_Button_Label_Datum,esp32:esp32:XIAO_ESP32C3" >> ignore.list
-          echo "Generic/TFT_Button_Label_Datum,esp32:esp32:XIAO_ESP32C6" >> ignore.list
-          echo "Generic/TFT_Button_Label_Datum,esp32:esp32:XIAO_ESP32S3" >> ignore.list
-
-          echo "Generic/Touch_calibrate,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "Generic/Touch_calibrate,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "Generic/Touch_calibrate,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "Generic/Touch_calibrate,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "Generic/Touch_calibrate,Seeeduino:rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
-          echo "Generic/Touch_calibrate,Seeeduino:rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
-          echo "Generic/Touch_calibrate,esp32:esp32:XIAO_ESP32C3" >> ignore.list
-          echo "Generic/Touch_calibrate,esp32:esp32:XIAO_ESP32C6" >> ignore.list
-          echo "Generic/Touch_calibrate,esp32:esp32:XIAO_ESP32S3" >> ignore.list
-
-          echo "320 x 240/Keypad_240x320,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "320 x 240/Keypad_240x320,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "320 x 240/Keypad_240x320,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "320 x 240/Keypad_240x320,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "320 x 240/Keypad_240x320,Seeeduino:rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
-          echo "320 x 240/Keypad_240x320,Seeeduino:rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
-          echo "320 x 240/Keypad_240x320,esp32:esp32:XIAO_ESP32C3" >> ignore.list
-          echo "320 x 240/Keypad_240x320,esp32:esp32:XIAO_ESP32C6" >> ignore.list
-          echo "320 x 240/Keypad_240x320,esp32:esp32:XIAO_ESP32S3" >> ignore.list
-
-          echo "480 x 320/Keypad_480x320,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "480 x 320/Keypad_480x320,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "480 x 320/Keypad_480x320,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "480 x 320/Keypad_480x320,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "480 x 320/Keypad_480x320,Seeeduino:rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
-          echo "480 x 320/Keypad_480x320,Seeeduino:rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
-          echo "480 x 320/Keypad_480x320,esp32:esp32:XIAO_ESP32C3" >> ignore.list
-          echo "480 x 320/Keypad_480x320,esp32:esp32:XIAO_ESP32C6" >> ignore.list
-          echo "480 x 320/Keypad_480x320,esp32:esp32:XIAO_ESP32S3" >> ignore.list
-
-          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
-          echo "GUI Widgets/Buttons/Button_demo,Seeeduino:rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
-          echo "GUI Widgets/Buttons/Button_demo,esp32:esp32:XIAO_ESP32C3" >> ignore.list
-          echo "GUI Widgets/Buttons/Button_demo,esp32:esp32:XIAO_ESP32C6" >> ignore.list
-          echo "GUI Widgets/Buttons/Button_demo,esp32:esp32:XIAO_ESP32S3" >> ignore.list
-
-          echo "GUI Widgets/Sliders/Slider_demo,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "GUI Widgets/Sliders/Slider_demo,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "GUI Widgets/Sliders/Slider_demo,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "GUI Widgets/Sliders/Slider_demo,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "GUI Widgets/Sliders/Slider_demo ,Seeeduino:rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
-          echo "GUI Widgets/Sliders/Slider_demo ,Seeeduino:rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
-          echo "GUI Widgets/Sliders/Slider_demo ,esp32:esp32:XIAO_ESP32C3" >> ignore.list
-          echo "GUI Widgets/Sliders/Slider_demo ,esp32:esp32:XIAO_ESP32C6" >> ignore.list
-          echo "GUI Widgets/Sliders/Slider_demo ,esp32:esp32:XIAO_ESP32S3" >> ignore.list
-
-          echo "480 x 320/Touch_Controller_Demo,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "480 x 320/Touch_Controller_Demo,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "480 x 320/Touch_Controller_Demo,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "480 x 320/Touch_Controller_Demo,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "480 x 320/Touch_Controller_Demo,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
-          echo "480 x 320/Touch_Controller_Demo,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
-          echo "480 x 320/Touch_Controller_Demo,esp32:esp32:XIAO_ESP32C3" >> ignore.list
-          echo "480 x 320/Touch_Controller_Demo,esp32:esp32:XIAO_ESP32C6" >> ignore.list
-          echo "480 x 320/Touch_Controller_Demo,esp32:esp32:XIAO_ESP32S3" >> ignore.list
-
-          # function getTouchRawZ are not currently supported, so can't compile
-          echo "Test and diagnostics/Test_Touch_Controller,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
-          echo "Test and diagnostics/Test_Touch_Controller,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
-          echo "Test and diagnostics/Test_Touch_Controller,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
-          echo "Test and diagnostics/Test_Touch_Controller,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "Test and diagnostics/Test_Touch_Controller,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
-          echo "Test and diagnostics/Test_Touch_Controller,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
-          echo "Test and diagnostics/Test_Touch_Controller,esp32:esp32:XIAO_ESP32C3" >> ignore.list
-          echo "Test and diagnostics/Test_Touch_Controller,esp32:esp32:XIAO_ESP32C6" >> ignore.list
-          echo "Test and diagnostics/Test_Touch_Controller,esp32:esp32:XIAO_ESP32S3" >> ignore.list
-
-
 
       - name: Build sketch
         run: |

@@ -105,6 +105,14 @@
 #include "Processors/TFT_eSPI_STM32.h"
 #elif defined(ARDUINO_ARCH_RP2040)
 #include "Processors/TFT_eSPI_RP2040.h"
+#elif defined(SEEED_XIAO_M0)
+  #include "Processors/TFT_eSPI_SAMD21.h"
+#elif defined(ARDUINO_XIAO_RA4M1)
+  #include "Processors/TFT_eSPI_RA4M1.h"
+#elif defined(NRF52840_XXAA)
+  #include "Processors/TFT_eSPI_nRF52840.h"
+#elif defined (EFR32MG24B220F1536IM48)
+  #include "Processors/TFT_eSPI_MG24.h"
 #else
 #include "Processors/TFT_eSPI_Generic.h"
 #define GENERIC_PROCESSOR
