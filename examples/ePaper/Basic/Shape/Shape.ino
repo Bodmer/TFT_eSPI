@@ -1,3 +1,4 @@
+#define SEEED_XIAO_EPAPER_7INCH5
 #include "TFT_eSPI.h"
 
 EPaper epaper;

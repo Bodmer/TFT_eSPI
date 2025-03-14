@@ -8,6 +8,7 @@
 #define WHITE 0xFFFF
 #define GREY  0x5AEB
 
+#define SEEED_XIAO_ROUND_DISPLAY
 #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
 #include <SPI.h>
 

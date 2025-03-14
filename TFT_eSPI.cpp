@@ -34,7 +34,7 @@
 #elif defined(ARDUINO_XIAO_RA4M1)
   #include "Processors/TFT_eSPI_RA4M1.c"
 #elif defined(NRF52840_XXAA)
-  #include "Processors/TFT_eSPI_NRF52840.c"
+  #include "Processors/TFT_eSPI_nRF52840.c"
 #elif defined (EFR32MG24B220F1536IM48)
   #include "Processors/TFT_eSPI_MG24.cpp"
 #else

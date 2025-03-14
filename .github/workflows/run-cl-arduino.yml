@@ -64,7 +64,8 @@ jobs:
           echo "PNG Images/Flash_PNG,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
           echo "PNG Images/Flash_transparent_PNG,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
           echo "Round Display/Arduino_Life,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
-          echo "Round Display/GifPlayer ,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "Round Display/GifPlayer ,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+
           
 
           # no SPIFFS so can't compile

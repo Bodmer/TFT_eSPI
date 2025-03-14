@@ -20,3 +20,5 @@ public:
 private:
     bool _sleep;
 };
+
+#include "EPaper.cpp"

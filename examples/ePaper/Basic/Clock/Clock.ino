@@ -18,6 +18,7 @@
  */
 
 #include <SPI.h>
+#define SEEED_XIAO_EPAPER_7INCH5
 #include <TFT_eSPI.h> // Hardware-specific library
 
 EPaper epaper = EPaper(); // Invoke custom library
