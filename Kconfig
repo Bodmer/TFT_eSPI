@@ -299,7 +299,7 @@ menu "TFT_eSPI"
         config TFT_DC
             int "TFT Data/Command pin"
             default -1
-            range -1 31
+            range -1 33
             help
                 Labelled as DC or RS (Register Select) in some displays
     
