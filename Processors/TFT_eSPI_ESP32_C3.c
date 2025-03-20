@@ -834,7 +834,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .pre_cb = 0, //dc_callback, //Callback to handle D/C line
     .post_cb = 0
   };
-  ret = spi_bus_initialize(spi_host, &buscfg, DMA_CHANNEL);
+  ret = spi_bus_initialize(spi_host, &buscfg, SPI_DMA_CH_AUTO);
   ESP_ERROR_CHECK(ret);
   ret = spi_bus_add_device(spi_host, &devcfg, &dmaHAL);
   ESP_ERROR_CHECK(ret);

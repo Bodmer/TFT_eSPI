@@ -1,9 +1,5 @@
 #include "TFT_eSPI.h"
 
-#ifdef GDEM075T7_DRIVER
-#include "TFT_Drivers/GDEM075T7_Defines.h"
-#endif
-
 class EPaper : public TFT_eSprite
 {
 public:
@@ -20,5 +16,7 @@ public:
 private:
     bool _sleep;
 };
+
+
 
 #include "EPaper.cpp"

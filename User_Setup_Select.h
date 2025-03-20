@@ -157,16 +157,13 @@
 //#include <User_Setups/Dustin_ILI9341_ESP32.h>    // Setup file for Dustin Watts PCB with ILI9341
 //#include <User_Setups/ILI9225.h>
 
-
-#if defined(WIO_TERMINAL)
-#include <User_Setups/Setup500_Seeed_Wio_Terminal.h>     // Setup file for Seeed Wio Terimal with SPI ILI9341 320x240
-#elif defined(SEEED_XIAO_ROUND_DISPLAY)
-#include <User_Setups/Setup501_Seeed_XIAO_Round_Display.h>     // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
-#elif defined(SEEED_XIAO_EPAPER_7INCH5) 
-#include <User_Setups/Setup502_Seeed_XIAO_EPaper_7inch5.h>
-#else
-#include <User_Setups/Setup666_XIAO_ILI9341.h>
-#endif
+#include <User_Setups/Setup666_XIAO_ILI9341.h>                // Default Setup file for Seeed XIAO 
+// #include <User_Setups/Setup500_Seeed_Wio_Terminal.h>          // Setup file for Seeed Wio Terimal with SPI ILI9341 320x240
+// #include <User_Setups/Setup501_Seeed_XIAO_Round_Display.h>    // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
+// #include <User_Setups/Setup502_Seeed_XIAO_EPaper_7inch5.h>    // Setup file for Seeed XIAO with 7.5inch ePaper
+// #include <User_Setups/Setup503_Seeed_XIAO_EPaper_5inch83.h>   // Setup file for Seeed XIAO with 5.83inch ePaper
+// #include <User_Setups/Setup504_Seeed_XIAO_EPaper_2inch9.h>    // Setup file for Seeed XIAO with 2.9inch ePaper     
+// #include <User_Setups/Setup505_Seeed_XIAO_EPaper_1inch54.h>   // Setup file for Seeed XIAO with 1.54inch ePaper
 
 
 #endif // USER_SETUP_LOADED
@@ -286,9 +283,15 @@
 #elif defined (HX8357C_DRIVER)
      #include "TFT_Drivers/HX8357C_Defines.h"
      #define  TFT_DRIVER 0x835C
-#elif defined (GDEM075T7_DRIVER)
-     #include "TFT_Drivers/GDEM075T7_Defines.h"
+#elif defined (UC8179_DRIVER)
+     #include "TFT_Drivers/UC8179_Defines.h"
      #define  TFT_DRIVER 0x07507
+#elif defined (SSD1680_DRIVER)
+     #include "TFT_Drivers/SSD1680_Defines.h"
+     #define  TFT_DRIVER 0x1680
+#elif defined (SSD1681_DRIVER)
+     #include "TFT_Drivers/SSD1681_Defines.h"
+     #define  TFT_DRIVER 0x1681
 
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
                               // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp

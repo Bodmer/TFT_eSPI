@@ -21,6 +21,8 @@
 #define SEEED_XIAO_EPAPER_7INCH5
 #include <TFT_eSPI.h> // Hardware-specific library
 
+#ifdef EPAPER_ENABLE
+
 EPaper epaper = EPaper(); // Invoke custom library
 TFT_eSprite canvas = TFT_eSprite(&epaper);
 
@@ -157,3 +159,5 @@ static uint8_t conv2d(const char *p)
     v = *p - '0';
   return 10 * v + *++p - '0';
 }
+
+#endif

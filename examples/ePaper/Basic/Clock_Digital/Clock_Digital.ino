@@ -27,11 +27,10 @@ code	color
 0xF81F	Pink
 
  */
-#define SEEED_XIAO_EPAPER_7INCH5
 #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
 #include <SPI.h>
 
-
+#ifdef EPAPER_ENABLE // Only compile this code if the EPAPER_ENABLE is defined in User_Setup.h
 
 EPaper epaper = EPaper();  // Invoke library, pins defined in User_Setup.h
 
@@ -129,4 +128,4 @@ void loop() {
 }
 
 
-
+#endif

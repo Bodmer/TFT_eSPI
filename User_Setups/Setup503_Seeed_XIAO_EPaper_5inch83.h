@@ -1,18 +1,18 @@
 #include <Wire.h>
 
-#define USER_SETUP_ID 502
+#define USER_SETUP_ID 503
 
 #define UC8179_DRIVER
 
 #define EPAPER_ENABLE
 
-#define TFT_WIDTH 800
+#define TFT_WIDTH 648
 #define TFT_HEIGHT 480
 
 #define EPD_WIDTH TFT_WIDTH
 #define EPD_HEIGHT TFT_HEIGHT
 
-// #define EPD_HORIZONTAL_MIRROR
+#define EPD_HORIZONTAL_MIRROR
 
 #define TFT_SCLK D8
 #define TFT_MISO D9

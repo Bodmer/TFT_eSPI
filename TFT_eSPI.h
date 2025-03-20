@@ -1019,7 +1019,7 @@ fastBlend(A alpha, F fgc, B bgc)
 #include "Extensions/Sprite.h"
 
 // Load the EPaper
-#ifdef GDEM075T7_DRIVER
+#if defined (UC8179_DRIVER)  ||  defined (SSD1680_DRIVER) || defined (SSD1681_DRIVER)
 #include "Extensions/EPaper.h"
 #endif
 

@@ -777,9 +777,15 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Init.h"
 
-#elif defined (GDEM075T7_DRIVER)
-    #include "TFT_Drivers/GDEM075T7_Init.h"
+#elif defined (UC8179_DRIVER)
+    #include "TFT_Drivers/UC8179_Init.h"
 
+#elif defined (SSD1680_DRIVER)
+    #include "TFT_Drivers/SSD1680_Init.h"
+
+#elif defined (SSD1681_DRIVER)
+    #include "TFT_Drivers/SSD1681_Init.h"
+  
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -884,9 +890,14 @@ void TFT_eSPI::setRotation(uint8_t m)
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Rotation.h"
 
-#elif defined (GDEM075T7_DRIVER)
-    #include "TFT_Drivers/GDEM075T7_Rotation.h"
+#elif defined (UC8179_DRIVER)
+    #include "TFT_Drivers/UC8179_Rotation.h"
+    
+#elif defined (SSD1680_DRIVER)
+    #include "TFT_Drivers/SSD1680_Rotation.h"
 
+#elif defined (SSD1681_DRIVER)
+    #include "TFT_Drivers/SSD1681_Rotation.h"
 #endif
 
   delayMicroseconds(10);
@@ -6174,7 +6185,7 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 
 #include "Touch_Drivers/Touch.cpp"
 
-#ifdef GDEM075T7_DRIVER
+#if defined (UC8179_DRIVER)  ||  defined (SSD1680_DRIVER) || defined (SSD1681_DRIVER)
 #include "Extensions/EPaper.cpp"
 #endif
 
