@@ -156,4 +156,14 @@ static uint8_t conv2d(const char *p)
     v = *p - '0';
   return 10 * v + *++p - '0';
 }
+#else
+void setup()
+{
+
+}
+
+void loop()
+{
+  
+}
 #endif

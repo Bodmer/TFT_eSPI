@@ -126,6 +126,15 @@ void loop() {
     epaper.update(); // update the display
   }
 }
+#else
+void setup()
+{
 
+}
+
+void loop()
+{
+  
+}
 
 #endif
