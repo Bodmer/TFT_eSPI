@@ -1,6 +1,6 @@
 {
   "name": "Seeed_Arduino_LCD",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "keywords": "tft, ePaper, display, ESP8266, NodeMCU, ESP32, M5Stack, ILI9341, ST7735, ILI9163, S6D02A1, ILI9486, ST7789, RM68140",
   "description": "A TFT and ePaper SPI graphics library for Arduino",
   "repository":
