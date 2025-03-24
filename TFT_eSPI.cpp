@@ -739,6 +739,8 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (ST7789_DRIVER)
     #include "TFT_Drivers/ST7789_Init.h"
 
+    #include "TFT_Drivers/ST7789_3_Init.h"
+
 #elif defined (R61581_DRIVER)
     #include "TFT_Drivers/R61581_Init.h"
 
@@ -757,6 +759,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (GC9A01_DRIVER)
      #include "TFT_Drivers/GC9A01_Init.h"
 
+#elif defined (GC9D01_DRIVER)
+     #include "TFT_Drivers/GC9D01_Init.h"
+
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Init.h"
 
@@ -768,6 +773,9 @@ void TFT_eSPI::init(uint8_t tc)
 
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Init.h"
+
+#elif defined (ST77916_DRIVER)
+    #include "TFT_Drivers/ST77916_Init.h"
 
 #endif
 
@@ -849,6 +857,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Rotation.h"
 
+#elif defined (ST7789_3_DRIVER)
+    #include "TFT_Drivers/ST7789_3_Rotation.h"
+
 #elif defined (SSD1351_DRIVER)
     #include "TFT_Drivers/SSD1351_Rotation.h"
 
@@ -869,6 +880,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Rotation.h"
+
+#elif defined (ST77916_DRIVER)
+    #include "TFT_Drivers/ST77916_Rotation.h"
 
 #endif
 

@@ -24,10 +24,11 @@
 
 // Only ONE line below should be uncommented to define your setup.  Add extra lines and files as needed.
 
-#include <User_Setup.h>           // Default setup is root library folder
+//#include <User_Setup.h>           // Default setup is root library folder
 
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file for ESP8266 configured for my ILI9341
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file for ESP8266 configured for my ST7735
+//#include <User_Setups/Setup2a_ESP32_ST7735_128x160.h>
 //#include <User_Setups/Setup3_ILI9163.h>  // Setup file for ESP8266 configured for my ILI9163
 //#include <User_Setups/Setup4_S6D02A1.h>  // Setup file for ESP8266 configured for my S6D02A1
 //#include <User_Setups/Setup5_RPi_ILI9486.h>        // Setup file for ESP8266 configured for my stock RPi TFT
@@ -35,6 +36,7 @@
 //#include <User_Setups/Setup7_ST7735_128x128.h>     // Setup file for ESP8266 configured for my ST7735 128x128 display
 //#include <User_Setups/Setup8_ILI9163_128x128.h>    // Setup file for ESP8266 configured for my ILI9163 128x128 display
 //#include <User_Setups/Setup9_ST7735_Overlap.h>     // Setup file for ESP8266 configured for my ST7735
+//#include <User_Setups/Setup9tk_ST7735_Overlap.h>     // Setup file for ESP32S3Zero configured for my ST7735
 //#include <User_Setups/Setup10_RPi_touch_ILI9486.h> // Setup file for ESP8266 configured for ESP8266 and RPi TFT with touch
 
 //#include <User_Setups/Setup11_RPi_touch_ILI9486.h> // Setup file configured for ESP32 and RPi TFT with touch
@@ -59,6 +61,9 @@
 //#include <User_Setups/Setup26_TTGO_T_Wristband.h>  // Setup file for ESP32 and TTGO T-Wristband ST7735 SPI bus TFT
 
 //#include <User_Setups/Setup27_RPi_ST7796_ESP32.h>    // ESP32   RPi MHS-4.0 inch Display-B
+
+//#include <User_Setups/Setup27tk_1_8Round_ST77916_ESP32.h>
+
 //#include <User_Setups/Setup28_RPi_ST7796_ESP8266.h>  // ESP8266 RPi MHS-4.0 inch Display-B
 
 //#include <User_Setups/Setup29_ILI9341_STM32.h>          // Setup for Nucleo board
@@ -94,12 +99,21 @@
 
 //#include <User_Setups/Setup70_ESP32_S2_ILI9341.h>     // Setup file for ESP32 S2 with SPI ILI9341
 //#include <User_Setups/Setup70b_ESP32_S3_ILI9341.h>    // Setup file for ESP32 S3 with SPI ILI9341
+//#include <User_Setups/Setup72b2_ESP32_S3_147_ST7789_170x320.h>
+//#include <User_Setups/Setup_DMXDisplay.h>
 //#include <User_Setups/Setup70c_ESP32_C3_ILI9341.h>    // Setup file for ESP32 C3 with SPI ILI9341
+//#include <User_Setups/Setup70tk_ESP32_C3_GC9A01.h>    // Setup file for ESP32 C3 with SPI GC9A01
+
 //#include <User_Setups/Setup70d_ILI9488_S3_Parallel.h> // Setup file for ESP32 S3 with SPI ILI9488
+//#include <User_Setups/Setup70t_ESP32_S3_Zero_ILI9341.h> // Setup file for ESP32 S3 Zero with SPI ILI9341
+#include <User_Setups/Setup70mk_ESP32_Wroom32_ILI9341.h> // Setup file for ESP32 WROOOM with SPI ILI9341
+
+
 
 //#include <User_Setups/Setup71_ESP32_S2_ST7789.h>       // Setup file for ESP32 S2 with ST7789
 //#include <User_Setups/Setup72_ESP32_ST7789_172x320.h>  // Setup file for ESP32 with ST7789 1.47" 172x320
-
+//#include <User_Setups/Setup72b_ESP32_S3_ST7789_170x320.h>
+//#include <User_Setups/Setup72c_ESP32_ST7789_240x320.h>
 //#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9488
 //#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9481
 //#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9341
@@ -143,9 +157,18 @@
 
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 //#include <User_Setups/Setup302_Waveshare_ESP32S3_GC9A01.h>            // Setup file for Waveshare ESP32-S3-Touch-LCD-1.28 board with GC9A01 240*240 TFT
+//#include <User_Setups/Setup302_Waveshare_ESP32S3_GC9A01_128_DoubleHeaderNoTouch.h>
+//#include <User_Setups/Setup302_Waveshare_ESP32S3_GC9A01_128_SingleHeaderTouch.h>
+
+
+//#include <User_Setups/Setup303_Waveshare_ESP32S3_ST7789.h>
+//#include <User_Setups/Setup303a_Waveshare_ESP32S3_GEEK_ST7789.h>
+
+
+//#include <User_Setups/Setup304__ESP32S3_GC9D01.h>
+
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
-
 
 //#include <User_Setups/Dustin_ILI9488.h>          // Setup file for Dustin Watts PCB with ILI9488
 //#include <User_Setups/Dustin_ST7796.h>           // Setup file for Dustin Watts PCB with ST7796
@@ -232,6 +255,9 @@
 #elif defined (ST7789_DRIVER)
      #include "TFT_Drivers/ST7789_Defines.h"
      #define  TFT_DRIVER 0x7789
+#elif defined (ST7789_3_DRIVER)
+     #include "TFT_Drivers/ST7789_3_Defines.h"
+     #define  TFT_DRIVER 0x7789
 #elif defined (R61581_DRIVER)
      #include "TFT_Drivers/R61581_Defines.h"
      #define  TFT_DRIVER 0x6158
@@ -259,6 +285,9 @@
 #elif defined (GC9A01_DRIVER)
      #include "TFT_Drivers/GC9A01_Defines.h"
      #define  TFT_DRIVER 0x9A01
+#elif defined (GC9D01_DRIVER)
+     #include "TFT_Drivers/GC9D01_Defines.h"
+     #define  TFT_DRIVER 0x9A01
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Defines.h"
      #define  TFT_DRIVER 0x9225
@@ -271,6 +300,10 @@
 #elif defined (HX8357C_DRIVER)
      #include "TFT_Drivers/HX8357C_Defines.h"
      #define  TFT_DRIVER 0x835C
+#elif defined (ST77916_DRIVER)
+     #include "TFT_Drivers/ST77916_Defines.h"
+     #define  TFT_DRIVER 0x835D
+
 
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
                               // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp
