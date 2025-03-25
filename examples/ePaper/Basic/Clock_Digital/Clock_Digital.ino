@@ -50,7 +50,10 @@ static uint8_t conv2d(const char* p) {
 
 uint8_t hh=conv2d(__TIME__), mm=conv2d(__TIME__+3), ss=conv2d(__TIME__+6);  // Get H, M, S from compile time
 
+#endif
+
 void setup(void) {
+#ifdef EPAPER_ENABLE
   epaper.begin();
   epaper.setRotation(1);
   epaper.fillScreen(TFT_BLACK);
@@ -58,9 +61,11 @@ void setup(void) {
   epaper.setTextColor(TFT_YELLOW, TFT_BLACK); // Note: the new fonts do not draw the background colour
   epaper.update(); // update the display
   targetTime = millis() + 1000; 
+#endif
 }
 
 void loop() {
+#ifdef EPAPER_ENABLE
   if (targetTime < millis()) {
     targetTime = millis()+1000;
     ss++;              // Advance second
@@ -125,16 +130,5 @@ void loop() {
     }
     epaper.update(); // update the display
   }
-}
-#else
-void setup()
-{
-
-}
-
-void loop()
-{
-  
-}
-
 #endif
+}

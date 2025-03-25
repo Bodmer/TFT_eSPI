@@ -1,12 +1,12 @@
-#define SEEED_XIAO_EPAPER_7INCH5
 #include "TFT_eSPI.h"
 
 #ifdef EPAPER_ENABLE  // Only compile this code if the EPAPER_ENABLE is defined in User_Setup.h
-
 EPaper epaper;
+#endif
+
 void setup()
 {
-
+#ifdef EPAPER_ENABLE  
   epaper.begin();
   epaper.fillScreen(TFT_WHITE);
   epaper.update(); // update the display
@@ -40,22 +40,10 @@ void setup()
     epaper.fillRect(10 + 80 * i, 10, 40, 40, TFT_BLACK);
     epaper.update();
   }
-
+#endif
 }
 
 void loop()
 {
   // put your main code here, to run repeatedly:
 }
-#else
-void setup()
-{
-
-}
-
-void loop()
-{
-  
-}
-
-#endif

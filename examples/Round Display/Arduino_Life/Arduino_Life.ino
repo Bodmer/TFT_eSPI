@@ -6,7 +6,6 @@
 
 // Adapted by Bodmer
 
-#define SEEED_XIAO_ROUND_DISPLAY
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
 

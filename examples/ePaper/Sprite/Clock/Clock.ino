@@ -18,10 +18,9 @@
  */
 
 #include <SPI.h>
-#define SEEED_XIAO_EPAPER_7INCH5
 #include <TFT_eSPI.h> // Hardware-specific library
 
-#ifdef EPAPER_ENABLE
+#ifdef EPAPER_ENABLE // Only compile this code if the EPAPER_ENABLE is defined in User_Setup.h
 
 EPaper epaper = EPaper(); // Invoke custom library
 TFT_eSprite canvas = TFT_eSprite(&epaper);
@@ -37,8 +36,10 @@ uint8_t hh = conv2d(__TIME__), mm = conv2d(__TIME__ + 3), ss = conv2d(__TIME__ +
 
 bool initial = 1;
 
+#endif
 void setup(void)
 {
+#ifdef EPAPER_ENABLE
   epaper.begin();
   canvas.setColorDepth(1);
   
@@ -92,10 +93,12 @@ void setup(void)
   epaper.update(0, 0, canvas.width(), canvas.height(), (uint16_t *)canvas.frameBuffer(0));
 
   targetTime = millis() + 1000;
+#endif
 }
 
 void loop()
 {
+#ifdef EPAPER_ENABLE
   if (targetTime < millis())
   {
     targetTime += 1000;
@@ -150,23 +153,15 @@ void loop()
     canvas.fillCircle(120, 121, 3, TFT_BLACK);
     epaper.update(0, 0, canvas.width(), canvas.height(), (uint16_t *)canvas.frameBuffer(0));
   }
+#endif
 }
 
+#ifdef EPAPER_ENABLE
 static uint8_t conv2d(const char *p)
 {
   uint8_t v = 0;
   if ('0' <= *p && *p <= '9')
     v = *p - '0';
   return 10 * v + *++p - '0';
-}
-#else
-void setup()
-{
-
-}
-
-void loop()
-{
-  
 }
 #endif

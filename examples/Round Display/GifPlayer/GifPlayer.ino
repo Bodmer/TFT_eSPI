@@ -1,5 +1,4 @@
 #include <vector>
-#define SEEED_XIAO_ROUND_DISPLAY
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <SD.h>
