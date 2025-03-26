@@ -165,7 +165,7 @@
 //#include <User_Setups/Setup303a_Waveshare_ESP32S3_GEEK_ST7789.h>
 
 
-//#include <User_Setups/Setup304__ESP32S3_GC9D01.h>
+//#include <User_Setups/Setup304__ESP32S3_GC9D01N.h>
 
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
@@ -285,8 +285,8 @@
 #elif defined (GC9A01_DRIVER)
      #include "TFT_Drivers/GC9A01_Defines.h"
      #define  TFT_DRIVER 0x9A01
-#elif defined (GC9D01_DRIVER)
-     #include "TFT_Drivers/GC9D01_Defines.h"
+#elif defined (GC9D01N_DRIVER)
+     #include "TFT_Drivers/GC9D01N_Defines.h"
      #define  TFT_DRIVER 0x9A01
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Defines.h"

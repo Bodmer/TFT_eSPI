@@ -80,8 +80,8 @@
     #define ILI9225_DRIVER
 #elif defined (CONFIG_TFT_GC9A01_DRIVER)
     #define GC9A01_DRIVER
-#elif defined (CONFIG_TFT_GC9D01_DRIVER)
-    #define GC9D01_DRIVER
+#elif defined (CONFIG_TFT_GC9D01N_DRIVER)
+    #define GC9D01N_DRIVER
 #endif
 
 #ifdef CONFIG_TFT_RGB_ORDER
