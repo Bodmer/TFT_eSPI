@@ -33,6 +33,7 @@ jobs:
           echo Bodmer/TFT_eFEX >> depend.list
           echo Bodmer/TFT_eWidget >> depend.list
           echo bitbank2/PNGdec >> depend.list
+          echo bitbank2/bb_spi_lcd >> depend.list
           echo bitbank2/AnimatedGIF >> depend.list
           echo tanakamasayuki/I2C_BM8563 >> depend.list
           echo PaulStoffregen/Time >> depend.list
