@@ -1,7 +1,7 @@
 // See SetupX_Template.h for all options available
 #define USER_SETUP_ID 304
 
-#define GC9D01_DRIVER
+#define GC9D01N_DRIVER
 
 #define TFT_MISO -1
 
