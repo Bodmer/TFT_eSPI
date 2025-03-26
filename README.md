@@ -3,8 +3,13 @@
 # Changes:
 ## Added GC9D01N Controller. 
 A controller for displays like the 0.99" display with 40x160 px.
-Credits are going to Basitadam for giving me his files for the GC9D01 and I used them as my base from this ["Discussion"](https://github.com/Bodmer/TFT_eSPI/discussions/3520#discussioncomment-12623422)
+
+Credits are going out to Basitadam for giving me his files for the GC9D01 and I used them as my base from this ["Discussion"](https://github.com/Bodmer/TFT_eSPI/discussions/3520#discussioncomment-12623422)
+
 I also changed the init sequence based on the one from Lilygo https://github.com/Xinyuan-LilyGO/T-0.99TFT/blob/main/src/TFT_GC9D01N.cpp 
+
+
+# Original Readme
 
 
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
