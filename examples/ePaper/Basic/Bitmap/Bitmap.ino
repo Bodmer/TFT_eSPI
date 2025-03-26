@@ -18,7 +18,7 @@ void setup()
   // epaper.pushImage(0, 0, 800, 480, (uint16_t *)gImage_1);
   // epaper.update();
   Serial.println("update");
-  epaper.update(0, 0, TFT_WIDTH, TFT_HEIGHT, (uint16_t *)gImage_2);
+  epaper.update(0, 0, TFT_WIDTH, TFT_HEIGHT, (uint16_t *)gImage_1);
 #endif
 }
 
