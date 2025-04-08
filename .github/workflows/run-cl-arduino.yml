@@ -221,15 +221,6 @@ jobs:
           # AnimatedGIF has compatibility issues with rp2350 so can't compile
           echo "Round Display/GifPlayer,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
 
-          # bb_spi_lcd has compatibility issues with xiao_esp32c3/c6 temporarily so can't compile
-          echo "PNG Images/Flash_PNG",esp32:esp32:XIAO_ESP32C3 >> ignore.list
-          echo "PNG Images/Flash_transparent_PNG",esp32:esp32:XIAO_ESP32C3 >> ignore.list
-          echo "PNG Images/LittleFS_PNG",esp32:esp32:XIAO_ESP32C3 >> ignore.list
-          echo "PNG Images/LittleFS_PNG_DMA",esp32:esp32:XIAO_ESP32C3 >> ignore.list
-          echo "PNG Images/Flash_PNG",esp32:esp32:XIAO_ESP32C6 >> ignore.list
-          echo "PNG Images/Flash_transparent_PNG",esp32:esp32:XIAO_ESP32C6 >> ignore.list
-          echo "PNG Images/LittleFS_PNG",esp32:esp32:XIAO_ESP32C6 >> ignore.list
-          echo "PNG Images/LittleFS_PNG_DMA",esp32:esp32:XIAO_ESP32C6 >> ignore.list
 
           # only ESP32 can compile
           echo "Generic/ESP32_SDcard_jpeg,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
