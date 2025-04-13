@@ -3969,15 +3969,23 @@ uint16_t TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color, uint8_t alpha
 ** Function name:           drawSmoothArc
 ** Description:             Draw a smooth arc clockwise from 6 o'clock
 ***************************************************************************************/
-void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32_t startAngle, uint32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds)
+void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, 
+                           uint32_t startAngle, uint32_t endAngle, 
+                           uint32_t fg_color, uint32_t bg_color, bool roundEnds, 
+                           uint32_t end_bg_color = 0)
 // Centre at x,y
 // r = arc outer radius, ir = arc inner radius. Inclusive so arc thickness = r - ir + 1
 // Angles in range 0-360
 // Arc foreground colour anti-aliased with background colour at edges
 // anti-aliased roundEnd is optional, default is anti-aliased straight end
 // Note: rounded ends extend the arc angle so can overlap, user sketch to manage this.
+// Added parameter: end_bg_color - background color for antialiasing the ends
+//                  (defaults to bg_color if not specified)
 {
   inTransaction = true;
+
+  // If end_bg_color is not specified (zero), use the same color as bg_color
+  if (end_bg_color == 0) end_bg_color = bg_color;
 
   if (endAngle != startAngle && (startAngle != 0 || endAngle != 360))
   {
@@ -3990,11 +3998,11 @@ void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32
     { // Round ends
       sx = sx * (r + ir)/2.0 + x;
       sy = sy * (r + ir)/2.0 + y;
-      drawSpot(sx, sy, (r - ir)/2.0, fg_color, bg_color);
+      drawSpot(sx, sy, (r - ir)/2.0, fg_color, end_bg_color); // Use end_bg_color here
 
       ex = ex * (r + ir)/2.0 + x;
       ey = ey * (r + ir)/2.0 + y;
-      drawSpot(ex, ey, (r - ir)/2.0, fg_color, bg_color);
+      drawSpot(ex, ey, (r - ir)/2.0, fg_color, end_bg_color); // Use end_bg_color here
     }
     else
     { // Square ends
@@ -4002,21 +4010,22 @@ void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32
       float asy = sy * ir + y;
       float aex = sx *  r + x;
       float aey = sy *  r + y;
-      drawWedgeLine(asx, asy, aex, aey, 0.3, 0.3, fg_color, bg_color);
+      drawWedgeLine(asx, asy, aex, aey, 0.3, 0.3, fg_color, end_bg_color); // Use end_bg_color here
 
       asx = ex * ir + x;
       asy = ey * ir + y;
       aex = ex *  r + x;
       aey = ey *  r + y;
-      drawWedgeLine(asx, asy, aex, aey, 0.3, 0.3, fg_color, bg_color);
+      drawWedgeLine(asx, asy, aex, aey, 0.3, 0.3, fg_color, end_bg_color); // Use end_bg_color here
     }
 
-    // Draw arc
+    // Draw arc - using original bg_color for sides
     drawArc(x, y, r, ir, startAngle, endAngle, fg_color, bg_color);
 
   }
   else // Draw full 360
   {
+    // For a full circle, there are no ends, so just use the regular bg_color
     drawArc(x, y, r, ir, 0, 360, fg_color, bg_color);
   }
 
