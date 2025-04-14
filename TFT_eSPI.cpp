@@ -3972,7 +3972,7 @@ uint16_t TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color, uint8_t alpha
 void TFT_eSPI::drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, 
                            uint32_t startAngle, uint32_t endAngle, 
                            uint32_t fg_color, uint32_t bg_color, bool roundEnds, 
-                           uint32_t end_bg_color = 0)
+                           uint32_t end_bg_color)
 // Centre at x,y
 // r = arc outer radius, ir = arc inner radius. Inclusive so arc thickness = r - ir + 1
 // Angles in range 0-360
