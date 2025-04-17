@@ -3,6 +3,7 @@
 #define USER_SETUP_ID 502
 
 #define UC8179_DRIVER
+// #define JD79686B_DRIVER
 
 #define EPAPER_ENABLE
 

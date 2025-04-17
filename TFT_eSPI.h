@@ -1019,7 +1019,7 @@ fastBlend(A alpha, F fgc, B bgc)
 #include "Extensions/Sprite.h"
 
 // Load the EPaper
-#if defined (UC8179_DRIVER)  ||  defined (SSD1680_DRIVER) || defined (SSD1681_DRIVER)
+#ifdef EPAPER_ENABLE
 #include "Extensions/EPaper.h"
 #endif
 

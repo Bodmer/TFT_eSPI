@@ -785,7 +785,8 @@ void TFT_eSPI::init(uint8_t tc)
 
 #elif defined (SSD1681_DRIVER)
     #include "TFT_Drivers/SSD1681_Init.h"
-  
+#elif defined (JD79686B_DRIVER)
+    #include "TFT_Drivers/JD79686B_Init.h"
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -898,6 +899,8 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (SSD1681_DRIVER)
     #include "TFT_Drivers/SSD1681_Rotation.h"
+#elif defined (JD79686B_DRIVER)
+    #include "TFT_Drivers/JD79686B_Rotation.h"
 #endif
 
   delayMicroseconds(10);
@@ -6185,7 +6188,7 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 
 #include "Touch_Drivers/Touch.cpp"
 
-#if defined (UC8179_DRIVER)  ||  defined (SSD1680_DRIVER) || defined (SSD1681_DRIVER)
+#ifdef EPAPER_ENABLE
 #include "Extensions/EPaper.cpp"
 #endif
 

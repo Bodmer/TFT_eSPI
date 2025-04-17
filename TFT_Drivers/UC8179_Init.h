@@ -1,5 +1,5 @@
 
-// This is the command sequence that initialises the  GDEM075 driver
+// This is the command sequence that initialises the  UC8179 driver
 
 {
 

@@ -18,18 +18,13 @@
 #define EPD_COLOR_DEPTH 1
 
 #define EPD_NOP 0xFF
-
 #define EPD_PNLSET 0x00
-
 #define EPD_DISPON 0x04
 #define EPD_DISPOFF 0x03
-
 #define EPD_SLPIN 0x07
 #define EPD_SLPOUT 0xFF
-
 #define EPD_PTLIN 0x90  // Partial display in
 #define EPD_PTLOUT 0x91 // Partial display out
-
 #define EPD_PTLW 0x13
 
 #define TFT_SWRST 0xFF

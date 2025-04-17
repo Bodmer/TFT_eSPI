@@ -116,7 +116,10 @@
     } while (0)
 
 // Macro to set display window
-#define EPD_SET_WINDOW(x1, y1, x2, y2)
+#define EPD_SET_WINDOW(x1, y1, x2, y2) \
+    do                                 \
+    {                                  \
+    } while (0)
 
 // Macro to push new color data
 #define EPD_PUSH_NEW_COLORS(w, h, colors)        \
@@ -149,8 +152,14 @@
     } while (0)
 
 // Macro to push old color data
-#define EPD_PUSH_OLD_COLORS(w, h, colors)
+#define EPD_PUSH_OLD_COLORS(w, h, colors) \
+    do                                    \
+    {                                     \
+    } while (0)
 
-#define EPD_PUSH_OLD_COLORS_FLIP(w, h, colors)
+#define EPD_PUSH_OLD_COLORS_FLIP(w, h, colors) \
+    do                                         \
+    {                                          \
+    } while (0)
 
 #endif

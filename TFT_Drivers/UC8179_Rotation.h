@@ -1,5 +1,5 @@
 
-// This is the command sequence that rotates the GC9A01 driver coordinate frame
+// This is the command sequence that rotates the UC8179 driver coordinate frame
 
   rotation = m % 4;
 

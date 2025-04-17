@@ -244,6 +244,67 @@ jobs:
           echo "Smooth Graphics/Anti-aliased_Clock,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
           echo "Smooth Graphics/Anti-aliased_Clock,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
           
+          # Skip ePaper examples to speed up compilation
+          echo "ePaper/Basic/Bitmap,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "ePaper/Basic/Bitmap,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "ePaper/Basic/Bitmap,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "ePaper/Basic/Bitmap,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "ePaper/Basic/Bitmap,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "ePaper/Basic/Bitmap,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "ePaper/Basic/Bitmap,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "ePaper/Basic/Bitmap,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "ePaper/Basic/Bitmap,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "ePaper/Basic/Clock,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "ePaper/Basic/Clock,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "ePaper/Basic/Clock,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "ePaper/Basic/Clock,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "ePaper/Basic/Clock,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "ePaper/Basic/Clock,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "ePaper/Basic/Clock,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "ePaper/Basic/Clock,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "ePaper/Basic/Clock,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "ePaper/Basic/Clock_Digital,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "ePaper/Basic/Clock_Digital,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "ePaper/Basic/Clock_Digital,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "ePaper/Basic/Clock_Digital,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "ePaper/Basic/Clock_Digital,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "ePaper/Basic/Clock_Digital,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "ePaper/Basic/Clock_Digital,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "ePaper/Basic/Clock_Digital,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "ePaper/Basic/Clock_Digital,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "ePaper/Basic/HelloWorld,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "ePaper/Basic/HelloWorld,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "ePaper/Basic/HelloWorld,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "ePaper/Basic/HelloWorld,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "ePaper/Basic/HelloWorld,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "ePaper/Basic/HelloWorld,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "ePaper/Basic/HelloWorld,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "ePaper/Basic/HelloWorld,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "ePaper/Basic/HelloWorld,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "ePaper/Basic/Shape,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "ePaper/Basic/Shape,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "ePaper/Basic/Shape,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "ePaper/Basic/Shape,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "ePaper/Basic/Shape,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "ePaper/Basic/Shape,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "ePaper/Basic/Shape,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "ePaper/Basic/Shape,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "ePaper/Basic/Shape,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
+          echo "ePaper/Sprite/Clock_Digital,Seeeduino:samd:seeed_XIAO_m0" >> ignore.list
+          echo "ePaper/Sprite/Clock_Digital,Seeeduino:nrf52:xiaonRF52840" >> ignore.list
+          echo "ePaper/Sprite/Clock_Digital,Seeeduino:nrf52:xiaonRF52840Sense" >> ignore.list
+          echo "ePaper/Sprite/Clock_Digital,Seeeduino:renesas_uno:XIAO_RA4M1" >> ignore.list
+          echo "ePaper/Sprite/Clock_Digital,rp2040:rp2040:seeed_xiao_rp2040" >> ignore.list
+          echo "ePaper/Sprite/Clock_Digital,rp2040:rp2040:seeed_xiao_rp2350" >> ignore.list
+          echo "ePaper/Sprite/Clock_Digital,esp32:esp32:XIAO_ESP32C3" >> ignore.list
+          echo "ePaper/Sprite/Clock_Digital,esp32:esp32:XIAO_ESP32C6" >> ignore.list
+          echo "ePaper/Sprite/Clock_Digital,esp32:esp32:XIAO_ESP32S3" >> ignore.list
+
 
       - name: Build sketch
         run: |
