@@ -23,9 +23,9 @@
 #define EPD_DISPOFF 0x03
 #define EPD_SLPIN 0x07
 #define EPD_SLPOUT 0xFF
-#define EPD_PTLIN 0x90  // Partial display in
-#define EPD_PTLOUT 0x91 // Partial display out
-#define EPD_PTLW 0x13
+#define EPD_PTLIN 0x91  // Partial display in
+#define EPD_PTLOUT 0x92 // Partial display out
+#define EPD_PTLW 0x90
 
 #define TFT_SWRST 0xFF
 #define TFT_CASET 0xFF
@@ -82,23 +82,23 @@
         writedata(0x6E);             \
     } while (0)
 
-#define EPD_SET_WINDOW(x1, y1, x2, y2) \
-    do                                 \
-    {                                  \
-        writecommand(0x50);            \
-        writedata(0xA9);               \
-        writedata(0x07);               \
-        writecommand(0x91);            \
-        writecommand(0x90);            \
-        writedata(x1 / 256);           \
-        writedata(x1 % 256);           \
-        writedata(x2 / 256);           \
-        writedata(x2 % 256 - 1);       \
-        writedata(y1 / 256);           \
-        writedata(y1 % 256);           \
-        writedata(y2 / 256);           \
-        writedata(y2 % 256 - 1);       \
-        writedata(0x01);               \
+#define EPD_SET_WINDOW(x1, y1, x2, y2)                  \
+    do                                                  \
+    {                                                   \
+        writecommand(0x50);                             \
+        writedata(0xA9);                                \
+        writedata(0x07);                                \
+        writecommand(0x91);                             \
+        writecommand(0x90);                             \
+        writedata((x1 >> 8) & 0xFF); /* x1 / 256 */     \
+        writedata(x1 & 0xFF);        /* x1 % 256 */     \
+        writedata((x2 >> 8) & 0xFF); /* x2 / 256 */     \
+        writedata((x2 & 0xFF) - 1);  /* x2 % 256 - 1 */ \
+        writedata((y1 >> 8) & 0xFF); /* y1 / 256 */     \
+        writedata(y1 & 0xFF);        /* y1 % 256 */     \
+        writedata((y2 >> 8) & 0xFF); /* y2 / 256 */     \
+        writedata((y2 & 0xFF) - 1);  /* y2 % 256 - 1 */ \
+        writedata(0x01);                                \
     } while (0)
 
 #define EPD_PUSH_NEW_COLORS(w, h, colors)   \
@@ -139,7 +139,6 @@
             writedata(colors[i]);           \
         }                                   \
     } while (0)
-
 
 #define EPD_PUSH_OLD_COLORS_FLIP(w, h, colors)                         \
     do                                                                 \

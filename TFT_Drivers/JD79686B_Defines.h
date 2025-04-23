@@ -85,9 +85,20 @@
         writedata(0x02);             \
     } while (0)
 
-#define EPD_SET_WINDOW(x1, y1, x2, y2) \
-    do                                 \
-    {                                  \
+#define EPD_SET_WINDOW(x1, y1, x2, y2)                  \
+    do                                                  \
+    {                                                   \
+        writecommand(0x91);                             \
+        writecommand(0x90);                             \
+        writedata((x1 >> 8) & 0xFF); /* x1 / 256 */     \
+        writedata(x1 & 0xFF);        /* x1 % 256 */     \
+        writedata((x2 >> 8) & 0xFF); /* x2 / 256 */     \
+        writedata((x2 & 0xFF) - 1);  /* x2 % 256 - 1 */ \
+        writedata((y1 >> 8) & 0xFF); /* y1 / 256 */     \
+        writedata(y1 & 0xFF);        /* y1 % 256 */     \
+        writedata((y2 >> 8) & 0xFF); /* y2 / 256 */     \
+        writedata((y2 & 0xFF) - 1);  /* y2 % 256 - 1 */ \
+        writedata(0x01);                                \
     } while (0)
 
 #define EPD_PUSH_NEW_COLORS(w, h, colors)       \

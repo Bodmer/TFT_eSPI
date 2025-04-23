@@ -75,8 +75,7 @@
         delay(100);         \
     } while (0)
 
-// Macro to wake up device
-#define EPD_WAKEUP()                       \
+#define EPD_INIT()                         \
     do                                     \
     {                                      \
         digitalWrite(TFT_RST, LOW);        \
@@ -114,6 +113,9 @@
         writedata((EPD_HEIGHT - 1) / 256); \
         CHECK_BUSY();                      \
     } while (0)
+
+// Macro to wake up device
+#define EPD_WAKEUP() EPD_INIT()
 
 // Macro to set display window
 #define EPD_SET_WINDOW(x1, y1, x2, y2) \
