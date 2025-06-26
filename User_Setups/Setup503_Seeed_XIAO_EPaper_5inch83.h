@@ -63,7 +63,7 @@
 #define SPI_FREQUENCY 10000000
 #define SPI_READ_FREQUENCY 4000000
 #else
-#pragma message "Unknown board using default SPI settings (25MHz)"
+#pragma message "Unknown board using default SPI settings (1MHz)"
 #define SPI_FREQUENCY 10000000
 #define SPI_READ_FREQUENCY 4000000
 #endif
