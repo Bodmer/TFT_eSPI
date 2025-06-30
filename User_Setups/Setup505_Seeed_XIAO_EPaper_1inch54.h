@@ -14,6 +14,23 @@
 
 #define EPD_HORIZONTAL_MIRROR
 
+#if defined(USE_XIAO_EPAPER_DRIVER_BOARD)
+#define TFT_SCLK D8
+#define TFT_MISO D9
+#define TFT_MOSI D10
+#define TFT_CS D1
+#define TFT_DC D3
+#define TFT_BUSY D2
+#define TFT_RST D0
+#elif defined(USE_XIAO_EPAPER_DISPLAY_BOARD)
+#define TFT_SCLK D8
+#define TFT_MISO -1
+#define TFT_MOSI D10
+#define TFT_CS 44  // D7
+#define TFT_DC 10  // D16
+#define TFT_BUSY 4 // D3
+#define TFT_RST 38 // D11
+#else
 #define TFT_SCLK D8
 #define TFT_MISO D9
 #define TFT_MOSI D10
@@ -21,6 +38,7 @@
 #define TFT_DC D3 // Data Command control pin
 #define TFT_BUSY D2
 #define TFT_RST D0 // Reset pin (could connect to RST pin)
+#endif
 
 #define LOAD_GLCD  // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
 #define LOAD_FONT2 // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
@@ -40,15 +58,15 @@
 #if defined(SEEED_XIAO_M0)
 #define SPI_FREQUENCY 12000000
 #define SPI_READ_FREQUENCY 4000000
-#elif  defined(ARDUINO_XIAO_ESP32S3) || defined(ARDUINO_XIAO_ESP32S3_PLUS)
+#elif defined(ARDUINO_XIAO_ESP32S3) || defined(ARDUINO_XIAO_ESP32S3_PLUS)
 #define SPI_FREQUENCY 50000000
-#define SPI_READ_FREQUENCY  12000000
-#elif  defined(ARDUINO_XIAO_ESP32C3)
+#define SPI_READ_FREQUENCY 12000000
+#elif defined(ARDUINO_XIAO_ESP32C3)
 #define SPI_FREQUENCY 40000000
-#define SPI_READ_FREQUENCY  6000000
+#define SPI_READ_FREQUENCY 6000000
 #elif defined(ARDUINO_XIAO_ESP32C6)
 #define SPI_FREQUENCY 40000000
-#define SPI_READ_FREQUENCY  6000000
+#define SPI_READ_FREQUENCY 6000000
 #elif defined(ARDUINO_SEEED_XIAO_NRF52840) || defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE) || defined(ARDUINO_Seeed_XIAO_nRF52840) || defined(ARDUINO_Seeed_XIAO_nRF52840_Sense)
 #define SPI_FREQUENCY 12000000
 #define SPI_READ_FREQUENCY 4000000
@@ -59,7 +77,7 @@
 #elif defined(ARDUINO_XIAO_RA4M1)
 #define SPI_FREQUENCY 25000000
 #define SPI_READ_FREQUENCY 4000000
-#elif defined (EFR32MG24B220F1536IM48)
+#elif defined(EFR32MG24B220F1536IM48)
 #define SPI_FREQUENCY 25000000
 #define SPI_READ_FREQUENCY 4000000
 #else
@@ -67,4 +85,3 @@
 #define SPI_FREQUENCY 10000000
 #define SPI_READ_FREQUENCY 4000000
 #endif
-
