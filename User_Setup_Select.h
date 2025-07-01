@@ -172,6 +172,9 @@
 // #include <User_Setups/Setup503_Seeed_XIAO_EPaper_5inch83.h>   // Setup file for Seeed XIAO with 5.83inch ePaper
 // #include <User_Setups/Setup504_Seeed_XIAO_EPaper_2inch9.h>    // Setup file for Seeed XIAO with 2.9inch ePaper     
 // #include <User_Setups/Setup505_Seeed_XIAO_EPaper_1inch54.h>   // Setup file for Seeed XIAO with 1.54inch ePaper
+// #include <User_Setups/Setup506_Seeed_XIAO_EPaper_4inch26.h>   // Setup file for Seeed XIAO with 4.26inch ePaper
+// #include <User_Setups/Setup507_Seeed_XIAO_EPaper_4inch2.h>    // Setup file for Seeed XIAO with 4.2inch ePaper     
+// #include <User_Setups/Setup508_Seeed_XIAO_EPaper_2inch13.h>   // Setup file for Seeed XIAO with 2.13inch ePaper
 
 #endif // USER_SETUP_LOADED
 
