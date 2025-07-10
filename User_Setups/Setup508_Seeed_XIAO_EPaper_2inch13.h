@@ -6,7 +6,7 @@
 
 #define EPAPER_ENABLE
 
-#define TFT_WIDTH 122
+#define TFT_WIDTH 128
 #define TFT_HEIGHT 250
 
 #define EPD_WIDTH TFT_WIDTH
