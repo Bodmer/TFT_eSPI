@@ -2,7 +2,7 @@
 
 #define USER_SETUP_ID 507
 
-#define SSD1680_DRIVER
+#define SSD1683_DRIVER
 
 #define EPAPER_ENABLE
 

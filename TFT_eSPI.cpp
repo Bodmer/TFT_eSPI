@@ -786,6 +786,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (SSD1681_DRIVER)
     #include "TFT_Drivers/SSD1681_Init.h"
 
+#elif defined (SSD1683_DRIVER)
+    #include "TFT_Drivers/SSD1683_Init.h"
+
 #elif defined (SSD1677_DRIVER)
     #include "TFT_Drivers/SSD1677_Init.h"
 
@@ -903,6 +906,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (SSD1681_DRIVER)
     #include "TFT_Drivers/SSD1681_Rotation.h"
+
+#elif defined (SSD1683_DRIVER)
+    #include "TFT_Drivers/SSD1683_Rotation.h"
 
 #elif defined (SSD1677_DRIVER)
     #include "TFT_Drivers/SSD1677_Rotation.h"
