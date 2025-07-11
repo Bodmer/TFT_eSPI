@@ -2,12 +2,12 @@
 
 #define USER_SETUP_ID 506
 
-#define UC8179_DRIVER
+#define SSD1677_DRIVER
 
 #define EPAPER_ENABLE
 
-#define TFT_WIDTH 480
-#define TFT_HEIGHT 800
+#define TFT_WIDTH 800
+#define TFT_HEIGHT 480
 
 #define EPD_WIDTH TFT_WIDTH
 #define EPD_HEIGHT TFT_HEIGHT

@@ -302,6 +302,9 @@
 #elif defined (SSD1681_DRIVER)
      #include "TFT_Drivers/SSD1681_Defines.h"
      #define  TFT_DRIVER 0x1681
+#elif defined (SSD1677_DRIVER)
+     #include "TFT_Drivers/SSD1677_Defines.h"
+     #define  TFT_DRIVER 0x1677
 #elif defined (JD79686B_DRIVER)
      #include "TFT_Drivers/JD79686B_Defines.h"
      #define  TFT_DRIVER 0x7968
