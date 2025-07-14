@@ -31,15 +31,25 @@ void setup(void) {
 
 void loop() {
 
-  uint16_t x, y;
+  int32_t x, y;
 
   tft.getTouchRaw(&x, &y);
-  
+  #ifndef ARDUINO_XIAO_RA4M1 
   Serial.printf("x: %i     ", x);
 
   Serial.printf("y: %i     ", y);
 
   Serial.printf("z: %i \n", tft.getTouchRawZ());
+  #else
+  Serial.print("x: ");
+  Serial.print(x);
+
+  Serial.print("     y: ");
+  Serial.print(y);
+
+  Serial.print("     z: ");
+  Serial.println(tft.getTouchRawZ());
+  #endif
 
   delay(250);
 

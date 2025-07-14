@@ -32,8 +32,8 @@
 // If smooth fonts are enabled the filing system may need to be loaded
 #ifdef SMOOTH_FONT
   // Call up the filing system for the anti-aliased fonts
-  //#define FS_NO_GLOBALS
-  //#include <FS.h>
+  #define FS_NO_GLOBALS
+  #include <Seeed_Arduino_FS.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////

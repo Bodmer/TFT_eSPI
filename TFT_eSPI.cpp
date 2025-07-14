@@ -18,7 +18,7 @@
 #if defined (ESP32)
   #if defined(CONFIG_IDF_TARGET_ESP32S3)
     #include "Processors/TFT_eSPI_ESP32_S3.c" // Tested with SPI and 8-bit parallel
-  #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  #elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
     #include "Processors/TFT_eSPI_ESP32_C3.c" // Tested with SPI (8-bit parallel will probably work too!)
   #else
     #include "Processors/TFT_eSPI_ESP32.c"
@@ -27,8 +27,16 @@
   #include "Processors/TFT_eSPI_ESP8266.c"
 #elif defined (STM32) // (_VARIANT_ARDUINO_STM32_) stm32_def.h
   #include "Processors/TFT_eSPI_STM32.c"
-#elif defined (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED) // Raspberry Pi Pico
+#elif defined (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_NRF52840)// Raspberry Pi Pico
   #include "Processors/TFT_eSPI_RP2040.c"
+#elif defined(SEEED_XIAO_M0)
+  #include "Processors/TFT_eSPI_SAMD21.c"
+#elif defined(ARDUINO_XIAO_RA4M1)
+  #include "Processors/TFT_eSPI_RA4M1.c"
+#elif defined(NRF52840_XXAA)
+  #include "Processors/TFT_eSPI_nRF52840.c"
+#elif defined (EFR32MG24B220F1536IM48)
+  #include "Processors/TFT_eSPI_MG24.cpp"
 #else
   #include "Processors/TFT_eSPI_Generic.c"
 #endif
@@ -614,7 +622,7 @@ void TFT_eSPI::init(uint8_t tc)
   {
     initBus();
 
-#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED)
+#if !defined (ESP32) && !defined(TFT_PARALLEL_8_BIT) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED) && !defined (EFR32MG24B220F1536IM48)
   // Legacy bitmasks for GPIO
   #if defined (TFT_CS) && (TFT_CS >= 0)
     cspinmask = (uint32_t) digitalPinToBitMask(TFT_CS);
@@ -643,7 +651,7 @@ void TFT_eSPI::init(uint8_t tc)
 
 #else
   #if !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
-    #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED)
+    #if defined (TFT_MOSI) && !defined (TFT_SPI_OVERLAP) && !defined(ARDUINO_ARCH_RP2040) && !defined (ARDUINO_ARCH_MBED) && !defined (EFR32MG24B220F1536IM48)
       spi.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1); // This will set MISO to input
     #else
       spi.begin(); // This will set MISO to input
@@ -769,6 +777,23 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Init.h"
 
+#elif defined (UC8179_DRIVER)
+    #include "TFT_Drivers/UC8179_Init.h"
+
+#elif defined (SSD1680_DRIVER)
+    #include "TFT_Drivers/SSD1680_Init.h"
+
+#elif defined (SSD1681_DRIVER)
+    #include "TFT_Drivers/SSD1681_Init.h"
+
+#elif defined (SSD1683_DRIVER)
+    #include "TFT_Drivers/SSD1683_Init.h"
+
+#elif defined (SSD1677_DRIVER)
+    #include "TFT_Drivers/SSD1677_Init.h"
+
+#elif defined (JD79686B_DRIVER)
+    #include "TFT_Drivers/JD79686B_Init.h"
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -781,7 +806,7 @@ void TFT_eSPI::init(uint8_t tc)
 
   end_tft_write();
 
-  setRotation(rotation);
+  //setRotation(rotation);
 
 #if defined (TFT_BL) && defined (TFT_BACKLIGHT_ON)
   if (TFT_BL >= 0) {
@@ -797,6 +822,9 @@ void TFT_eSPI::init(uint8_t tc)
     }
   #endif
 #endif
+
+#include "Touch_Drivers/Touch_Init.cpp"
+
 }
 
 
@@ -870,6 +898,23 @@ void TFT_eSPI::setRotation(uint8_t m)
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Rotation.h"
 
+#elif defined (UC8179_DRIVER)
+    #include "TFT_Drivers/UC8179_Rotation.h"
+    
+#elif defined (SSD1680_DRIVER)
+    #include "TFT_Drivers/SSD1680_Rotation.h"
+
+#elif defined (SSD1681_DRIVER)
+    #include "TFT_Drivers/SSD1681_Rotation.h"
+
+#elif defined (SSD1683_DRIVER)
+    #include "TFT_Drivers/SSD1683_Rotation.h"
+
+#elif defined (SSD1677_DRIVER)
+    #include "TFT_Drivers/SSD1677_Rotation.h"
+
+#elif defined (JD79686B_DRIVER)
+    #include "TFT_Drivers/JD79686B_Rotation.h"
 #endif
 
   delayMicroseconds(10);
@@ -3385,7 +3430,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D;
   // Temporary solution is to include the RP2040 code here
-  #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(RP2040_PIO_INTERFACE)
+  #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(RP2040_PIO_INTERFACE) && !defined(ARDUINO_ARCH_NRF52840)
     // For ILI9225 and RP2040 the slower Arduino SPI transfer calls were used, so need to swap back to 16-bit mode
     while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
     hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
@@ -3415,7 +3460,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   #endif
 
   // Temporary solution is to include the RP2040 optimised code here
-  #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED))
+  #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(ARDUINO_ARCH_NRF52840)
     #if !defined(RP2040_PIO_INTERFACE)
       // Use hardware SPI port, this code does not swap from 8 to 16-bit
       // to avoid the spi_set_format() call overhead
@@ -3519,7 +3564,7 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
 #endif
 
   // Temporary solution is to include the RP2040 optimised code here
-#if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(RP2040_PIO_INTERFACE)
+#if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(RP2040_PIO_INTERFACE) && !defined(ARDUINO_ARCH_NRF52840)
   // Use hardware SPI port, this code does not swap from 8 to 16-bit
   // to avoid the spi_set_format() call overhead
   while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
@@ -3634,7 +3679,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   #endif
 
 // Temporary solution is to include the RP2040 optimised code here
-#elif (defined (ARDUINO_ARCH_RP2040) || defined (ARDUINO_ARCH_MBED)) && !defined (SSD1351_DRIVER)
+#elif (defined (ARDUINO_ARCH_RP2040) || defined (ARDUINO_ARCH_MBED)) && !defined (SSD1351_DRIVER) && !defined(ARDUINO_ARCH_NRF52840)
 
   #if defined (SSD1963_DRIVER)
     if ((rotation & 0x1) == 0) { transpose(x, y); }
@@ -6154,5 +6199,12 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 #ifdef AA_GRAPHICS
   #include "Extensions/AA_graphics.cpp"  // Loaded if SMOOTH_FONT is defined by user
 #endif
+
+#include "Touch_Drivers/Touch.cpp"
+
+#ifdef EPAPER_ENABLE
+#include "Extensions/EPaper.cpp"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////
 

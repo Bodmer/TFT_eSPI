@@ -19,7 +19,7 @@
 #include "driver/spi_master.h"
 #include "hal/gpio_ll.h"
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32) 
   #define CONFIG_IDF_TARGET_ESP32
 #endif
 
@@ -28,7 +28,7 @@
 #endif
 
 // Fix IDF problems with ESP32C3
-#if CONFIG_IDF_TARGET_ESP32C3
+#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
   // Fix ESP32C3 IDF bug for missing definition (VSPI/FSPI only tested at the moment)
   #ifndef REG_SPI_BASE
     #define REG_SPI_BASE(i) DR_REG_SPI2_BASE
@@ -68,7 +68,11 @@ SPI3_HOST = 2
 */
 
 // ESP32 specific SPI port selection - only SPI2_HOST available on C3
-#define SPI_PORT SPI2_HOST
+#if ESP_ARDUINO_VERSION_MAJOR < 3
+  #define SPI_PORT SPI2_HOST
+#else
+  #define SPI_PORT 2
+#endif
 
 #ifdef RPI_DISPLAY_TYPE
   #define CMD_BITS (16-1)
@@ -313,7 +317,7 @@ SPI3_HOST = 2
       #define TFT_SCLK 18
     #endif
 
-    #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S2)
+    #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C6)
       #if (TFT_MISO == -1)
         #undef TFT_MISO
         #define TFT_MISO TFT_MOSI
@@ -532,18 +536,18 @@ SPI3_HOST = 2
   #define tft_Write_32D(C) TFT_WRITE_BITS((uint16_t)((C)<<8 | (C)>>8)<<16 | (uint16_t)((C)<<8 | (C)>>8), 32)
 //*/
 //* Replacement slimmer macros
-  #if !defined(CONFIG_IDF_TARGET_ESP32C3)
-    #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;  \
-                               *_spi_w = D;              \
-                               *_spi_cmd = SPI_USR;      \
-                        while (*_spi_cmd & SPI_USR);
+  #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
+    #define TFT_WRITE_BITS(D, B)  *_spi_mosi_dlen = B-1;  \
+                                  *_spi_w = D;              \
+                                  *_spi_cmd = SPI_USR;      \
+                                  while (*_spi_cmd & SPI_USR);
   #else
-    #define TFT_WRITE_BITS(D, B) *_spi_mosi_dlen = B-1;  \
-                               *_spi_w = D;              \
-                               *_spi_cmd = SPI_UPDATE;   \
-                        while (*_spi_cmd & SPI_UPDATE);  \
-                               *_spi_cmd = SPI_USR;      \
-                        while (*_spi_cmd & SPI_USR);
+    #define TFT_WRITE_BITS(D, B)  *_spi_mosi_dlen = B-1;  \
+                                  *_spi_w = D;              \
+                                  *_spi_cmd = SPI_UPDATE;   \
+                                  while (*_spi_cmd & SPI_UPDATE);  \
+                                  *_spi_cmd = SPI_USR;      \
+                                  while (*_spi_cmd & SPI_USR);
   #endif
   // Write 8 bits
   #define tft_Write_8(C) TFT_WRITE_BITS(C, 8)
@@ -552,16 +556,16 @@ SPI3_HOST = 2
   #define tft_Write_16(C) TFT_WRITE_BITS((C)<<8 | (C)>>8, 16)
 
   // Future option for transfer without wait
-  #if !defined(CONFIG_IDF_TARGET_ESP32C3)
-    #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;    \
-                           *_spi_w = ((C)<<8 | (C)>>8); \
-                           *_spi_cmd = SPI_USR;
+  #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
+    #define tft_Write_16N(C)  *_spi_mosi_dlen = 16-1;    \
+                              *_spi_w = ((C)<<8 | (C)>>8); \
+                              *_spi_cmd = SPI_USR;
   #else
-    #define tft_Write_16N(C) *_spi_mosi_dlen = 16-1;    \
-                           *_spi_w = ((C)<<8 | (C)>>8); \
-                           *_spi_cmd = SPI_UPDATE;      \
-                    while (*_spi_cmd & SPI_UPDATE);     \
-                           *_spi_cmd = SPI_USR;
+    #define tft_Write_16N(C)  *_spi_mosi_dlen = 16-1;    \
+                              *_spi_w = ((C)<<8 | (C)>>8); \
+                              *_spi_cmd = SPI_UPDATE;      \
+                              while (*_spi_cmd & SPI_UPDATE);     \
+                              *_spi_cmd = SPI_USR;
   #endif
 
   // Write 16 bits
