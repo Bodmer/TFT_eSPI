@@ -41,7 +41,7 @@ void setup() {
 //------------------------------------------------------------------------------------------
 
 void loop(void) {
-  uint16_t x = 0, y = 0; // To store the touch coordinates
+  int32_t x = 0, y = 0; // To store the touch coordinates
 
   // Pressed will be set true is there is a valid touch on the screen
   bool pressed = tft.getTouch(&x, &y);

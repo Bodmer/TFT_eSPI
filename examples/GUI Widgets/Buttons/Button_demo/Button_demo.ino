@@ -3,7 +3,11 @@
 // Requires widget library here:
 // https://github.com/Bodmer/TFT_eWidget
 
-#include <FS.h>
+#if defined(SEEED_XIAO_M0) || defined(ARDUINO_XIAO_RA4M1) || defined(NRF52840_XXAA)
+#include <Seeed_Arduino_FS.h>
+#else
+#include "FS.h"
+#endif
 #include "Free_Fonts.h" // Include the header file attached to this sketch
 
 #include <TFT_eSPI.h>              // Hardware-specific library
@@ -102,7 +106,7 @@ void setup() {
 
 void loop() {
   static uint32_t scanTime = millis();
-  uint16_t t_x = 9999, t_y = 9999; // To store the touch coordinates
+  int32_t t_x = 9999, t_y = 9999; // To store the touch coordinates
 
   // Scan keys every 50ms at most
   if (millis() - scanTime >= 50) {

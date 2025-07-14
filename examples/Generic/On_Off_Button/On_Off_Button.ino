@@ -10,7 +10,11 @@
 // the TFT_eSPI library.
 
 // Calibration data is stored in SPIFFS so we need to include it
+#if defined(SEEED_XIAO_M0) || defined(ARDUINO_XIAO_RA4M1) || defined(NRF52840_XXAA)
+#include <Seeed_Arduino_FS.h>
+#else
 #include "FS.h"
+#endif
 
 #include <SPI.h>
 
@@ -73,7 +77,7 @@ void setup(void)
 //------------------------------------------------------------------------------------------
 void loop()
 {
-  uint16_t x, y;
+  int32_t x, y;
 
   // See if there's any touch data for us
   if (tft.getTouch(&x, &y))

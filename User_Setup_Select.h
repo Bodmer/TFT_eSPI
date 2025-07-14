@@ -24,7 +24,7 @@
 
 // Only ONE line below should be uncommented to define your setup.  Add extra lines and files as needed.
 
-#include <User_Setup.h>           // Default setup is root library folder
+// #include <User_Setup.h>           // Default setup is root library folder
 
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file for ESP8266 configured for my ILI9341
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file for ESP8266 configured for my ST7735
@@ -151,15 +151,37 @@
 //#include <User_Setups/Dustin_ST7796.h>           // Setup file for Dustin Watts PCB with ST7796
 //#include <User_Setups/Dustin_ILI9488_Pico.h>     // Setup file for Dustin Watts Pico PCB with ST7796
 //#include <User_Setups/Dustin_ST7789_Pico.h>      // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
-//#include <User_Setups/Dustin_GC9A01_Pico.h>      // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
+//#include <User_Setups/Dustin_GC9A01_Pico.h>      // Setup file for Dustin Watts PCB wcon 3.3V adapter board
 //#include <User_Setups/Dustin_GC9A01_ESP32.h>     // Setup file for Dustin Watts PCB with GC9A01 240 x 240 on 3.3V adapter board
 //#include <User_Setups/Dustin_STT7789_ESP32.h>    // Setup file for Dustin Watts PCB with ST7789 240 x 240 on 3.3V adapter board
 //#include <User_Setups/Dustin_ILI9341_ESP32.h>    // Setup file for Dustin Watts PCB with ILI9341
 //#include <User_Setups/ILI9225.h>
 
+#include <User_Setups/Setup666_XIAO_ILI9341.h>                // Default Setup file for Seeed XIAO 
+// #include <User_Setups/Setup500_Seeed_Wio_Terminal.h>          // Setup file for Seeed Wio Terimal with SPI ILI9341 320x240
+// #include <User_Setups/Setup501_Seeed_XIAO_Round_Display.h>    // Setup file for Seeed XIAO ROUND with GC9A01 240 x 240
+
+/************************************* EPAPER *************************************/
+#define ENABLE_EPAPER_BOARD_PIN_SETUPS    // Enable this macro to enable the following board pin presets
+
+// #define USE_XIAO_EPAPER_DRIVER_BOARD   // Uncomment to enable ePaper Driver Board for Seeed Studio XIAO pin presets
+// #define USE_XIAO_EPAPER_DISPLAY_BOARD  // Uncomment to enable XIAO ePaper Monitor Kit pin presets
+// #define USE_RETERMINAL_E1001_BOARD     // Uncomment to enable reTerminal E1001 pin presets
+
+// #include <User_Setups/Setup502_Seeed_XIAO_EPaper_7inch5.h>    // Setup file for Seeed XIAO with 7.5inch ePaper
+// #include <User_Setups/Setup503_Seeed_XIAO_EPaper_5inch83.h>   // Setup file for Seeed XIAO with 5.83inch ePaper
+// #include <User_Setups/Setup504_Seeed_XIAO_EPaper_2inch9.h>    // Setup file for Seeed XIAO with 2.9inch ePaper     
+// #include <User_Setups/Setup505_Seeed_XIAO_EPaper_1inch54.h>   // Setup file for Seeed XIAO with 1.54inch ePaper
+// #include <User_Setups/Setup506_Seeed_XIAO_EPaper_4inch26.h>   // Setup file for Seeed XIAO with 4.26inch ePaper
+// #include <User_Setups/Setup507_Seeed_XIAO_EPaper_4inch2.h>    // Setup file for Seeed XIAO with 4.2inch ePaper     
+// #include <User_Setups/Setup508_Seeed_XIAO_EPaper_2inch13.h>   // Setup file for Seeed XIAO with 2.13inch ePaper
+
 #endif // USER_SETUP_LOADED
 
-
+// Compatible with some examples 
+#ifdef NRF52840_XXAA
+#include <avr/dtostrf.h>
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
@@ -271,6 +293,24 @@
 #elif defined (HX8357C_DRIVER)
      #include "TFT_Drivers/HX8357C_Defines.h"
      #define  TFT_DRIVER 0x835C
+#elif defined (UC8179_DRIVER)
+     #include "TFT_Drivers/UC8179_Defines.h"
+     #define  TFT_DRIVER 0x07507
+#elif defined (SSD1680_DRIVER)
+     #include "TFT_Drivers/SSD1680_Defines.h"
+     #define  TFT_DRIVER 0x1680
+#elif defined (SSD1681_DRIVER)
+     #include "TFT_Drivers/SSD1681_Defines.h"
+     #define  TFT_DRIVER 0x1681
+#elif defined (SSD1683_DRIVER)
+     #include "TFT_Drivers/SSD1683_Defines.h"
+     #define  TFT_DRIVER 0x1683
+#elif defined (SSD1677_DRIVER)
+     #include "TFT_Drivers/SSD1677_Defines.h"
+     #define  TFT_DRIVER 0x1677
+#elif defined (JD79686B_DRIVER)
+     #include "TFT_Drivers/JD79686B_Defines.h"
+     #define  TFT_DRIVER 0x7968
 
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
                               // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp
@@ -280,6 +320,8 @@
 #else
      #define  TFT_DRIVER 0x0000
 #endif
+
+#include "Touch_Drivers/Touch_Defines.h"
 
 // These are the pins for ESP8266 boards
 //      Name   GPIO    NodeMCU      Function

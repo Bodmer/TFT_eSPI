@@ -9,8 +9,11 @@
 
   Adjust the definitions below according to your screen size
 */
-
+#if defined(SEEED_XIAO_M0) || defined(ARDUINO_XIAO_RA4M1) || defined(NRF52840_XXAA)
+#include <Seeed_Arduino_FS.h>
+#else
 #include "FS.h"
+#endif
 
 #include <SPI.h>
 
@@ -70,7 +73,7 @@ void setup() {
 }
 
 void loop() {
-  uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
+  int32_t t_x = 0, t_y = 0; // To store the touch coordinates
 
   // Get current touch state and coordinates
   bool pressed = tft.getTouch(&t_x, &t_y);

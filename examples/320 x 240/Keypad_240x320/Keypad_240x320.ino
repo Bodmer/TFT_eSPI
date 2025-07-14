@@ -14,7 +14,11 @@
 // The SPIFFS (FLASH filing system) is used to hold touch screen
 // calibration data
 
+#if defined(SEEED_XIAO_M0) || defined(ARDUINO_XIAO_RA4M1) || defined(NRF52840_XXAA)
+#include <Seeed_Arduino_FS.h>
+#else
 #include "FS.h"
+#endif
 
 #include <SPI.h>
 #include <TFT_eSPI.h>      // Hardware-specific library
@@ -105,7 +109,7 @@ void setup() {
 //------------------------------------------------------------------------------------------
 
 void loop(void) {
-  uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
+  int32_t t_x = 0, t_y = 0; // To store the touch coordinates
 
   // Pressed will be set true is there is a valid touch on the screen
   bool pressed = tft.getTouch(&t_x, &t_y);

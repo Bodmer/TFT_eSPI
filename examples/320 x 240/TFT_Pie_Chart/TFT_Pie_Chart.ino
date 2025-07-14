@@ -46,7 +46,7 @@ void loop() {
 // r = radius
 // colour = 16-bit colour value
 
-int fillSegment(int x, int y, int start_angle, int sub_angle, int r, unsigned int colour)
+void fillSegment(int x, int y, int start_angle, int sub_angle, int r, unsigned int colour)
 {
   // Calculate first pair of coordinates for segment start
   float sx = cos((start_angle - 90) * DEG2RAD);
