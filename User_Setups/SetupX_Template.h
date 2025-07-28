@@ -56,6 +56,7 @@
 //#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
 //#define ST7789_DRIVER      // Full configuration option, define additional parameters below for this display
 //#define ST7789_2_DRIVER    // Minimal configuration option, define additional parameters below for this display
+//#define ST7789T3_DRIVER
 //#define R61581_DRIVER
 //#define RM68120_DRIVER     // Untested
 //#define RM68140_DRIVER
