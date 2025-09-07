@@ -24,6 +24,8 @@
 #define TFT_WIDTH 240
 #define TFT_HEIGHT 240
 
+#define USE_HSPI_PORT          // Force HSPI for esp32 >= v3.0
+
 #define SPI_FREQUENCY  40000000
 
 #define SPI_READ_FREQUENCY  20000000
