@@ -1,6 +1,7 @@
 #pragma once
 
 #include <math.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,13 +73,21 @@ inline void ltoa(long val, char *s, int radix) {
 }
 
 // Math functions
-#define abs(x) ((x) > 0 ? (x) : -(x))
-#define constrain(amt, low, high)                                              \
-  ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define round(x) ((x) >= 0 ? (long)((x) + 0.5) : (long)((x) - 0.5))
-#define sq(x) ((x) * (x))
+template <typename T> inline T abs(T x) { return x > 0 ? x : -x; }
+
+template <typename T> inline T constrain(T amt, T low, T high) {
+  return amt < low ? low : (amt > high ? high : amt);
+}
+
+template <typename T> inline T min(T a, T b) { return a < b ? a : b; }
+
+template <typename T> inline T max(T a, T b) { return a > b ? a : b; }
+
+template <typename T> inline long round(T x) {
+  return x >= 0 ? (long)(x + 0.5) : (long)(x - 0.5);
+}
+
+template <typename T> inline T sq(T x) { return x * x; }
 
 // Bit operations
 #define lowByte(w) ((uint8_t)((w) & 0xff))
@@ -99,6 +108,17 @@ public:
       len = strlen(s);
       str = (char *)malloc(len + 1);
       strcpy(str, s);
+    } else {
+      str = nullptr;
+      len = 0;
+    }
+  }
+  String(const char *s, unsigned int length) {
+    if (s) {
+      len = length;
+      str = (char *)malloc(len + 1);
+      strncpy(str, s, len);
+      str[len] = '\0';
     } else {
       str = nullptr;
       len = 0;
@@ -177,6 +197,14 @@ public:
   size_t print(const char *str) {
     return write((const uint8_t *)str, strlen(str));
   }
+  size_t printf(const char *format, ...) {
+    char buf[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buf, sizeof(buf), format, args);
+    va_end(args);
+    return write((const uint8_t *)buf, strlen(buf));
+  }
   size_t print(int n) {
     char buf[32];
     snprintf(buf, sizeof(buf), "%d", n);
@@ -230,3 +258,18 @@ extern SPIClass SPI;
 #define SPI_MODE1 0x01
 #define SPI_MODE2 0x02
 #define SPI_MODE3 0x03
+
+// Arduino string conversion functions
+inline char *dtostrf(double val, signed char width, unsigned char prec,
+                     char *sout) {
+  // Calculate the maximum required buffer size
+  // width: total width of the output
+  // prec: number of decimal places
+  // Additional space needed: sign(1) + decimal point(1) + null terminator(1)
+  size_t max_size = abs(width) + prec + 3;
+
+  char fmt[20];
+  snprintf(fmt, sizeof(fmt), "%%%d.%df", width, prec);
+  snprintf(sout, max_size, fmt, val);
+  return sout;
+}
