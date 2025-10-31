@@ -16,7 +16,6 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     add_executable(simulator
             Simulator/main.cpp
             Simulator/render_sdl.cpp
-
             Simulator/Arduino.cpp
             TFT_eSPI.cpp
     )

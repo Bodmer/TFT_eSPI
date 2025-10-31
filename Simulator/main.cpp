@@ -1,7 +1,12 @@
 #include "TFT_eSPI.h"
 #include "render_sdl.h"
 
-static void testText(TFT_eSprite &sprite) {
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
+#define SCREEN_SCALE 2
+#define SCREEN_BG TFT_BLACK
+
+static void drawTest(TFT_eSprite &sprite) {
   // text size
   sprite.setTextSize(3);
 
@@ -27,7 +32,7 @@ static void testText(TFT_eSprite &sprite) {
 }
 
 int main() {
-  SDLRenderer renderer(240, 320, 2);
+  SDLRenderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_SCALE);
   if (!renderer.init()) {
     return 1;
   }
@@ -36,23 +41,20 @@ int main() {
   tft.init();
 
   TFT_eSprite sprite = TFT_eSprite(&tft);
+  sprite.createSprite(SCREEN_WIDTH, SCREEN_HEIGHT);
+  sprite.fillSprite(SCREEN_BG);
 
-  if (sprite.createSprite(240, 320)) {
-    sprite.fillSprite(TFT_BLACK);
-    testText(sprite);
+  // test
+  drawTest(sprite);
 
-    // update display
-    renderer.updateDisplay(&sprite, 0, 0);
+  // update display
+  renderer.updateDisplay(&sprite, 0, 0);
 
-    // run event loop
-    SDLRenderer::runEventLoop();
+  // run event loop
+  SDLRenderer::runEventLoop();
 
-    // clean up
-    sprite.deleteSprite();
-  } else {
-    printf("Failed to create sprite!\n");
-    return 1;
-  }
+  // clean up
+  sprite.deleteSprite();
 
   return 0;
 }

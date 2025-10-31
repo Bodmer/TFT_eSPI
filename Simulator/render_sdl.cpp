@@ -62,20 +62,14 @@ void SDLRenderer::updateDisplay(TFT_eSprite *sprite, int x, int y) {
     return;
 
   // Copy sprite to framebuffer at position (x, y)
-  // Convert RGB565 to BGR565 for SDL
   for (int16_t sy = 0; sy < h; sy++) {
     for (int16_t sx = 0; sx < w; sx++) {
       int fx = x + sx;
       int fy = y + sy;
 
       if (fx >= 0 && fx < fb_width && fy >= 0 && fy < fb_height) {
-        uint16_t color = spriteBuffer[sy * w + sx];
-        // Extract RGB565 channels
-        uint16_t r = (color >> 11) & 0x1F; // 5 bits
-        uint16_t g = (color >> 5) & 0x3F;  // 6 bits
-        uint16_t b = color & 0x1F;         // 5 bits
-        // Remap: B->R pos(5bit), R->G(6bit), G->B(5bit, shift right 1)
-        framebuffer[fy * fb_width + fx] = (b << 11) | (r << 6) | (g >> 1);
+        uint16_t color = sprite->readPixel(sx, sy);
+        framebuffer[fy * fb_width + fx] = color;
       }
     }
   }
