@@ -21,13 +21,10 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     )
 
     # SDL2
-    find_library(SDL2_LIBRARY SDL2)
-    if (SDL2_INCLUDE_DIR AND SDL2_LIBRARY)
-        message(STATUS "Found SDL2: ${SDL2_LIBRARY}")
-        target_include_directories(simulator PRIVATE ${SDL2_INCLUDE_DIR})
-        target_link_libraries(simulator PRIVATE ${SDL2_LIBRARY})
-    else ()
-        message(FATAL_ERROR "SDL2 not found")
+    find_package(SDL2 REQUIRED)
+    if (SDL2_FOUND)
+        target_include_directories(simulator PRIVATE ${SDL2_INCLUDE_DIRS})
+        target_link_libraries(simulator PRIVATE ${SDL2_LIBRARIES})
     endif ()
 else ()
     # ESP-IDF component
