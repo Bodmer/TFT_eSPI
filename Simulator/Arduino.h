@@ -1,11 +1,12 @@
 #pragma once
 
-#include <math.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <chrono>
+#include <cmath>
+#include <cstdarg>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 // Arduino basic types
 typedef unsigned char byte;
@@ -50,9 +51,17 @@ inline int digitalRead(uint8_t pin) {
 }
 inline void delay(unsigned long ms) { (void)ms; }
 inline void delayMicroseconds(unsigned int us) { (void)us; }
-inline unsigned long millis(void) { return 0; }
-inline unsigned long micros(void) { return 0; }
-inline void yield(void) {}
+inline unsigned long millis() {
+  auto duration = std::chrono::steady_clock::now().time_since_epoch();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(duration)
+      .count();
+}
+inline unsigned long micros() {
+  auto duration = std::chrono::steady_clock::now().time_since_epoch();
+  return std::chrono::duration_cast<std::chrono::microseconds>(duration)
+      .count();
+}
+inline void yield() {}
 inline long random(long max) { return rand() % max; }
 inline long random(long min, long max) { return min + (rand() % (max - min)); }
 
