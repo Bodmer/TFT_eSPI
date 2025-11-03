@@ -820,7 +820,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .spics_io_num = pin,
     .flags = SPI_DEVICE_NO_DUMMY, //0,
     .queue_size = 1,
-    .pre_cb = 0, //dc_callback, //Callback to handle D/C line
+    .pre_cb = dc_callback, //Callback to handle D/C line
     #ifdef CONFIG_IDF_TARGET_ESP32
       .post_cb = 0
     #else

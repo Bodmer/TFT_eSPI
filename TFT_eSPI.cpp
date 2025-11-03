@@ -979,59 +979,57 @@ void TFT_eSPI::spiwrite(uint8_t c)
 #ifndef RM68120_DRIVER
 void TFT_eSPI::writecommand(uint8_t c)
 {
+#ifdef ESP32_DMA
+  if (DMA_Enabled) {
+    dmaWait();
+    static spi_transaction_t trans;
+    memset(&trans, 0, sizeof(spi_transaction_t));
+    trans.user = (void*)0;
+    trans.length = 8;
+    trans.tx_buffer = &c;
+    spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
+    spiBusyCheck++;
+    return;
+  }
+#endif
   begin_tft_write();
-
   DC_C;
-
   tft_Write_8(c);
-
   DC_D;
-
   end_tft_write();
 }
 #else
 void TFT_eSPI::writecommand(uint16_t c)
 {
+#ifdef ESP32_DMA
+  if (DMA_Enabled) {
+    dmaWait();
+    static spi_transaction_t trans;
+    memset(&trans, 0, sizeof(spi_transaction_t));
+    trans.user = (void*)0;
+    trans.length = 16;
+    trans.tx_buffer = &c;
+    spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
+    spiBusyCheck++;
+    return;
+  }
+#endif
   begin_tft_write();
-
   DC_C;
-
   tft_Write_16(c);
-
   DC_D;
-
   end_tft_write();
-
 }
 void TFT_eSPI::writeRegister8(uint16_t c, uint8_t d)
 {
-  begin_tft_write();
-
-  DC_C;
-
-  tft_Write_16(c);
-
-  DC_D;
-
-  tft_Write_8(d);
-
-  end_tft_write();
-
+  writecommand(c);
+  writedata(d);
 }
 void TFT_eSPI::writeRegister16(uint16_t c, uint16_t d)
 {
-  begin_tft_write();
-
-  DC_C;
-
-  tft_Write_16(c);
-
-  DC_D;
-
-  tft_Write_16(d);
-
-  end_tft_write();
-
+  writecommand(c);
+  writedata(d >> 8);
+  writedata(d);
 }
 
 #endif
@@ -1042,14 +1040,23 @@ void TFT_eSPI::writeRegister16(uint16_t c, uint16_t d)
 ***************************************************************************************/
 void TFT_eSPI::writedata(uint8_t d)
 {
+#ifdef ESP32_DMA
+  if (DMA_Enabled) {
+    dmaWait();
+    static spi_transaction_t trans;
+    memset(&trans, 0, sizeof(spi_transaction_t));
+    trans.user = (void*)1;
+    trans.length = 8;
+    trans.tx_buffer = &d;
+    spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
+    spiBusyCheck++;
+    return;
+  }
+#endif
   begin_tft_write();
-
-  DC_D;        // Play safe, but should already be in data mode
-
+  DC_D;
   tft_Write_8(d);
-
-  CS_L;        // Allow more hold time for low VDI rail
-
+  CS_L;
   end_tft_write();
 }
 
@@ -3359,49 +3366,39 @@ void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t w, int32_t h)
 // Chip select stays low, call begin_tft_write first. Use setAddrWindow() from sketches
 void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
-  //begin_tft_write(); // Must be called before setWindow
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
 
 #if defined (ILI9225_DRIVER)
   if (rotation & 0x01) { transpose(x0, y0); transpose(x1, y1); }
-  SPI_BUSY_CHECK;
-  DC_C; tft_Write_8(TFT_CASET1);
-  DC_D; tft_Write_16(x0);
-  DC_C; tft_Write_8(TFT_CASET2);
-  DC_D; tft_Write_16(x1);
+  writecommand(TFT_CASET1);
+  writedata(x0 >> 8); writedata(x0);
+  writecommand(TFT_CASET2);
+  writedata(x1 >> 8); writedata(x1);
 
-  DC_C; tft_Write_8(TFT_PASET1);
-  DC_D; tft_Write_16(y0);
-  DC_C; tft_Write_8(TFT_PASET2);
-  DC_D; tft_Write_16(y1);
+  writecommand(TFT_PASET1);
+  writedata(y0 >> 8); writedata(y0);
+  writecommand(TFT_PASET2);
+  writedata(y1 >> 8); writedata(y1);
 
-  DC_C; tft_Write_8(TFT_RAM_ADDR1);
-  DC_D; tft_Write_16(x0);
-  DC_C; tft_Write_8(TFT_RAM_ADDR2);
-  DC_D; tft_Write_16(y0);
+  writecommand(TFT_RAM_ADDR1);
+  writedata(x0 >> 8); writedata(x0);
+  writecommand(TFT_RAM_ADDR2);
+  writedata(y0 >> 8); writedata(y0);
 
-  // write to RAM
-  DC_C; tft_Write_8(TFT_RAMWR);
-  DC_D;
-  // Temporary solution is to include the RP2040 code here
-  #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(RP2040_PIO_INTERFACE)
-    // For ILI9225 and RP2040 the slower Arduino SPI transfer calls were used, so need to swap back to 16-bit mode
-    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
-    hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
-  #endif
+  writecommand(TFT_RAMWR);
 #elif defined (SSD1351_DRIVER)
   if (rotation & 1) {
     transpose(x0, y0);
     transpose(x1, y1);
   }
-  SPI_BUSY_CHECK;
-  DC_C; tft_Write_8(TFT_CASET);
-  DC_D; tft_Write_16(x1 | (x0 << 8));
-  DC_C; tft_Write_8(TFT_PASET);
-  DC_D; tft_Write_16(y1 | (y0 << 8));
-  DC_C; tft_Write_8(TFT_RAMWR);
-  DC_D;
+  writecommand(TFT_CASET);
+  writedata(x0);
+  writedata(x1);
+  writecommand(TFT_PASET);
+  writedata(y0);
+  writedata(y1);
+  writecommand(TFT_RAMWR);
 #else
   #if defined (SSD1963_DRIVER)
     if ((rotation & 0x1) == 0) { transpose(x0, y0); transpose(x1, y1); }

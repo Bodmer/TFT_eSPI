@@ -868,7 +868,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .spics_io_num = pin,
     .flags = SPI_DEVICE_NO_DUMMY, //0,
     .queue_size = 1,            // Not using queues
-    .pre_cb = 0, //dc_callback, //Callback to handle D/C line (not used)
+    .pre_cb = dc_callback, //Callback to handle D/C line (not used)
     .post_cb = dma_end_callback //Callback to end transmission
   };
   ret = spi_bus_initialize(spi_host, &buscfg, DMA_CHANNEL);
