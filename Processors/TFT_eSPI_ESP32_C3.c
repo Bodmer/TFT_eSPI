@@ -246,6 +246,22 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 //*/
 //*
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
+#ifdef ESP32_DMA
+  if (DMA_Enabled) {
+    if (len == 0) return;
+    const int buffer_size = 256;
+    uint16_t buffer[buffer_size];
+    for(int i=0; i<buffer_size; ++i) buffer[i] = color;
+
+    while(len > 0) {
+      uint32_t chunk_len = (len > buffer_size) ? buffer_size : len;
+      pushPixelsDMA(buffer, chunk_len);
+      len -= chunk_len;
+    }
+    dmaWait();
+    return;
+  }
+#endif
 
   volatile uint32_t* spi_w = _spi_w;
   uint32_t color32 = (color<<8 | color >>8)<<16 | (color<<8 | color >>8);
@@ -382,6 +398,12 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
 ** Description:             Write a sequence of pixels
 ***************************************************************************************/
 void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
+#ifdef ESP32_DMA
+  if (DMA_Enabled) {
+    pushPixelsDMA((uint16_t*)data_in, len);
+    return;
+  }
+#endif
 
   if(_swapBytes) {
     pushSwapBytePixels(data_in, len);

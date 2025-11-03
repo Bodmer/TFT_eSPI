@@ -986,7 +986,8 @@ void TFT_eSPI::writecommand(uint8_t c)
     memset(&trans, 0, sizeof(spi_transaction_t));
     trans.user = (void*)0;
     trans.length = 8;
-    trans.tx_buffer = &c;
+    trans.tx_data[0] = c;
+    trans.flags = SPI_TRANS_USE_TXDATA;
     spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
     spiBusyCheck++;
     return;
@@ -1008,7 +1009,9 @@ void TFT_eSPI::writecommand(uint16_t c)
     memset(&trans, 0, sizeof(spi_transaction_t));
     trans.user = (void*)0;
     trans.length = 16;
-    trans.tx_buffer = &c;
+    trans.tx_data[0] = c >> 8;
+    trans.tx_data[1] = c;
+    trans.flags = SPI_TRANS_USE_TXDATA;
     spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
     spiBusyCheck++;
     return;
@@ -1031,7 +1034,6 @@ void TFT_eSPI::writeRegister16(uint16_t c, uint16_t d)
   writedata(d >> 8);
   writedata(d);
 }
-
 #endif
 
 /***************************************************************************************
@@ -1047,7 +1049,8 @@ void TFT_eSPI::writedata(uint8_t d)
     memset(&trans, 0, sizeof(spi_transaction_t));
     trans.user = (void*)1;
     trans.length = 8;
-    trans.tx_buffer = &d;
+    trans.tx_data[0] = d;
+    trans.flags = SPI_TRANS_USE_TXDATA;
     spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
     spiBusyCheck++;
     return;
@@ -3411,8 +3414,21 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     y1+=rowstart;
   #endif
 
-  // Temporary solution is to include the RP2040 optimised code here
-  #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED))
+#if defined(ESP32)
+    writecommand(TFT_CASET);
+    writedata(x0 >> 8);
+    writedata(x0);
+    writedata(x1 >> 8);
+    writedata(x1);
+
+    writecommand(TFT_PASET);
+    writedata(y0 >> 8);
+    writedata(y0);
+    writedata(y1 >> 8);
+    writedata(y1);
+
+    writecommand(TFT_RAMWR);
+#elif (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED))
     #if !defined(RP2040_PIO_INTERFACE)
       // Use hardware SPI port, this code does not swap from 8 to 16-bit
       // to avoid the spi_set_format() call overhead
@@ -3485,7 +3501,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     DC_D; tft_Write_32C(y0, y1);
     DC_C; tft_Write_8(TFT_RAMWR);
     DC_D;
-  #endif // RP2040 SPI
+  #endif
 #endif
   //end_tft_write(); // Must be called after setWindow
 }
