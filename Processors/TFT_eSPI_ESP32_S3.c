@@ -236,22 +236,6 @@ void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
 //*/
 //*
 void TFT_eSPI::pushBlock(uint16_t color, uint32_t len){
-#ifdef ESP32_DMA
-  if (DMA_Enabled) {
-    if (len == 0) return;
-    const int buffer_size = 256;
-    uint16_t buffer[buffer_size];
-    for(int i=0; i<buffer_size; ++i) buffer[i] = color;
-
-    while(len > 0) {
-      uint32_t chunk_len = (len > buffer_size) ? buffer_size : len;
-      pushPixelsDMA(buffer, chunk_len);
-      len -= chunk_len;
-    }
-    dmaWait();
-    return;
-  }
-#endif
 
   volatile uint32_t* spi_w = _spi_w;
   uint32_t color32 = (color<<8 | color >>8)<<16 | (color<<8 | color >>8);
@@ -388,12 +372,6 @@ void TFT_eSPI::pushSwapBytePixels(const void* data_in, uint32_t len){
 ** Description:             Write a sequence of pixels
 ***************************************************************************************/
 void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
-#ifdef ESP32_DMA
-  if (DMA_Enabled) {
-    pushPixelsDMA((uint16_t*)data_in, len);
-    return;
-  }
-#endif
 
   if(_swapBytes) {
     pushSwapBytePixels(data_in, len);
@@ -612,19 +590,19 @@ void TFT_eSPI::pushPixels(const void* data_in, uint32_t len){
 ***************************************************************************************/
 bool TFT_eSPI::dmaBusy(void)
 {
-  if (!DMA_Enabled || !spiBusyCheck) return false;
+  if (!DMA_Enabled || !dmaCount) return false;
 
   spi_transaction_t *rtrans;
   esp_err_t ret;
-  uint8_t checks = spiBusyCheck;
+  uint8_t checks = dmaCount;
   for (int i = 0; i < checks; ++i)
   {
     ret = spi_device_get_trans_result(dmaHAL, &rtrans, 0);
-    if (ret == ESP_OK) spiBusyCheck--;
+    if (ret == ESP_OK) dmaCount--;
   }
 
-  //Serial.print("spiBusyCheck=");Serial.println(spiBusyCheck);
-  if (spiBusyCheck ==0) return false;
+  //Serial.print("dmaCount=");Serial.println(dmaCount);
+  if (dmaCount ==0) return false;
   return true;
 }
 
@@ -635,15 +613,15 @@ bool TFT_eSPI::dmaBusy(void)
 ***************************************************************************************/
 void TFT_eSPI::dmaWait(void)
 {
-  if (!DMA_Enabled || !spiBusyCheck) return;
+  if (!DMA_Enabled || !dmaCount) return;
   spi_transaction_t *rtrans;
   esp_err_t ret;
-  for (int i = 0; i < spiBusyCheck; ++i)
+  for (int i = 0; i < dmaCount; ++i)
   {
     ret = spi_device_get_trans_result(dmaHAL, &rtrans, portMAX_DELAY);
     assert(ret == ESP_OK);
   }
-  spiBusyCheck = 0;
+  dmaCount = 0;
 }
 
 
@@ -656,38 +634,27 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
 {
   if ((len == 0) || (!DMA_Enabled)) return;
 
-  dmaWait();
-
   if(_swapBytes) {
     for (uint32_t i = 0; i < len; i++) (image[i] = image[i] << 8 | image[i] >> 8);
   }
 
-  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
-  // small transfers are performed using a blocking call until DMA capacity is reached.
-  // User sketch can prevent blocking by managing pixel count and splitting into blocks
-  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
-  bool temp = _swapBytes;
-  _swapBytes = false;
-  while(len>0x4000) { // Transfer 16-bit pixels in blocks if len*2 over 65536 bytes
-    pushPixels(image, 0x400);
-    len -= 0x400; image+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
+  while (len > 0) {
+    uint32_t block_len = len;
+    if (block_len > 32767) {
+        block_len = 32767;
+    }
+
+    spi_transaction_t* trans = getTransaction();
+
+    trans->user = (void *)1;
+    trans->tx_buffer = image;
+    trans->length = block_len * 16;
+
+    dmaTransaction(trans);
+
+    len -= block_len;
+    image += block_len;
   }
-  _swapBytes = temp;
-
-  esp_err_t ret;
-  static spi_transaction_t trans;
-
-  memset(&trans, 0, sizeof(spi_transaction_t));
-
-  trans.user = (void *)1;
-  trans.tx_buffer = image;  //finally send the line data
-  trans.length = len * 16;        //Data length, in bits
-  trans.flags = 0;                //SPI_TRANS_USE_TXDATA flag
-
-  ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
-  assert(ret == ESP_OK);
-
-  spiBusyCheck++;
 }
 
 
@@ -700,38 +667,8 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 {
   if ((w == 0) || (h == 0) || (!DMA_Enabled)) return;
 
-  uint16_t *buffer = (uint16_t*)image;
-  uint32_t len = w*h;
-
-  dmaWait();
-
   setAddrWindow(x, y, w, h);
-  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
-  // small transfers are performed using a blocking call until DMA capacity is reached.
-  // User sketch can prevent blocking by managing pixel count and splitting into blocks
-  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
-  bool temp = _swapBytes;
-  _swapBytes = false;
-  while(len>0x4000) { // Transfer 16-bit pixels in blocks if len*2 over 65536 bytes
-    pushPixels(buffer, 0x400);
-    len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
-  }
-  _swapBytes = temp;
-
-  esp_err_t ret;
-  static spi_transaction_t trans;
-
-  memset(&trans, 0, sizeof(spi_transaction_t));
-
-  trans.user = (void *)1;
-  trans.tx_buffer = buffer;   //Data pointer
-  trans.length = len * 16;   //Data length, in bits
-  trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
-
-  ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
-  assert(ret == ESP_OK);
-
-  spiBusyCheck++;
+  pushPixelsDMA((uint16_t*)image, w * h);
 }
 
 
@@ -757,11 +694,17 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   if (dw < 1 || dh < 1) return;
 
+  // If buffer is null, image is not clipped and bytes do not need to be swapped, then use the original image buffer
+  if (buffer == nullptr && dw == w && dh == h && !_swapBytes) {
+    setAddrWindow(x, y, dw, dh);
+    pushPixelsDMA(image, dw * dh);
+    return;
+  }
+
   uint32_t len = dw*dh;
 
   if (buffer == nullptr) {
     buffer = image;
-    dmaWait();
   }
 
   // If image is clipped, copy pixels into a contiguous block
@@ -790,36 +733,8 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
     }
   }
 
-  if (spiBusyCheck) dmaWait(); // In case we did not wait earlier
-
   setAddrWindow(x, y, dw, dh);
-
-  // DMA byte count for transmit is 64Kbytes maximum, so to avoid this constraint
-  // small transfers are performed using a blocking call until DMA capacity is reached.
-  // User sketch can prevent blocking by managing pixel count and splitting into blocks
-  // of 32768 pixels maximum. (equivalent to an area of ~320 x 100 pixels)
-  bool temp = _swapBytes;
-  _swapBytes = false;
-  while(len>0x4000) { // Transfer 16-bit pixels in blocks if len*2 over 65536 bytes
-    pushPixels(buffer, 0x400);
-    len -= 0x400; buffer+= 0x400; // Arbitrarily send 1K pixel blocks (2Kbytes)
-  }
-  _swapBytes = temp;
-
-  esp_err_t ret;
-  static spi_transaction_t trans;
-
-  memset(&trans, 0, sizeof(spi_transaction_t));
-
-  trans.user = (void *)1;
-  trans.tx_buffer = buffer;  //finally send the line data
-  trans.length = len * 16;   //Data length, in bits
-  trans.flags = 0;           //SPI_TRANS_USE_TXDATA flag
-
-  ret = spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
-  assert(ret == ESP_OK);
-
-  spiBusyCheck++;
+  pushPixelsDMA(buffer, len);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -889,8 +804,8 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .input_delay_ns = 0,
     .spics_io_num = pin,
     .flags = SPI_DEVICE_NO_DUMMY, //0,
-    .queue_size = 1,            // Not using queues
-    .pre_cb = dc_callback, //Callback to handle D/C line (not used)
+    .queue_size = 7,
+    .pre_cb = dc_callback, //Callback to handle D/C line
     .post_cb = dma_end_callback //Callback to end transmission
   };
   ret = spi_bus_initialize(spi_host, &buscfg, DMA_CHANNEL);
@@ -899,7 +814,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
   ESP_ERROR_CHECK(ret);
 
   DMA_Enabled = true;
-  spiBusyCheck = 0;
+  dmaCount = 0;
   return true;
 }
 

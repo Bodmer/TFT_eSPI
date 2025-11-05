@@ -971,6 +971,41 @@ void TFT_eSPI::spiwrite(uint8_t c)
   end_tft_write();
 }
 
+#if defined(ESP32) && !defined(TFT_PARALLEL_8_BIT)
+
+//
+// DMA transaction support functions
+//
+
+// Pool of transactions for DMA
+spi_transaction_t TFT_eSPI::dma_trans_pool[DMA_TRANS_POOL_SIZE];
+
+// Function to get a transaction from the pool
+spi_transaction_t* TFT_eSPI::getTransaction(void) {
+  dma_pool_ptr = (dma_pool_ptr + 1) % DMA_TRANS_POOL_SIZE;
+  spi_transaction_t* trans = &dma_trans_pool[dma_pool_ptr];
+  memset(trans, 0, sizeof(spi_transaction_t));
+  return trans;
+}
+
+/***************************************************************************************
+** Function name:           dmaTransaction
+** Description:             Queue a DMA transaction and wait if queue is full
+***************************************************************************************/
+void TFT_eSPI::dmaTransaction(spi_transaction_t* trans) {
+  if (dmaCount >= DMA_TRANS_POOL_SIZE) {
+    spi_transaction_t *rtrans;
+    esp_err_t ret = spi_device_get_trans_result(dmaHAL, &rtrans, portMAX_DELAY);
+    assert(ret == ESP_OK);
+    dmaCount--;
+  }
+  esp_err_t ret = spi_device_queue_trans(dmaHAL, trans, portMAX_DELAY);
+  assert(ret == ESP_OK);
+  dmaCount++;
+}
+
+#endif
+
 
 /***************************************************************************************
 ** Function name:           writecommand
@@ -979,61 +1014,73 @@ void TFT_eSPI::spiwrite(uint8_t c)
 #ifndef RM68120_DRIVER
 void TFT_eSPI::writecommand(uint8_t c)
 {
-#ifdef ESP32_DMA
+#if defined(ESP32) && !defined(TFT_PARALLEL_8_BIT)
   if (DMA_Enabled) {
-    dmaWait();
-    static spi_transaction_t trans;
-    memset(&trans, 0, sizeof(spi_transaction_t));
-    trans.user = (void*)0;
-    trans.length = 8;
-    trans.tx_data[0] = c;
-    trans.flags = SPI_TRANS_USE_TXDATA;
-    spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
-    spiBusyCheck++;
+    spi_transaction_t* trans = getTransaction();
+    trans->length = 8;
+    trans->tx_data[0] = c;
+    trans->user = (void*)0; // Command
+    trans->flags = SPI_TRANS_USE_TXDATA;
+    dmaTransaction(trans);
     return;
   }
 #endif
+
   begin_tft_write();
+
   DC_C;
+
   tft_Write_8(c);
+
   DC_D;
+
   end_tft_write();
 }
 #else
 void TFT_eSPI::writecommand(uint16_t c)
 {
-#ifdef ESP32_DMA
-  if (DMA_Enabled) {
-    dmaWait();
-    static spi_transaction_t trans;
-    memset(&trans, 0, sizeof(spi_transaction_t));
-    trans.user = (void*)0;
-    trans.length = 16;
-    trans.tx_data[0] = c >> 8;
-    trans.tx_data[1] = c;
-    trans.flags = SPI_TRANS_USE_TXDATA;
-    spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
-    spiBusyCheck++;
-    return;
-  }
-#endif
   begin_tft_write();
+
   DC_C;
+
   tft_Write_16(c);
+
   DC_D;
+
   end_tft_write();
+
 }
 void TFT_eSPI::writeRegister8(uint16_t c, uint8_t d)
 {
-  writecommand(c);
-  writedata(d);
+  begin_tft_write();
+
+  DC_C;
+
+  tft_Write_16(c);
+
+  DC_D;
+
+  tft_Write_8(d);
+
+  end_tft_write();
+
 }
 void TFT_eSPI::writeRegister16(uint16_t c, uint16_t d)
 {
-  writecommand(c);
-  writedata(d >> 8);
-  writedata(d);
+  begin_tft_write();
+
+  DC_C;
+
+  tft_Write_16(c);
+
+  DC_D;
+
+  tft_Write_16(d);
+
+  end_tft_write();
+
 }
+
 #endif
 
 /***************************************************************************************
@@ -1042,24 +1089,26 @@ void TFT_eSPI::writeRegister16(uint16_t c, uint16_t d)
 ***************************************************************************************/
 void TFT_eSPI::writedata(uint8_t d)
 {
-#ifdef ESP32_DMA
+#if defined(ESP32) && !defined(TFT_PARALLEL_8_BIT)
   if (DMA_Enabled) {
-    dmaWait();
-    static spi_transaction_t trans;
-    memset(&trans, 0, sizeof(spi_transaction_t));
-    trans.user = (void*)1;
-    trans.length = 8;
-    trans.tx_data[0] = d;
-    trans.flags = SPI_TRANS_USE_TXDATA;
-    spi_device_queue_trans(dmaHAL, &trans, portMAX_DELAY);
-    spiBusyCheck++;
+    spi_transaction_t* trans = getTransaction();
+    trans->length = 8;
+    trans->tx_data[0] = d;
+    trans->user = (void*)1; // Data
+    trans->flags = SPI_TRANS_USE_TXDATA;
+    dmaTransaction(trans);
     return;
   }
 #endif
+
   begin_tft_write();
-  DC_D;
+
+  DC_D;        // Play safe, but should already be in data mode
+
   tft_Write_8(d);
-  CS_L;
+
+  CS_L;        // Allow more hold time for low VDI rail
+
   end_tft_write();
 }
 
@@ -3369,39 +3418,49 @@ void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t w, int32_t h)
 // Chip select stays low, call begin_tft_write first. Use setAddrWindow() from sketches
 void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
+  //begin_tft_write(); // Must be called before setWindow
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
 
 #if defined (ILI9225_DRIVER)
   if (rotation & 0x01) { transpose(x0, y0); transpose(x1, y1); }
-  writecommand(TFT_CASET1);
-  writedata(x0 >> 8); writedata(x0);
-  writecommand(TFT_CASET2);
-  writedata(x1 >> 8); writedata(x1);
+  SPI_BUSY_CHECK;
+  DC_C; tft_Write_8(TFT_CASET1);
+  DC_D; tft_Write_16(x0);
+  DC_C; tft_Write_8(TFT_CASET2);
+  DC_D; tft_Write_16(x1);
 
-  writecommand(TFT_PASET1);
-  writedata(y0 >> 8); writedata(y0);
-  writecommand(TFT_PASET2);
-  writedata(y1 >> 8); writedata(y1);
+  DC_C; tft_Write_8(TFT_PASET1);
+  DC_D; tft_Write_16(y0);
+  DC_C; tft_Write_8(TFT_PASET2);
+  DC_D; tft_Write_16(y1);
 
-  writecommand(TFT_RAM_ADDR1);
-  writedata(x0 >> 8); writedata(x0);
-  writecommand(TFT_RAM_ADDR2);
-  writedata(y0 >> 8); writedata(y0);
+  DC_C; tft_Write_8(TFT_RAM_ADDR1);
+  DC_D; tft_Write_16(x0);
+  DC_C; tft_Write_8(TFT_RAM_ADDR2);
+  DC_D; tft_Write_16(y0);
 
-  writecommand(TFT_RAMWR);
+  // write to RAM
+  DC_C; tft_Write_8(TFT_RAMWR);
+  DC_D;
+  // Temporary solution is to include the RP2040 code here
+  #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)) && !defined(RP2040_PIO_INTERFACE)
+    // For ILI9225 and RP2040 the slower Arduino SPI transfer calls were used, so need to swap back to 16-bit mode
+    while (spi_get_hw(SPI_X)->sr & SPI_SSPSR_BSY_BITS) {};
+    hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
+  #endif
 #elif defined (SSD1351_DRIVER)
   if (rotation & 1) {
     transpose(x0, y0);
     transpose(x1, y1);
   }
-  writecommand(TFT_CASET);
-  writedata(x0);
-  writedata(x1);
-  writecommand(TFT_PASET);
-  writedata(y0);
-  writedata(y1);
-  writecommand(TFT_RAMWR);
+  SPI_BUSY_CHECK;
+  DC_C; tft_Write_8(TFT_CASET);
+  DC_D; tft_Write_16(x1 | (x0 << 8));
+  DC_C; tft_Write_8(TFT_PASET);
+  DC_D; tft_Write_16(y1 | (y0 << 8));
+  DC_C; tft_Write_8(TFT_RAMWR);
+  DC_D;
 #else
   #if defined (SSD1963_DRIVER)
     if ((rotation & 0x1) == 0) { transpose(x0, y0); transpose(x1, y1); }
@@ -3414,21 +3473,8 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     y1+=rowstart;
   #endif
 
-#if defined(ESP32)
-    writecommand(TFT_CASET);
-    writedata(x0 >> 8);
-    writedata(x0);
-    writedata(x1 >> 8);
-    writedata(x1);
-
-    writecommand(TFT_PASET);
-    writedata(y0 >> 8);
-    writedata(y0);
-    writedata(y1 >> 8);
-    writedata(y1);
-
-    writecommand(TFT_RAMWR);
-#elif (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED))
+  // Temporary solution is to include the RP2040 optimised code here
+  #if (defined(ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED))
     #if !defined(RP2040_PIO_INTERFACE)
       // Use hardware SPI port, this code does not swap from 8 to 16-bit
       // to avoid the spi_set_format() call overhead
@@ -3494,6 +3540,18 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
       TX_FIFO = TFT_RAMWR;
     #endif
   #else
+    #if defined(ESP32) && !defined(TFT_PARALLEL_8_BIT)
+      if (DMA_Enabled) {
+        writecommand(TFT_CASET);
+        writedata(x0 >> 8); writedata(x0);
+        writedata(x1 >> 8); writedata(x1);
+        writecommand(TFT_PASET);
+        writedata(y0 >> 8); writedata(y0);
+        writedata(y1 >> 8); writedata(y1);
+        writecommand(TFT_RAMWR);
+        return;
+      }
+    #endif
     SPI_BUSY_CHECK;
     DC_C; tft_Write_8(TFT_CASET);
     DC_D; tft_Write_32C(x0, x1);
@@ -3501,7 +3559,7 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     DC_D; tft_Write_32C(y0, y1);
     DC_C; tft_Write_8(TFT_RAMWR);
     DC_D;
-  #endif
+  #endif // RP2040 SPI
 #endif
   //end_tft_write(); // Must be called after setWindow
 }
