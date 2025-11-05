@@ -796,7 +796,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   void     dmaWait(void); // wait until DMA is complete
 
   bool     DMA_Enabled = false;   // Flag for DMA enabled state
-  uint8_t  spiBusyCheck = 0;      // Number of ESP32 transfer buffers to check
+  uint8_t  dmaCount = 0;          // Number of DMA transactions in flight
 
   // Bare metal functions
   void     startWrite(void);                         // Begin SPI transaction
