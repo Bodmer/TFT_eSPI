@@ -12,6 +12,18 @@
 // Create a shortcut to this file on your desktop to permit quick access for editing.
 // Re-compile and upload after making and saving any changes to this file.
 
+#ifdef TFT_ESPI_USER_SETUP_PATH  // Use external User_Setup.h if defined
+
+  #define USER_SETUP_LOADED
+
+  // Define TFT_ESPI_USER_SETUP_PATH as a string literal
+  // Example (PlatformIO):
+  // -D TFT_ESPI_USER_SETUP_PATH=\"../configs/your_board/User_Setup.h\"
+  #include TFT_ESPI_USER_SETUP_PATH
+
+#endif
+
+
 // Example User_Setup files are stored in the "User_Setups" folder. These can be used
 // unmodified or adapted for a particular hardware configuration.
 
