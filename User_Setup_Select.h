@@ -100,6 +100,8 @@
 //#include <User_Setups/Setup71_ESP32_S2_ST7789.h>       // Setup file for ESP32 S2 with ST7789
 //#include <User_Setups/Setup72_ESP32_ST7789_172x320.h>  // Setup file for ESP32 with ST7789 1.47" 172x320
 
+//#include <User_Setups/Setup77_ST7796U_ESP32_32E.h>       // Setup file for ESP32-32E with ST7796 3.5" 320x480
+
 //#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9488
 //#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9481
 //#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h> // Setup file for Pico/RP2040 with 8-bit parallel ILI9341
