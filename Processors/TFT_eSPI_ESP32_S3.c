@@ -825,7 +825,7 @@ extern "C" void dma_end_callback();
 
 void IRAM_ATTR dma_end_callback(spi_transaction_t *spi_tx)
 {
-  WRITE_PERI_REG(SPI_DMA_CONF_REG(spi_host), 0);
+  WRITE_PERI_REG(SPI_DMA_CONF_REG(SPI_DMA_CH_AUTO), 0);
 }
 
 /***************************************************************************************
