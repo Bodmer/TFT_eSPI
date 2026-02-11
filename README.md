@@ -1,6 +1,9 @@
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
+
+TFT_eSPI I have setup a Ko-fi account so you can ["buy me a coffee!"](https://github.com/Bodmer/TFT_eSPI/discussions) This encourages me to add new features to TFT_eSPI.
+
 # News
-1. The ESP32 S3 DMA capability now works with ESP-IDF versions greater than 2.0.14. This has been tested with the Arduino 3.3.6 board package.
+1. The ESP32 S3 DMA capability now works with ESP-IDF versions greater than 2.0.14. This has been tested with the Arduino 3.3.6 board package. ChatGPT gave me a clue for the change (use SPI_DMA_CH_AUTO for the register selection) but the AI generated response did contain duff info regarding some (mostly harmless) register bit settings needed!
 
 2. The Create_font Processing sketch has been updated to automatically create a complete C header file. The automatic opening of the font folder can also be disabled within the Processing sketch. (Thanks to Pierre-Loup Martin).
 
