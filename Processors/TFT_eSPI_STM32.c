@@ -679,7 +679,69 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 
   return DMA_Enabled = true;
 }
-#endif // End of STM32F1/2/4/7xx
+
+#elif defined (STM32L4xx)
+/***************************************************************************************
+** Function name:           DMA1_ChannelX_IRQHandler
+** Description:             Override the default HAL DMA interrupt handler for STM32L4
+***************************************************************************************/
+  #if (TFT_SPI_PORT == 1)
+    extern "C" void DMA1_Channel3_IRQHandler();
+    void DMA1_Channel3_IRQHandler(void)
+  #elif (TFT_SPI_PORT == 2)
+    extern "C" void DMA1_Channel5_IRQHandler();
+    void DMA1_Channel5_IRQHandler(void)
+  #endif
+  {
+    HAL_DMA_IRQHandler(&dmaHal);
+  }
+
+/***************************************************************************************
+** Function name:           initDMA
+** Description:             Initialise DMA for STM32L4xx (CSELR-based request routing)
+***************************************************************************************/
+bool TFT_eSPI::initDMA(bool ctrl_cs)
+{
+  (void)ctrl_cs; // Not used for STM32
+
+  __HAL_RCC_DMA1_CLK_ENABLE();     // Enable DMA1 clock
+
+  // The SPI peripheral is already configured and enabled by Arduino's SPI.begin(),
+  // but spiHal is a separate HAL handle with only Instance set. HAL_SPI_Transmit_DMA
+  // requires State == HAL_SPI_STATE_READY, so we must set it here. After each
+  // completed DMA transfer, the HAL callback resets State back to READY automatically.
+  spiHal.State = HAL_SPI_STATE_READY;
+
+  // STM32L4xx uses CSELR register for DMA request routing (not DMAMUX)
+  // DMA_REQUEST_1 routes SPI TX to the selected DMA channel via CSELR
+  // Ref: STM32CubeL4 SPI_FullDuplex_ComDMA example (NUCLEO-L432KC)
+  dmaHal.Init.Request = DMA_REQUEST_1;
+
+  dmaHal.Init.Direction = DMA_MEMORY_TO_PERIPH;
+  dmaHal.Init.PeriphInc = DMA_PINC_DISABLE;
+  dmaHal.Init.MemInc = DMA_MINC_ENABLE;
+  dmaHal.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  dmaHal.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  dmaHal.Init.Mode = DMA_NORMAL;
+  dmaHal.Init.Priority = DMA_PRIORITY_HIGH;
+
+  __HAL_LINKDMA(&spiHal, hdmatx, dmaHal);
+
+  if (HAL_DMA_Init(&dmaHal) != HAL_OK) {
+    return DMA_Enabled = false;
+  }
+
+  #if (TFT_SPI_PORT == 1)
+    HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+  #elif (TFT_SPI_PORT == 2)
+    HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+  #endif
+
+  return DMA_Enabled = true;
+}
+#endif // End of STM32F1/2/4/7xx/L4xx
 
 /***************************************************************************************
 ** Function name:           deInitDMA

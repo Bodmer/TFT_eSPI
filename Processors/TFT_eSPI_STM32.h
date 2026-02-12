@@ -198,6 +198,18 @@
       #define INIT_TFT_DATA_BUS spiHal.Instance = SPI2; \
                                 dmaHal.Instance = DMA1_Channel5
     #endif
+
+  #elif defined (STM32L4xx)
+    // STM32L4xx series with CSELR-based DMA request routing
+    #define STM32_DMA
+    #if (TFT_SPI_PORT == 1)
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1; \
+                                dmaHal.Instance = DMA1_Channel3
+    #elif (TFT_SPI_PORT == 2)
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI2; \
+                                dmaHal.Instance = DMA1_Channel5
+    #endif
+
   #else
     // For STM32 processor with no implemented DMA support (yet)
     #if (TFT_SPI_PORT == 1)
