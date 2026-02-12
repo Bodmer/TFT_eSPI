@@ -606,7 +606,7 @@ void TFT_eSprite::getRotatedBounds(int16_t angle, int16_t w, int16_t h, int16_t 
                                    int16_t *min_x, int16_t *min_y, int16_t *max_x, int16_t *max_y)
 {
   // Trig values for the rotation
-  float radAngle = -angle * 0.0174532925; // Convert degrees to radians
+  float radAngle = -angle * 0.0174532925f; // Convert degrees to radians
   float sina = sin(radAngle);
   float cosa = cos(radAngle);
 
