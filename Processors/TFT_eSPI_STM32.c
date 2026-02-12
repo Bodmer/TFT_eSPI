@@ -22,6 +22,14 @@
 #ifdef STM32_DMA
   // DMA HAL handle
   DMA_HandleTypeDef dmaHal;
+
+  #if defined(STM32U5xx)
+    // Linked-list DMA node storage — sized for full-screen transfer
+    #define DMA_MAX_NODE_BYTES  65535U
+    #define DMA_MAX_NODES       ((TFT_WIDTH * TFT_HEIGHT * 2 + DMA_MAX_NODE_BYTES - 1) / DMA_MAX_NODE_BYTES)
+    static DMA_QListTypeDef    dmaQueue;
+    static DMA_NodeTypeDef     dmaNodes[DMA_MAX_NODES] __attribute__((aligned(4)));
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -466,6 +474,75 @@ void TFT_eSPI::dmaWait(void)
 
 
 /***************************************************************************************
+** Function name:           startLinkedListDMA
+** Description:             Build GPDMA linked-list nodes and start async SPI transfer
+***************************************************************************************/
+#if defined(STM32U5xx)
+static void startLinkedListDMA(uint8_t* buffer, uint32_t totalBytes)
+{
+  // Reset queue (clears Head, NodeNumber — node content rebuilt below)
+  HAL_DMAEx_List_ResetQ(&dmaQueue);
+
+  // Build one node per 65535-byte chunk
+  DMA_NodeConfTypeDef nodeConf = {0};
+  nodeConf.NodeType                       = DMA_GPDMA_LINEAR_NODE;
+  #if (TFT_SPI_PORT == 1)
+    nodeConf.Init.Request                 = GPDMA1_REQUEST_SPI1_TX;
+  #elif (TFT_SPI_PORT == 2)
+    nodeConf.Init.Request                 = GPDMA1_REQUEST_SPI2_TX;
+  #elif (TFT_SPI_PORT == 3)
+    nodeConf.Init.Request                 = GPDMA1_REQUEST_SPI3_TX;
+  #endif
+  nodeConf.Init.BlkHWRequest              = DMA_BREQ_SINGLE_BURST;
+  nodeConf.Init.Direction                 = DMA_MEMORY_TO_PERIPH;
+  nodeConf.Init.SrcInc                    = DMA_SINC_INCREMENTED;
+  nodeConf.Init.DestInc                   = DMA_DINC_FIXED;
+  nodeConf.Init.SrcDataWidth              = DMA_SRC_DATAWIDTH_BYTE;
+  nodeConf.Init.DestDataWidth             = DMA_DEST_DATAWIDTH_BYTE;
+  nodeConf.Init.SrcBurstLength            = 1;
+  nodeConf.Init.DestBurstLength           = 1;
+  nodeConf.Init.TransferAllocatedPort     = DMA_SRC_ALLOCATED_PORT0 | DMA_DEST_ALLOCATED_PORT0;
+  nodeConf.Init.TransferEventMode         = DMA_TCEM_LAST_LL_ITEM_TRANSFER;
+  nodeConf.Init.Mode                      = DMA_NORMAL;
+  nodeConf.Init.Priority                  = DMA_HIGH_PRIORITY;
+  nodeConf.DstAddress                     = (uint32_t)&SPIX->TXDR;
+
+  uint32_t offset = 0;
+  uint32_t nodeIdx = 0;
+  while (offset < totalBytes) {
+    uint32_t chunk = totalBytes - offset;
+    if (chunk > DMA_MAX_NODE_BYTES) chunk = DMA_MAX_NODE_BYTES;
+
+    nodeConf.SrcAddress = (uint32_t)(buffer + offset);
+    nodeConf.DataSize   = chunk;
+
+    HAL_DMAEx_List_BuildNode(&nodeConf, &dmaNodes[nodeIdx]);
+    HAL_DMAEx_List_InsertNode_Tail(&dmaQueue, &dmaNodes[nodeIdx]);
+
+    offset += chunk;
+    nodeIdx++;
+  }
+
+  // Link queue to DMA channel (must be done after nodes are built)
+  HAL_DMAEx_List_LinkQ(&dmaHal, &dmaQueue);
+
+  // Configure SPI for DMA: unlimited mode, enable TX DMA
+  SPI_BUSY_CHECK;
+  CLEAR_BIT(SPIX->CR1, SPI_CR1_SPE);                  // Disable SPI
+  MODIFY_REG(SPIX->CR2, SPI_CR2_TSIZE, 0);            // Unlimited mode
+  SET_BIT(SPIX->CFG1, SPI_CFG1_TXDMAEN);              // Enable SPI TX DMA request
+  SET_BIT(SPIX->CR1, SPI_CR1_SPE);                     // Enable SPI
+  SET_BIT(SPIX->CR1, SPI_CR1_CSTART);                  // Start SPI
+
+  // Mark busy for dmaBusy() / dmaWait()
+  spiHal.State = HAL_SPI_STATE_BUSY_TX;
+
+  // Go — DMA hardware chains through all nodes autonomously
+  HAL_DMAEx_List_Start_IT(&dmaHal);
+}
+#endif
+
+/***************************************************************************************
 ** Function name:           pushPixelsDMA
 ** Description:             Push pixels to TFT (len must be less than 32767)
 ***************************************************************************************/
@@ -481,7 +558,11 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
     for (uint32_t i = 0; i < len; i++) (image[i] = image[i] << 8 | image[i] >> 8);
   }
 
+#if defined(STM32U5xx)
+  startLinkedListDMA((uint8_t*)image, len << 1);
+#else
   HAL_SPI_Transmit_DMA(&spiHal, (uint8_t*)image, len << 1);
+#endif
 }
 
 
@@ -542,6 +623,10 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
 
   setWindow(x, y, x + dw - 1, y + dh - 1);
 
+#if defined(STM32U5xx)
+  // Linked-list DMA handles any transfer size without blocking CPU
+  startLinkedListDMA((uint8_t*)buffer, len << 1);
+#else
   // DMA byte count for transmit is only 16 bits maximum, so to avoid this constraint
   // small transfers are performed using a blocking call until DMA capacity is reached.
   // User sketch can prevent blocking by managing pixel count and splitting into blocks
@@ -552,6 +637,7 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   }
   // Send remaining pixels using DMA (max 65534 bytes)
   HAL_SPI_Transmit_DMA(&spiHal, (uint8_t*)buffer, len << 1);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -741,7 +827,88 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 
   return DMA_Enabled = true;
 }
-#endif // End of STM32F1/2/4/7xx/L4xx
+
+#elif defined (STM32U5xx)
+
+/***************************************************************************************
+** Function name:           dmaXferCplt
+** Description:             DMA linked-list completion callback for STM32U5
+***************************************************************************************/
+static void dmaXferCplt(DMA_HandleTypeDef *hdma)
+{
+  (void)hdma;
+  CLEAR_BIT(SPIX->CFG1, SPI_CFG1_TXDMAEN);           // Disable SPI DMA request
+  while (!__HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_TXC)); // Wait for SPI FIFO drain (~1µs)
+  CLEAR_BIT(SPIX->CR1, SPI_CR1_SPE);                  // Disable SPI
+  spiHal.State = HAL_SPI_STATE_READY;                  // Signal dmaBusy() → false
+}
+
+/***************************************************************************************
+** Function name:           GPDMA1_ChannelX_IRQHandler
+** Description:             Override the default HAL DMA interrupt handler for STM32U5
+***************************************************************************************/
+  #if (TFT_SPI_PORT == 1)
+    extern "C" void GPDMA1_Channel0_IRQHandler();
+    void GPDMA1_Channel0_IRQHandler(void)
+  #elif (TFT_SPI_PORT == 2)
+    extern "C" void GPDMA1_Channel1_IRQHandler();
+    void GPDMA1_Channel1_IRQHandler(void)
+  #elif (TFT_SPI_PORT == 3)
+    extern "C" void GPDMA1_Channel2_IRQHandler();
+    void GPDMA1_Channel2_IRQHandler(void)
+  #endif
+  {
+    // Call the default end of buffer handler
+    HAL_DMA_IRQHandler(&dmaHal);
+  }
+
+/***************************************************************************************
+** Function name:           initDMA
+** Description:             Initialise DMA for STM32U5xx (GPDMA)
+***************************************************************************************/
+bool TFT_eSPI::initDMA(bool ctrl_cs)
+{
+  (void)ctrl_cs; // Not used for STM32
+
+  __HAL_RCC_GPDMA1_CLK_ENABLE();                           // Enable GPDMA1 clock
+
+  spiHal.State = HAL_SPI_STATE_READY;
+  spiHal.Init.Mode = SPI_MODE_MASTER;
+  spiHal.Init.DataSize = SPI_DATASIZE_8BIT;
+  spiHal.Init.Direction = SPI_DIRECTION_2LINES;
+
+  // Configure DMA for linked-list mode (chains multiple 64K blocks autonomously)
+  dmaHal.InitLinkedList.Priority          = DMA_HIGH_PRIORITY;
+  dmaHal.InitLinkedList.LinkStepMode      = DMA_LSM_FULL_EXECUTION;
+  dmaHal.InitLinkedList.LinkAllocatedPort = DMA_LINK_ALLOCATED_PORT0;
+  dmaHal.InitLinkedList.TransferEventMode = DMA_TCEM_LAST_LL_ITEM_TRANSFER;
+  dmaHal.InitLinkedList.LinkedListMode    = DMA_LINKEDLIST_NORMAL;
+
+  __HAL_LINKDMA(&spiHal, hdmatx, dmaHal);                  // Attach DMA engine to SPI peripheral
+
+  if (HAL_DMAEx_List_Init(&dmaHal) != HAL_OK){             // Init DMA in linked-list mode
+    return DMA_Enabled = false;
+  }
+
+  // Register completion callback (called from DMA IRQ after last linked-list node)
+  HAL_DMA_RegisterCallback(&dmaHal, HAL_DMA_XFER_CPLT_CB_ID, dmaXferCplt);
+
+  // Enable DMA channel interrupt (no SPI IRQ needed — callback handles SPI cleanup)
+  #if (TFT_SPI_PORT == 1)
+    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);              // Enable DMA end interrupt handler
+  #elif (TFT_SPI_PORT == 2)
+    HAL_NVIC_SetPriority(GPDMA1_Channel1_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel1_IRQn);              // Enable DMA end interrupt handler
+  #elif (TFT_SPI_PORT == 3)
+    HAL_NVIC_SetPriority(GPDMA1_Channel2_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel2_IRQn);              // Enable DMA end interrupt handler
+  #endif
+
+  return DMA_Enabled = true;
+}
+
+#endif // End of STM32F1/2/4/7xx/L4xx/U5xx
 
 /***************************************************************************************
 ** Function name:           deInitDMA
@@ -749,10 +916,51 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 ***************************************************************************************/
 void TFT_eSPI::deInitDMA(void)
 {
+#if defined(STM32U5xx)
+  HAL_DMAEx_List_UnLinkQ(&dmaHal);
+  HAL_DMAEx_List_DeInit(&dmaHal);
+#else
   HAL_DMA_DeInit(&dmaHal);
+#endif
   DMA_Enabled = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#endif // End of DMA FUNCTIONS    
+#else // No DMA support - provide stub functions
+////////////////////////////////////////////////////////////////////////////////////////
+
+bool TFT_eSPI::initDMA(bool ctrl_cs)
+{
+  (void)ctrl_cs;
+  DMA_Enabled = false;
+  return false;
+}
+
+void TFT_eSPI::deInitDMA(void)
+{
+  DMA_Enabled = false;
+}
+
+bool TFT_eSPI::dmaBusy(void)
+{
+  return false;
+}
+
+void TFT_eSPI::dmaWait(void)
+{
+}
+
+void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
+{
+  pushPixels(image, len);
+}
+
+void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t* image, uint16_t* buffer)
+{
+  (void)buffer;
+  pushImage(x, y, w, h, image);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+#endif // End of DMA FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////
