@@ -481,6 +481,11 @@ void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
     for (uint32_t i = 0; i < len; i++) (image[i] = image[i] << 8 | image[i] >> 8);
   }
 
+#if defined(STM32U5xx)
+  // U5 HAL_SPI_Transmit_DMA needs SPI disabled to configure TSIZE and TXDMAEN
+  SPI_BUSY_CHECK;
+  CLEAR_BIT(SPIX->CR1, SPI_CR1_SPE);
+#endif
   HAL_SPI_Transmit_DMA(&spiHal, (uint8_t*)image, len << 1);
 }
 
@@ -541,6 +546,13 @@ void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t
   }
 
   setWindow(x, y, x + dw - 1, y + dh - 1);
+
+#if defined(STM32U5xx)
+  // U5 HAL_SPI_Transmit/DMA need SPI disabled to configure TSIZE and TXDMAEN.
+  // SPI was in unlimited streaming mode for setWindow() direct register writes.
+  SPI_BUSY_CHECK;
+  CLEAR_BIT(SPIX->CR1, SPI_CR1_SPE);
+#endif
 
   // DMA byte count for transmit is only 16 bits maximum, so to avoid this constraint
   // small transfers are performed using a blocking call until DMA capacity is reached.
@@ -741,7 +753,101 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 
   return DMA_Enabled = true;
 }
-#endif // End of STM32F1/2/4/7xx/L4xx
+
+#elif defined (STM32U5xx)
+/***************************************************************************************
+** Function name:           GPDMA1_ChannelX_IRQHandler / SPIX_IRQHandler
+** Description:             DMA and SPI interrupt handlers for STM32U5 GPDMA
+**                          U5 DMA completion triggers SPI EOT interrupt for state reset
+***************************************************************************************/
+  #if (TFT_SPI_PORT == 1)
+    extern "C" void GPDMA1_Channel0_IRQHandler();
+    void GPDMA1_Channel0_IRQHandler(void) { HAL_DMA_IRQHandler(&dmaHal); }
+    extern "C" void SPI1_IRQHandler();
+    void SPI1_IRQHandler(void) { HAL_SPI_IRQHandler(&spiHal); }
+  #elif (TFT_SPI_PORT == 2)
+    extern "C" void GPDMA1_Channel1_IRQHandler();
+    void GPDMA1_Channel1_IRQHandler(void) { HAL_DMA_IRQHandler(&dmaHal); }
+    extern "C" void SPI2_IRQHandler();
+    void SPI2_IRQHandler(void) { HAL_SPI_IRQHandler(&spiHal); }
+  #elif (TFT_SPI_PORT == 3)
+    extern "C" void GPDMA1_Channel2_IRQHandler();
+    void GPDMA1_Channel2_IRQHandler(void) { HAL_DMA_IRQHandler(&dmaHal); }
+    extern "C" void SPI3_IRQHandler();
+    void SPI3_IRQHandler(void) { HAL_SPI_IRQHandler(&spiHal); }
+  #endif
+
+/***************************************************************************************
+** Function name:           initDMA
+** Description:             Initialise DMA for STM32U5xx (GPDMA)
+***************************************************************************************/
+bool TFT_eSPI::initDMA(bool ctrl_cs)
+{
+  (void)ctrl_cs; // Not used for STM32
+
+  __HAL_RCC_GPDMA1_CLK_ENABLE();
+
+  // spiHal is a separate handle from Arduino's SPI — only Instance is set by
+  // INIT_TFT_DATA_BUS. We must populate minimal Init fields for HAL_SPI_Transmit_DMA:
+  //   Mode: SPI_MODE_MASTER — needed for HAL to set CSTART
+  //   DataSize: SPI_DATASIZE_8BIT — needed for correct DMA byte count calculation
+  //   Direction: SPI_DIRECTION_2LINES — full-duplex (default, explicit for clarity)
+  spiHal.State = HAL_SPI_STATE_READY;
+  spiHal.Init.Mode = SPI_MODE_MASTER;
+  spiHal.Init.DataSize = SPI_DATASIZE_8BIT;
+  spiHal.Init.Direction = SPI_DIRECTION_2LINES;
+
+  // Configure GPDMA for Memory-to-Peripheral (SPI TX)
+  #if (TFT_SPI_PORT == 1)
+    dmaHal.Init.Request = GPDMA1_REQUEST_SPI1_TX;
+  #elif (TFT_SPI_PORT == 2)
+    dmaHal.Init.Request = GPDMA1_REQUEST_SPI2_TX;
+  #elif (TFT_SPI_PORT == 3)
+    dmaHal.Init.Request = GPDMA1_REQUEST_SPI3_TX;
+  #endif
+
+  dmaHal.Init.BlkHWRequest = DMA_BREQ_SINGLE_BURST;
+  dmaHal.Init.Direction = DMA_MEMORY_TO_PERIPH;
+  dmaHal.Init.SrcInc = DMA_SINC_INCREMENTED;        // Increment source (memory buffer)
+  dmaHal.Init.DestInc = DMA_DINC_FIXED;              // Fixed destination (SPI TXDR)
+  dmaHal.Init.SrcDataWidth = DMA_SRC_DATAWIDTH_BYTE;
+  dmaHal.Init.DestDataWidth = DMA_DEST_DATAWIDTH_BYTE;
+  dmaHal.Init.Priority = DMA_HIGH_PRIORITY;
+  dmaHal.Init.SrcBurstLength = 1;
+  dmaHal.Init.DestBurstLength = 1;
+  dmaHal.Init.TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0 | DMA_DEST_ALLOCATED_PORT0;
+  dmaHal.Init.TransferEventMode = DMA_TCEM_BLOCK_TRANSFER;
+  dmaHal.Init.Mode = DMA_NORMAL;
+
+  __HAL_LINKDMA(&spiHal, hdmatx, dmaHal);
+
+  if (HAL_DMA_Init(&dmaHal) != HAL_OK) {
+    return DMA_Enabled = false;
+  }
+
+  // Enable both DMA channel and SPI interrupts
+  // (U5 DMA completion triggers SPI EOT interrupt for state machine reset)
+  #if (TFT_SPI_PORT == 1)
+    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
+    HAL_NVIC_SetPriority(SPI1_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(SPI1_IRQn);
+  #elif (TFT_SPI_PORT == 2)
+    HAL_NVIC_SetPriority(GPDMA1_Channel1_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel1_IRQn);
+    HAL_NVIC_SetPriority(SPI2_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(SPI2_IRQn);
+  #elif (TFT_SPI_PORT == 3)
+    HAL_NVIC_SetPriority(GPDMA1_Channel2_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel2_IRQn);
+    HAL_NVIC_SetPriority(SPI3_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(SPI3_IRQn);
+  #endif
+
+  return DMA_Enabled = true;
+}
+
+#endif // End of STM32F1/2/4/7xx/L4xx/U5xx
 
 /***************************************************************************************
 ** Function name:           deInitDMA
@@ -754,5 +860,41 @@ void TFT_eSPI::deInitDMA(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-#endif // End of DMA FUNCTIONS    
+#else // No DMA support - provide stub functions
+////////////////////////////////////////////////////////////////////////////////////////
+
+bool TFT_eSPI::initDMA(bool ctrl_cs)
+{
+  (void)ctrl_cs;
+  DMA_Enabled = false;
+  return false;
+}
+
+void TFT_eSPI::deInitDMA(void)
+{
+  DMA_Enabled = false;
+}
+
+bool TFT_eSPI::dmaBusy(void)
+{
+  return false;
+}
+
+void TFT_eSPI::dmaWait(void)
+{
+}
+
+void TFT_eSPI::pushPixelsDMA(uint16_t* image, uint32_t len)
+{
+  pushPixels(image, len);
+}
+
+void TFT_eSPI::pushImageDMA(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t* image, uint16_t* buffer)
+{
+  (void)buffer;
+  pushImage(x, y, w, h, image);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+#endif // End of DMA FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////
