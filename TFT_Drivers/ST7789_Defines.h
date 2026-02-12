@@ -27,6 +27,13 @@
   #endif
 #endif
 
+// 2.25" 76x284 Small Screen Color IPS TFT Display
+#if (TFT_HEIGHT == 284) && (TFT_WIDTH == 76)
+  #ifndef CGRAM_OFFSET
+    #define CGRAM_OFFSET
+  #endif
+#endif
+
 // 1.47" 172x320 Round Rectangle Color IPS TFT Display
 #if (TFT_HEIGHT == 320) && (TFT_WIDTH == 172)
   #ifndef CGRAM_OFFSET
