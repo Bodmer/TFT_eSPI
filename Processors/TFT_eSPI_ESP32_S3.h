@@ -80,7 +80,7 @@ SPI3_HOST = 2
   #elif CONFIG_IDF_TARGET_ESP32S2
     #define SPI_PORT 2 //FSPI(ESP32 S2)
   #elif CONFIG_IDF_TARGET_ESP32S3
-    #define SPI_PORT FSPI
+    #define SPI_PORT 2//FSPI->2 asd1
   #endif
 #endif
 

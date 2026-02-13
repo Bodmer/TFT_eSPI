@@ -6,7 +6,7 @@
   hardware driver, the graphics functions and the
   proportional fonts.
 
-  The larger fonts are Run Length Encoded to reduce their
+  The larger fonts are Run Length Encoded to reduce their 
   size.
 
   Created by Bodmer 2/12/16
@@ -18,7 +18,7 @@
 #if defined (ESP32)
   #if defined(CONFIG_IDF_TARGET_ESP32S3)
     #include "Processors/TFT_eSPI_ESP32_S3.c" // Tested with SPI and 8-bit parallel
-  #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  #elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6) 
     #include "Processors/TFT_eSPI_ESP32_C3.c" // Tested with SPI (8-bit parallel will probably work too!)
   #else
     #include "Processors/TFT_eSPI_ESP32.c"
@@ -6155,4 +6155,3 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
   #include "Extensions/AA_graphics.cpp"  // Loaded if SMOOTH_FONT is defined by user
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////
-
