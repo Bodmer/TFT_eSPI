@@ -37,7 +37,7 @@
 ***************************************************************************************/
 // Include header file that defines the fonts loaded, the TFT drivers
 // available and the pins to be used, etc. etc.
-#ifdef CONFIG_TFT_eSPI_ESPIDF
+#if defined (CONFIG_TFT_eSPI_ESPIDF) && !defined (USER_SETUP_LOADED)
   #include "TFT_config.h"
 #endif
 
