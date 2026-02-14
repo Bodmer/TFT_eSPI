@@ -208,6 +208,12 @@ This is an [example setup file](https://github.com/Bodmer/TFT_eSPI/blob/master/U
 If the display board is fitted with a resistance based touch screen then this can be used by performing the modifications described here and the fork of the Adafruit library:
 https://github.com/s60sc/Adafruit_TouchScreen
 
+# Using an SPI display and SD card at the same time on Arduino
+
+If you wish to use this library and an SD card on the same SPI bus you must ensure that _TFT_MISO_, _TFT_MOSI_ and _TFT_SCLK_ are explicitly defined in your User_setup.h file, even if you are using the default SPI pins for your board.
+
+Failure to declare these pins explicitly may prevent your SD card from being usable after display initialisation.
+
 # Tips
 If you load a new copy of TFT_eSPI then it will overwrite your setups if they are kept within the TFT_eSPI folder. One way around this is to create a new folder in your Arduino library folder called "TFT_eSPI_Setups". You then place your custom setup.h files in there. After an upgrade simply edit the User_Setup_Select.h file to point to your custom setup file e.g.:
 ```
