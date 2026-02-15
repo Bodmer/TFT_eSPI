@@ -6,7 +6,7 @@
 //====================================================================================
 // This function will be called during decoding of the png file to render each image
 // line to the TFT. PNGdec generates the image line and a 1bpp mask.
-void pngDraw(PNGDRAW *pDraw) {
+int pngDraw(PNGDRAW *pDraw) {
   uint16_t lineBuffer[MAX_IMAGE_WIDTH];          // Line buffer for rendering
   uint8_t  maskBuffer[1 + MAX_IMAGE_WIDTH / 8];  // Mask buffer
 
@@ -16,4 +16,5 @@ void pngDraw(PNGDRAW *pDraw) {
     // Note: pushMaskedImage is for pushing to the TFT and will not work pushing into a sprite
     tft.pushMaskedImage(xpos, ypos + pDraw->y, pDraw->iWidth, 1, lineBuffer, maskBuffer);
   }
+  return 1;
 }

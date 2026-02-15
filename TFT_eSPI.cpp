@@ -18,7 +18,7 @@
 #if defined (ESP32)
   #if defined(CONFIG_IDF_TARGET_ESP32S3)
     #include "Processors/TFT_eSPI_ESP32_S3.c" // Tested with SPI and 8-bit parallel
-  #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  #elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
     #include "Processors/TFT_eSPI_ESP32_C3.c" // Tested with SPI (8-bit parallel will probably work too!)
   #else
     #include "Processors/TFT_eSPI_ESP32.c"
@@ -3004,8 +3004,8 @@ void TFT_eSPI::setTextPadding(uint16_t x_width)
 }
 
 /***************************************************************************************
-** Function name:           setTextPadding
-** Description:             Define padding width (aids erasing old text and numbers)
+** Function name:           getTextPadding
+** Description:             Return the padding width (as used by setTextPadding)
 ***************************************************************************************/
 uint16_t TFT_eSPI::getTextPadding(void)
 {

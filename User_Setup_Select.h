@@ -14,13 +14,33 @@
 
 // Example User_Setup files are stored in the "User_Setups" folder. These can be used
 // unmodified or adapted for a particular hardware configuration.
+//
+// IMPORTANT: if you update TFT_eSPI your setup file and link below will be lost!
+// >>>>>>>>>>>>>>>>> Keep a copy of your setup file safe! <<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+///////////////////////////////////////////////////////
+//   This allows external setup files to be used in  //
+//   the Platform_IO environment.                    //
+///////////////////////////////////////////////////////
+#ifdef TFT_ESPI_USER_SETUP_PATH  // Use external User_Setup.h if defined
+
+  #define USER_SETUP_LOADED
+  // Define TFT_ESPI_USER_SETUP_PATH as a string literal in platformio.ini
+  // Example:
+  // -D TFT_ESPI_USER_SETUP_PATH=\"../configs/your_board/User_Setup.h\"
+  #include TFT_ESPI_USER_SETUP_PATH
+
+#endif
 
 #ifndef USER_SETUP_LOADED //  Lets PlatformIO users define settings in
                           //  platformio.ini, see notes in "Tools" folder.
 
+
 ///////////////////////////////////////////////////////
 //   User configuration selection lines are below    //
 ///////////////////////////////////////////////////////
+
+//#include <User_Setups/Setup0_Sprite.h> // For QSPI displays - in development
 
 // Only ONE line below should be uncommented to define your setup.  Add extra lines and files as needed.
 
@@ -96,6 +116,7 @@
 //#include <User_Setups/Setup70b_ESP32_S3_ILI9341.h>    // Setup file for ESP32 S3 with SPI ILI9341
 //#include <User_Setups/Setup70c_ESP32_C3_ILI9341.h>    // Setup file for ESP32 C3 with SPI ILI9341
 //#include <User_Setups/Setup70d_ILI9488_S3_Parallel.h> // Setup file for ESP32 S3 with SPI ILI9488
+//#include <User_Setups/Setup70h_ESP32_S3_GC9A01.h> // Setup file for ESP32 S3 with SPI ILI9488
 
 //#include <User_Setups/Setup71_ESP32_S2_ST7789.h>       // Setup file for ESP32 S2 with ST7789
 //#include <User_Setups/Setup72_ESP32_ST7789_172x320.h>  // Setup file for ESP32 with ST7789 1.47" 172x320

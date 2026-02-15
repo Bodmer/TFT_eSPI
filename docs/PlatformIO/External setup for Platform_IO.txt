@@ -1,0 +1,25 @@
+TFT_eSPI currently requires modifying User_Setup.h inside the library directory, which breaks reproducible builds and forces users to reapply changes after each library update or PlatformIO Full Clean.
+
+This proposal adds an optional override that allows specifying an external User_Setup.h via a compiler define. The change is non-breaking and fully backward compatible—the default behaviour remains unchanged when the define is not provided. There is no impact unless the define is used, and existing projects will continue to build exactly as before.
+
+// in User_Setup_Select.h
+
+#ifdef TFT_ESPI_USER_SETUP_PATH  // Use external User_Setup.h if defined
+
+  #define USER_SETUP_LOADED
+
+  // Define TFT_ESPI_USER_SETUP_PATH as a string literal
+  // Example (PlatformIO):
+  // -D TFT_ESPI_USER_SETUP_PATH=\"../configs/your_board/User_Setup.h\"
+  #include TFT_ESPI_USER_SETUP_PATH
+
+#endif
+
+// existing code:
+#ifndef USER_SETUP_LOADED
+
+PlatformIO usage:
+
+build_flags =
+	; TFT_eSPI config
+	-D TFT_ESPI_USER_SETUP_PATH=\"../configs/cyd/User_Setup.h\"

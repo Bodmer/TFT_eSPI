@@ -37,7 +37,7 @@ I have setup a Ko-fi account so you can ["buy me a coffee!"](https://github.com/
 
       [Setup70d_ILI9488_S3_Parallel.h](https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup70d_ILI9488_S3_Parallel.h)
 
-9. Smooth fonts can now be rendered direct to the TFT with very little flicker for quickly changing values. This is achieved by a line-by-line and block-by-block update of the glyph area without drawing pixels twice. This is a "breaking" change for some sketches because a new true/false parameter is needed to render the background. The default is false if the parameter is missing, Examples:
+8. Smooth fonts can now be rendered direct to the TFT with very little flicker for quickly changing values. This is achieved by a line-by-line and block-by-block update of the glyph area without drawing pixels twice. This is a "breaking" change for some sketches because a new true/false parameter is needed to render the background. The default is false if the parameter is missing, Examples:
 
       tft.setTextColor(TFT_WHITE, TFT_BLUE, true);
       spr.setTextColor(TFT_BLUE, TFT_BLACK, true);
@@ -83,7 +83,7 @@ The library supports the following interface types for these processors:
 
 For other (generic) processors only SPI interface displays are supported and the slower Arduino SPI library functions are used by the library. Higher clock speed processors such as used for the Teensy 3.x and 4.x boards will still provide a very good performance with the generic Arduino SPI functions.
 
-4 wire SPI means the display must have SPI interface comaptible signals and a "Data/Command" control signal, this signal line is sometimes labelled DC, RS or A0. 
+4 wire SPI means the display must have SPI interface compatible signals and a "Data/Command" control signal, this signal line is sometimes labelled DC, RS or A0. 
 
 Due to lack of GPIO pins the 8-bit parallel interface is NOT supported on the ESP8266. 8-bit parallel interface TFTs  (e.g. UNO format mcufriend shields) can used with the STM32Fxxx Nucleo 64/144 range or the UNO format ESP32 (see below for ESP32).
 

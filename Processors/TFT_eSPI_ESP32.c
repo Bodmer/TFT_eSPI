@@ -793,12 +793,6 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .sclk_io_num = TFT_SCLK,
     .quadwp_io_num = -1,
     .quadhd_io_num = -1,
-    #ifdef xCONFIG_IDF_TARGET_ESP32S2
-      .data4_io_num = -1,
-      .data5_io_num = -1,
-      .data6_io_num = -1,
-      .data7_io_num = -1,
-    #endif
     .max_transfer_sz = TFT_WIDTH * TFT_HEIGHT * 2 + 8, // TFT screen size
     .flags = 0,
     .intr_flags = 0
@@ -824,7 +818,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     #ifdef CONFIG_IDF_TARGET_ESP32
       .post_cb = 0
     #else
-      .post_cb = dma_end_callback
+      .post_cb = 0 //dma_end_callback
     #endif
   };
   ret = spi_bus_initialize(spi_host, &buscfg, DMA_CHANNEL);

@@ -102,10 +102,11 @@ void loop()
 // render each image line to the TFT.  If you use a different TFT library
 // you will need to adapt this function to suit.
 // Callback function to draw pixels to the display
-void pngDraw(PNGDRAW *pDraw) {
+int pngDraw(PNGDRAW *pDraw) {
   uint16_t lineBuffer[MAX_IMAGE_WIDTH];
   static uint16_t dmaBuffer[MAX_IMAGE_WIDTH]; // static so buffer persists after fn exit
 
   png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
   tft.pushImageDMA(xpos, ypos + pDraw->y, pDraw->iWidth, 1, lineBuffer, dmaBuffer);
+  return 1;
 }
