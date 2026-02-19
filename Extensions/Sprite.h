@@ -5,6 +5,8 @@
 // graphics are written to the Sprite rather than the TFT.
 ***************************************************************************************/
 
+#include "MemoryArena.hpp"
+
 class TFT_eSprite : public TFT_eSPI {
 
  public:
@@ -20,6 +22,12 @@ class TFT_eSprite : public TFT_eSPI {
            //  - 1 byte per pixel for 8-bit colour (332 RGB format)
            //  - 2 bytes per pixel for 16-bit color depth (565 RGB format)
   void*    createSprite(int16_t width, int16_t height, uint8_t frames = 1);
+  
+  void     createPaletteWithArena(uint16_t colorMap[], uint8_t colors, MemoryArena& arena);
+  void     createPaletteWithArena(const uint16_t colorMap[], uint8_t colors, MemoryArena& arena);
+
+  void*    callocSpriteWithArena(int16_t w, int16_t h, uint8_t frames, MemoryArena& arena);
+  void*    createSpriteWithArena(int16_t w, int16_t h, uint8_t frames, MemoryArena& arena);
 
            // Returns a pointer to the sprite or nullptr if not created, user must cast to pointer type
   void*    getPointer(void);
@@ -161,6 +169,7 @@ class TFT_eSprite : public TFT_eSPI {
 
  protected:
 
+  bool _isArenaAllocated;
   uint8_t  _bpp;     // bits per pixel (1, 4, 8 or 16)
   uint16_t *_img;    // pointer to 16-bit sprite
   uint8_t  *_img8;   // pointer to  1 and 8-bit sprite frame 1 or frame 2
