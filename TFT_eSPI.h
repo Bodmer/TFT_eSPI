@@ -32,6 +32,10 @@
 #if !defined (TFT_PARALLEL_8_BIT) && !defined (RP2040_PIO_INTERFACE)
   #include <SPI.h>
 #endif
+#ifdef SMOOTH_POLYGON
+  #include <vector>
+#endif
+
 /***************************************************************************************
 **                         Section 2: Load library and processor specific header files
 ***************************************************************************************/
@@ -977,6 +981,11 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 // Load the Anti-aliased font extension
 #ifdef SMOOTH_FONT
   #include "Extensions/Smooth_font.h"  // Loaded if SMOOTH_FONT is defined by user
+#endif
+
+// Load the Anti-aliased polygon extension
+#ifdef SMOOTH_POLYGON
+  #include "Extensions/Polygon.h"  
 #endif
 
 }; // End of class TFT_eSPI
