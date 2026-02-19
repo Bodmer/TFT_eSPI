@@ -1,111 +1,111 @@
-//                            USER DEFINED SETTINGS
-//   Set driver type, fonts to be loaded, pins used and SPI control method etc.
+// 用户定义的设置
+// 设置驱动类型、要加载的字体、使用的引脚、SPI控制方式等
 //
-//   See the User_Setup_Select.h file if you wish to be able to define multiple
-//   setups and then easily select which setup file is used by the compiler.
+// 如果您希望能够定义多个，请参阅 User_Setup_Select.h 文件
+// 设置，然后轻松选择编译器使用哪个设置文件。
 //
-//   If this file is edited correctly then all the library example sketches should
-//   run without the need to make any more changes for a particular hardware setup!
-//   Note that some sketches are designed for a particular TFT pixel width/height
+// 如果该文件编辑正确，那么所有库示例草图都应该
+// 运行时消耗特定对硬件设置进行更多更改！
+// 请注意，一些草图是针对特定TFT宽度/高度而设计的
 
-// User defined information reported by "Read_User_Setup" test & diagnostics example
-#define USER_SETUP_INFO "User_Setup"
+//“Read_User_Setup”测试和诊断样本报告的用户定义信息
+#define USER_SETUP_INFO“用户设置”
 
-// Define to disable all #warnings in library (can be put in User_Setup_Select.h)
-//#define DISABLE_ALL_LIBRARY_WARNINGS
+//定义取消库中的所有#warnings（可以放在User_Setup_Select.h中）
+//#定义DISABLE_ALL_LIBRARY_WARNINGS
 
-// ##################################################################################
+// ################################################## ####################################################
 //
-// Section 1. Call up the right driver file and any options for it
+// 第 1 部分。调用正确的驱动程序文件及其任何选项
 //
-// ##################################################################################
+// ################################################## ####################################################
 
-// Define STM32 to invoke optimised processor support (only for STM32)
-//#define STM32
+//定义STM32调用优化的处理器支持（仅适用于STM32）
+//#定义STM32
 
-// Defining the STM32 board allows the library to optimise the performance
-// for UNO compatible "MCUfriend" style shields
-//#define NUCLEO_64_TFT
-//#define NUCLEO_144_TFT
+//定义STM32板允许库优化性能
+// 用于UNO兼容的“MCUfriend”风格防护罩
+//#定义NUCLEO_64_TFT
+//#定义NUCLEO_144_TFT
 
-// STM32 8-bit parallel only:
-// If STN32 Port A or B pins 0-7 are used for 8-bit parallel data bus bits 0-7
-// then this will improve rendering performance by a factor of ~8x
-//#define STM_PORTA_DATA_BUS
-//#define STM_PORTB_DATA_BUS
+//仅STM32 8位家具：
+//如果STN32端口A或B引脚0-7用于8位设备数据占用位0-7
+//现在这个渲染性能提升约8倍
+//#定义STM_PORTA_DATA_BUS
+//#定义STM_PORTB_DATA_BUS
 
-// Tell the library to use parallel mode (otherwise SPI is assumed)
-//#define TFT_PARALLEL_8_BIT
-//#defined TFT_PARALLEL_16_BIT // **** 16-bit parallel ONLY for RP2040 processor ****
+// 告诉库使用并行模式（否则假定为 SPI）
+//#定义TFT_PARALLEL_8_BIT
+//#define TFT_PARALLEL_16_BIT // **** 16位主板仅适用于RP2040处理器 ****
 
-// Display type -  only define if RPi display
-//#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
+// 显示类型 - 仅定义 RPi 是否显示
+//#define RPI_DISPLAY_TYPE // 20MHz 最大 SPI
 
-// Only define one driver, the other ones must be commented out
-#define ILI9341_DRIVER       // Generic driver for common displays
-//#define ILI9341_2_DRIVER     // Alternative ILI9341 driver, see https://github.com/Bodmer/TFT_eSPI/issues/1172
-//#define ST7735_DRIVER      // Define additional parameters below for this display
-//#define ILI9163_DRIVER     // Define additional parameters below for this display
-//#define S6D02A1_DRIVER
-//#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
-//#define HX8357D_DRIVER
-//#define ILI9481_DRIVER
-//#define ILI9486_DRIVER
-//#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
-//#define ST7789_DRIVER      // Full configuration option, define additional parameters below for this display
-//#define ST7789_2_DRIVER    // Minimal configuration option, define additional parameters below for this display
-//#define R61581_DRIVER
-//#define RM68140_DRIVER
-//#define ST7796_DRIVER
-//#define SSD1351_DRIVER
-//#define SSD1963_480_DRIVER
-//#define SSD1963_800_DRIVER
-//#define SSD1963_800ALT_DRIVER
-//#define ILI9225_DRIVER
-//#define GC9A01_DRIVER
+// 只定义一个驱动，其他的必须注释掉
+#define ILI9341_DRIVER // 通用驱动器的通用驱动程序
+//#define ILI9341_2_DRIVER //替代ILI9341驱动程序，请参考https://github.com/Bodmer/TFT_eSPI/issues/1172
+//#define ST7735_DRIVER //用于显示器定义以下附加参数
+//#define ILI9163_DRIVER //用于显示器定义以下附加参数
+//#定义S6D02A1_DRIVER
+//#define RPI_ILI9486_DRIVER //最大20MHz SPI
+//#定义HX8357D_DRIVER
+//#定义ILI9481_DRIVER
+//#定义ILI9486_DRIVER
+//#define ILI9488_DRIVER // 警告：如果其他设备共享 SPI 中断，请勿将 ILI9488 显示 SDO 连接到 MISO（当 CS 为高电平时，TFT SDO 不会进入三态）
+//#define ST7789_DRIVER // 完整配置选项，为显卡定义以下附加参数
+//#define ST7789_2_DRIVER //配置最小选项，为此显示器定义以下附加参数
+//#定义R61581_DRIVER
+//#定义 RM68140_DRIVER
+//#定义ST7796_DRIVER
+//#定义SSD1351_DRIVER
+//#定义SSD1963_480_DRIVER
+//#定义SSD1963_800_DRIVER
+//#定义SSD1963_800ALT_DRIVER
+//#定义ILI9225_DRIVER
+//#定义GC9A01_DRIVER
 
-// Some displays support SPI reads via the MISO pin, other displays have a single
-// bi-directional SDA pin and the library will try to read this via the MOSI line.
-// To use the SDA line for reading data from the TFT uncomment the following line:
+// 有些放大器支持通过MISO引脚进行SPI读取，其他放大器则只有一个
+//三个SDA引脚，库将尝试通过MOSI线读取该引脚。
+//要使用SDA线从TFT读取数据，请取消以下注释行：
 
-// #define TFT_SDA_READ      // This option is for ESP32 ONLY, tested with ST7789 and GC9A01 display only
+// #define TFT_SDA_READ 该 // 选项仅适用于 ESP32，仅使用 ST7789 和 GC9A01 显示器进行测试
 
-// For ST7735, ST7789 and ILI9341 ONLY, define the colour order IF the blue and red are swapped on your display
-// Try ONE option at a time to find the correct colour order for your display
+// 仅适用于 ST7735、ST7789 和 ILI9341，如果在显示器上交换机上为蓝色和红色，请定义颜色顺序
+//您再次尝试一个选项，找到适合显示器的正确颜色顺序
 
-//  #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
-//  #define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+// #define TFT_RGB_ORDER TFT_RGB // 颜色顺序红-绿-蓝
+// #define TFT_RGB_ORDER TFT_BGR // 颜色顺序蓝-绿-红
 
-// For M5Stack ESP32 module with integrated ILI9341 display ONLY, remove // in line below
+// 仅适用于集成 ILI9341 显示屏的 M5Stack ESP32 模块，删除下面一行中的 //
 
-// #define M5STACK
+//#定义M5STACK
 
-// For ST7789, ST7735, ILI9163 and GC9A01 ONLY, define the pixel width and height in portrait orientation
-// #define TFT_WIDTH  80
-// #define TFT_WIDTH  128
-// #define TFT_WIDTH  172 // ST7789 172 x 320
-// #define TFT_WIDTH  170 // ST7789 170 x 320
-// #define TFT_WIDTH  240 // ST7789 240 x 240 and 240 x 320
-// #define TFT_HEIGHT 160
-// #define TFT_HEIGHT 128
+// 仅适用于 ST7789、ST7735、ILI9163 和 GC9A01，定义纵向像素宽度和高度
+//#定义TFT_WIDTH 80
+//#定义TFT_WIDTH 128
+// #define TFT_WIDTH 172 // ST7789 172 x 320
+// #define TFT_WIDTH 170 // ST7789 170 x 320
+// #define TFT_WIDTH 240 // ST7789 240 x 240 和 240 x 320
+// #定义 TFT_HEIGHT 160
+//#定义TFT_HEIGHT 128
 // #define TFT_HEIGHT 240 // ST7789 240 x 240
 // #define TFT_HEIGHT 320 // ST7789 240 x 320
 // #define TFT_HEIGHT 240 // GC9A01 240 x 240
 
-// For ST7735 ONLY, define the type of display, originally this was based on the
-// colour of the tab on the screen protector film but this is not always true, so try
-// out the different options below if the screen does not display graphics correctly,
-// e.g. colours wrong, mirror images, or stray pixels at the edges.
-// Comment out ALL BUT ONE of these options for a ST7735 display driver, save this
-// this User_Setup file, then rebuild and upload the sketch to the board again:
+// 仅适用于 ST7735，定义显示类型，最初这是基于
+// 屏幕保护膜上标签的颜色，但这并不总是正确的，所以请尝试
+// 如果屏幕不能正确显示图形，则退出下面的不同选项，
+// 例如，颜色错误、镜像或边缘出现杂散像素。
+// 对于 ST7735 显示驱动程序，注释掉除其中一个选项之外的所有选项，保存此选项
+// 这个 User_Setup 文件，然后重新构建草图并将其上传到开发板：
 
-// #define ST7735_INITB
-// #define ST7735_GREENTAB
-// #define ST7735_GREENTAB2
-// #define ST7735_GREENTAB3
-// #define ST7735_GREENTAB128    // For 128 x 128 display
-// #define ST7735_GREENTAB160x80 // For 160 x 80 display (BGR, inverted, 26 offset)
-// #define ST7735_ROBOTLCD       // For some RobotLCD Arduino shields (128x160, BGR, https://docs.arduino.cc/retired/getting-started-guides/TFT)
+//#定义ST7735_INITB
+//#定义ST7735_GREENTAB
+//#定义ST7735_GREENTAB2
+//#定义ST7735_GREENTAB3
+// #define ST7735_GREENTAB128 // 对于 128 x 128 显示
+// #define ST7735_GREENTAB160x80 /​​/ 用于 160 x 80 显示（BGR、反转、26 偏移）
+// #define ST7735_ROBOTLCD // 对于一些 RobotLCD Arduino 扩展板（128x160，BGR，https://docs.arduino.cc/retired/getting-started-guides/TFT）
 // #define ST7735_REDTAB
 // #define ST7735_BLACKTAB
 // #define ST7735_REDTAB160x80   // For 160 x 80 display with 24 pixel offset
@@ -167,13 +167,13 @@
 // ###### EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP8266 SETUP ######
 
 // For NodeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
-#define TFT_MISO  PIN_D6  // Automatically assigned with ESP8266 if not defined
-#define TFT_MOSI  PIN_D7  // Automatically assigned with ESP8266 if not defined
-#define TFT_SCLK  PIN_D5  // Automatically assigned with ESP8266 if not defined
+//#define TFT_MISO  PIN_D6  // Automatically assigned with ESP8266 if not defined
+//#define TFT_MOSI  PIN_D7  // Automatically assigned with ESP8266 if not defined
+//#define TFT_SCLK  PIN_D5  // Automatically assigned with ESP8266 if not defined
 
-#define TFT_CS    PIN_D8  // Chip select control pin D8
-#define TFT_DC    PIN_D3  // Data Command control pin
-#define TFT_RST   PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
+//#define TFT_CS    PIN_D8  // Chip select control pin D8
+//#define TFT_DC    PIN_D3  // Data Command control pin
+//#define TFT_RST   PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1     // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
 
 
@@ -209,12 +209,12 @@
 // For ESP32 Dev board (only tested with ILI9341 display)
 // The hardware SPI can be mapped to any pins
 
-//#define TFT_MISO 19
-//#define TFT_MOSI 23
-//#define TFT_SCLK 18
-//#define TFT_CS   15  // Chip select control pin
-//#define TFT_DC    2  // Data Command control pin
-//#define TFT_RST   4  // Reset pin (could connect to RST pin)
+#define TFT_MISO 19
+#define TFT_MOSI 23
+#define TFT_SCLK 18
+#define TFT_CS   15  // Chip select control pin
+#define TFT_DC    2  // Data Command control pin
+#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
 // For ESP32 Dev board (only tested with GC9A01 display)
