@@ -167,6 +167,12 @@
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 //#include <User_Setups/Setup302_Waveshare_ESP32S3_GC9A01.h>            // Setup file for Waveshare ESP32-S3-Touch-LCD-1.28 board with GC9A01 240*240 TFT
 
+// #include <User_Setups/Setup400_LOLIN_TFT085_D1_MINI.h>            // Setup file for LOLIN TFT 0.85 shield with GC9A01 128 x 128 for D1 mini
+// #include <User_Setups/Setup401_LOLIN_TFT085_C3.h>            // Setup file for LOLIN TFT 0.85 shield with GC9A01 128 x 128 for C3 mini/pico
+// #include <User_Setups/Setup402_LOLIN_TFT085_S2_MINI.h>            // Setup file for LOLIN TFT 0.85 shield with GC9A01 128 x 128 for S2 mini
+// #include <User_Setups/Setup403_LOLIN_TFT085_S3_MINI.h>            // Setup file for LOLIN TFT 0.85 shield with GC9A01 128 x 128 for S3 mini
+// #include <User_Setups/Setup404_LOLIN_S3_MINI_PRO.h>            // Setup file for LOLIN S3 mini PRO
+// #include <User_Setups/Setup405_LOLIN_XI_C3.h>            // Setup file for LOLIN XI C3 with ST7789 135 x 240 display
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
 
