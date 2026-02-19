@@ -25,7 +25,7 @@
 
 // Fix IDF problems with ESP32S3
 // Note illogical enumerations: FSPI_HOST=SPI2_HOST=1   HSPI_HOST=SPI3_HOST=2
-#if CONFIG_IDF_TARGET_ESP32S3
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
   // Fix ESP32C3 IDF bug for missing definition (FSPI only tested at the moment)
   #ifndef REG_SPI_BASE //                      HSPI                 FSPI/VSPI
     #define REG_SPI_BASE(i) (((i)>1) ? (DR_REG_SPI3_BASE) : (DR_REG_SPI2_BASE))
@@ -74,9 +74,9 @@ SPI3_HOST = 2,  ///< actually SPI2
 #else
   #ifdef CONFIG_IDF_TARGET_ESP32
     #define SPI_PORT VSPI
-  #elif CONFIG_IDF_TARGET_ESP32S2
+  #elif defined(CONFIG_IDF_TARGET_ESP32S2)
     #define SPI_PORT 2 //FSPI(ESP32 S2)
-  #elif CONFIG_IDF_TARGET_ESP32S3
+  #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     #define SPI_PORT FSPI
   #endif
 #endif
