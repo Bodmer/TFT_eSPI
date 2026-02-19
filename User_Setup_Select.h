@@ -167,6 +167,8 @@
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 //#include <User_Setups/Setup302_Waveshare_ESP32S3_GC9A01.h>            // Setup file for Waveshare ESP32-S3-Touch-LCD-1.28 board with GC9A01 240*240 TFT
 
+//#include <User_Setups/Setup400_Heltec_VisionMaster_T190.h> // Setup file for Heltec Vision Master T190 board with ST7789 TFT-LCD 170x320 display
+
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
 
