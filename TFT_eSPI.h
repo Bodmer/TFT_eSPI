@@ -518,16 +518,16 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color),
            fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color);
 
-  void     fillRectVGradient(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color1, uint32_t color2);
-  void     fillRectHGradient(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color1, uint32_t color2);
+  void     fillRectVGradient(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color1, uint32_t color2);
+  void     fillRectHGradient(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color1, uint32_t color2);
 
   void     drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
            drawCircleHelper(int32_t x, int32_t y, int32_t r, uint8_t cornername, uint32_t color),
            fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
            fillCircleHelper(int32_t x, int32_t y, int32_t r, uint8_t cornername, int32_t delta, uint32_t color),
 
-           drawEllipse(int16_t x, int16_t y, int32_t rx, int32_t ry, uint16_t color),
-           fillEllipse(int16_t x, int16_t y, int32_t rx, int32_t ry, uint16_t color),
+           drawEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry, uint32_t color),
+           fillEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry, uint32_t color),
 
            //                 Corner 1               Corner 2               Corner 3
            drawTriangle(int32_t x1,int32_t y1, int32_t x2,int32_t y2, int32_t x3,int32_t y3, uint32_t color),
