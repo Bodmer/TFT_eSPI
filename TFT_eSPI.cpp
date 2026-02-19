@@ -2654,6 +2654,44 @@ void TFT_eSPI::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t
   end_tft_write();              // Does nothing if Sprite class uses this function
 }
 
+/***************************************************************************************
+** Function name:           fillRoundRectWithText
+** Description:             Draw a button with text inside
+***************************************************************************************/
+void TFT_eSPI::drawRoundRectWithText(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint32_t rectColor, const char* label, uint32_t textColor, uint8_t textDatum) {
+    // Draw a roundRect
+    fillRoundRect(x, y, w, h, r, rectColor);
+    
+    // Calculate font size according to rectangle height
+    int16_t textHeight;
+    setTextDatum(textDatum);
+    setTextColor(textColor, rectColor);
+    setTextSize(1); 
+    textHeight = fontHeight(2); 
+
+    while (textHeight < (h - 2 * r)) {
+        setTextSize(getTextSize() + 1);
+        textHeight = fontHeight(2);
+    }
+
+    setTextSize(getTextSize() - 1);
+    
+    // draw text inside the roundRect
+    drawString(label, x + w / 2, y + h / 2);
+}
+
+/***************************************************************************************
+** Function name:           drawSelectionGrid
+** Description:             Draw a row selection interface 
+***************************************************************************************/
+
+void TFT_eSPI::drawSelectionGrid(int32_t x, int32_t y, int32_t buttonWidth, int32_t buttonHeight, int32_t buttonSpacing, uint32_t colorNormal, uint32_t colorSelection, int32_t numOfSelect, const char* labels[], int32_t numLabels) {
+    for (int i = 0; i < numLabels; i++) {
+        int32_t btnY = y + i * (buttonHeight + buttonSpacing);
+        uint32_t rectColor = (i == numOfSelect) ? colorSelection : colorNormal;
+        drawRoundRectWithText(x, btnY, buttonWidth, buttonHeight, 10, rectColor, labels[i], 0xFFFF-rectColor, MC_DATUM);
+    }
+}
 
 /***************************************************************************************
 ** Function name:           drawTriangle
