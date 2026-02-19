@@ -227,6 +227,17 @@
 
   writecommand(0x11);
   delay(120);
+
+  // Clear memory
+  writecommand(0x2C);  // Memory Write command
+  startWrite();
+  
+  for(int i = 0; i < TFT_WIDTH * TFT_HEIGHT; i++) {
+    pushColor(TFT_BLACK);
+  }
+  
+  endWrite();
+  
   writecommand(0x29);
   delay(20);
 }
