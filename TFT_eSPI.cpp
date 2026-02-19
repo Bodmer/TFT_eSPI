@@ -769,6 +769,9 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Init.h"
 
+#elif defined (HX8347D_DRIVER)
+    #include "TFT_Drivers/HX8347D_Init.h"
+
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -869,6 +872,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Rotation.h"
+
+#elif defined (HX8347D_DRIVER)
+    #include "TFT_Drivers/HX8347D_Rotation.h"
 
 #endif
 
@@ -3402,6 +3408,26 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   DC_D; tft_Write_16(y1 | (y0 << 8));
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D;
+#elif defined (HX8347D_DRIVER)
+  SPI_BUSY_CHECK;
+  DC_C; tft_Write_8(TFT_CASET1);
+  DC_D; tft_Write_8(x0 >> 8);
+  DC_C; tft_Write_8(TFT_CASET2);
+  DC_D; tft_Write_8(x0 & 0xFF);
+  DC_C; tft_Write_8(TFT_CASET3);
+  DC_D; tft_Write_8(x1 >> 8);
+  DC_C; tft_Write_8(TFT_CASET4);
+  DC_D; tft_Write_8(x1 & 0xFF);
+  DC_C; tft_Write_8(TFT_PASET1);
+  DC_D; tft_Write_8(y0 >> 8);
+  DC_C; tft_Write_8(TFT_PASET2);
+  DC_D; tft_Write_8(y0 & 0xFF);
+  DC_C; tft_Write_8(TFT_PASET3);
+  DC_D; tft_Write_8(y1 >> 8);
+  DC_C; tft_Write_8(TFT_PASET4);
+  DC_D; tft_Write_8(y1 & 0xFF);
+  DC_C; tft_Write_8(TFT_RAMWR);
+  DC_D;
 #else
   #if defined (SSD1963_DRIVER)
     if ((rotation & 0x1) == 0) { transpose(x0, y0); transpose(x1, y1); }
@@ -3556,6 +3582,26 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   while (spi_is_readable(SPI_X)) (void)spi_get_hw(SPI_X)->dr;
   spi_get_hw(SPI_X)->icr = SPI_SSPICR_RORIC_BITS;
 
+#elif defined (HX8347D_DRIVER)
+  // Column addr set
+  DC_C; tft_Write_8(TFT_CASET1);
+  DC_D; tft_Write_8(xs >> 8);
+  DC_C; tft_Write_8(TFT_CASET2);
+  DC_D; tft_Write_8(xs & 0xFF);
+  DC_C; tft_Write_8(TFT_CASET3);
+  DC_D; tft_Write_8(xe >> 8);
+  DC_C; tft_Write_8(TFT_CASET4);
+  DC_D; tft_Write_8(xe & 0xFF);
+  
+  // Row addr set
+  DC_C; tft_Write_8(TFT_PASET1);
+  DC_D; tft_Write_8(ys >> 8);
+  DC_C; tft_Write_8(TFT_PASET2);
+  DC_D; tft_Write_8(ys & 0xFF);
+  DC_C; tft_Write_8(TFT_PASET3);
+  DC_D; tft_Write_8(ye >> 8);
+  DC_C; tft_Write_8(TFT_PASET4);
+  DC_D; tft_Write_8(ye & 0xFF);
 #else
   // Column addr set
   DC_C; tft_Write_8(TFT_CASET);
@@ -3753,6 +3799,32 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
     if (addr_row != y) {
       DC_C; tft_Write_8(TFT_PASET);
       DC_D; tft_Write_16(y | (y << 8));
+      addr_row = y;
+    }
+  #elif defined (HX8347D_DRIVER)
+    // No need to send x if it has not changed (speeds things up)
+    if (addr_col != x) {
+      DC_C; tft_Write_8(TFT_CASET1);
+      DC_D; tft_Write_8(x >> 8);
+      DC_C; tft_Write_8(TFT_CASET2);
+      DC_D; tft_Write_8(x & 0xFF);
+      DC_C; tft_Write_8(TFT_CASET3);
+      DC_D; tft_Write_8(x >> 8);
+      DC_C; tft_Write_8(TFT_CASET4);
+      DC_D; tft_Write_8(x & 0xFF);
+      addr_col = x;
+    }
+
+    // No need to send y if it has not changed (speeds things up)
+    if (addr_row != y) {
+      DC_C; tft_Write_8(TFT_PASET1);
+      DC_D; tft_Write_8(y >> 8);
+      DC_C; tft_Write_8(TFT_PASET2);
+      DC_D; tft_Write_8(y & 0xFF);
+      DC_C; tft_Write_8(TFT_PASET3);
+      DC_D; tft_Write_8(y >> 8);
+      DC_C; tft_Write_8(TFT_PASET4);
+      DC_D; tft_Write_8(y & 0xFF);
       addr_row = y;
     }
   #else
