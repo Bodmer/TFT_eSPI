@@ -769,6 +769,8 @@ void TFT_eSPI::init(uint8_t tc)
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Init.h"
 
+#elif defined (SSD1333_DRIVER)
+    #include "TFT_Drivers/SSD1333_Init.h"
 #endif
 
 #ifdef TFT_INVERSION_ON
@@ -870,6 +872,8 @@ void TFT_eSPI::setRotation(uint8_t m)
 #elif defined (HX8357C_DRIVER)
     #include "TFT_Drivers/HX8357C_Rotation.h"
 
+#elif defined (SSD1333_DRIVER)
+    #include "TFT_Drivers/SSD1333_Rotation.h"
 #endif
 
   delayMicroseconds(10);
@@ -3391,6 +3395,24 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     hw_write_masked(&spi_get_hw(SPI_X)->cr0, (16 - 1) << SPI_SSPCR0_DSS_LSB, SPI_SSPCR0_DSS_BITS);
   #endif
 #elif defined (SSD1351_DRIVER)
+  if (rotation & 1) {
+    transpose(x0, y0);
+    transpose(x1, y1);
+  }
+  SPI_BUSY_CHECK;
+  DC_C; tft_Write_8(TFT_CASET);
+  DC_D; tft_Write_16(x1 | (x0 << 8));
+  DC_C; tft_Write_8(TFT_PASET);
+  DC_D; tft_Write_16(y1 | (y0 << 8));
+  DC_C; tft_Write_8(TFT_RAMWR);
+  DC_D;
+#elif defined (SSD1333_DRIVER)
+  #ifdef CGRAM_OFFSET
+    x0+=colstart;
+    x1+=colstart;
+    y0+=rowstart;
+    y1+=rowstart;
+  #endif
   if (rotation & 1) {
     transpose(x0, y0);
     transpose(x1, y1);
