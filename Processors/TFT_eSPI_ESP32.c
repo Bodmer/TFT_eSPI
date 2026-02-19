@@ -796,7 +796,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     .max_transfer_sz = TFT_WIDTH * TFT_HEIGHT * 2 + 8, // TFT screen size
     .flags = 0,
     .intr_flags = 0
-  };
+  }
 
   int8_t pin = -1;
   if (ctrl_cs) pin = TFT_CS;
@@ -820,7 +820,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
     #else
       .post_cb = 0 //dma_end_callback
     #endif
-  };
+  }
   ret = spi_bus_initialize(spi_host, &buscfg, DMA_CHANNEL);
   ESP_ERROR_CHECK(ret);
   ret = spi_bus_add_device(spi_host, &devcfg, &dmaHAL);
