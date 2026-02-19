@@ -54,11 +54,66 @@ void TFT_eSPI::spi_begin_touch() {begin_touch_read_write();}
 void TFT_eSPI::spi_end_touch()   {  end_touch_read_write();}
 
 /***************************************************************************************
+** Function name:           Sspixfer
+** Description:             software SPI transfer. 
+***************************************************************************************/
+uint16_t SPIdout;
+uint16_t SPIdin;
+
+void Sspixfer (uint16_t dout)    // Exchange 8 bits of data over SPI
+{
+//  uint16_t tmp;                       // Data in
+  uint16_t SPImask = 0x80;              // Set bit mask
+  SPIdout = dout;				        // Set data to go
+  for (uint8_t lpcnt = 0; lpcnt < 8; lpcnt ++)   // Do 8 bits
+  {
+    digitalWrite (TOUCH_MOSI, ((SPIdout & SPImask) ? HIGH:LOW)); // Set up data out
+    SPImask = (SPImask >> 1);           // Mask for next bit
+    digitalWrite(TOUCH_CLK,1);          // CLK = 1
+    // tmp = (tmp << 1);                // Shift existing data along
+    SPIdin = (SPIdin << 1);             // Shift existing data along
+    digitalWrite(TOUCH_CLK,0);          // CLK = 0
+    ets_delay_us(1);                    // Delay
+    // tmp |= digitalRead(TOUCH_MISO);  // Shift data in
+    SPIdin |= digitalRead(TOUCH_MISO);  // Shift data in
+  }                                     // Go round again
+}                                       // All done
+
+/***************************************************************************************
 ** Function name:           getTouchRaw
 ** Description:             read raw touch position.  Always returns true.
 ***************************************************************************************/
 uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   uint16_t tmp;
+
+#ifdef SOFTSPI
+
+  digitalWrite(TOUCH_CS,0); 
+  Sspixfer(0xD0);            // Start new YP conversion
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0xD0);            // Read last 8 bits and start new YP conversion
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0xD0);            // Read last 8 bits and start new YP conversion
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0xD0);            // Read last 8 bits and start new YP conversion
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0x90);            // Read last 8 bits and start new XP conversion
+
+  *x  = SPIdin >>4;          // Transfer and re-align data  
+
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0x90);            // Read last 8 bits and start new XP conversion
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0x90);            // Read last 8 bits and start new XP conversion
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0x90);            // Read last 8 bits and start new XP conversion
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0);               // Read last 8 bits
+
+  *y  = SPIdin >>4;          // Transfer and re-align data 
+  digitalWrite(TOUCH_CS,1);
+
+#else
 
   begin_touch_read_write();
   
@@ -93,6 +148,8 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 
   end_touch_read_write();
 
+#endif
+
   return true;
 }
 
@@ -101,16 +158,38 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 ** Description:             read raw pressure on touchpad and return Z value. 
 ***************************************************************************************/
 uint16_t TFT_eSPI::getTouchRawZ(void){
+#if defined SOFTSPI
+
+  int16_t tz = 0xFFF;
+
+  digitalWrite(TOUCH_CS,0); 
+  Sspixfer(0xb0);            // Start new Z1 conversion
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0xc0);            // Read last 8 bits and start Z2 conversion
+  tz += (SPIdin >>4);
+
+  Sspixfer(0);               // Read first 8 bits
+  Sspixfer(0);               // Read last 8 bits
+  tz -= (SPIdin >>4);
+
+  digitalWrite(TOUCH_CS,1); 
+
+//  tz += Sspixfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
+//  tz -= Sspixfer16(0x00) >> 3;  // Read Z2
+
+#else
 
   begin_touch_read_write();
 
   // Z sample request
   int16_t tz = 0xFFF;
+
   spi.transfer(0xb0);               // Start new Z1 conversion
   tz += spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
   tz -= spi.transfer16(0x00) >> 3;  // Read Z2
 
   end_touch_read_write();
+#endif
 
   if (tz == 4095) tz = 0;
 

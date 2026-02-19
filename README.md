@@ -1,3 +1,6 @@
+CYD version now in: User_Setups\Setup303_CYD_ESP32-2432S028R.h 
+SoftSPI applied as found @ https://forum.arduino.cc/t/esp32-2432s028r-all-in-one-display-touch-spi-problems/1059746/20
+
 A ["Discussions"](https://github.com/Bodmer/TFT_eSPI/discussions) facility has been added for Q&A etc. Use the ["Issues"](https://github.com/Bodmer/TFT_eSPI/issues) tab only for problems with the library. Thanks!
 
 I have setup a Ko-fi account so you can ["buy me a coffee!"](https://github.com/Bodmer/TFT_eSPI/discussions) This encourages me to add new features and capabiities to TFT_eSPI.
