@@ -36,39 +36,47 @@
     writedata(0x00);
     writedata(0x00);
 
-    writecommand(0xE0);
-    writedata(0x0F);
-    writedata(0x1F);
-    writedata(0x1C);
-    writedata(0x0C);
-    writedata(0x0F);
-    writedata(0x08);
-    writedata(0x48);
-    writedata(0x98);
-    writedata(0x37);
-    writedata(0x0A);
-    writedata(0x13);
-    writedata(0x04);
-    writedata(0x11);
-    writedata(0x0D);
-    writedata(0x00);
- 
-    writecommand(0xE1);
-    writedata(0x0F);
-    writedata(0x32);
-    writedata(0x2E);
-    writedata(0x0B);
-    writedata(0x0D);
-    writedata(0x05);
-    writedata(0x47);
-    writedata(0x75);
-    writedata(0x37);
-    writedata(0x06);
-    writedata(0x10);
-    writedata(0x03);
-    writedata(0x24);
-    writedata(0x20);
-    writedata(0x00);
+    #if defined (TFT_PGAMCTRL_OFF)
+      // nill
+    #else
+      writecommand(0xE0);
+      writedata(0x0F);
+      writedata(0x1F);
+      writedata(0x1C);
+      writedata(0x0C);
+      writedata(0x0F);
+      writedata(0x08);
+      writedata(0x48);
+      writedata(0x98);
+      writedata(0x37);
+      writedata(0x0A);
+      writedata(0x13);
+      writedata(0x04);
+      writedata(0x11);
+      writedata(0x0D);
+      writedata(0x00);
+    #endif
+
+    #if defined (TFT_NGAMCTRL_OFF)
+      // nill
+    #else
+      writecommand(0xE1);
+      writedata(0x0F);
+      writedata(0x32);
+      writedata(0x2E);
+      writedata(0x0B);
+      writedata(0x0D);
+      writedata(0x05);
+      writedata(0x47);
+      writedata(0x75);
+      writedata(0x37);
+      writedata(0x06);
+      writedata(0x10);
+      writedata(0x03);
+      writedata(0x24);
+      writedata(0x20);
+      writedata(0x00);
+    #endif
  
     #if defined (TFT_PARALLEL_8_BIT) || defined (TFT_PARALLEL_16_BIT) || defined (RPI_DISPLAY_TYPE)
       writecommand(TFT_INVOFF);
