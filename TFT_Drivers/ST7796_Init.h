@@ -46,6 +46,17 @@
 	writedata(0x19);    //Timing for "Gate start"=25 (Tclk)
 	writedata(0xA5);    //Timing for "Gate End"=37 (Tclk), Gate driver EQ function ON
 	writedata(0x33);
+
+#if defined (WT32_SC01_PLUS)
+ 	writecommand(0xB1); //Frame Rate
+    writedata(0xB0);
+    writedata(0x02); 
+ 
+ 	writecommand(0xB5); //Frame Rate
+    writedata(0x02);
+    writedata(0x02);
+    writedata(0x04); 
+#endif
 	
 	writecommand(0xC1); //Power control2                          
 	writedata(0x06);    //VAP(GVDD)=3.85+( vcom+vcom offset), VAN(GVCL)=-3.85+( vcom+vcom offset)
