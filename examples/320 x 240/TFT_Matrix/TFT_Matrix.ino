@@ -1,3 +1,4 @@
+
 // A fun MATRIX-like screen demo of scrolling
 // Screen will flicker initially until fully drawn
 // then scroll smoothly
@@ -15,13 +16,16 @@
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
-
+#include "..\lib\TFT_eSPI\TFT_Drivers\ILI9341_Defines.h"
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 #define TEXT_HEIGHT 8 // Height of text to be printed and scrolled
 #define BOT_FIXED_AREA 0  // Number of lines in bottom fixed area (lines counted from bottom of screen)
 #define TOP_FIXED_AREA 0  // Number of lines in top fixed area (lines counted from top of screen)
 
+void setupScrollArea(uint16_t TFA, uint16_t BFA);
+int scroll_slow(int lines, int wait);
+void scrollAddress(uint16_t VSP);
 uint16_t yStart = TOP_FIXED_AREA;
 uint16_t yArea = 320 - TOP_FIXED_AREA - BOT_FIXED_AREA;
 uint16_t yDraw = 320 - BOT_FIXED_AREA - TEXT_HEIGHT;
