@@ -120,6 +120,7 @@
 
 //#include <User_Setups/Setup71_ESP32_S2_ST7789.h>       // Setup file for ESP32 S2 with ST7789
 //#include <User_Setups/Setup72_ESP32_ST7789_172x320.h>  // Setup file for ESP32 with ST7789 1.47" 172x320
+//#include <User_Setups/Setup73_ESP32_S3_ST7789V.h>      // Setup file for ESP32 S3 with ST7789V 240x320
 
 //#include <User_Setups/Setup77_ST7796U_ESP32_32E.h>       // Setup file for ESP32-32E with ST7796 3.5" 320x480
 
