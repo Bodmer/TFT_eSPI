@@ -21,7 +21,14 @@
 // #define TFT_BACKLIGHT_ON HIGH
 
 // #define TFT_INVERSION_ON  // Uncomment if colours are inverted
-// #define TFT_RGB_ORDER TFT_BGR  // Uncomment if red and blue are swapped
+#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+
+// FSPI port (SPI2) used unless following defined
+// On Arduino ESP32 Core 3.x, enable USE_HSPI_PORT and reduce
+// SPI_FREQUENCY to 20000000 to avoid crashes and corruption
+// #define USE_HSPI_PORT
+
+#define SPI_FREQUENCY  40000000
 
 #define LOAD_GLCD
 #define LOAD_FONT2
@@ -32,5 +39,3 @@
 #define LOAD_GFXFF
 
 #define SMOOTH_FONT
-
-#define SPI_FREQUENCY  40000000
