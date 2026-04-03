@@ -210,6 +210,20 @@
                                 dmaHal.Instance = DMA1_Channel5
     #endif
 
+  #elif defined (STM32U5xx)
+    // STM32U5 series with GPDMA (General Purpose DMA)
+    #define STM32_DMA
+    #if (TFT_SPI_PORT == 1)
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI1; \
+                                dmaHal.Instance = GPDMA1_Channel0
+    #elif (TFT_SPI_PORT == 2)
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI2; \
+                                dmaHal.Instance = GPDMA1_Channel1
+    #elif (TFT_SPI_PORT == 3)
+      #define INIT_TFT_DATA_BUS spiHal.Instance = SPI3; \
+                                dmaHal.Instance = GPDMA1_Channel2
+    #endif
+
   #else
     // For STM32 processor with no implemented DMA support (yet)
     #if (TFT_SPI_PORT == 1)
@@ -1042,10 +1056,31 @@
 
   //#define DC_DELAY delayMicroseconds(1) // Premature BSY clear Hardware bug?
 
-  #define SPI_TXE_CHECK  while(!__HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_TXE)){}
-                         //BSY check must allow for APB clock delay by checking TXE flag first
-  #define SPI_BUSY_CHECK SPI_TXE_CHECK; while( __HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_BSY)){}
-  #define TX_FIFO        SPI_TXE_CHECK; *((__IO uint8_t *)&SPIX->DR)
+  #if defined(STM32U5xx)
+    // STM32U5 has a redesigned SPI peripheral with different register/flag names:
+    //   DR    → TXDR         (separate TX/RX data registers)
+    //   TXE   → TXP          (Tx-Packet space available)
+    //   BSY   → TXC          (TxFIFO transmission complete, inverted sense)
+    #define SPI_TXE_CHECK  while(!__HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_TXP)){}
+    // Guard with SPE check: after DMA, SPI_CloseTransfer disables SPI and TXC may not assert
+    #define SPI_BUSY_CHECK while(READ_BIT(SPIX->CR1, SPI_CR1_SPE) && \
+                                 !__HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_TXC)){}
+    #define TX_FIFO        SPI_TXE_CHECK; *((__IO uint8_t *)&SPIX->TXDR)
+
+    // U5 SPI requires explicit TSIZE=0 (unlimited mode) + SPE + CSTART for streaming writes
+    #undef  SET_BUS_WRITE_MODE
+    #define SET_BUS_WRITE_MODE { \
+      CLEAR_BIT(SPIX->CR1, SPI_CR1_SPE); \
+      MODIFY_REG(SPIX->CR2, SPI_CR2_TSIZE, 0); \
+      SET_BIT(SPIX->CR1, SPI_CR1_SPE); \
+      SET_BIT(SPIX->CR1, SPI_CR1_CSTART); \
+    }
+  #else
+    #define SPI_TXE_CHECK  while(!__HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_TXE)){}
+                           //BSY check must allow for APB clock delay by checking TXE flag first
+    #define SPI_BUSY_CHECK SPI_TXE_CHECK; while( __HAL_SPI_GET_FLAG(&spiHal, SPI_FLAG_BSY)){}
+    #define TX_FIFO        SPI_TXE_CHECK; *((__IO uint8_t *)&SPIX->DR)
+  #endif
 
   #define tft_Write_8(C)   TX_FIFO = (C); SPI_BUSY_CHECK
   #define tft_Write_16(C)  TX_FIFO = (C)>>8; TX_FIFO = (C); SPI_BUSY_CHECK
