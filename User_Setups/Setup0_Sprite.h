@@ -1,20 +1,5 @@
 // For sprite only functionality (untested)
-#define USER_SETUP_ID 0
-
-#define TFT_WIDTH  1000
-#define TFT_HEIGHT 1000
-
-#define TFT_INIT_DELAY 0
-
-#define TFT_NOP     0x00
-#define TFT_SWRST   0x00
-
-#define TFT_CASET   0x00
-#define TFT_PASET   0x00
-#define TFT_RAMWR   0x00
-
-#define TFT_RAMRD   0x00
-#define TFT_IDXRD   0x00
+TFT_eSPI
 
 /*
 #define TFT_MADCTL  0x00
