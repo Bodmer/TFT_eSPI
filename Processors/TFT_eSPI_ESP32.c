@@ -110,9 +110,9 @@ uint8_t TFT_eSPI::readByte(void)
 #if defined (TFT_PARALLEL_8_BIT)
   RD_L;
   uint32_t reg;           // Read all GPIO pins 0-31
-  reg = gpio_input_get(); // Read three times to allow for bus access time
-  reg = gpio_input_get();
-  reg = gpio_input_get(); // Data should be stable now
+  reg = REG_READ(GPIO_IN_REG); // Read three times to allow for bus access time
+  reg = REG_READ(GPIO_IN_REG);
+  reg = REG_READ(GPIO_IN_REG); // Data should be stable now
   RD_H;
 
   // Check GPIO bits used and build value
