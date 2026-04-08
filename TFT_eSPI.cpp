@@ -533,10 +533,16 @@ TFT_eSPI::TFT_eSPI(int16_t w, int16_t h)
 void TFT_eSPI::initBus(void) {
 
 #ifdef TFT_CS
-  if (TFT_CS >= 0) {
-    pinMode(TFT_CS, OUTPUT);
-    digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
-  }
+  #if defined SOFTSPI 				// CYD changes
+    pinMode(TOUCH_MOSI, OUTPUT);	// CYD changes
+    pinMode(TOUCH_MISO, INPUT);		// CYD changes
+    pinMode(TOUCH_CLK, OUTPUT);		// CYD changes
+  #else 							// CYD changes
+    if (TFT_CS >= 0) {
+      pinMode(TFT_CS, OUTPUT);
+      digitalWrite(TFT_CS, HIGH); // Chip select high (inactive)
+    }
+  #endif 							// CYD changes
 #endif
 
 // Configure chip select for touchscreen controller if present
