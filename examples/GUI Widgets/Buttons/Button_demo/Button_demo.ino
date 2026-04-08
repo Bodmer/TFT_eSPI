@@ -4,10 +4,13 @@
 // https://github.com/Bodmer/TFT_eWidget
 
 #include <FS.h>
-#include "Free_Fonts.h" // Include the header file attached to this sketch
+#include "..\lib\TFT_eSPI\examples\GUI Widgets\Buttons\Button_demo\Free_Fonts.h" // Include the header file attached to this sketch
 
 #include <TFT_eSPI.h>              // Hardware-specific library
-#include <TFT_eWidget.h>           // Widget library
+#include "../lib/TFT_eSPI/TFT_eWidget/src/TFT_eWidget.h"       // Widget library
+
+
+
 
 TFT_eSPI tft = TFT_eSPI();         // Invoke custom library
 
@@ -24,6 +27,74 @@ ButtonWidget btnR = ButtonWidget(&tft);
 // This is more useful where large numbers of buttons are employed
 ButtonWidget* btn[] = {&btnL , &btnR};;
 uint8_t buttonCount = sizeof(btn) / sizeof(btn[0]);
+
+
+
+// Declaraton of functions
+void btnL_pressAction(void);
+void btnL_releaseAction(void);
+void btnR_pressAction(void);
+void btnR_releaseAction(void);
+void initButtons();
+void touch_calibrate();
+
+
+
+
+
+
+
+
+
+void setup() {
+  Serial.begin(115200);
+  tft.begin();
+  tft.setRotation(0);
+  tft.fillScreen(TFT_BLACK);
+  tft.setFreeFont(FF18);
+
+  // Calibrate the touch screen and retrieve the scaling factors
+  touch_calibrate();
+  initButtons();
+}
+
+void loop() {
+  static uint32_t scanTime = millis();
+  uint16_t t_x = 9999, t_y = 9999; // To store the touch coordinates
+
+  // Scan keys every 50ms at most
+  if (millis() - scanTime >= 50) {
+    // Pressed will be set true if there is a valid touch on the screen
+    bool pressed = tft.getTouch(&t_x, &t_y);
+    scanTime = millis();
+    for (uint8_t b = 0; b < buttonCount; b++) {
+      if (pressed) {
+        if (btn[b]->contains(t_x, t_y)) {
+          btn[b]->press(true);
+          btn[b]->pressAction();
+        }
+      }
+      else {
+        btn[b]->press(false);
+        btn[b]->releaseAction();
+      }
+    }
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void btnL_pressAction(void)
 {
@@ -88,42 +159,7 @@ void initButtons() {
   btnR.drawSmoothButton(false, 3, TFT_BLACK); // 3 is outline width, TFT_BLACK is the surrounding background colour for anti-aliasing
 }
 
-void setup() {
-  Serial.begin(115200);
-  tft.begin();
-  tft.setRotation(0);
-  tft.fillScreen(TFT_BLACK);
-  tft.setFreeFont(FF18);
 
-  // Calibrate the touch screen and retrieve the scaling factors
-  touch_calibrate();
-  initButtons();
-}
-
-void loop() {
-  static uint32_t scanTime = millis();
-  uint16_t t_x = 9999, t_y = 9999; // To store the touch coordinates
-
-  // Scan keys every 50ms at most
-  if (millis() - scanTime >= 50) {
-    // Pressed will be set true if there is a valid touch on the screen
-    bool pressed = tft.getTouch(&t_x, &t_y);
-    scanTime = millis();
-    for (uint8_t b = 0; b < buttonCount; b++) {
-      if (pressed) {
-        if (btn[b]->contains(t_x, t_y)) {
-          btn[b]->press(true);
-          btn[b]->pressAction();
-        }
-      }
-      else {
-        btn[b]->press(false);
-        btn[b]->releaseAction();
-      }
-    }
-  }
-
-}
 
 void touch_calibrate()
 {
@@ -189,3 +225,4 @@ void touch_calibrate()
     }
   }
 }
+

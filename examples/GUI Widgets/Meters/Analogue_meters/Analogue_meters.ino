@@ -15,7 +15,7 @@
 */
 
 #include <TFT_eSPI.h>     // Hardware-specific library
-#include <TFT_eWidget.h>  // Widget library
+#include "../lib/TFT_eSPI/TFT_eWidget/src/TFT_eWidget.h"// Widget library
 
 TFT_eSPI tft  = TFT_eSPI();      // Invoke custom library
 
