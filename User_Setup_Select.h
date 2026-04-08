@@ -166,6 +166,8 @@
 
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 //#include <User_Setups/Setup302_Waveshare_ESP32S3_GC9A01.h>            // Setup file for Waveshare ESP32-S3-Touch-LCD-1.28 board with GC9A01 240*240 TFT
+//#include <User_Setups/Setup303_Waveshare_GC9D01.h>      // Setup file for Waveshare 0.71" round LCD board with 160 x 160 IPS
+
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
@@ -282,6 +284,9 @@
 #elif defined (GC9A01_DRIVER)
      #include "TFT_Drivers/GC9A01_Defines.h"
      #define  TFT_DRIVER 0x9A01
+#elif defined (GC9D01_DRIVER)
+     #include "TFT_Drivers/GC9D01_Defines.h"
+     #define  TFT_DRIVER 0x9D01
 #elif defined (ILI9225_DRIVER)
      #include "TFT_Drivers/ILI9225_Defines.h"
      #define  TFT_DRIVER 0x9225
