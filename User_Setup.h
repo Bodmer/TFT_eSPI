@@ -132,6 +132,10 @@
 // #define TFT_BL   32            // LED back-light control pin
 // #define TFT_BACKLIGHT_ON HIGH  // Level to turn ON back-light (HIGH or LOW)
 
+// For displays that control backlight through analogOut you should use these
+// ( For example esP32-2424S012 and similar)
+// #define TFT_ANALOG_BL 3 // analogWrite pin LED Backlight through
+// #define TFT_ANALOG_BL_POWER 40 // Power in scale of 0-255 (Start small like 40 and experiment)
 
 
 // We must use hardware SPI, a minimum of 3 GPIO pins is needed.
@@ -239,6 +243,16 @@
 //#define TFT_DC   27  // Data Command control pin
 //#define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
 //#define TFT_BL   32  // LED back-light (required for M5Stack)
+
+
+// For the "esP32-2424S012" module use these #define lines
+//#define TFT_MOSI 7 // In some display driver board, it might be written as “SDA” and so on.
+//#define TFT_SCLK 6
+//#define TFT_CS 10 // Chip select control pin
+//#define TFT_DC 2 // Data Command control pin
+//#define TFT_RST -1 // Reset pin (could connect to Arduino RESET pin)
+//#define TFT_ANALOG_BL 3 // Enable backlight for esP32-2424S012)
+//#define TFT_ANALOG_BL_POWER 40 // Set power to 40/255 .
 
 // ######       EDIT THE PINs BELOW TO SUIT YOUR ESP32 PARALLEL TFT SETUP        ######
 
