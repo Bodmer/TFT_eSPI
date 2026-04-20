@@ -132,9 +132,7 @@
 **                         Section 2: General Pin configuration
 ***************************************************************************************/
 // General pins
-#if CONFIG_TFT_CS == -1
-    #error "Invalid Chip Select pin. Check TFT_eSPI configuration"
-#else
+#ifdef CONFIG_TFT_CS
     #define TFT_CS          CONFIG_TFT_CS
 #endif
 
@@ -220,7 +218,7 @@
     #else
         #define TFT_D7      CONFIG_TFT_D7
     #endif
-    
+
     #if CONFIG_TFT_WR == -1
         #error "Invalid Write strobe pin. Check TFT_eSPI configuration"
     #else
@@ -260,7 +258,7 @@
     #if CONFIG_TFT_SPI_READ_FREQ != -1
         #define SPI_READ_FREQUENCY CONFIG_TFT_SPI_READ_FREQ
     #endif
-    
+
     #ifdef CONFIG_TFT_SDA_READ
         #define TFT_SDA_READ
     #endif
