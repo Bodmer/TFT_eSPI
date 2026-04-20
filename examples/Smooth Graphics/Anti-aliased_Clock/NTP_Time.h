@@ -253,19 +253,20 @@ void decodeNTP(void)
 
       timeValid = true;
 
+      time_t local = TIMEZONE.toLocal(utc);
       // Print the hour, minute and second:
-      Serial.print("Received NTP UTC time : ");
+      Serial.print("Received NTP Local time : ");
 
-      uint8_t hh = hour(utc);
+      uint8_t hh = hour(local);
       Serial.print(hh); // print the hour (86400 equals secs per day)
 
       Serial.print(':');
-      uint8_t mm = minute(utc);
+      uint8_t mm = minute(local);
       if (mm < 10 ) Serial.print('0');
       Serial.print(mm); // print the minute (3600 equals secs per minute)
 
       Serial.print(':');
-      uint8_t ss = second(utc);
+      uint8_t ss = second(local);
       if ( ss < 10 ) Serial.print('0');
       Serial.println(ss); // print the second
 
