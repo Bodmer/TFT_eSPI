@@ -587,6 +587,9 @@ void TFT_eSPI::initBus(void) {
     pinMode(TFT_D5, OUTPUT); digitalWrite(TFT_D5, HIGH);
     pinMode(TFT_D6, OUTPUT); digitalWrite(TFT_D6, HIGH);
     pinMode(TFT_D7, OUTPUT); digitalWrite(TFT_D7, HIGH);
+    #if defined (WT32_SC01_PLUS)
+    pinMode(46, OUTPUT); digitalWrite(46, HIGH);
+    #endif
   #endif
 
   PARALLEL_INIT_TFT_DATA_BUS;
@@ -6155,4 +6158,3 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
   #include "Extensions/AA_graphics.cpp"  // Loaded if SMOOTH_FONT is defined by user
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////
-

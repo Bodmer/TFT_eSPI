@@ -124,13 +124,18 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 {
   // Arduino generic native function
   pinMode(TFT_D0, mode);
-  pinMode(TFT_D1, mode);
+  #if !defined (WT32_SC01_PLUS)
+    pinMode(TFT_D1, mode);
+  #else
+    pinMode(46, mode);
+  #endif
   pinMode(TFT_D2, mode);
   pinMode(TFT_D3, mode);
   pinMode(TFT_D4, mode);
   pinMode(TFT_D5, mode);
   pinMode(TFT_D6, mode);
   pinMode(TFT_D7, mode);
+  
 }
 
 /***************************************************************************************

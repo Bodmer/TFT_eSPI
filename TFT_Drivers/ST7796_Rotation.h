@@ -30,7 +30,11 @@
 #endif
       break;
     case 2:
+#if defined (WT32_SC01_PLUS)
+      writedata(TFT_MAD_MY | TFT_MAD_COLOR_ORDER | TFT_MAD_ML);
+#else
       writedata(TFT_MAD_MY | TFT_MAD_COLOR_ORDER);
+#endif
       _width  = _init_width;
       _height = _init_height;
 #ifdef CGRAM_OFFSET
