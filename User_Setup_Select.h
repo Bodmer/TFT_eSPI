@@ -166,6 +166,7 @@
 
 //#include <User_Setups/Setup301_BW16_ST7735.h>            // Setup file for Bw16-based boards with ST7735 160 x 80 TFT
 //#include <User_Setups/Setup302_Waveshare_ESP32S3_GC9A01.h>            // Setup file for Waveshare ESP32-S3-Touch-LCD-1.28 board with GC9A01 240*240 TFT
+//#include <User_Setups/Setup303_Waveshare_RP2350_ST7789T3.h>           // Setup file for Waveshare RP2350-Touch-LCD-2 board with ST7789T3 240*320 TFT
 
 //#include <User_Setups/SetupX_Template.h>     // Template file for a setup
 
@@ -294,6 +295,9 @@
 #elif defined (HX8357C_DRIVER)
      #include "TFT_Drivers/HX8357C_Defines.h"
      #define  TFT_DRIVER 0x835C
+#elif defined (ST7789T3_DRIVER)
+     #include "TFT_Drivers/ST7789T3_Defines.h"
+     #define TFT_DRIVER 0x7789
 
                               // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
                               // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp
