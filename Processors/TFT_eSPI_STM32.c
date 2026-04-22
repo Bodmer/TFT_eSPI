@@ -623,6 +623,12 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
 
   __HAL_LINKDMA(&spiHal, hdmatx, dmaHal);   // Attach DMA engine to SPI peripheral
 
+  // The SPI peripheral is already configured and enabled by Arduino's SPI.begin(),
+  // but spiHal is a separate HAL handle with only Instance set. HAL_SPI_Transmit_DMA
+  // requires State == HAL_SPI_STATE_READY, so we must set it here. After each
+  // completed DMA transfer, the HAL callback resets State back to READY automatically.
+  spiHal.State = HAL_SPI_STATE_READY;
+
   return DMA_Enabled = true;
 }
 
