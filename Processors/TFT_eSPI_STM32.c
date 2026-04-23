@@ -202,7 +202,8 @@ void TFT_eSPI::busDir(uint32_t mask, uint8_t mode)
 #endif
 }
 
-
+// We dont need this. CubeMX will create code for setting the gpiomode.
+#ifndef CONFIG_TFT_eSPI_STM32CUBE
 /***************************************************************************************
 ** Function name:           GPIO direction control  - supports class functions
 ** Description:             Set STM32 GPIO pin to input or output (set high) ASAP
@@ -215,6 +216,7 @@ void TFT_eSPI::gpioMode(uint8_t gpio, uint8_t mode)
   // Input with pullup
   else pin_function(pn, STM_PIN_DATA(STM_MODE_INPUT, GPIO_PULLUP, 0));
 }
+#endif
 
 /***************************************************************************************############# UNTESTED ###################
 ** Function name:           read byte  - supports class functions
