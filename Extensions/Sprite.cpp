@@ -1244,6 +1244,79 @@ void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const u
 #endif // if ESP32 check
 }
 
+/***************************************************************************************
+** Function name:           pushImage
+** Description:             push 8-bit colour FLASH (PROGMEM) image into a defined area
+***************************************************************************************/
+void  TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *data, uint16_t transparent)
+{
+#ifdef ESP32
+  pushImage(x, y, w, h, (uint16_t*) data);
+#else
+  // Partitioned memory FLASH processor
+  if (data == nullptr || !_created) return;
+
+  PI_CLIP;
+
+  if (_bpp == 16) // Plot an 8 bpp image into a 16 bpp Sprite
+  {
+    uint8_t msbColor = 0;
+    uint8_t lsbColor = 0;
+    uint8_t  blue[] = {0, 11, 21, 31}; // blue 2 to 5-bit colour lookup table
+    uint16_t color16 = 0;
+    for (int32_t yp = dy; yp < dy + dh; yp++)
+    {
+      int32_t ox = x;
+      for (int32_t xp = dx; xp < dx + dw; xp++)
+      {
+        uint8_t color = pgm_read_byte(data + xp + yp * w);
+        //convert to 16-bit color
+        //          =====Green=====     ===============Red==============
+        msbColor = (color & 0x1C)>>2 | (color & 0xC0)>>3 | (color & 0xE0);
+        //          =====Green=====    =======Blue======
+        lsbColor = (color & 0x1C)<<3 | blue[color & 0x03];
+        color16 = ((uint16_t)msbColor << 8) | lsbColor;
+        _img[ox + y * _iwidth] = color16;
+        ox++;
+      }
+      y++;
+    }
+  }
+
+  else if (_bpp == 8) // Plot an 8  bpp image into a 8 bpp Sprite
+  {
+    for (int32_t yp = dy; yp < dy + dh; yp++)
+    {
+      int32_t ox = x;
+      for (int32_t xp = dx; xp < dx + dw; xp++)
+      {
+        uint8_t color = pgm_read_byte(data + xp + yp * w);
+        if(transparent == 0xFFFF || color != transparent){
+          _img8[ox + y * _iwidth] = color;
+        }
+        ox++;
+      }
+      y++;
+    }
+  }
+
+  else if (_bpp == 4)
+  {
+    #ifdef TFT_eSPI_DEBUG
+    Serial.println("TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *data) not implemented");
+    #endif
+    return;
+  }
+
+  else
+  {
+    #ifdef TFT_eSPI_DEBUG
+    Serial.println("TFT_eSprite::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint8_t *data) not implemented");
+    #endif
+    return;
+  }
+#endif // if ESP32 check
+}
 
 /***************************************************************************************
 ** Function name:           setWindow

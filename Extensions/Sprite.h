@@ -117,6 +117,7 @@ class TFT_eSprite : public TFT_eSPI {
            // Write an image (colour bitmap) to the sprite.
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t *data, uint8_t sbpp = 0);
   void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, const uint16_t *data);
+  void     pushImage(int32_t x0, int32_t y0, int32_t w, int32_t h, const uint8_t *data, uint16_t transparent = 0xFFFF);
 
            // Push the sprite to the TFT screen, this fn calls pushImage() in the TFT class.
            // Optionally a "transparent" colour can be defined, pixels of that colour will not be rendered
