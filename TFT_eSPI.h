@@ -543,7 +543,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
            // By default the arc is drawn with square ends unless the "roundEnds" parameter is included and set true
            // Angle = 0 is at 6 o'clock position, 90 at 9 o'clock etc. The angles must be in range 0-360 or they will be clipped to these limits
            // The start angle may be larger than the end angle. Arcs are always drawn clockwise from the start angle.
-  void     drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32_t startAngle, uint32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds = false);
+  void     drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32_t startAngle, uint32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds = false, uint32_t end_bg_color = 0);
 
            // As per "drawSmoothArc" except the ends of the arc are NOT anti-aliased, this facilitates dynamic arc length changes with
            // arc segments and ensures clean segment joints. 
