@@ -660,6 +660,10 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   void     setTextColor(uint16_t color),                    // Set character (glyph) color only (background not over-written)
            setTextColor(uint16_t fgcolor, uint16_t bgcolor, bool bgfill = false),  // Set character (glyph) foreground and background colour, optional background fill for smooth fonts
            setTextSize(uint8_t size);                       // Set character size multiplier (this increases pixel size)
+  
+  void     invertColors();                                  //invert textcolor and textbgcolor
+  uint16_t getTextColor();                                  //get the textcolor
+  uint16_t getTextBgColor();                                //get the textbgcolor
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
 

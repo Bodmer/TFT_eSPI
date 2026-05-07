@@ -2929,6 +2929,36 @@ void TFT_eSPI::setTextColor(uint16_t c, uint16_t b, bool bgfill)
   _fillbg     = bgfill;
 }
 
+/***************************************************************************************
+** Function name:           getTextColor
+** Description:             get the font foreground colour
+***************************************************************************************/
+uint16_t TFT_eSPI::getTextColor()
+{
+  return textcolor;
+}
+
+/***************************************************************************************
+** Function name:           getTextBgColor
+** Description:             get the font background colour
+***************************************************************************************/
+uint16_t TFT_eSPI::getTextBgColor()
+{
+  return textbgcolor;
+}
+
+/***************************************************************************************
+** Function name:           invertColors
+** Description:             Changes foreground and background colors
+***************************************************************************************/
+void TFT_eSPI::invertColors()
+{
+  uint16_t cor = textcolor;
+
+  textcolor   = textbgcolor;
+  textbgcolor = cor;
+
+}
 
 /***************************************************************************************
 ** Function name:           setPivot
