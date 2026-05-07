@@ -7,6 +7,11 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 
 TFT_eSprite spr = TFT_eSprite(&tft);
 
+
+
+unsigned int rainbow(byte value);
+void getCoord(int16_t x, int16_t y, float *xp1, float *yp1, float *xp2, float *yp2, int16_t r1, int16_t r2, float a);
+
 // =========================================================================
 // Setup
 // =========================================================================
