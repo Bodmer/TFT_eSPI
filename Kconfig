@@ -59,6 +59,8 @@ menu "TFT_eSPI"
             bool "ST7796"
         config TFT_SSD1351_DRIVER
             bool "SSD1351"
+		config TFT_SSD1333_DRIVER
+            bool "SSD1333"
         config TFT_SSD1963_480_DRIVER
             bool "SSD1963_480"
         config TFT_SSD1963_800_DRIVER
