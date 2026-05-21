@@ -64,10 +64,14 @@ SPI2_HOST = 1,  ///< actually SPI1
 SPI3_HOST = 2,  ///< actually SPI2
 */
 
-#if ESP_ARDUINO_VERSION_MAJOR < 3
-#define SPI_PORT SPI2_HOST
+#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C5 || \
+    CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2 || \
+    CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+  #define SPI_PORT 2  // SPI3_HOST = actually SPI2 hw, only one available
+#elif ESP_ARDUINO_VERSION_MAJOR < 3
+  #define SPI_PORT SPI2_HOST  // legacy ESP32 classic
 #else
-#define SPI_PORT 2
+  #define SPI_PORT 2
 #endif
 
 #ifdef RPI_DISPLAY_TYPE
