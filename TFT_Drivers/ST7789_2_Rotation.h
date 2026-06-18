@@ -25,6 +25,12 @@
         colstart = 35;
         rowstart = 0;
       }
+      else if(_init_width == 128 && _init_height == 128)
+      {
+        colstart = 2;
+        rowstart = 1;
+      }
+      
       else
       {
         colstart = 0;
@@ -58,6 +64,11 @@
       {
         colstart = 0;
         rowstart = 35;
+      }
+      else if(_init_width == 128 && _init_height == 128)
+      {
+        colstart = 1;
+        rowstart = 2;
       }
       else
       {
@@ -93,6 +104,11 @@
         colstart = 35;
         rowstart = 0;
       }
+      else if(_init_width == 128 && _init_height == 128)
+      {
+        colstart = 2;
+        rowstart = 1;
+      }
       else
       {
         colstart = 0;
@@ -125,6 +141,11 @@
       {
         colstart = 0;
         rowstart = 35;
+      }
+      else if(_init_width == 128 && _init_height == 128)
+      {
+        colstart = 1;
+        rowstart = 2;
       }
       else
       {
