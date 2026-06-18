@@ -2983,6 +2983,26 @@ void TFT_eSPI::setTextWrap(bool wrapX, bool wrapY)
   textwrapY = wrapY;
 }
 
+/***************************************************************************************
+** Function name:           getTextWrapX
+** Description:             Returns current text wrap width setting
+***************************************************************************************/
+bool TFT_eSPI::getTextWrapX() {
+  return textwrapX;
+}
+bool TFT_eSPI::getTextWrap() {
+  return textwrapX;
+}
+
+
+/***************************************************************************************
+** Function name:           getTextWrapY
+** Description:             Returns current text wrap height setting
+***************************************************************************************/
+bool TFT_eSPI::getTextWrapY() {
+  return textwrapY;
+}
+
 
 /***************************************************************************************
 ** Function name:           setTextDatum
