@@ -991,10 +991,10 @@ fastBlend(A alpha, F fgc, B bgc)
 {
   // Split out and blend 5-bit red and blue channels
   uint32_t rxb = bgc & 0xF81F;
-  rxb += ((fgc & 0xF81F) - rxb) * (alpha >> 2) >> 6;
+  rxb += (((fgc & 0xF81F) - rxb) * (alpha >> 2) + 31*(1+32*64)) >> 6;
   // Split out and blend 6-bit green channel
   uint32_t xgx = bgc & 0x07E0;
-  xgx += ((fgc & 0x07E0) - xgx) * alpha >> 8;
+  xgx += (((fgc & 0x07E0) - xgx) * alpha + 63*32) >> 8;
   // Recombine channels
   return (rxb & 0xF81F) | (xgx & 0x07E0);
 }
