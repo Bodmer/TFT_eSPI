@@ -16,6 +16,9 @@
   display. Modification of this sketch may lead to problems
   unless the ILI9341 data sheet has been understood!
 
+  // If you want to use other drivers, modify the variables ILI9341_VSCRDEF and ILI9341_VSCRSADD 
+  // for your specific driver. You can check them in TFT_eSPI/TFT_Drivers/<Driver>_Defines.h
+
   Updated by Bodmer 21/12/16 for TFT_eSPI library:
   https://github.com/Bodmer/TFT_eSPI
   
