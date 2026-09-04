@@ -61,7 +61,7 @@
 //#define SSD1963_480_DRIVER
 //#define SSD1963_800_DRIVER
 //#define SSD1963_800ALT_DRIVER
-//#define ILI9225_DRIVER
+#define ILI9225_DRIVER
 //#define GC9A01_DRIVER
 
 // Some displays support SPI reads via the MISO pin, other displays have a single
