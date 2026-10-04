@@ -16,13 +16,13 @@ constexpr int16_t frequencyCounterLimit = 30000;
 constexpr uint16_t backgroundColor = TFT_BLACK;
 constexpr int plotLeft = 12;
 constexpr int plotTop = 32;
-constexpr int plotWidth = 300;
+constexpr int plotWidth = 344;
 constexpr int plotHeight = 208;
 constexpr int horizontalDivisions = 8;
 constexpr int verticalDivisions = 4;
-constexpr int plotSampleCount = 424;
-constexpr int panelLeft = 322;
-constexpr int panelWidth = 150;
+constexpr int plotSampleCount = plotWidth-2;
+constexpr int panelLeft = 368;
+constexpr int panelWidth = 100;
 constexpr int panelTop = 10;
 constexpr int panelRowHeight = 56;
 
@@ -316,8 +316,13 @@ TFT_eSPI display;
 float measuredFrequencyHz = 0.0f;
 bool frequencyOverRange = false;
 uint32_t lastFrequencyWindowMs = 0;
-float displayFrameRate = 0.0f;
-uint32_t previousRenderUs = 0;
+float measurementRateHz = 0.0f;
+uint32_t previousMeasurementUs = 0;
+uint32_t lastAdcUpdateMs = 0;
+String lastMeasurementValues[4];
+String lastFooterValues[3];
+
+void drawMeasurementBox(int row, const char* title, uint16_t color);
 
 void drawStaticUi() {
   display.setRotation(1);
@@ -335,11 +340,12 @@ void drawStaticUi() {
   }
   display.drawRect(plotLeft, plotTop, plotWidth, plotHeight, TFT_WHITE);
 
+  drawMeasurementBox(0, "Vpeak-peak", TFT_CYAN);
+  drawMeasurementBox(1, "Voffset", TFT_GREEN);
+  drawMeasurementBox(2, "Sampling rate", TFT_ORANGE);
+  drawMeasurementBox(3, "Frequency", TFT_YELLOW);
+
   display.drawFastHLine(12, 248, display.width() - 24, TFT_DARKGREY);
-  display.setTextColor(TFT_LIGHTGREY, backgroundColor);
-  display.drawString("V/div", 12, 256, 1);
-  display.drawString("Time/div", 146, 256, 1);
-  display.drawString("Frame rate", 340, 256, 1);
 }
 
 String formatNumber(float value) {
@@ -396,41 +402,58 @@ String formatTime(float seconds) {
   return formatNumber(seconds * 1000000000.0f) + " ns";
 }
 
-void drawMeasurementBox(int row, const char* title, const String& value,
-                        uint16_t color) {
+void drawMeasurementBox(int row, const char* title, uint16_t color) {
   const int y = panelTop + row * panelRowHeight;
-  display.fillRect(panelLeft, y, panelWidth, panelRowHeight - 4,
-                   backgroundColor);
   display.drawRect(panelLeft, y, panelWidth, panelRowHeight - 4, color);
   display.setTextColor(color, backgroundColor);
   display.drawString(title, panelLeft + 5, y + 4, 1);
+}
+
+void drawMeasurementValue(int row, const String& value) {
+  if (lastMeasurementValues[row] == value) {
+    return;
+  }
+
+  const int y = panelTop + row * panelRowHeight;
+  display.fillRect(panelLeft + 2, y + 19, panelWidth - 4, 28,
+                   backgroundColor);
   display.setTextColor(TFT_WHITE, backgroundColor);
   display.drawCentreString(value, panelLeft + panelWidth / 2, y + 20, 2);
+  lastMeasurementValues[row] = value;
+}
+
+void drawFooterValue(int index, int x, int width, const String& value) {
+  if (lastFooterValues[index] == value) {
+    return;
+  }
+
+  display.fillRect(x, 255, width, 14, backgroundColor);
+  display.setTextColor(TFT_WHITE, backgroundColor);
+  display.drawString(value, x, 256, 1);
+  lastFooterValues[index] = value;
 }
 
 void drawDashboard() {
-  drawMeasurementBox(0, "Vpeak-peak", formatVoltage(Vpp), TFT_CYAN);
-  drawMeasurementBox(1, "Voffset", formatVoltage(offset), TFT_GREEN);
-  drawMeasurementBox(2, "Sampling rate", formatSamplingRate(Sampling_rate),
-                     TFT_ORANGE);
+  drawMeasurementValue(0, formatVoltage(Vpp));
+  drawMeasurementValue(1, formatVoltage(offset));
+  drawMeasurementValue(2, formatSamplingRate(Sampling_rate));
 
   const String frequencyValue = frequencyOverRange
       ? ">120 kHz"
       : formatFrequency(measuredFrequencyHz);
-  drawMeasurementBox(3, "Frequency", frequencyValue, TFT_YELLOW);
+  drawMeasurementValue(3, frequencyValue);
 
   const float voltsPerDivision =
       3.3 / Gain / static_cast<float>(verticalDivisions);
   const float timePerDivision =
       (static_cast<float>(plotSampleCount) / Sampling_rate) /
       horizontalDivisions;
-  display.setTextColor(TFT_WHITE, backgroundColor);
-  display.drawString(formatVoltage(voltsPerDivision), 12, 274, 2);
-  display.drawString(formatTime(timePerDivision), 146, 274, 2);
-  display.drawString(displayFrameRate > 0.0f
-                         ? formatNumber(displayFrameRate) + " fps"
-                         : "-- fps",
-                     340, 274, 2);
+  drawFooterValue(0, 12, 126, "V/div " + formatVoltage(voltsPerDivision));
+  drawFooterValue(1, 146, 184, "Time/div " + formatTime(timePerDivision));
+  const String rateValue = previousMeasurementUs == 0
+      ? "Rate -- fps"
+      : "Rate " + formatNumber(measurementRateHz) + " fps";
+  drawFooterValue(2, 340, 128, rateValue);
 }
 
 void configureFrequencyCounter() {
@@ -514,26 +537,28 @@ void setup() {
   drawStaticUi();
   configureFrequencyCounter();
   updateMeasurements();
+  lastAdcUpdateMs = millis();
+  previousMeasurementUs = micros();
   drawDashboard();
   Serial.println(
       "Measurement inputs ready: ADC GPIO34/35/32/33; frequency counter GPIO27.");
 }
 
 void loop() {
-  static uint32_t lastAdcUpdateMs = 0;
   const uint32_t nowMs = millis();
   updateFrequencyMeasurement(nowMs);
 
   if (nowMs - lastAdcUpdateMs >= adcUpdatePeriodMs) {
-    updateMeasurements();
-    const uint32_t renderUs = micros();
-    if (previousRenderUs != 0) {
-      const uint32_t renderIntervalUs = renderUs - previousRenderUs;
-      if (renderIntervalUs > 0) {
-        displayFrameRate = 1000000.0f / renderIntervalUs;
+    const uint32_t measurementStartUs = micros();
+    if (previousMeasurementUs != 0) {
+      const uint32_t measurementIntervalUs =
+          measurementStartUs - previousMeasurementUs;
+      if (measurementIntervalUs > 0) {
+        measurementRateHz = 1000000.0f / measurementIntervalUs;
       }
     }
-    previousRenderUs = renderUs;
+    previousMeasurementUs = measurementStartUs;
+    updateMeasurements();
     drawDashboard();
     lastAdcUpdateMs = nowMs;
   }
