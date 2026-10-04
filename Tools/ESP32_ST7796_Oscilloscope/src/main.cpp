@@ -404,7 +404,12 @@ void updateMeasurements() {
   peak = ADC_LUT[analogRead(peakDetectorPin)];
   valley = 4095 - ADC_LUT[analogRead(invertedPeakDetectorPin)];
   Gain = (ADC_LUT[analogRead(gainPotPin)]*1.05 - 122.85) * 0.10776 + 0.03014;
-  Sampling_rate = sampling_rates[int(round((ADC_LUT[analogRead(frequencyScalePotPin)]*1.05 - 122.85) * 0.010989))];
+  if (Gain <= 0)
+    Gain = 0.03014;
+  int sampling_index = int(round((ADC_LUT[analogRead(frequencyScalePotPin)]*1.05 - 122.85) * 0.010989));
+  if (sampling_index < 0)
+    sampling_index = 0;
+  Sampling_rate = sampling_rates[sampling_index];
   
   dac_output_voltage(DAC_CHANNEL_1, int((peak+valley)*0.01556777));
 
