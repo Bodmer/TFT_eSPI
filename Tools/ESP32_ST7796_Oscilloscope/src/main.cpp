@@ -1,145 +1,146 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
-
-#include <algorithm>
+#include <driver/pcnt.h>
+#include <esp_err.h>
 
 namespace {
-constexpr int channelCount = 2;
-constexpr int signalPins[channelCount] = {34, 35};
-constexpr uint16_t channelColors[channelCount] = {TFT_GREEN, TFT_CYAN};
-constexpr int plotLeft = 42;
-constexpr int plotTop = 52;
-constexpr int plotWidth = 426;
-constexpr int plotHeight = 224;
-constexpr int sampleCount = plotWidth - 2;
-constexpr uint32_t samplePeriodUs = 500;
+constexpr int peakDetectorPin = 34;
+constexpr int invertedPeakDetectorPin = 35;
+constexpr int gainPotPin = 32;
+constexpr int frequencyScalePotPin = 33;
+constexpr int frequencyInputPin = 27;
+constexpr int adcResolution = 4095;
+constexpr float adcReferenceVolts = 3.3f;
+constexpr uint32_t adcUpdatePeriodMs = 100;
+constexpr uint32_t frequencyWindowMs = 250;
+constexpr int16_t frequencyCounterLimit = 30000;
 constexpr uint16_t backgroundColor = TFT_BLACK;
-constexpr uint16_t gridColor = 0x3186;
 
 TFT_eSPI display;
-uint16_t samples[channelCount][sampleCount];
+float measuredFrequencyHz = 0.0f;
+bool frequencyOverRange = false;
+uint32_t lastFrequencyWindowMs = 0;
 
 void drawStaticUi() {
-  display.fillScreen(backgroundColor);
   display.setRotation(1);
+  display.fillScreen(backgroundColor);
   display.setTextColor(TFT_WHITE, backgroundColor);
-  display.drawString("ESP32 SCOPE", 8, 8, 2);
-  display.drawString("CH1 GPIO34  CH2 GPIO35  0-3.3V", 8, 30, 2);
+  display.drawString("MEASUREMENTS", 12, 10, 4);
+  display.setTextColor(TFT_LIGHTGREY, backgroundColor);
+  display.drawString("Raw ADC values; scaling is not configured", 12, 44, 2);
 
-  for (int division = 0; division <= 8; ++division) {
-    const int x = plotLeft + division * (plotWidth - 1) / 8;
-    display.drawFastVLine(x, plotTop, plotHeight, gridColor);
-  }
-  for (int division = 0; division <= 4; ++division) {
-    const int y = plotTop + division * (plotHeight - 1) / 4;
-    display.drawFastHLine(plotLeft, y, plotWidth, gridColor);
-  }
-  display.drawRect(plotLeft, plotTop, plotWidth, plotHeight, TFT_WHITE);
-  display.drawString("0V", 5, plotTop + plotHeight - 10, 1);
-  display.drawString("3.3V", 5, plotTop - 2, 1);
-  display.drawString("Time: " +
-                         String(sampleCount * samplePeriodUs / 1000) + " ms",
-                     plotLeft, 286, 2);
-}
-
-void capture() {
-  uint32_t nextSample = micros();
-  for (int index = 0; index < sampleCount; ++index) {
-    while (static_cast<int32_t>(micros() - nextSample) < 0) {
-      yield();
-    }
-    for (int channel = 0; channel < channelCount; ++channel) {
-      samples[channel][index] =
-          static_cast<uint16_t>(analogRead(signalPins[channel]));
-    }
-    nextSample += samplePeriodUs;
-  }
-}
-
-void drawTrace(float frameRate) {
-  uint16_t minimum[channelCount] = {4095, 4095};
-  uint16_t maximum[channelCount] = {0, 0};
-  uint32_t sum[channelCount] = {0, 0};
-  for (int channel = 0; channel < channelCount; ++channel) {
-    for (int index = 0; index < sampleCount; ++index) {
-      const uint16_t sample = samples[channel][index];
-      minimum[channel] = std::min(minimum[channel], sample);
-      maximum[channel] = std::max(maximum[channel], sample);
-      sum[channel] += sample;
-    }
-  }
-
-  display.fillRect(plotLeft + 1, plotTop + 1, plotWidth - 2, plotHeight - 2, backgroundColor);
-  for (int division = 1; division < 8; ++division) {
-    const int x = plotLeft + division * (plotWidth - 1) / 8;
-    display.drawFastVLine(x, plotTop + 1, plotHeight - 2, gridColor);
-  }
-  for (int division = 1; division < 4; ++division) {
-    const int y = plotTop + division * (plotHeight - 1) / 4;
-    display.drawFastHLine(plotLeft + 1, y, plotWidth - 2, gridColor);
-  }
-
-  for (int channel = 0; channel < channelCount; ++channel) {
-    for (int index = 1; index < sampleCount; ++index) {
-      const int previousX = plotLeft + 1 + index - 1;
-      const int currentX = plotLeft + 1 + index;
-      const int previousY = plotTop + plotHeight - 2 -
-          static_cast<int>(samples[channel][index - 1]) *
-              (plotHeight - 3) / 4095;
-      const int currentY = plotTop + plotHeight - 2 -
-          static_cast<int>(samples[channel][index]) *
-              (plotHeight - 3) / 4095;
-      display.drawLine(previousX, previousY, currentX, currentY,
-                       channelColors[channel]);
-    }
-  }
-
-  display.fillRect(8, 300, 464, 18, backgroundColor);
-  for (int channel = 0; channel < channelCount; ++channel) {
-    const float averageVolts =
-        (sum[channel] / static_cast<float>(sampleCount)) * (3.3f / 4095.0f);
-    const float minimumVolts = minimum[channel] * (3.3f / 4095.0f);
-    const float maximumVolts = maximum[channel] * (3.3f / 4095.0f);
-    const String stats = "CH" + String(channel + 1) + " MIN " +
-        String(minimumVolts, 2) + " AVG " + String(averageVolts, 2) +
-        " MAX " + String(maximumVolts, 2) + "V";
-    display.setTextColor(channelColors[channel], backgroundColor);
-    display.drawString(stats, channel == 0 ? 8 : 205, 300, 1);
-  }
-  const String frameRateText = frameRate > 0.0f
-      ? "FPS " + String(frameRate, 1)
-      : "FPS --";
+  display.setTextColor(TFT_GREEN, backgroundColor);
+  display.drawString("PEAK DETECTOR  GPIO34", 12, 82, 2);
+  display.setTextColor(TFT_CYAN, backgroundColor);
+  display.drawString("INVERTED PEAK  GPIO35", 12, 122, 2);
+  display.setTextColor(TFT_ORANGE, backgroundColor);
+  display.drawString("GAIN POT       GPIO32", 12, 162, 2);
   display.setTextColor(TFT_YELLOW, backgroundColor);
-  display.drawRightString(frameRateText, display.width() - 8, 300, 1);
+  display.drawString("FREQ SCALE POT GPIO33", 12, 202, 2);
+
+  display.drawFastHLine(12, 244, display.width() - 24, TFT_DARKGREY);
+  display.setTextColor(TFT_WHITE, backgroundColor);
+  display.drawString("SQUARE-WAVE INPUT  GPIO27", 12, 254, 2);
+}
+
+void configureFrequencyCounter() {
+  pcnt_config_t config = {};
+  config.pulse_gpio_num = frequencyInputPin;
+  config.ctrl_gpio_num = PCNT_PIN_NOT_USED;
+  config.lctrl_mode = PCNT_MODE_KEEP;
+  config.hctrl_mode = PCNT_MODE_KEEP;
+  config.pos_mode = PCNT_COUNT_INC;
+  config.neg_mode = PCNT_COUNT_DIS;
+  config.counter_h_lim = frequencyCounterLimit;
+  config.counter_l_lim = 0;
+  config.unit = PCNT_UNIT_0;
+  config.channel = PCNT_CHANNEL_0;
+
+  ESP_ERROR_CHECK(pcnt_unit_config(&config));
+  ESP_ERROR_CHECK(pcnt_event_enable(PCNT_UNIT_0, PCNT_EVT_H_LIM));
+  ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
+  ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
+  lastFrequencyWindowMs = millis();
+}
+
+void updateFrequencyMeasurement(uint32_t nowMs) {
+  const uint32_t elapsedMs = nowMs - lastFrequencyWindowMs;
+  if (elapsedMs < frequencyWindowMs) {
+    return;
+  }
+
+  ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
+  int16_t pulseCount = 0;
+  uint32_t eventStatus = 0;
+  ESP_ERROR_CHECK(pcnt_get_counter_value(PCNT_UNIT_0, &pulseCount));
+  ESP_ERROR_CHECK(pcnt_get_event_status(PCNT_UNIT_0, &eventStatus));
+  ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
+  ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
+
+  frequencyOverRange = (eventStatus & PCNT_EVT_H_LIM) != 0;
+  if (!frequencyOverRange) {
+    measuredFrequencyHz =
+        pulseCount * (1000.0f / static_cast<float>(elapsedMs));
+  }
+  lastFrequencyWindowMs = nowMs;
+}
+
+void drawAdcReading(int y, int pin) {
+  const int raw = analogRead(pin);
+  const float volts = raw * (adcReferenceVolts / adcResolution);
+  const String reading =
+      "RAW " + String(raw) + "   " + String(volts, 2) + " V";
+
+  display.fillRect(270, y - 2, display.width() - 282, 24, backgroundColor);
+  display.setTextColor(TFT_WHITE, backgroundColor);
+  display.drawRightString(reading, display.width() - 12, y, 2);
+}
+
+void drawFrequencyReading() {
+  display.fillRect(12, 282, display.width() - 24, 26, backgroundColor);
+  display.setTextColor(TFT_WHITE, backgroundColor);
+  if (frequencyOverRange) {
+    display.drawString(">120 kHz (OVER RANGE)", 12, 282, 2);
+  } else {
+    display.drawString(String(measuredFrequencyHz, 1) + " Hz  (250 ms gate)",
+                       12, 282, 2);
+  }
+}
+
+void updateMeasurements() {
+  drawAdcReading(82, peakDetectorPin);
+  drawAdcReading(122, invertedPeakDetectorPin);
+  drawAdcReading(162, gainPotPin);
+  drawAdcReading(202, frequencyScalePotPin);
+  drawFrequencyReading();
 }
 }  // namespace
 
 void setup() {
   Serial.begin(115200);
   analogReadResolution(12);
-  for (const int signalPin : signalPins) {
-    analogSetPinAttenuation(signalPin, ADC_11db);
-  }
+  analogSetPinAttenuation(peakDetectorPin, ADC_11db);
+  analogSetPinAttenuation(invertedPeakDetectorPin, ADC_11db);
+  analogSetPinAttenuation(gainPotPin, ADC_11db);
+  analogSetPinAttenuation(frequencyScalePotPin, ADC_11db);
+  pinMode(frequencyInputPin, INPUT);
 
   display.init();
   drawStaticUi();
-  Serial.println("ESP32 oscilloscope ready; inputs are GPIO34 and GPIO35 (ADC1).");
+  configureFrequencyCounter();
+  updateMeasurements();
+  Serial.println(
+      "Measurement inputs ready: ADC GPIO34/35/32/33; frequency counter GPIO27.");
 }
 
 void loop() {
-  static uint32_t previousFrameUs = 0;
-  static bool hasPreviousFrame = false;
-  const uint32_t frameStartUs = micros();
-  float frameRate = 0.0f;
-  if (hasPreviousFrame) {
-    const uint32_t frameDurationUs = frameStartUs - previousFrameUs;
-    if (frameDurationUs > 0) {
-      frameRate = 1000000.0f / frameDurationUs;
-    }
-  }
-  previousFrameUs = frameStartUs;
-  hasPreviousFrame = true;
+  static uint32_t lastAdcUpdateMs = 0;
+  const uint32_t nowMs = millis();
+  updateFrequencyMeasurement(nowMs);
 
-  capture();
-  drawTrace(frameRate);
+  if (nowMs - lastAdcUpdateMs >= adcUpdatePeriodMs) {
+    updateMeasurements();
+    lastAdcUpdateMs = nowMs;
+  }
+  delay(5);
 }
