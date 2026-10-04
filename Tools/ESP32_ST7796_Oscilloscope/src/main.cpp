@@ -394,11 +394,18 @@ void drawFrequencyReading() {
 }
 
 void updateMeasurements() {
-  drawAdcReading(82, peakDetectorPin);
-  drawAdcReading(122, invertedPeakDetectorPin);
-  drawAdcReading(162, gainPotPin);
-  drawAdcReading(202, frequencyScalePotPin);
-  drawFrequencyReading();
+  // drawAdcReading(82, peakDetectorPin);
+  // drawAdcReading(122, invertedPeakDetectorPin);
+  // drawAdcReading(162, gainPotPin);
+  // drawAdcReading(202, frequencyScalePotPin);
+  // drawFrequencyReading();
+
+  peak = ADC_LUT[analogRead(peakDetectorPin)];
+  valley = 4095 - ADC_LUT[analogRead(invertedPeakDetectorPin)];
+  Gain = (ADC_LUT[analogRead(gainPotPin)]*1.05 - 122.85) * 0.10776 + 0.03014;
+  Sampling_rate = sampling_rates[int(round((ADC_LUT[analogRead(frequencyScalePotPin)]*1.05 - 122.85) * 0.010989))];
+  
+
 }
 }  // namespace
 
