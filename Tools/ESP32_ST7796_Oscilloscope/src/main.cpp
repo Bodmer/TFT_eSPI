@@ -2,7 +2,15 @@
 #include <TFT_eSPI.h>
 #include <driver/pcnt.h>
 #include <driver/dac.h>
+#include <driver/gpio.h>
+#include <driver/ledc.h>
+#include <driver/periph_ctrl.h>
 #include <esp_err.h>
+#include <esp_intr_alloc.h>
+#include <soc/gpio_sig_map.h>
+#include <soc/i2s_struct.h>
+#include <soc/periph_defs.h>
+#include <rom/lldesc.h>
 
 #include <algorithm>
 
@@ -12,6 +20,9 @@ constexpr int invertedPeakDetectorPin = 35;
 constexpr int gainPotPin = 32;
 constexpr int frequencyScalePotPin = 33;
 constexpr int frequencyInputPin = 27;
+constexpr int adcClockOutputPin = 15;
+constexpr int adcClockInputPin = 39;
+constexpr int adcDataPins[] = {13, 14, 16, 17, 21, 22, 26, 36};
 constexpr uint32_t controlUpdatePeriodMs = 100;
 constexpr int16_t frequencyCounterLimit = 30000;
 constexpr uint16_t backgroundColor = TFT_BLACK;
@@ -28,6 +39,13 @@ constexpr int panelLeft = 368;
 constexpr int panelWidth = 100;
 constexpr int panelTop = 10;
 constexpr int panelRowHeight = 56;
+constexpr size_t adcCaptureSampleCount =
+    (static_cast<size_t>(plotSampleCount) * 3 + 1) / 2;
+constexpr size_t adcDmaWordCount = adcCaptureSampleCount;
+constexpr uint32_t adcClockSourceHz = 80000000UL;
+constexpr ledc_mode_t adcClockSpeedMode = LEDC_HIGH_SPEED_MODE;
+constexpr ledc_timer_t adcClockTimer = LEDC_TIMER_0;
+constexpr ledc_channel_t adcClockChannel = LEDC_CHANNEL_0;
 
 // linearizing the ADC
 const float ADC_LUT[4096] = { 0,
@@ -336,6 +354,207 @@ bool detectorValuesInitialized = false;
 int lastDacOutput = -1;
 String lastMeasurementValues[4];
 String lastFooterValues[3];
+DMA_ATTR uint32_t adcDmaWords[adcDmaWordCount];
+DMA_ATTR lldesc_t adcDmaDescriptor;
+uint8_t adcSamples[adcCaptureSampleCount];
+TaskHandle_t adcCaptureTaskHandle = nullptr;
+volatile int requestedAdcSamplingRate = 0;
+volatile bool adcCaptureReady = false;
+volatile uint32_t adcCaptureSequence = 0;
+volatile bool adcCaptureDmaFailed = false;
+volatile uint32_t adcCaptureDmaErrorCount = 0;
+intr_handle_t i2sInterruptHandle = nullptr;
+uint8_t adcClockResolution = 1;
+
+void IRAM_ATTR i2sCaptureInterrupt(void*) {
+  const uint32_t interruptStatus = I2S0.int_st.val;
+  I2S0.int_clr.val = interruptStatus;
+  const bool captureError =
+      (interruptStatus & ((1U << 10) | (1U << 13) | (1U << 15))) != 0;
+  const bool captureComplete = (interruptStatus & (1U << 9)) != 0;
+  if (captureError) {
+    adcCaptureDmaFailed = true;
+    ++adcCaptureDmaErrorCount;
+  }
+  if ((captureComplete || captureError) && adcCaptureTaskHandle != nullptr) {
+    BaseType_t higherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(adcCaptureTaskHandle, &higherPriorityTaskWoken);
+    if (higherPriorityTaskWoken == pdTRUE) {
+      portYIELD_FROM_ISR();
+    }
+  }
+}
+
+void configureAdcClock(uint32_t samplingRate) {
+  uint8_t resolution = 1;
+  for (uint8_t candidate = 1; candidate <= 13; ++candidate) {
+    const double divider =
+        static_cast<double>(adcClockSourceHz) /
+        (static_cast<double>(samplingRate) * (1U << candidate));
+    if (divider >= 1.0 && divider <= 1024.0) {
+      resolution = candidate;
+    }
+  }
+  adcClockResolution = resolution;
+
+  ledc_timer_config_t timerConfig = {};
+  timerConfig.speed_mode = adcClockSpeedMode;
+  timerConfig.duty_resolution =
+      static_cast<ledc_timer_bit_t>(adcClockResolution);
+  timerConfig.timer_num = adcClockTimer;
+  timerConfig.freq_hz = samplingRate;
+  timerConfig.clk_cfg = LEDC_USE_APB_CLK;
+  ESP_ERROR_CHECK(ledc_timer_config(&timerConfig));
+
+  const uint32_t duty = 1U << (adcClockResolution - 1);
+  ledc_channel_config_t channelConfig = {};
+  channelConfig.gpio_num = adcClockOutputPin;
+  channelConfig.speed_mode = adcClockSpeedMode;
+  channelConfig.channel = adcClockChannel;
+  channelConfig.intr_type = LEDC_INTR_DISABLE;
+  channelConfig.timer_sel = adcClockTimer;
+  channelConfig.duty = duty;
+  channelConfig.hpoint = 0;
+  ESP_ERROR_CHECK(ledc_channel_config(&channelConfig));
+}
+
+void configureAdcCapture() {
+  periph_module_enable(PERIPH_I2S0_MODULE);
+  I2S0.conf.val = 0;
+  I2S0.conf2.val = 0;
+  I2S0.fifo_conf.val = 0;
+  I2S0.conf_chan.val = 0;
+  I2S0.sample_rate_conf.val = 0;
+  I2S0.timing.val = 0;
+
+  for (uint8_t bit = 0; bit < 8; ++bit) {
+    ESP_ERROR_CHECK(gpio_set_direction(
+        static_cast<gpio_num_t>(adcDataPins[bit]), GPIO_MODE_INPUT));
+    gpio_set_pull_mode(static_cast<gpio_num_t>(adcDataPins[bit]),
+                       GPIO_FLOATING);
+    gpio_matrix_in(adcDataPins[bit], I2S0I_DATA_IN0_IDX + bit, false);
+  }
+  ESP_ERROR_CHECK(gpio_set_direction(static_cast<gpio_num_t>(adcClockInputPin),
+                                     GPIO_MODE_INPUT));
+  gpio_set_pull_mode(static_cast<gpio_num_t>(adcClockInputPin), GPIO_FLOATING);
+  gpio_matrix_in(adcClockInputPin, I2S0I_WS_IN_IDX, true);
+  gpio_matrix_in(GPIO_MATRIX_CONST_ZERO_INPUT, I2S0I_V_SYNC_IDX, false);
+  gpio_matrix_in(GPIO_MATRIX_CONST_ZERO_INPUT, I2S0I_H_SYNC_IDX, false);
+  gpio_matrix_in(GPIO_MATRIX_CONST_ONE_INPUT, I2S0I_H_ENABLE_IDX, false);
+
+  I2S0.conf.rx_slave_mod = 1;
+  I2S0.conf.rx_msb_shift = 0;
+  I2S0.conf.rx_right_first = 0;
+  I2S0.conf.rx_mono = 0;
+  I2S0.conf2.camera_en = 1;
+  I2S0.conf2.lcd_en = 1;
+  I2S0.fifo_conf.dscr_en = 1;
+  I2S0.fifo_conf.rx_fifo_mod = 3;
+  I2S0.fifo_conf.rx_fifo_mod_force_en = 1;
+  I2S0.conf_chan.rx_chan_mod = 1;
+  I2S0.sample_rate_conf.rx_bits_mod = 0;
+  I2S0.timing.rx_dsync_sw = 1;
+
+  adcDmaDescriptor.size = sizeof(adcDmaWords);
+  adcDmaDescriptor.length = 0;
+  adcDmaDescriptor.sosf = 0;
+  adcDmaDescriptor.eof = 1;
+  adcDmaDescriptor.owner = 1;
+  adcDmaDescriptor.buf = reinterpret_cast<uint8_t*>(adcDmaWords);
+  adcDmaDescriptor.qe.stqe_next = nullptr;
+
+  ESP_ERROR_CHECK(esp_intr_alloc(ETS_I2S0_INTR_SOURCE,
+                                 ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1,
+                                 i2sCaptureInterrupt, nullptr,
+                                 &i2sInterruptHandle));
+}
+
+void stopAdcDmaCapture() {
+  I2S0.conf.rx_start = 0;
+  I2S0.int_ena.in_suc_eof = 0;
+  I2S0.in_link.stop = 1;
+  I2S0.conf.rx_reset = 1;
+  I2S0.conf.rx_reset = 0;
+  I2S0.conf.rx_fifo_reset = 1;
+  I2S0.conf.rx_fifo_reset = 0;
+  I2S0.lc_conf.in_rst = 1;
+  I2S0.lc_conf.in_rst = 0;
+}
+
+void startAdcDmaCapture() {
+  adcDmaDescriptor.length = 0;
+  adcDmaDescriptor.owner = 1;
+  I2S0.conf.rx_start = 0;
+  I2S0.conf.rx_reset = 1;
+  I2S0.conf.rx_reset = 0;
+  I2S0.conf.rx_fifo_reset = 1;
+  I2S0.conf.rx_fifo_reset = 0;
+  I2S0.lc_conf.in_rst = 1;
+  I2S0.lc_conf.in_rst = 0;
+  I2S0.lc_conf.ahbm_fifo_rst = 1;
+  I2S0.lc_conf.ahbm_fifo_rst = 0;
+  I2S0.lc_conf.ahbm_rst = 1;
+  I2S0.lc_conf.ahbm_rst = 0;
+  I2S0.int_clr.val = I2S0.int_st.val;
+  I2S0.rx_eof_num = adcCaptureSampleCount;
+  I2S0.in_link.addr =
+      (reinterpret_cast<uint32_t>(&adcDmaDescriptor) & 0xfffff);
+  I2S0.in_link.start = 1;
+  I2S0.int_ena.in_suc_eof = 1;
+  I2S0.conf.rx_start = 1;
+}
+
+void adcCaptureTask(void*) {
+  int activeSamplingRate = 0;
+  for (;;) {
+    while (adcCaptureReady) {
+      vTaskDelay(pdMS_TO_TICKS(1));
+    }
+
+    const int requestedRate = requestedAdcSamplingRate;
+    if (requestedRate <= 0) {
+      vTaskDelay(pdMS_TO_TICKS(10));
+      continue;
+    }
+
+    if (requestedRate != activeSamplingRate) {
+      stopAdcDmaCapture();
+      configureAdcClock(static_cast<uint32_t>(requestedRate));
+      activeSamplingRate = requestedRate;
+    }
+
+    adcCaptureDmaFailed = false;
+    startAdcDmaCapture();
+    bool captureCompleted = false;
+    while (!captureCompleted) {
+      if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100)) > 0) {
+        if (adcCaptureDmaFailed) {
+          stopAdcDmaCapture();
+          Serial.printf("I2S DMA capture failed (error count %lu).\n",
+                        static_cast<unsigned long>(adcCaptureDmaErrorCount));
+          break;
+        }
+        captureCompleted = true;
+        continue;
+      }
+      if (requestedAdcSamplingRate != activeSamplingRate) {
+        stopAdcDmaCapture();
+        break;
+      }
+    }
+
+    if (captureCompleted) {
+      stopAdcDmaCapture();
+      for (size_t sample = 0; sample < adcCaptureSampleCount; ++sample) {
+        adcSamples[sample] =
+            static_cast<uint8_t>((adcDmaWords[sample] >> 8) & 0xff);
+      }
+      ++adcCaptureSequence;
+      __sync_synchronize();
+      adcCaptureReady = true;
+    }
+  }
+}
 
 void drawMeasurementBox(int row, const char* title, uint16_t color);
 
@@ -629,6 +848,7 @@ void updateControlMeasurements() {
     sampling_index = 45;
   }
   Sampling_rate = sampling_rates[sampling_index];
+  requestedAdcSamplingRate = Sampling_rate;
 }
 }  // namespace
 
@@ -650,6 +870,11 @@ void setup() {
   updateControlMeasurements();
   updatePeakDetectors(micros());
   configureFrequencyCounter();
+  configureAdcCapture();
+  if (xTaskCreatePinnedToCore(adcCaptureTask, "adc_capture", 4096, nullptr, 3,
+                              &adcCaptureTaskHandle, 0) != pdPASS) {
+    ESP_ERROR_CHECK(ESP_FAIL);
+  }
   lastControlUpdateMs = millis();
   lastAdcUpdateMs = millis();
   drawDashboard();
@@ -657,6 +882,10 @@ void setup() {
   drawDisplayChangeRate();
   Serial.println(
       "Measurement inputs ready: ADC GPIO34/35/32/33; frequency counter GPIO27.");
+  Serial.printf(
+      "ADC capture ready: 8-bit D11..D4 on GPIO36,26,22,21,17,16,14,13; "
+      "clock GPIO15, loopback GPIO39; %u samples per capture.\n",
+      static_cast<unsigned>(adcCaptureSampleCount));
 }
 
 void loop() {
