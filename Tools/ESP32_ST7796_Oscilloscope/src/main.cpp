@@ -10,12 +10,21 @@ constexpr int invertedPeakDetectorPin = 35;
 constexpr int gainPotPin = 32;
 constexpr int frequencyScalePotPin = 33;
 constexpr int frequencyInputPin = 27;
-constexpr int adcResolution = 4095;
-constexpr float adcReferenceVolts = 3.3f;
 constexpr uint32_t adcUpdatePeriodMs = 100;
 constexpr uint32_t frequencyWindowMs = 250;
 constexpr int16_t frequencyCounterLimit = 30000;
 constexpr uint16_t backgroundColor = TFT_BLACK;
+constexpr int plotLeft = 12;
+constexpr int plotTop = 32;
+constexpr int plotWidth = 300;
+constexpr int plotHeight = 208;
+constexpr int horizontalDivisions = 8;
+constexpr int verticalDivisions = 4;
+constexpr int plotSampleCount = 424;
+constexpr int panelLeft = 322;
+constexpr int panelWidth = 150;
+constexpr int panelTop = 10;
+constexpr int panelRowHeight = 56;
 
 // linearizing the ADC
 const float ADC_LUT[4096] = { 0,
@@ -307,27 +316,121 @@ TFT_eSPI display;
 float measuredFrequencyHz = 0.0f;
 bool frequencyOverRange = false;
 uint32_t lastFrequencyWindowMs = 0;
+float displayFrameRate = 0.0f;
+uint32_t previousRenderUs = 0;
 
 void drawStaticUi() {
   display.setRotation(1);
   display.fillScreen(backgroundColor);
   display.setTextColor(TFT_WHITE, backgroundColor);
-  display.drawString("MEASUREMENTS", 12, 10, 4);
+  display.drawString("SIGNAL", plotLeft, 8, 2);
+
+  for (int division = 0; division <= horizontalDivisions; ++division) {
+    const int x = plotLeft + division * (plotWidth - 1) / horizontalDivisions;
+    display.drawFastVLine(x, plotTop, plotHeight, TFT_DARKGREY);
+  }
+  for (int division = 0; division <= verticalDivisions; ++division) {
+    const int y = plotTop + division * (plotHeight - 1) / verticalDivisions;
+    display.drawFastHLine(plotLeft, y, plotWidth, TFT_DARKGREY);
+  }
+  display.drawRect(plotLeft, plotTop, plotWidth, plotHeight, TFT_WHITE);
+
+  display.drawFastHLine(12, 248, display.width() - 24, TFT_DARKGREY);
   display.setTextColor(TFT_LIGHTGREY, backgroundColor);
-  display.drawString("Raw ADC values; scaling is not configured", 12, 44, 2);
+  display.drawString("V/div", 12, 256, 1);
+  display.drawString("Time/div", 146, 256, 1);
+  display.drawString("Frame rate", 340, 256, 1);
+}
 
-  display.setTextColor(TFT_GREEN, backgroundColor);
-  display.drawString("PEAK DETECTOR  GPIO34", 12, 82, 2);
-  display.setTextColor(TFT_CYAN, backgroundColor);
-  display.drawString("INVERTED PEAK  GPIO35", 12, 122, 2);
-  display.setTextColor(TFT_ORANGE, backgroundColor);
-  display.drawString("GAIN POT       GPIO32", 12, 162, 2);
-  display.setTextColor(TFT_YELLOW, backgroundColor);
-  display.drawString("FREQ SCALE POT GPIO33", 12, 202, 2);
+String formatNumber(float value) {
+  const float magnitude = fabsf(value);
+  const uint8_t decimals = magnitude >= 100.0f ? 0 : magnitude >= 10.0f ? 1 : 2;
+  return String(value, static_cast<unsigned int>(decimals));
+}
 
-  display.drawFastHLine(12, 244, display.width() - 24, TFT_DARKGREY);
+String formatVoltage(float volts) {
+  const float magnitude = fabsf(volts);
+  if (magnitude >= 1000.0f) {
+    return formatNumber(volts / 1000.0f) + " kV";
+  }
+  if (magnitude >= 1.0f) {
+    return formatNumber(volts) + " V";
+  }
+  if (magnitude >= 0.001f) {
+    return formatNumber(volts * 1000.0f) + " mV";
+  }
+  return formatNumber(volts * 1000000.0f) + " \xC2\xB5V";
+}
+
+String formatFrequency(float hertz) {
+  const float magnitude = fabsf(hertz);
+  if (magnitude >= 1000000.0f) {
+    return formatNumber(hertz / 1000000.0f) + " MHz";
+  }
+  if (magnitude >= 1000.0f) {
+    return formatNumber(hertz / 1000.0f) + " kHz";
+  }
+  return formatNumber(hertz) + " Hz";
+}
+
+String formatSamplingRate(int samplesPerSecond) {
+  if (samplesPerSecond >= 1000000) {
+    return formatNumber(samplesPerSecond / 1000000.0f) + " MSPS";
+  }
+  if (samplesPerSecond >= 1000) {
+    return formatNumber(samplesPerSecond / 1000.0f) + " kSPS";
+  }
+  return String(samplesPerSecond) + " SPS";
+}
+
+String formatTime(float seconds) {
+  if (seconds >= 1.0f) {
+    return formatNumber(seconds) + " s";
+  }
+  if (seconds >= 0.001f) {
+    return formatNumber(seconds * 1000.0f) + " ms";
+  }
+  if (seconds >= 0.000001f) {
+    return formatNumber(seconds * 1000000.0f) + " \xC2\xB5s";
+  }
+  return formatNumber(seconds * 1000000000.0f) + " ns";
+}
+
+void drawMeasurementBox(int row, const char* title, const String& value,
+                        uint16_t color) {
+  const int y = panelTop + row * panelRowHeight;
+  display.fillRect(panelLeft, y, panelWidth, panelRowHeight - 4,
+                   backgroundColor);
+  display.drawRect(panelLeft, y, panelWidth, panelRowHeight - 4, color);
+  display.setTextColor(color, backgroundColor);
+  display.drawString(title, panelLeft + 5, y + 4, 1);
   display.setTextColor(TFT_WHITE, backgroundColor);
-  display.drawString("SQUARE-WAVE INPUT  GPIO27", 12, 254, 2);
+  display.drawCentreString(value, panelLeft + panelWidth / 2, y + 20, 2);
+}
+
+void drawDashboard() {
+  drawMeasurementBox(0, "Vpeak-peak", formatVoltage(Vpp), TFT_CYAN);
+  drawMeasurementBox(1, "Voffset", formatVoltage(offset), TFT_GREEN);
+  drawMeasurementBox(2, "Sampling rate", formatSamplingRate(Sampling_rate),
+                     TFT_ORANGE);
+
+  const String frequencyValue = frequencyOverRange
+      ? ">120 kHz"
+      : formatFrequency(measuredFrequencyHz);
+  drawMeasurementBox(3, "Frequency", frequencyValue, TFT_YELLOW);
+
+  const float voltsPerDivision =
+      3.3 / Gain / static_cast<float>(verticalDivisions);
+  const float timePerDivision =
+      (static_cast<float>(plotSampleCount) / Sampling_rate) /
+      horizontalDivisions;
+  display.setTextColor(TFT_WHITE, backgroundColor);
+  display.drawString(formatVoltage(voltsPerDivision), 12, 274, 2);
+  display.drawString(formatTime(timePerDivision), 146, 274, 2);
+  display.drawString(displayFrameRate > 0.0f
+                         ? formatNumber(displayFrameRate) + " fps"
+                         : "-- fps",
+                     340, 274, 2);
 }
 
 void configureFrequencyCounter() {
@@ -368,54 +471,29 @@ void updateFrequencyMeasurement(uint32_t nowMs) {
   if (!frequencyOverRange) {
     measuredFrequencyHz =
         pulseCount * (1000.0f / static_cast<float>(elapsedMs));
+    freq = measuredFrequencyHz;
   }
   lastFrequencyWindowMs = nowMs;
 }
 
-void drawAdcReading(int y, int pin) {
-  const int raw = analogRead(pin);
-  const float volts = raw * (adcReferenceVolts / adcResolution);
-  const String reading =
-      "RAW " + String(raw) + "   " + String(volts, 2) + " V";
-
-  display.fillRect(270, y - 2, display.width() - 282, 24, backgroundColor);
-  display.setTextColor(TFT_WHITE, backgroundColor);
-  display.drawRightString(reading, display.width() - 12, y, 2);
-}
-
-void drawFrequencyReading() {
-  display.fillRect(12, 282, display.width() - 24, 26, backgroundColor);
-  display.setTextColor(TFT_WHITE, backgroundColor);
-  if (frequencyOverRange) {
-    display.drawString(">120 kHz (OVER RANGE)", 12, 282, 2);
-  } else {
-    display.drawString(String(measuredFrequencyHz, 1) + " Hz  (250 ms gate)",
-                       12, 282, 2);
-  }
-}
-
 void updateMeasurements() {
-  // drawAdcReading(82, peakDetectorPin);
-  // drawAdcReading(122, invertedPeakDetectorPin);
-  // drawAdcReading(162, gainPotPin);
-  // drawAdcReading(202, frequencyScalePotPin);
-  // drawFrequencyReading();
-
   peak = ADC_LUT[analogRead(peakDetectorPin)];
   valley = 4095 - ADC_LUT[analogRead(invertedPeakDetectorPin)];
   Gain = (ADC_LUT[analogRead(gainPotPin)]*1.05 - 122.85) * 0.10776 + 0.03014;
   if (Gain <= 0)
     Gain = 0.03014;
   int sampling_index = int(round((ADC_LUT[analogRead(frequencyScalePotPin)]*1.05 - 122.85) * 0.010989));
-  if (sampling_index < 0)
+  if (sampling_index < 0) {
     sampling_index = 0;
+  } else if (sampling_index > 45) {
+    sampling_index = 45;
+  }
   Sampling_rate = sampling_rates[sampling_index];
   
   dac_output_voltage(DAC_CHANNEL_1, int((peak+valley)*0.01556777));
 
   offset = -((peak+valley)*0.00040293-1.65)/Gain;
   Vpp = (peak-valley)*0.00080586/Gain;
-
 }
 }  // namespace
 
@@ -436,6 +514,7 @@ void setup() {
   drawStaticUi();
   configureFrequencyCounter();
   updateMeasurements();
+  drawDashboard();
   Serial.println(
       "Measurement inputs ready: ADC GPIO34/35/32/33; frequency counter GPIO27.");
 }
@@ -447,6 +526,15 @@ void loop() {
 
   if (nowMs - lastAdcUpdateMs >= adcUpdatePeriodMs) {
     updateMeasurements();
+    const uint32_t renderUs = micros();
+    if (previousRenderUs != 0) {
+      const uint32_t renderIntervalUs = renderUs - previousRenderUs;
+      if (renderIntervalUs > 0) {
+        displayFrameRate = 1000000.0f / renderIntervalUs;
+      }
+    }
+    previousRenderUs = renderUs;
+    drawDashboard();
     lastAdcUpdateMs = nowMs;
   }
   delay(5);

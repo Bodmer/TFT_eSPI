@@ -27,7 +27,7 @@ Connect all measurement grounds to ESP32 GND. Wire the inputs as follows:
 | Frequency-scale potentiometer wiper | GPIO33 (ADC1) |
 | Square-wave frequency input | GPIO27 |
 
-Wire each potentiometer's other legs to 3.3V and GND. The screen reports raw 12-bit ADC readings and nominal pin voltages for the detector outputs and potentiometers; no detector inversion or gain/frequency range mapping is applied yet. GPIO27 frequency is measured by the ESP32 pulse counter using rising edges over a 250 ms gate.
+Wire each potentiometer's other legs to 3.3V and GND. The display shows Vpeak-peak, Voffset, the selected sampling rate, and the square-wave frequency in four right-side boxes. Voltage, time, frequency, and sampling-rate values use SI prefixes. The graticule is currently a layout guide; trace acquisition and plotting are not active. V/div is based on Vpeak-peak divided across four vertical divisions. Time/div assumes a 424-sample record across eight horizontal divisions. Frame rate reports dashboard refreshes. GPIO27 frequency is measured by the ESP32 pulse counter using rising edges over a 250 ms gate.
 
 ## Input limits
 
@@ -35,4 +35,4 @@ This is a learning/demo instrument, not a calibrated or protected instrument. Al
 
 ## Build and upload
 
-Open this directory as a PlatformIO project, select the `esp32dev` environment, then build and upload. ADC readings refresh every 100 ms. Frequency is calculated from rising-edge counts over a 250 ms window; counts reaching the pulse-counter limit are reported as over range. ADC voltages are nominal and depend on ESP32 ADC calibration and input circuitry.
+Open this directory as a PlatformIO project, select the `esp32dev` environment, then build and upload. Measurements refresh every 100 ms. Frequency is calculated from rising-edge counts over a 250 ms window; counts reaching the pulse-counter limit are reported as over range. Detector measurements use the project's ADC lookup and calibration formulas; confirm those against the actual analog front end before relying on their absolute values.
