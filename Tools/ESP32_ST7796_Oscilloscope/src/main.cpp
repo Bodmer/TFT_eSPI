@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <driver/pcnt.h>
+#include <driver/dac.h>
 #include <esp_err.h>
 
 namespace {
@@ -404,12 +405,16 @@ void updateMeasurements() {
   valley = 4095 - ADC_LUT[analogRead(invertedPeakDetectorPin)];
   Gain = (ADC_LUT[analogRead(gainPotPin)]*1.05 - 122.85) * 0.10776 + 0.03014;
   Sampling_rate = sampling_rates[int(round((ADC_LUT[analogRead(frequencyScalePotPin)]*1.05 - 122.85) * 0.010989))];
-  
+
 
 }
 }  // namespace
 
 void setup() {
+  // DAC setup
+  dac_output_enable(DAC_CHANNEL_1);    // pin 25
+  dac_output_voltage(DAC_CHANNEL_1, 0);
+
   Serial.begin(115200);
   analogReadResolution(12);
   analogSetPinAttenuation(peakDetectorPin, ADC_11db);
