@@ -360,7 +360,7 @@ void drawStaticUi() {
   drawMeasurementBox(2, "Sampling rate", TFT_ORANGE);
   drawMeasurementBox(3, "Frequency", TFT_YELLOW);
 
-  display.drawFastHLine(12, 248, display.width() - 24, TFT_DARKGREY);
+  display.drawFastHLine(12, 274, display.width() - 24, TFT_DARKGREY);
 }
 
 String formatNumber(float value) {
@@ -443,9 +443,9 @@ bool drawFooterValue(int index, int x, int width, const String& value) {
     return false;
   }
 
-  display.fillRect(x, 255, width, 14, backgroundColor);
+  display.fillRect(x, 282, width, 24, backgroundColor);
   display.setTextColor(TFT_WHITE, backgroundColor);
-  display.drawString(value, x, 256, 1);
+  display.drawString(value, x, 283, 2);
   lastFooterValues[index] = value;
   return true;
 }
@@ -469,14 +469,14 @@ bool drawDashboard() {
   changed |= drawFooterValue(
       0, 12, 126, "V/div " + formatVoltage(voltsPerDivision));
   changed |= drawFooterValue(
-      1, 146, 184, "Time/div " + formatTime(timePerDivision));
+      1, 146, 184, "T/div " + formatTime(timePerDivision));
   return changed;
 }
 
 void drawDisplayChangeRate() {
   const String rateValue = displayRateReady
-      ? "Display rate: " + formatNumber(displayChangeRateHz) + " fps"
-      : "Display rate: -- fps";
+      ? "Frame rate: " + formatNumber(displayChangeRateHz) + " fps"
+      : "Frame rate: -- fps";
   drawFooterValue(2, 340, 128, rateValue);
 }
 
