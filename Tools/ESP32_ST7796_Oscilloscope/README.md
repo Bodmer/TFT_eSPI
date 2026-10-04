@@ -12,7 +12,7 @@ Connect the display to 3.3V logic and a common ground. The starter pin map is in
 | SDI / MOSI | GPIO23 |
 | SDO / MISO | GPIO19, if the display exposes it |
 | CS | GPIO5 |
-| DC / RS | GPIO27 |
+| DC / RS | GPIO2 |
 | RESET | GPIO4 |
 | LED / BL | 3.3V, subject to the display module's backlight requirements |
 | VCC / GND | Per the module's power requirements / GND |
