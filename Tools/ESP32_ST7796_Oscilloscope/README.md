@@ -27,7 +27,7 @@ Connect all measurement grounds to ESP32 GND. Wire the inputs as follows:
 | Frequency-scale potentiometer wiper | GPIO33 (ADC1) |
 | Square-wave frequency input | GPIO27 |
 
-Wire each potentiometer's other legs to 3.3V and GND. The display shows Vpeak-peak, Voffset, the selected sampling rate, and the square-wave frequency in four right-side boxes. Voltage, time, frequency, and sampling-rate values use SI prefixes. The graticule is currently a layout guide; trace acquisition and plotting are not active. V/div is based on Vpeak-peak divided across four vertical divisions. Time/div assumes a 424-sample record across eight horizontal divisions. Frame rate reports how often the ADC-derived measurements are updated, not display redraw throughput. GPIO27 frequency is measured by the ESP32 pulse counter using rising edges over a 250 ms gate.
+Wire each potentiometer's other legs to 3.3V and GND. The display shows Vpeak-peak, Voffset, the selected sampling rate, and the square-wave frequency in four right-side boxes. Voltage, time, frequency, and sampling-rate values use SI prefixes. The graticule is currently a layout guide; trace acquisition and plotting are not active. V/div is based on Vpeak-peak divided across four vertical divisions. Time/div assumes a 424-sample record across eight horizontal divisions. Display rate counts dashboard refreshes that change at least one measurement or scale value per second; changes to the rate readout itself are excluded. GPIO27 frequency is measured by the ESP32 pulse counter using rising edges over a 250 ms gate.
 
 ## Input limits
 

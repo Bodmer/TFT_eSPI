@@ -316,9 +316,11 @@ TFT_eSPI display;
 float measuredFrequencyHz = 0.0f;
 bool frequencyOverRange = false;
 uint32_t lastFrequencyWindowMs = 0;
-float measurementRateHz = 0.0f;
-uint32_t previousMeasurementUs = 0;
 uint32_t lastAdcUpdateMs = 0;
+uint32_t displayRateWindowStartMs = 0;
+uint16_t displayChangeFrames = 0;
+float displayChangeRateHz = 0.0f;
+bool displayRateReady = false;
 String lastMeasurementValues[4];
 String lastFooterValues[3];
 
@@ -409,9 +411,9 @@ void drawMeasurementBox(int row, const char* title, uint16_t color) {
   display.drawString(title, panelLeft + 5, y + 4, 1);
 }
 
-void drawMeasurementValue(int row, const String& value) {
+bool drawMeasurementValue(int row, const String& value) {
   if (lastMeasurementValues[row] == value) {
-    return;
+    return false;
   }
 
   const int y = panelTop + row * panelRowHeight;
@@ -420,39 +422,48 @@ void drawMeasurementValue(int row, const String& value) {
   display.setTextColor(TFT_WHITE, backgroundColor);
   display.drawCentreString(value, panelLeft + panelWidth / 2, y + 20, 2);
   lastMeasurementValues[row] = value;
+  return true;
 }
 
-void drawFooterValue(int index, int x, int width, const String& value) {
+bool drawFooterValue(int index, int x, int width, const String& value) {
   if (lastFooterValues[index] == value) {
-    return;
+    return false;
   }
 
   display.fillRect(x, 255, width, 14, backgroundColor);
   display.setTextColor(TFT_WHITE, backgroundColor);
   display.drawString(value, x, 256, 1);
   lastFooterValues[index] = value;
+  return true;
 }
 
-void drawDashboard() {
-  drawMeasurementValue(0, formatVoltage(Vpp));
-  drawMeasurementValue(1, formatVoltage(offset));
-  drawMeasurementValue(2, formatSamplingRate(Sampling_rate));
+bool drawDashboard() {
+  bool changed = false;
+  changed |= drawMeasurementValue(0, formatVoltage(Vpp));
+  changed |= drawMeasurementValue(1, formatVoltage(offset));
+  changed |= drawMeasurementValue(2, formatSamplingRate(Sampling_rate));
 
   const String frequencyValue = frequencyOverRange
       ? ">120 kHz"
       : formatFrequency(measuredFrequencyHz);
-  drawMeasurementValue(3, frequencyValue);
+  changed |= drawMeasurementValue(3, frequencyValue);
 
   const float voltsPerDivision =
       3.3 / Gain / static_cast<float>(verticalDivisions);
   const float timePerDivision =
       (static_cast<float>(plotSampleCount) / Sampling_rate) /
       horizontalDivisions;
-  drawFooterValue(0, 12, 126, "V/div " + formatVoltage(voltsPerDivision));
-  drawFooterValue(1, 146, 184, "Time/div " + formatTime(timePerDivision));
-  const String rateValue = previousMeasurementUs == 0
-      ? "Rate -- fps"
-      : "Rate " + formatNumber(measurementRateHz) + " fps";
+  changed |= drawFooterValue(
+      0, 12, 126, "V/div " + formatVoltage(voltsPerDivision));
+  changed |= drawFooterValue(
+      1, 146, 184, "Time/div " + formatTime(timePerDivision));
+  return changed;
+}
+
+void drawDisplayChangeRate() {
+  const String rateValue = displayRateReady
+      ? "Display rate: " + formatNumber(displayChangeRateHz) + " fps"
+      : "Display rate: -- fps";
   drawFooterValue(2, 340, 128, rateValue);
 }
 
@@ -538,8 +549,9 @@ void setup() {
   configureFrequencyCounter();
   updateMeasurements();
   lastAdcUpdateMs = millis();
-  previousMeasurementUs = micros();
   drawDashboard();
+  displayRateWindowStartMs = millis();
+  drawDisplayChangeRate();
   Serial.println(
       "Measurement inputs ready: ADC GPIO34/35/32/33; frequency counter GPIO27.");
 }
@@ -549,18 +561,21 @@ void loop() {
   updateFrequencyMeasurement(nowMs);
 
   if (nowMs - lastAdcUpdateMs >= adcUpdatePeriodMs) {
-    const uint32_t measurementStartUs = micros();
-    if (previousMeasurementUs != 0) {
-      const uint32_t measurementIntervalUs =
-          measurementStartUs - previousMeasurementUs;
-      if (measurementIntervalUs > 0) {
-        measurementRateHz = 1000000.0f / measurementIntervalUs;
-      }
-    }
-    previousMeasurementUs = measurementStartUs;
     updateMeasurements();
-    drawDashboard();
+    if (drawDashboard() && displayChangeFrames < UINT16_MAX) {
+      ++displayChangeFrames;
+    }
     lastAdcUpdateMs = nowMs;
+  }
+
+  const uint32_t rateWindowElapsedMs = nowMs - displayRateWindowStartMs;
+  if (rateWindowElapsedMs >= 1000) {
+    displayChangeRateHz =
+        displayChangeFrames * (1000.0f / rateWindowElapsedMs);
+    displayChangeFrames = 0;
+    displayRateWindowStartMs = nowMs;
+    displayRateReady = true;
+    drawDisplayChangeRate();
   }
   delay(5);
 }
