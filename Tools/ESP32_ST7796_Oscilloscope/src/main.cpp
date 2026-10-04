@@ -7,12 +7,12 @@ namespace {
 constexpr int channelCount = 2;
 constexpr int signalPins[channelCount] = {34, 35};
 constexpr uint16_t channelColors[channelCount] = {TFT_GREEN, TFT_CYAN};
-constexpr int sampleCount = 480;
-constexpr uint32_t samplePeriodUs = 500;
 constexpr int plotLeft = 42;
 constexpr int plotTop = 52;
 constexpr int plotWidth = 426;
 constexpr int plotHeight = 224;
+constexpr int sampleCount = plotWidth - 2;
+constexpr uint32_t samplePeriodUs = 500;
 constexpr uint16_t backgroundColor = TFT_BLACK;
 constexpr uint16_t gridColor = 0x3186;
 
@@ -37,7 +37,9 @@ void drawStaticUi() {
   display.drawRect(plotLeft, plotTop, plotWidth, plotHeight, TFT_WHITE);
   display.drawString("0V", 5, plotTop + plotHeight - 10, 1);
   display.drawString("3.3V", 5, plotTop - 2, 1);
-  display.drawString("Time: 240 ms", plotLeft, 286, 2);
+  display.drawString("Time: " +
+                         String(sampleCount * samplePeriodUs / 1000) + " ms",
+                     plotLeft, 286, 2);
 }
 
 void capture() {
@@ -79,14 +81,16 @@ void drawTrace(float frameRate) {
 
   for (int channel = 0; channel < channelCount; ++channel) {
     for (int index = 1; index < sampleCount; ++index) {
+      const int previousX = plotLeft + 1 + index - 1;
+      const int currentX = plotLeft + 1 + index;
       const int previousY = plotTop + plotHeight - 2 -
           static_cast<int>(samples[channel][index - 1]) *
               (plotHeight - 3) / 4095;
       const int currentY = plotTop + plotHeight - 2 -
           static_cast<int>(samples[channel][index]) *
               (plotHeight - 3) / 4095;
-      display.drawLine(plotLeft + index - 1, previousY,
-                       plotLeft + index, currentY, channelColors[channel]);
+      display.drawLine(previousX, previousY, currentX, currentY,
+                       channelColors[channel]);
     }
   }
 
