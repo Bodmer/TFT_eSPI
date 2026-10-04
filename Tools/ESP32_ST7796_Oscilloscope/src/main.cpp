@@ -405,7 +405,11 @@ void updateMeasurements() {
   valley = 4095 - ADC_LUT[analogRead(invertedPeakDetectorPin)];
   Gain = (ADC_LUT[analogRead(gainPotPin)]*1.05 - 122.85) * 0.10776 + 0.03014;
   Sampling_rate = sampling_rates[int(round((ADC_LUT[analogRead(frequencyScalePotPin)]*1.05 - 122.85) * 0.010989))];
+  
+  dac_output_voltage(DAC_CHANNEL_1, int((peak+valley)*0.01556777));
 
+  offset = -((peak+valley)*0.00040293-1.65)/Gain;
+  Vpp = (peak-valley)*0.00080586/Gain;
 
 }
 }  // namespace
