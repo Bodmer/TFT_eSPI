@@ -4,14 +4,15 @@
 #include <driver/dac.h>
 #include <esp_err.h>
 
+#include <algorithm>
+
 namespace {
 constexpr int peakDetectorPin = 34;
 constexpr int invertedPeakDetectorPin = 35;
 constexpr int gainPotPin = 32;
 constexpr int frequencyScalePotPin = 33;
 constexpr int frequencyInputPin = 27;
-constexpr uint32_t adcUpdatePeriodMs = 100;
-constexpr uint32_t frequencyWindowMs = 250;
+constexpr uint32_t controlUpdatePeriodMs = 100;
 constexpr int16_t frequencyCounterLimit = 30000;
 constexpr uint16_t backgroundColor = TFT_BLACK;
 constexpr int plotLeft = 12;
@@ -21,6 +22,8 @@ constexpr int plotHeight = 208;
 constexpr int horizontalDivisions = 8;
 constexpr int verticalDivisions = 4;
 constexpr int plotSampleCount = plotWidth-2;
+constexpr uint8_t frequencyAveragingWindows = 5;
+constexpr float peakRetriggerRatio = 0.95f;
 constexpr int panelLeft = 368;
 constexpr int panelWidth = 100;
 constexpr int panelTop = 10;
@@ -314,13 +317,23 @@ float peak = 0, valley=0, freq = 0, offset = 0, Vpp = 0, Gain;
 
 TFT_eSPI display;
 float measuredFrequencyHz = 0.0f;
+bool frequencyKnown = false;
 bool frequencyOverRange = false;
-uint32_t lastFrequencyWindowMs = 0;
+uint32_t frequencyWindowStartUs = 0;
+uint64_t accumulatedPulseCount = 0;
+uint64_t accumulatedFrequencyWindowUs = 0;
+uint8_t accumulatedFrequencyWindows = 0;
+bool accumulatedFrequencyOverRange = false;
 uint32_t lastAdcUpdateMs = 0;
 uint32_t displayRateWindowStartMs = 0;
 uint16_t displayChangeFrames = 0;
 float displayChangeRateHz = 0.0f;
 bool displayRateReady = false;
+uint32_t lastControlUpdateMs = 0;
+uint32_t lastPeakRefreshUs = 0;
+uint32_t lastValleyRefreshUs = 0;
+bool detectorValuesInitialized = false;
+int lastDacOutput = -1;
 String lastMeasurementValues[4];
 String lastFooterValues[3];
 
@@ -444,8 +457,8 @@ bool drawDashboard() {
   changed |= drawMeasurementValue(2, formatSamplingRate(Sampling_rate));
 
   const String frequencyValue = frequencyOverRange
-      ? ">120 kHz"
-      : formatFrequency(measuredFrequencyHz);
+      ? ">" + formatFrequency(measuredFrequencyHz)
+      : frequencyKnown ? formatFrequency(measuredFrequencyHz) : "?";
   changed |= drawMeasurementValue(3, frequencyValue);
 
   const float voltsPerDivision =
@@ -484,12 +497,29 @@ void configureFrequencyCounter() {
   ESP_ERROR_CHECK(pcnt_event_enable(PCNT_UNIT_0, PCNT_EVT_H_LIM));
   ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
   ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
-  lastFrequencyWindowMs = millis();
+  frequencyWindowStartUs = micros();
 }
 
-void updateFrequencyMeasurement(uint32_t nowMs) {
-  const uint32_t elapsedMs = nowMs - lastFrequencyWindowMs;
-  if (elapsedMs < frequencyWindowMs) {
+void clearFrequencyEstimate() {
+  accumulatedPulseCount = 0;
+  accumulatedFrequencyWindowUs = 0;
+  accumulatedFrequencyWindows = 0;
+  accumulatedFrequencyOverRange = false;
+  measuredFrequencyHz = 0.0f;
+  freq = 0.0f;
+  frequencyKnown = false;
+  frequencyOverRange = false;
+}
+
+void updateFrequencyMeasurement(uint32_t nowUs) {
+  if (Sampling_rate <= 0) {
+    return;
+  }
+
+  const uint32_t targetWindowUs =
+      static_cast<uint32_t>(plotSampleCount) * 1000000UL / Sampling_rate;
+  const uint32_t elapsedUs = nowUs - frequencyWindowStartUs;
+  if (elapsedUs < targetWindowUs) {
     return;
   }
 
@@ -501,18 +531,94 @@ void updateFrequencyMeasurement(uint32_t nowMs) {
   ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
   ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
 
-  frequencyOverRange = (eventStatus & PCNT_EVT_H_LIM) != 0;
-  if (!frequencyOverRange) {
-    measuredFrequencyHz =
-        pulseCount * (1000.0f / static_cast<float>(elapsedMs));
-    freq = measuredFrequencyHz;
+  frequencyWindowStartUs = nowUs;
+  const bool windowOverRange = (eventStatus & PCNT_EVT_H_LIM) != 0;
+  if (pulseCount <= 0 && !windowOverRange) {
+    clearFrequencyEstimate();
+    return;
   }
-  lastFrequencyWindowMs = nowMs;
+
+  const uint32_t recordWindows =
+      std::max<uint32_t>(
+          1, (elapsedUs + targetWindowUs - 1) / targetWindowUs);
+  const uint32_t measuredPulses =
+      windowOverRange ? frequencyCounterLimit : pulseCount;
+  const bool sparseSinglePulse =
+      measuredPulses == 1 && recordWindows == 1;
+  if (!sparseSinglePulse && measuredPulses < 2 * recordWindows) {
+    clearFrequencyEstimate();
+    return;
+  }
+
+  accumulatedPulseCount += measuredPulses;
+  accumulatedFrequencyWindowUs += elapsedUs;
+  accumulatedFrequencyOverRange |= windowOverRange;
+  accumulatedFrequencyWindows +=
+      static_cast<uint8_t>(std::min<uint32_t>(
+          recordWindows, frequencyAveragingWindows));
+
+  if (accumulatedFrequencyWindows >= frequencyAveragingWindows) {
+    measuredFrequencyHz =
+        static_cast<float>(accumulatedPulseCount) * 1000000.0f /
+        static_cast<float>(accumulatedFrequencyWindowUs);
+    freq = measuredFrequencyHz;
+    frequencyOverRange = accumulatedFrequencyOverRange;
+    frequencyKnown = true;
+    accumulatedPulseCount = 0;
+    accumulatedFrequencyWindowUs = 0;
+    accumulatedFrequencyWindows = 0;
+    accumulatedFrequencyOverRange = false;
+  }
 }
 
-void updateMeasurements() {
-  peak = ADC_LUT[analogRead(peakDetectorPin)];
-  valley = 4095 - ADC_LUT[analogRead(invertedPeakDetectorPin)];
+uint32_t peakHoldPeriodUs() {
+  const float expectedFrequency = frequencyKnown && measuredFrequencyHz > 0.0f
+      ? measuredFrequencyHz
+      : Sampling_rate / 100.0f;
+  if (expectedFrequency <= 0.0f) {
+    return 1000000UL;
+  }
+  const float periodUs = 1000000.0f / expectedFrequency;
+  return static_cast<uint32_t>(std::max(1.0f, periodUs));
+}
+
+void updateHeldExtreme(float sample, float& heldValue,
+                       uint32_t& lastRefreshUs, uint32_t nowUs,
+                       uint32_t holdPeriodUs) {
+  if (!detectorValuesInitialized ||
+      sample >= heldValue * peakRetriggerRatio) {
+    heldValue = std::max(heldValue, sample);
+    lastRefreshUs = nowUs;
+  } else if (nowUs - lastRefreshUs >= holdPeriodUs) {
+    heldValue = sample;
+    lastRefreshUs = nowUs;
+  }
+}
+
+void updatePeakDetectors(uint32_t nowUs) {
+  const float peakSample = ADC_LUT[analogRead(peakDetectorPin)];
+  const float valleySample =
+      4095.0f - ADC_LUT[analogRead(invertedPeakDetectorPin)];
+  const uint32_t holdPeriodUs = peakHoldPeriodUs();
+
+  updateHeldExtreme(peakSample, peak, lastPeakRefreshUs, nowUs,
+                    holdPeriodUs);
+  updateHeldExtreme(valleySample, valley, lastValleyRefreshUs, nowUs,
+                    holdPeriodUs);
+  detectorValuesInitialized = true;
+
+  offset = -((peak + valley) * 0.00040293f - 1.65f) / Gain;
+  Vpp = (peak - valley) * 0.00080586f / Gain;
+
+  const int dacOutput =
+      static_cast<int>((peak + valley) * 0.01556777f);
+  if (dacOutput != lastDacOutput) {
+    dac_output_voltage(DAC_CHANNEL_1, dacOutput);
+    lastDacOutput = dacOutput;
+  }
+}
+
+void updateControlMeasurements() {
   Gain = (ADC_LUT[analogRead(gainPotPin)]*1.05 - 122.85) * 0.10776 + 0.03014;
   if (Gain <= 0)
     Gain = 0.03014;
@@ -523,11 +629,6 @@ void updateMeasurements() {
     sampling_index = 45;
   }
   Sampling_rate = sampling_rates[sampling_index];
-  
-  dac_output_voltage(DAC_CHANNEL_1, int((peak+valley)*0.01556777));
-
-  offset = -((peak+valley)*0.00040293-1.65)/Gain;
-  Vpp = (peak-valley)*0.00080586/Gain;
 }
 }  // namespace
 
@@ -546,8 +647,10 @@ void setup() {
 
   display.init();
   drawStaticUi();
+  updateControlMeasurements();
+  updatePeakDetectors(micros());
   configureFrequencyCounter();
-  updateMeasurements();
+  lastControlUpdateMs = millis();
   lastAdcUpdateMs = millis();
   drawDashboard();
   displayRateWindowStartMs = millis();
@@ -557,11 +660,26 @@ void setup() {
 }
 
 void loop() {
-  const uint32_t nowMs = millis();
-  updateFrequencyMeasurement(nowMs);
+  const uint32_t nowUs = micros();
+  updatePeakDetectors(nowUs);
+  updateFrequencyMeasurement(nowUs);
 
-  if (nowMs - lastAdcUpdateMs >= adcUpdatePeriodMs) {
-    updateMeasurements();
+  const uint32_t nowMs = millis();
+
+  if (nowMs - lastControlUpdateMs >= controlUpdatePeriodMs) {
+    const int previousSamplingRate = Sampling_rate;
+    updateControlMeasurements();
+    lastControlUpdateMs = nowMs;
+    if (Sampling_rate != previousSamplingRate) {
+      ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
+      ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
+      ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
+      frequencyWindowStartUs = micros();
+      clearFrequencyEstimate();
+    }
+  }
+
+  if (nowMs - lastAdcUpdateMs >= controlUpdatePeriodMs) {
     if (drawDashboard() && displayChangeFrames < UINT16_MAX) {
       ++displayChangeFrames;
     }
@@ -577,5 +695,5 @@ void loop() {
     displayRateReady = true;
     drawDisplayChangeRate();
   }
-  delay(5);
+  taskYIELD();
 }
