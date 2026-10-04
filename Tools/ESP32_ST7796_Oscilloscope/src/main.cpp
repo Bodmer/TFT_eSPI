@@ -40,7 +40,7 @@ constexpr int panelWidth = 100;
 constexpr int panelTop = 10;
 constexpr int panelRowHeight = 56;
 constexpr size_t adcCaptureSampleCount =
-    (static_cast<size_t>(plotSampleCount) * 3 + 1) / 2;
+    static_cast<size_t>(plotSampleCount) * 2;
 constexpr size_t adcDmaWordCount = adcCaptureSampleCount;
 constexpr uint32_t adcClockSourceHz = 80000000UL;
 constexpr ledc_mode_t adcClockSpeedMode = LEDC_HIGH_SPEED_MODE;
@@ -546,8 +546,8 @@ void adcCaptureTask(void*) {
     if (captureCompleted) {
       stopAdcDmaCapture();
       for (size_t sample = 0; sample < adcCaptureSampleCount; ++sample) {
-        adcSamples[sample] =
-            static_cast<uint8_t>((adcDmaWords[sample] >> 8) & 0xff);
+        adcSamples[sample] = static_cast<uint8_t>(
+            255U - ((adcDmaWords[sample] >> 8) & 0xffU));
       }
       ++adcCaptureSequence;
       __sync_synchronize();
@@ -558,12 +558,7 @@ void adcCaptureTask(void*) {
 
 void drawMeasurementBox(int row, const char* title, uint16_t color);
 
-void drawStaticUi() {
-  display.setRotation(1);
-  display.fillScreen(backgroundColor);
-  display.setTextColor(TFT_WHITE, backgroundColor);
-  display.drawString("SIGNAL", plotLeft, 8, 2);
-
+void drawPlotGrid() {
   for (int division = 0; division <= horizontalDivisions; ++division) {
     const int x = plotLeft + division * (plotWidth - 1) / horizontalDivisions;
     display.drawFastVLine(x, plotTop, plotHeight, TFT_DARKGREY);
@@ -573,6 +568,68 @@ void drawStaticUi() {
     display.drawFastHLine(plotLeft, y, plotWidth, TFT_DARKGREY);
   }
   display.drawRect(plotLeft, plotTop, plotWidth, plotHeight, TFT_WHITE);
+}
+
+bool drawSignalPlot() {
+  if (!frequencyKnown) {
+    return false;
+  }
+
+  const float targetSample =
+      255.0f - ((peak + valley) * 0.5f) * (255.0f / 4095.0f);
+  const float triggerTolerance = std::max(
+      1.0f, fabsf(peak - valley) * (255.0f / 4095.0f) * 0.05f);
+  const size_t lastTriggerStart =
+      adcCaptureSampleCount - static_cast<size_t>(plotSampleCount);
+  size_t closestStart = 0;
+  float closestDistance = 256.0f;
+  size_t triggerStart = adcCaptureSampleCount;
+
+  for (size_t sample = 0; sample <= lastTriggerStart; ++sample) {
+    const float distance = fabsf(adcSamples[sample] - targetSample);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestStart = sample;
+    }
+    if (distance <= triggerTolerance) {
+      triggerStart = sample;
+      break;
+    }
+  }
+  if (triggerStart == adcCaptureSampleCount) {
+    triggerStart = closestStart;
+  }
+
+  display.fillRect(plotLeft + 1, plotTop + 1, plotWidth - 2, plotHeight - 2,
+                   backgroundColor);
+  drawPlotGrid();
+
+  int previousX = plotLeft + 1;
+  int previousY = plotTop + plotHeight - 2 -
+                  (static_cast<int>(adcSamples[triggerStart]) *
+                   (plotHeight - 3) /
+                   255);
+  for (int point = 1; point < plotSampleCount; ++point) {
+    const size_t sampleIndex = triggerStart + static_cast<size_t>(point);
+    const int x = plotLeft + 1 + point;
+    const int y = plotTop + plotHeight - 2 -
+                  (static_cast<int>(adcSamples[sampleIndex]) *
+                   (plotHeight - 3) /
+                   255);
+    display.drawLine(previousX, previousY, x, y, TFT_YELLOW);
+    previousX = x;
+    previousY = y;
+  }
+  return true;
+}
+
+void drawStaticUi() {
+  display.setRotation(1);
+  display.fillScreen(backgroundColor);
+  display.setTextColor(TFT_WHITE, backgroundColor);
+  display.drawString("SIGNAL", plotLeft, 8, 2);
+
+  drawPlotGrid();
 
   drawMeasurementBox(0, "Vpeak-peak", TFT_CYAN);
   drawMeasurementBox(1, "Voffset", TFT_GREEN);
@@ -671,8 +728,8 @@ bool drawFooterValue(int index, int x, int width, const String& value) {
 
 bool drawDashboard() {
   bool changed = false;
-  changed |= drawMeasurementValue(0, formatVoltage(Vpp));
-  changed |= drawMeasurementValue(1, formatVoltage(offset));
+  changed |= drawMeasurementValue(0, frequencyKnown ? formatVoltage(Vpp) : "?");
+  changed |= drawMeasurementValue(1, frequencyKnown ? formatVoltage(offset) : "?");
   changed |= drawMeasurementValue(2, formatSamplingRate(Sampling_rate));
 
   const String frequencyValue = frequencyOverRange
@@ -913,6 +970,15 @@ void loop() {
       ++displayChangeFrames;
     }
     lastAdcUpdateMs = nowMs;
+  }
+
+  if (adcCaptureReady) {
+    if (drawSignalPlot() && displayChangeFrames < UINT16_MAX) {
+      ++displayChangeFrames;
+    }
+    __sync_synchronize();
+    adcCaptureReady = false;
+    __sync_synchronize();
   }
 
   const uint32_t rateWindowElapsedMs = nowMs - displayRateWindowStartMs;
