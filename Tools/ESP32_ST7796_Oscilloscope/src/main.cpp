@@ -24,11 +24,19 @@ constexpr int adcClockOutputPin = 15;
 constexpr int adcClockInputPin = 39;
 constexpr int adcDataPins[] = {13, 14, 16, 17, 21, 22, 26, 36};
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
-constexpr uint8_t potentiometerAverageCount = 5;
-constexpr uint8_t detectorAverageCount = 5;
-constexpr uint32_t maximumDisplayFrameRate = 60;
+constexpr uint8_t potentiometerAverageCount = 10;
+constexpr uint8_t detectorAverageCount = 10;
+enum class DisplayFrameRateCap : uint32_t {
+  Fps10 = 10,
+  Fps40 = 40,
+};
+constexpr DisplayFrameRateCap displayFrameRateCap =
+    DisplayFrameRateCap::Fps10;
+constexpr uint32_t maximumDisplayFrameRate =
+    static_cast<uint32_t>(displayFrameRateCap);
 constexpr uint32_t minimumDisplayFrameIntervalUs =
     (1000000UL + maximumDisplayFrameRate - 1) / maximumDisplayFrameRate;
+constexpr uint32_t maximumFrequencyWindowUs = 10UL * 1000000UL;
 constexpr int16_t frequencyCounterLimit = 30000;
 constexpr uint16_t backgroundColor = TFT_BLACK;
 constexpr int plotLeft = 12;
@@ -797,9 +805,11 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
     return;
   }
 
+  const uint64_t requestedWindowUs =
+      100ULL * 100ULL * 1000000ULL /
+      static_cast<uint32_t>(Sampling_rate);
   const uint32_t targetWindowUs = static_cast<uint32_t>(
-      static_cast<uint64_t>(plotSampleCount) * 10ULL * 1000000ULL /
-      static_cast<uint32_t>(Sampling_rate));
+      std::min<uint64_t>(requestedWindowUs, maximumFrequencyWindowUs));
   const uint32_t elapsedUs = nowUs - frequencyWindowStartUs;
   if (elapsedUs < targetWindowUs) {
     return;
