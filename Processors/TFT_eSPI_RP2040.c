@@ -49,9 +49,9 @@
 
   // Community RP2040 board package by Earle Philhower
   PIO tft_pio = pio0;     // Code will try both pio's to find a free SM
-  int8_t pio_sm = 0;  // pioinit will claim a free one
+  uint pio_sm = 0;  // pioinit will claim a free one
   // Updated later with the loading offset of the PIO program.
-  uint32_t program_offset  = 0;
+  uint program_offset  = 0;
 
   // SM stalled mask
   uint32_t pull_stall_mask = 0;
@@ -92,7 +92,7 @@ uint8_t TFT_eSPI::tft_Read_8(void)
     SCLK_H;
   }
   */
-  
+
   ret = spi.transfer(0x00);
 
   return ret;
@@ -127,21 +127,14 @@ void TFT_eSPI::end_SDA_Read(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifdef RP2040_PIO_SPI
 void pioinit(uint32_t clock_freq) {
+  #define PIN_MIN MIN3(TFT_DC, TFT_SCLK, TFT_MOSI)
+  #define PIN_MAX MAX3(TFT_DC, TFT_SCLK, TFT_MOSI)
 
   // Find enough free space on one of the PIO's
-  tft_pio = pio0;
-  if (!pio_can_add_program(tft_pio, &tft_io_program)) {
-    tft_pio = pio1;
-    if (!pio_can_add_program(tft_pio, &tft_io_program)) {
-      // Serial.println("No room for PIO program!");
+  if (!pio_claim_free_sm_and_add_program_for_gpio_range(&tft_io_program, &tft_pio, &pio_sm,
+                                        &program_offset, PIN_MIN, PIN_MAX - PIN_MIN, true)) {
       return;
-    }
   }
-
-  pio_sm = pio_claim_unused_sm(tft_pio, false);
-
-  // Load the PIO program
-  program_offset = pio_add_program(tft_pio, &tft_io_program);
 
   // Associate pins with the PIO
   pio_gpio_init(tft_pio, TFT_DC);
@@ -187,27 +180,19 @@ void pioinit(uint32_t clock_freq) {
 }
 #else // 8 or 16-bit parallel
 void pioinit(uint16_t clock_div, uint16_t fract_div) {
-
-  // Find enough free space on one of the PIO's
-  tft_pio = pio0;
-  if (!pio_can_add_program(tft_pio, &tft_io_program)) {
-    tft_pio = pio1;
-    if (!pio_can_add_program(tft_pio, &tft_io_program)) {
-      // Serial.println("No room for PIO program!");
-      return;
-    }
-  }
-
-  pio_sm = pio_claim_unused_sm(tft_pio, false);
-
   #if defined (TFT_PARALLEL_8_BIT)
     uint8_t bits = 8;
   #else // must be TFT_PARALLEL_16_BIT
     uint8_t bits = 16;
   #endif
-  
-  // Load the PIO program
-  program_offset = pio_add_program(tft_pio, &tft_io_program);
+
+  #define PIN_MIN MIN3(TFT_DC, TFT_WR, TFT_D0)
+  #define PIN_MAX MAX3(TFT_DC, TFT_WR, TFT_D0 + bits - 1)
+
+  if (!pio_claim_free_sm_and_add_program_for_gpio_range(&tft_io_program, &tft_pio, &pio_sm,
+                                        &program_offset, PIN_MIN, PIN_MAX - PIN_MIN, true)) {
+      return;
+  }
 
   // Associate pins with the PIO
   pio_gpio_init(tft_pio, TFT_DC);
@@ -686,7 +671,7 @@ bool TFT_eSPI::initDMA(bool ctrl_cs)
   ctrl_cs = ctrl_cs; // stop unused parameter warning
 
   dma_tx_channel = dma_claim_unused_channel(false);
-  
+
   if (dma_tx_channel < 0) return false;
 
   dma_tx_config = dma_channel_get_default_config(dma_tx_channel);

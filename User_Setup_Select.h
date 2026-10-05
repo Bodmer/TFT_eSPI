@@ -140,6 +140,7 @@
 //#include <User_Setups/Setup137_LilyGo_TDisplay_RP2040.h>  // Setup file for Lilygo T-Display RP2040 (ST7789 on SPI bus with 135x240 TFT)
 
 //#include <User_Setups/Setup138_Pico_Explorer_Base_RP2040_ST7789.h> // Setup file for Pico Explorer Base by Pimoroni for RP2040 (ST7789 on SPI bus with 240x240 TFT)
+//#include <User_Setups/Setup139_Pimoroni_Badgeware_Tufty_RP3250B_ST7789.h> // Setup file for the Pimoroni Badgeware Tufty 2350 (ST7789 on 8 bit parallel with 240x320 TFT).
 
 //#include <User_Setups/Setup200_GC9A01.h>           // Setup file for ESP32 and GC9A01 240 x 240 TFT
 
