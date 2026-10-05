@@ -26,6 +26,9 @@ constexpr int adcDataPins[] = {13, 14, 16, 17, 21, 22, 26, 36};
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
 constexpr uint8_t potentiometerAverageCount = 5;
 constexpr uint8_t detectorAverageCount = 5;
+constexpr uint32_t maximumDisplayFrameRate = 60;
+constexpr uint32_t minimumDisplayFrameIntervalUs =
+    (1000000UL + maximumDisplayFrameRate - 1) / maximumDisplayFrameRate;
 constexpr int16_t frequencyCounterLimit = 30000;
 constexpr uint16_t backgroundColor = TFT_BLACK;
 constexpr int plotLeft = 12;
@@ -345,6 +348,7 @@ uint64_t accumulatedFrequencyWindowUs = 0;
 uint8_t accumulatedFrequencyWindows = 0;
 bool accumulatedFrequencyOverRange = false;
 uint32_t displayRateWindowStartMs = 0;
+uint32_t lastDisplayFrameUs = 0;
 uint16_t displayChangeFrames = 0;
 float displayChangeRateHz = 0.0f;
 bool displayRateReady = false;
@@ -729,8 +733,8 @@ bool drawFooterValue(int index, int x, int width, const String& value) {
 
 bool drawDashboard() {
   bool changed = false;
-  changed |= drawMeasurementValue(0, frequencyKnown ? formatVoltage(Vpp) : "?");
-  changed |= drawMeasurementValue(1, frequencyKnown ? formatVoltage(offset) : "?");
+  changed |= drawMeasurementValue(0, formatVoltage(Vpp));
+  changed |= drawMeasurementValue(1, formatVoltage(offset));
   changed |= drawMeasurementValue(2, formatSamplingRate(Sampling_rate));
 
   const String frequencyValue = frequencyOverRange
@@ -793,8 +797,9 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
     return;
   }
 
-  const uint32_t targetWindowUs =
-      static_cast<uint32_t>(plotSampleCount) * 1000000UL / Sampling_rate;
+  const uint32_t targetWindowUs = static_cast<uint32_t>(
+      static_cast<uint64_t>(plotSampleCount) * 10ULL * 1000000ULL /
+      static_cast<uint32_t>(Sampling_rate));
   const uint32_t elapsedUs = nowUs - frequencyWindowStartUs;
   if (elapsedUs < targetWindowUs) {
     return;
@@ -849,9 +854,7 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
 }
 
 uint32_t peakHoldPeriodUs() {
-  const float expectedFrequency = frequencyKnown && measuredFrequencyHz > 0.0f
-      ? measuredFrequencyHz
-      : Sampling_rate / 100.0f;
+  const float expectedFrequency = Sampling_rate / 100.0f;
   if (expectedFrequency <= 0.0f) {
     return 1000000UL;
   }
@@ -896,7 +899,7 @@ void updatePeakDetectors(uint32_t nowUs) {
   Vpp = (peak - valley) * 0.00080586f / Gain;
 
   const int dacOutput =
-      static_cast<int>((peak + valley) * 0.01556777f);
+      static_cast<int>((peak + valley) * 0.03113553f); 
   if (dacOutput != lastDacOutput) {
     dac_output_voltage(DAC_CHANNEL_1, dacOutput);
     lastDacOutput = dacOutput;
@@ -959,6 +962,7 @@ void setup() {
   drawDashboard();
   displayRateWindowStartMs = millis();
   drawDisplayChangeRate();
+  lastDisplayFrameUs = micros();
   Serial.println(
       "Measurement inputs ready: ADC GPIO34/35/32/33; frequency counter GPIO27.");
   Serial.printf(
@@ -987,19 +991,6 @@ void loop() {
     }
   }
 
-  if (drawDashboard() && displayChangeFrames < UINT16_MAX) {
-    ++displayChangeFrames;
-  }
-
-  if (adcCaptureReady) {
-    if (drawSignalPlot() && displayChangeFrames < UINT16_MAX) {
-      ++displayChangeFrames;
-    }
-    __sync_synchronize();
-    adcCaptureReady = false;
-    __sync_synchronize();
-  }
-
   const uint32_t rateWindowElapsedMs = nowMs - displayRateWindowStartMs;
   if (rateWindowElapsedMs >= 1000) {
     displayChangeRateHz =
@@ -1007,7 +998,21 @@ void loop() {
     displayChangeFrames = 0;
     displayRateWindowStartMs = nowMs;
     displayRateReady = true;
+  }
+
+  if (nowUs - lastDisplayFrameUs >= minimumDisplayFrameIntervalUs) {
+    lastDisplayFrameUs = nowUs;
+    bool frameChanged = drawDashboard();
+    if (adcCaptureReady) {
+      frameChanged |= drawSignalPlot();
+      __sync_synchronize();
+      adcCaptureReady = false;
+      __sync_synchronize();
+    }
     drawDisplayChangeRate();
+    if (frameChanged && displayChangeFrames < UINT16_MAX) {
+      ++displayChangeFrames;
+    }
   }
   taskYIELD();
 }
