@@ -23,7 +23,9 @@ constexpr int frequencyInputPin = 27;
 constexpr int adcClockOutputPin = 15;
 constexpr int adcClockInputPin = 39;
 constexpr int adcDataPins[] = {13, 14, 16, 17, 21, 22, 26, 36};
-constexpr uint32_t controlUpdatePeriodMs = 100;
+constexpr uint32_t potentiometerUpdatePeriodMs = 33;
+constexpr uint8_t potentiometerAverageCount = 5;
+constexpr uint8_t detectorAverageCount = 5;
 constexpr int16_t frequencyCounterLimit = 30000;
 constexpr uint16_t backgroundColor = TFT_BLACK;
 constexpr int plotLeft = 12;
@@ -342,7 +344,6 @@ uint64_t accumulatedPulseCount = 0;
 uint64_t accumulatedFrequencyWindowUs = 0;
 uint8_t accumulatedFrequencyWindows = 0;
 bool accumulatedFrequencyOverRange = false;
-uint32_t lastAdcUpdateMs = 0;
 uint32_t displayRateWindowStartMs = 0;
 uint16_t displayChangeFrames = 0;
 float displayChangeRateHz = 0.0f;
@@ -871,10 +872,18 @@ void updateHeldExtreme(float sample, float& heldValue,
   }
 }
 
+float readDetectorAverage(int pin) {
+  float total = 0.0f;
+  for (uint8_t sample = 0; sample < detectorAverageCount; ++sample) {
+    total += ADC_LUT[analogRead(pin)];
+  }
+  return total / detectorAverageCount;
+}
+
 void updatePeakDetectors(uint32_t nowUs) {
-  const float peakSample = ADC_LUT[analogRead(peakDetectorPin)];
-  const float valleySample =
-      4095.0f - ADC_LUT[analogRead(invertedPeakDetectorPin)];
+  const float peakSample = readDetectorAverage(peakDetectorPin);
+  const float valleySample = 4095.0f -
+                             readDetectorAverage(invertedPeakDetectorPin);
   const uint32_t holdPeriodUs = peakHoldPeriodUs();
 
   updateHeldExtreme(peakSample, peak, lastPeakRefreshUs, nowUs,
@@ -895,10 +904,24 @@ void updatePeakDetectors(uint32_t nowUs) {
 }
 
 void updateControlMeasurements() {
-  Gain = (ADC_LUT[analogRead(gainPotPin)]*1.05 - 122.85) * 0.10776 + 0.03014;
+  uint32_t gainAdcTotal = 0;
+  uint32_t frequencyAdcTotal = 0;
+  for (uint8_t sample = 0; sample < potentiometerAverageCount; ++sample) {
+    gainAdcTotal += analogRead(gainPotPin);
+    frequencyAdcTotal += analogRead(frequencyScalePotPin);
+  }
+  const uint16_t gainAdcAverage =
+      (gainAdcTotal + potentiometerAverageCount / 2) /
+      potentiometerAverageCount;
+  const uint16_t frequencyAdcAverage =
+      (frequencyAdcTotal + potentiometerAverageCount / 2) /
+      potentiometerAverageCount;
+
+  Gain = (ADC_LUT[gainAdcAverage] * 1.05 - 122.85) * 0.10776 + 0.03014;
   if (Gain <= 0)
     Gain = 0.03014;
-  int sampling_index = int(round((ADC_LUT[analogRead(frequencyScalePotPin)]*1.05 - 122.85) * 0.010989));
+  int sampling_index = int(round(
+      (ADC_LUT[frequencyAdcAverage] * 1.05 - 122.85) * 0.010989));
   if (sampling_index < 0) {
     sampling_index = 0;
   } else if (sampling_index > 45) {
@@ -933,7 +956,6 @@ void setup() {
     ESP_ERROR_CHECK(ESP_FAIL);
   }
   lastControlUpdateMs = millis();
-  lastAdcUpdateMs = millis();
   drawDashboard();
   displayRateWindowStartMs = millis();
   drawDisplayChangeRate();
@@ -952,7 +974,7 @@ void loop() {
 
   const uint32_t nowMs = millis();
 
-  if (nowMs - lastControlUpdateMs >= controlUpdatePeriodMs) {
+  if (nowMs - lastControlUpdateMs >= potentiometerUpdatePeriodMs) {
     const int previousSamplingRate = Sampling_rate;
     updateControlMeasurements();
     lastControlUpdateMs = nowMs;
@@ -965,11 +987,8 @@ void loop() {
     }
   }
 
-  if (nowMs - lastAdcUpdateMs >= controlUpdatePeriodMs) {
-    if (drawDashboard() && displayChangeFrames < UINT16_MAX) {
-      ++displayChangeFrames;
-    }
-    lastAdcUpdateMs = nowMs;
+  if (drawDashboard() && displayChangeFrames < UINT16_MAX) {
+    ++displayChangeFrames;
   }
 
   if (adcCaptureReady) {
