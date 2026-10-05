@@ -26,6 +26,7 @@ constexpr int adcDataPins[] = {13, 14, 16, 17, 21, 22, 26, 36};
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
 constexpr uint8_t potentiometerAverageCount = 10;
 constexpr uint8_t detectorAverageCount = 10;
+constexpr float gainSmoothingFactor = 0.1f;
 enum class DisplayFrameRateCap : uint32_t {
   Fps10 = 10,
   Fps40 = 40,
@@ -37,6 +38,7 @@ constexpr uint32_t maximumDisplayFrameRate =
 constexpr uint32_t minimumDisplayFrameIntervalUs =
     (1000000UL + maximumDisplayFrameRate - 1) / maximumDisplayFrameRate;
 constexpr uint32_t maximumFrequencyWindowUs = 10UL * 1000000UL;
+constexpr uint16_t frequencyInputGlitchFilterApbCycles = 80;
 constexpr int16_t frequencyCounterLimit = 30000;
 constexpr uint16_t backgroundColor = TFT_BLACK;
 constexpr int plotLeft = 12;
@@ -364,6 +366,8 @@ uint32_t lastControlUpdateMs = 0;
 uint32_t lastPeakRefreshUs = 0;
 uint32_t lastValleyRefreshUs = 0;
 bool detectorValuesInitialized = false;
+bool gainInitialized = false;
+float filteredGain = 0.0f;
 int lastDacOutput = -1;
 String lastMeasurementValues[4];
 String lastFooterValues[3];
@@ -784,6 +788,9 @@ void configureFrequencyCounter() {
 
   ESP_ERROR_CHECK(pcnt_unit_config(&config));
   ESP_ERROR_CHECK(pcnt_event_enable(PCNT_UNIT_0, PCNT_EVT_H_LIM));
+  ESP_ERROR_CHECK(pcnt_set_filter_value(
+      PCNT_UNIT_0, frequencyInputGlitchFilterApbCycles));
+  ESP_ERROR_CHECK(pcnt_filter_enable(PCNT_UNIT_0));
   ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
   ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
   frequencyWindowStartUs = micros();
@@ -930,9 +937,18 @@ void updateControlMeasurements() {
       (frequencyAdcTotal + potentiometerAverageCount / 2) /
       potentiometerAverageCount;
 
-  Gain = (ADC_LUT[gainAdcAverage] * 1.05 - 122.85) * 0.10776 + 0.03014;
-  if (Gain <= 0)
-    Gain = 0.03014;
+  float measuredGain =
+      (ADC_LUT[gainAdcAverage] * 1.05 - 122.85) * 0.10776 + 0.03014;
+  if (measuredGain <= 0) {
+    measuredGain = 0.03014f;
+  }
+  if (!gainInitialized) {
+    filteredGain = measuredGain;
+    gainInitialized = true;
+  } else {
+    filteredGain += gainSmoothingFactor * (measuredGain - filteredGain);
+  }
+  Gain = filteredGain;
   int sampling_index = int(round(
       (ADC_LUT[frequencyAdcAverage] * 1.05 - 122.85) * 0.010989));
   if (sampling_index < 0) {
