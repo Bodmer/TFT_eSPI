@@ -902,7 +902,7 @@ float readDetectorAverage(int pin) {
 
 void updatePeakDetectors(uint32_t nowUs) {
   const float peakSample = readDetectorAverage(peakDetectorPin);
-  const float valleySample = 4095.0f -
+  const float valleySample = 4020.545455f -
                              readDetectorAverage(invertedPeakDetectorPin);
   const uint32_t holdPeriodUs = peakHoldPeriodUs();
 
@@ -912,7 +912,7 @@ void updatePeakDetectors(uint32_t nowUs) {
                     holdPeriodUs);
   detectorValuesInitialized = true;
 
-  offset = -((peak + valley) * 0.00040293f - 1.65f) / Gain;
+  offset = -((peak + valley) * 0.00040293f - 1.8f) / Gain;
   Vpp = (peak - valley) * 0.00080586f / Gain;
 
   const int dacOutput =
