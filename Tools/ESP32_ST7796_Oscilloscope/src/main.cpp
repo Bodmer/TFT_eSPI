@@ -20,6 +20,7 @@ constexpr int invertedPeakDetectorPin = 35;
 constexpr int gainPotPin = 32;
 constexpr int frequencyScalePotPin = 33;
 constexpr int frequencyInputPin = 27;
+constexpr int adcOutOfRangePin = 12;
 constexpr int adcClockOutputPin = 15;
 constexpr int adcClockInputPin = 39;
 constexpr int adcDataPins[] = {13, 14, 16, 17, 21, 22, 26, 36};
@@ -32,7 +33,7 @@ enum class DisplayFrameRateCap : uint32_t {
   Fps40 = 40,
 };
 constexpr DisplayFrameRateCap displayFrameRateCap =
-    DisplayFrameRateCap::Fps10;
+    DisplayFrameRateCap::Fps40;
 constexpr uint32_t maximumDisplayFrameRate =
     static_cast<uint32_t>(displayFrameRateCap);
 constexpr uint32_t minimumDisplayFrameIntervalUs =
@@ -48,6 +49,10 @@ constexpr int plotHeight = 208;
 constexpr int horizontalDivisions = 8;
 constexpr int verticalDivisions = 4;
 constexpr int plotSampleCount = plotWidth-2;
+constexpr int outOfRangeIndicatorX = 220;
+constexpr int outOfRangeIndicatorY = 5;
+constexpr int outOfRangeIndicatorWidth = 136;
+constexpr int outOfRangeIndicatorHeight = 22;
 constexpr uint8_t frequencyAveragingWindows = 5;
 constexpr float peakRetriggerRatio = 0.95f;
 constexpr int panelLeft = 368;
@@ -369,6 +374,7 @@ bool detectorValuesInitialized = false;
 bool gainInitialized = false;
 float filteredGain = 0.0f;
 int lastDacOutput = -1;
+int lastOutOfRangeIndicatorState = -1;
 String lastMeasurementValues[4];
 String lastFooterValues[3];
 DMA_ATTR uint32_t adcDmaWords[adcDmaWordCount];
@@ -433,6 +439,8 @@ void configureAdcClock(uint32_t samplingRate) {
   channelConfig.duty = duty;
   channelConfig.hpoint = 0;
   ESP_ERROR_CHECK(ledc_channel_config(&channelConfig));
+  ESP_ERROR_CHECK(gpio_set_drive_capability(
+      static_cast<gpio_num_t>(adcClockOutputPin), GPIO_DRIVE_CAP_3));
 }
 
 void configureAdcCapture() {
@@ -585,6 +593,29 @@ void drawPlotGrid() {
     display.drawFastHLine(plotLeft, y, plotWidth, TFT_DARKGREY);
   }
   display.drawRect(plotLeft, plotTop, plotWidth, plotHeight, TFT_WHITE);
+}
+
+bool drawOutOfRangeIndicator() {
+  const bool outOfRange = digitalRead(adcOutOfRangePin) == HIGH;
+  const int state = outOfRange ? 1 : 0;
+  if (state == lastOutOfRangeIndicatorState) {
+    return false;
+  }
+
+  const uint16_t color = outOfRange ? TFT_RED : TFT_GREEN;
+  display.fillRect(outOfRangeIndicatorX, outOfRangeIndicatorY,
+                   outOfRangeIndicatorWidth, outOfRangeIndicatorHeight,
+                   backgroundColor);
+  display.drawRect(outOfRangeIndicatorX, outOfRangeIndicatorY,
+                   outOfRangeIndicatorWidth, outOfRangeIndicatorHeight,
+                   color);
+  display.setTextColor(color, backgroundColor);
+  display.drawCentreString(outOfRange ? "OUT OF RANGE" : "IN RANGE",
+                           outOfRangeIndicatorX +
+                               outOfRangeIndicatorWidth / 2,
+                           outOfRangeIndicatorY + 6, 1);
+  lastOutOfRangeIndicatorState = state;
+  return true;
 }
 
 bool drawSignalPlot() {
@@ -976,6 +1007,8 @@ void setup() {
 
   display.init();
   drawStaticUi();
+  pinMode(adcOutOfRangePin, INPUT);
+  drawOutOfRangeIndicator();
   updateControlMeasurements();
   updatePeakDetectors(micros());
   configureFrequencyCounter();
@@ -1029,6 +1062,7 @@ void loop() {
   if (nowUs - lastDisplayFrameUs >= minimumDisplayFrameIntervalUs) {
     lastDisplayFrameUs = nowUs;
     bool frameChanged = drawDashboard();
+    frameChanged |= drawOutOfRangeIndicator();
     if (adcCaptureReady) {
       frameChanged |= drawSignalPlot();
       __sync_synchronize();
