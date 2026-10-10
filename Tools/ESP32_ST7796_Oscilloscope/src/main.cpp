@@ -943,7 +943,7 @@ void updatePeakDetectors(uint32_t nowUs) {
                     holdPeriodUs);
   detectorValuesInitialized = true;
 
-  offset = -((peak + valley) * 0.00040293f - 1.8f) / Gain;
+  offset = -((peak + valley) * 0.00040293f - 1.65f) / Gain;
   Vpp = (peak - valley) * 0.00080586f / Gain;
 
   const int dacOutput =
@@ -995,7 +995,7 @@ void updateControlMeasurements() {
 void setup() {
   // DAC setup
   dac_output_enable(DAC_CHANNEL_1);    // pin 25
-  dac_output_voltage(DAC_CHANNEL_1, 0);
+  dac_output_voltage(DAC_CHANNEL_1, 127);
 
   Serial.begin(115200);
   analogReadResolution(12);
