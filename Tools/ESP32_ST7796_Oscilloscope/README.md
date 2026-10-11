@@ -21,9 +21,9 @@ Connect all measurement grounds to ESP32 GND. Wire the inputs as follows:
 
 | Measurement | ESP32-WROOM-32 |
 | --- | --- |
-| Peak detector output | GPIO34 (ADC1) |
-| Inverted peak detector output | GPIO35 (ADC1) |
-| Gain potentiometer wiper | GPIO32 (ADC1) |
+| Peak detector output | GPIO35 (ADC1) |
+| Inverted peak detector output | GPIO36 (ADC1) |
+| Gain potentiometer wiper | GPIO34 (ADC1) |
 | Frequency-scale potentiometer wiper | GPIO33 (ADC1) |
 | Square-wave frequency input | GPIO27 |
 | AD9235 out-of-range output (active high) | GPIO12 |
@@ -43,11 +43,13 @@ The firmware also configures I2S0 camera-mode DMA to capture an 8-bit sample bur
 | D8 | GPIO21 |
 | D9 | GPIO22 |
 | D10 | GPIO26 |
-| D11 | GPIO36 |
-| Sampling clock output | GPIO15 |
-| Sampling clock input (jumper from GPIO15) | GPIO39 |
+| D11 | GPIO15 |
+| Sampling clock output | GPIO32 |
+| Sampling clock input (jumper from GPIO32) | GPIO39 |
 
-GPIO15 generates the sampling clock at the selected rate, up to 10 MHz, using the ESP32's strongest GPIO drive setting. GPIO39 feeds that same clock to I2S0's external sampling-clock input. The drive setting cannot compensate for a clock input that presents too much load or requires a differential/common-mode clock interface. If the clock amplitude drops when connected, do not increase output loading or connect the ADC clock pins differently from the ADC board's specified interface; use a suitable clock buffer/driver between GPIO15 and the ADC, and feed GPIO39 from the buffered logic-level clock (or confirm the source split is within the driver's loading limits). The firmware samples on the opposite clock edge; confirm correct edge alignment and bit ordering with a known test pattern and a logic analyzer before relying on the capture. Configure the AD9235 clock pins for the clock format and voltage levels specified by its datasheet. Verify the ADC output levels are safe for ESP32 GPIO inputs, and use appropriate level translation/buffering if required. GPIO15 is a boot-strapping pin; the clock is enabled by firmware only after startup.
+GPIO32 generates the sampling clock at the selected rate, up to 10 MHz, using the ESP32's strongest GPIO drive setting. GPIO39 feeds that same clock to I2S0's external sampling-clock input; a short jumper between GPIO32 and GPIO39 keeps the loopback close to the ADC clock connection. The drive setting cannot compensate for a clock input that presents too much load or requires a differential/common-mode clock interface. If the clock amplitude drops when connected, use a suitable clock buffer/driver between GPIO32 and the ADC, and feed GPIO39 from the buffered logic-level clock (or confirm the source split is within the driver's loading limits). The firmware samples on the opposite clock edge; confirm correct edge alignment and bit ordering with a known test pattern and a logic analyzer before relying on the capture. Configure the AD9235 clock pins for the clock format and voltage levels specified by its datasheet. Verify the ADC output levels are safe for ESP32 GPIO inputs, and use appropriate level translation/buffering if required.
+
+This pin remap moves the gain potentiometer from GPIO32 to GPIO34, the peak detector from GPIO34 to GPIO35, the inverted peak detector from GPIO35 to GPIO36, and AD9235 D11 from GPIO36 to GPIO15. GPIO15 is an ESP32 boot-strapping pin. Ensure the ADC's D11 output is low or isolated while the ESP32 is resetting/booting; otherwise, the board may not start reliably. GPIO36 is input-only and remains assigned to the inverted detector, which is an input.
 
 The capture task holds the completed buffer stable until plotting finishes; it then clears the ready flag to request the next burst. Each completed burst increments `adcCaptureSequence`.
 

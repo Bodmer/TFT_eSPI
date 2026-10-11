@@ -15,15 +15,15 @@
 #include <algorithm>
 
 namespace {
-constexpr int peakDetectorPin = 34;
-constexpr int invertedPeakDetectorPin = 35;
-constexpr int gainPotPin = 32;
+constexpr int peakDetectorPin = 35;
+constexpr int invertedPeakDetectorPin = 36;
+constexpr int gainPotPin = 34;
 constexpr int frequencyScalePotPin = 33;
 constexpr int frequencyInputPin = 27;
 constexpr int adcOutOfRangePin = 12;
-constexpr int adcClockOutputPin = 15;
+constexpr int adcClockOutputPin = 32;
 constexpr int adcClockInputPin = 39;
-constexpr int adcDataPins[] = {13, 14, 16, 17, 21, 22, 26, 36};
+constexpr int adcDataPins[] = {13, 14, 16, 17, 21, 22, 26, 15};
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
 constexpr uint8_t potentiometerAverageCount = 10;
 constexpr uint8_t detectorAverageCount = 10;
@@ -1023,10 +1023,11 @@ void setup() {
   drawDisplayChangeRate();
   lastDisplayFrameUs = micros();
   Serial.println(
-      "Measurement inputs ready: ADC GPIO34/35/32/33; frequency counter GPIO27.");
+      "Measurement inputs ready: detectors GPIO35/36, pots GPIO34/33; "
+      "frequency counter GPIO27.");
   Serial.printf(
-      "ADC capture ready: 8-bit D11..D4 on GPIO36,26,22,21,17,16,14,13; "
-      "clock GPIO15, loopback GPIO39; %u samples per capture.\n",
+      "ADC capture ready: 8-bit D11..D4 on GPIO15,26,22,21,17,16,14,13; "
+      "clock GPIO32, loopback GPIO39; %u samples per capture.\n",
       static_cast<unsigned>(adcCaptureSampleCount));
 }
 
