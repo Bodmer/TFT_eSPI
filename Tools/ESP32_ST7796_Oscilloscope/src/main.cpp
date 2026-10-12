@@ -611,6 +611,11 @@ uint32_t countCapturedAdcSamples() {
       std::min(capturedBytes / sizeof(uint32_t), adcDmaWordCount));
 }
 
+void completeAdcCaptureRequestOnCore0() {
+  configASSERT(xPortGetCoreID() == 0);
+  adcCaptureRequested.store(false, std::memory_order_release);
+}
+
 void adcCaptureTask(void*) {
   for (;;) {
     if (!adcCaptureRequested.load(std::memory_order_acquire)) {
@@ -623,7 +628,7 @@ void adcCaptureTask(void*) {
     if (requestedRate <= 0) {
       adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
       adcLastCaptureFailure.store(1, std::memory_order_relaxed);
-      adcCaptureRequested.store(false, std::memory_order_release);
+      completeAdcCaptureRequestOnCore0();
       vTaskDelay(pdMS_TO_TICKS(10));
       continue;
     }
@@ -660,7 +665,7 @@ void adcCaptureTask(void*) {
       }
       adcCaptureSequence.fetch_add(1, std::memory_order_release);
     }
-    adcCaptureRequested.store(false, std::memory_order_release);
+    completeAdcCaptureRequestOnCore0();
   }
 }
 
@@ -1260,10 +1265,11 @@ void loop() {
   if (captureReadyForPlot &&
       nowUs - lastPlotFrameUs >= minimumPlotFrameIntervalUs) {
     lastPlotFrameUs = nowUs;
-    const bool frameChanged = drawSignalPlot();
-    captureReadyForPlot = false;
-    if (frameChanged && displayChangeFrames < UINT16_MAX) {
-      ++displayChangeFrames;
+    if (drawSignalPlot()) {
+      captureReadyForPlot = false;
+      if (displayChangeFrames < UINT16_MAX) {
+        ++displayChangeFrames;
+      }
     }
   }
 
