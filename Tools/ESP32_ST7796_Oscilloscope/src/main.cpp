@@ -28,16 +28,13 @@ constexpr uint32_t potentiometerUpdatePeriodMs = 33;
 constexpr uint8_t potentiometerAverageCount = 10;
 constexpr uint8_t detectorAverageCount = 10;
 constexpr float gainSmoothingFactor = 0.1f;
-enum class DisplayFrameRateCap : uint32_t {
-  Fps10 = 10,
-  Fps40 = 40,
-};
-constexpr DisplayFrameRateCap displayFrameRateCap =
-    DisplayFrameRateCap::Fps40;
-constexpr uint32_t maximumDisplayFrameRate =
-    static_cast<uint32_t>(displayFrameRateCap);
-constexpr uint32_t minimumDisplayFrameIntervalUs =
-    (1000000UL + maximumDisplayFrameRate - 1) / maximumDisplayFrameRate;
+constexpr uint32_t maximumDashboardFrameRate = 10;
+constexpr uint32_t maximumPlotFrameRate = 60;
+constexpr uint32_t minimumDashboardFrameIntervalUs =
+    (1000000UL + maximumDashboardFrameRate - 1) /
+    maximumDashboardFrameRate;
+constexpr uint32_t minimumPlotFrameIntervalUs =
+    (1000000UL + maximumPlotFrameRate - 1) / maximumPlotFrameRate;
 constexpr uint32_t maximumFrequencyWindowUs = 10UL * 1000000UL;
 constexpr uint16_t frequencyInputGlitchFilterApbCycles = 80;
 constexpr int16_t frequencyCounterLimit = 30000;
@@ -363,7 +360,8 @@ uint64_t accumulatedFrequencyWindowUs = 0;
 uint8_t accumulatedFrequencyWindows = 0;
 bool accumulatedFrequencyOverRange = false;
 uint32_t displayRateWindowStartMs = 0;
-uint32_t lastDisplayFrameUs = 0;
+uint32_t lastDashboardFrameUs = 0;
+uint32_t lastPlotFrameUs = 0;
 uint16_t displayChangeFrames = 0;
 float displayChangeRateHz = 0.0f;
 bool displayRateReady = false;
@@ -1021,7 +1019,8 @@ void setup() {
   drawDashboard();
   displayRateWindowStartMs = millis();
   drawDisplayChangeRate();
-  lastDisplayFrameUs = micros();
+  lastDashboardFrameUs = micros();
+  lastPlotFrameUs = lastDashboardFrameUs;
   Serial.println(
       "Measurement inputs ready: detectors GPIO35/36, pots GPIO34/33; "
       "frequency counter GPIO27.");
@@ -1060,17 +1059,23 @@ void loop() {
     displayRateReady = true;
   }
 
-  if (nowUs - lastDisplayFrameUs >= minimumDisplayFrameIntervalUs) {
-    lastDisplayFrameUs = nowUs;
+  if (nowUs - lastDashboardFrameUs >= minimumDashboardFrameIntervalUs) {
+    lastDashboardFrameUs = nowUs;
     bool frameChanged = drawDashboard();
     frameChanged |= drawOutOfRangeIndicator();
-    if (adcCaptureReady) {
-      frameChanged |= drawSignalPlot();
-      __sync_synchronize();
-      adcCaptureReady = false;
-      __sync_synchronize();
-    }
     drawDisplayChangeRate();
+    if (frameChanged && displayChangeFrames < UINT16_MAX) {
+      ++displayChangeFrames;
+    }
+  }
+
+  if (adcCaptureReady &&
+      nowUs - lastPlotFrameUs >= minimumPlotFrameIntervalUs) {
+    lastPlotFrameUs = nowUs;
+    const bool frameChanged = drawSignalPlot();
+    __sync_synchronize();
+    adcCaptureReady = false;
+    __sync_synchronize();
     if (frameChanged && displayChangeFrames < UINT16_MAX) {
       ++displayChangeFrames;
     }
