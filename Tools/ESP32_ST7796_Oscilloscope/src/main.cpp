@@ -395,7 +395,7 @@ DMA_ATTR lldesc_t adcDmaDescriptors[adcDmaDescriptorCount];
 uint8_t adcSamples[adcCaptureSampleCount];
 TaskHandle_t adcCaptureTaskHandle = nullptr;
 bool adcCaptureTaskCreated = false;
-volatile int requestedAdcSamplingRate = 0;
+std::atomic<int> adcCaptureSamplingRate{0};
 std::atomic<bool> adcCaptureRequested{false};
 std::atomic<uint32_t> adcCaptureSequence{0};
 volatile bool adcCaptureDmaFailed = false;
@@ -566,7 +566,8 @@ void adcCaptureTask(void*) {
       continue;
     }
 
-    const int requestedRate = requestedAdcSamplingRate;
+    const int requestedRate =
+        adcCaptureSamplingRate.load(std::memory_order_relaxed);
     if (requestedRate <= 0) {
       adcCaptureRequested.store(false, std::memory_order_release);
       vTaskDelay(pdMS_TO_TICKS(10));
@@ -592,10 +593,6 @@ void adcCaptureTask(void*) {
         }
         captureCompleted = true;
         continue;
-      }
-      if (requestedAdcSamplingRate != activeSamplingRate) {
-        stopAdcDmaCapture();
-        break;
       }
     }
 
@@ -1045,7 +1042,6 @@ void updateControlMeasurements() {
     }
   }
   Sampling_rate = sampling_rates[selectedSamplingRateIndex];
-  requestedAdcSamplingRate = Sampling_rate;
 }
 }  // namespace
 
@@ -1160,6 +1156,7 @@ void loop() {
       !captureReadyForPlot) {
     captureSequenceAtRequest =
         adcCaptureSequence.load(std::memory_order_acquire);
+    adcCaptureSamplingRate.store(Sampling_rate, std::memory_order_relaxed);
     adcCaptureRequested.store(true, std::memory_order_release);
     captureRequestPending = true;
   }
