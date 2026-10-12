@@ -490,6 +490,10 @@ void configureAdcClock(uint32_t samplingRate) {
       static_cast<gpio_num_t>(adcClockOutputPin), GPIO_DRIVE_CAP_3));
 }
 
+void stopAdcClock() {
+  ESP_ERROR_CHECK(ledc_stop(adcClockSpeedMode, adcClockChannel, 0));
+}
+
 void configureAdcCapture() {
   periph_module_enable(PERIPH_I2S0_MODULE);
   I2S0.conf.val = 0;
@@ -592,7 +596,6 @@ void startAdcDmaCapture() {
 }
 
 void adcCaptureTask(void*) {
-  int activeSamplingRate = 0;
   for (;;) {
     if (!adcCaptureRequested.load(std::memory_order_acquire)) {
       vTaskDelay(pdMS_TO_TICKS(1));
@@ -607,19 +610,16 @@ void adcCaptureTask(void*) {
       continue;
     }
 
-    if (requestedRate != activeSamplingRate) {
-      stopAdcDmaCapture();
-      configureAdcClock(static_cast<uint32_t>(requestedRate));
-      activeSamplingRate = requestedRate;
-    }
-
+    stopAdcDmaCapture();
+    configureAdcClock(static_cast<uint32_t>(requestedRate));
+    delayMicroseconds(std::max<uint32_t>(
+        1, 1000000UL / static_cast<uint32_t>(requestedRate)));
     adcCaptureDmaFailed = false;
     startAdcDmaCapture();
     bool captureCompleted = false;
     while (!captureCompleted) {
       if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100)) > 0) {
         if (adcCaptureDmaFailed) {
-          stopAdcDmaCapture();
           Serial.printf("I2S DMA capture failed (error count %lu).\n",
                         static_cast<unsigned long>(adcCaptureDmaErrorCount));
           break;
@@ -629,8 +629,9 @@ void adcCaptureTask(void*) {
       }
     }
 
+    stopAdcDmaCapture();
+    stopAdcClock();
     if (captureCompleted) {
-      stopAdcDmaCapture();
       for (size_t sample = 0; sample < adcCaptureSampleCount; ++sample) {
         adcSamples[sample] = static_cast<uint8_t>(
             255U - ((adcDmaWords[sample] >> 8) & 0xffU));
