@@ -32,6 +32,9 @@ constexpr uint8_t detectorAverageCount = 10;
 constexpr float gainSmoothingFactor = 0.1f;
 constexpr float frequencyScaleSmoothingFactor = 0.2f;
 constexpr float samplingRateIndexHysteresis = 0.65f;
+
+constexpr bool captureDebugEnabled = true;
+
 constexpr uint32_t maximumDashboardFrameRate = 10;
 constexpr uint32_t maximumPlotFrameRate = 60;
 constexpr uint32_t minimumDashboardFrameIntervalUs =
@@ -404,6 +407,9 @@ bool adcCaptureTaskCreated = false;
 std::atomic<int> adcCaptureSamplingRate{0};
 std::atomic<bool> adcCaptureRequested{false};
 std::atomic<uint32_t> adcCaptureSequence{0};
+std::atomic<uint32_t> adcLastCaptureSampleCount{0};
+std::atomic<int> adcLastCaptureFailure{-1};
+std::atomic<bool> adcLastCaptureRequestIssued{false};
 volatile bool adcCaptureDmaFailed = false;
 volatile uint32_t adcCaptureDmaErrorCount = 0;
 intr_handle_t i2sInterruptHandle = nullptr;
@@ -595,6 +601,16 @@ void startAdcDmaCapture() {
   I2S0.conf.rx_start = 1;
 }
 
+uint32_t countCapturedAdcSamples() {
+  size_t capturedBytes = 0;
+  for (size_t descriptorIndex = 0;
+       descriptorIndex < adcDmaDescriptorCount; ++descriptorIndex) {
+    capturedBytes += adcDmaDescriptors[descriptorIndex].length;
+  }
+  return static_cast<uint32_t>(
+      std::min(capturedBytes / sizeof(uint32_t), adcDmaWordCount));
+}
+
 void adcCaptureTask(void*) {
   for (;;) {
     if (!adcCaptureRequested.load(std::memory_order_acquire)) {
@@ -605,6 +621,8 @@ void adcCaptureTask(void*) {
     const int requestedRate =
         adcCaptureSamplingRate.load(std::memory_order_relaxed);
     if (requestedRate <= 0) {
+      adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
+      adcLastCaptureFailure.store(1, std::memory_order_relaxed);
       adcCaptureRequested.store(false, std::memory_order_release);
       vTaskDelay(pdMS_TO_TICKS(10));
       continue;
@@ -631,6 +649,10 @@ void adcCaptureTask(void*) {
 
     stopAdcDmaCapture();
     stopAdcClock();
+    adcLastCaptureSampleCount.store(countCapturedAdcSamples(),
+                                    std::memory_order_relaxed);
+    adcLastCaptureFailure.store(captureCompleted ? 0 : 1,
+                                std::memory_order_relaxed);
     if (captureCompleted) {
       for (size_t sample = 0; sample < adcCaptureSampleCount; ++sample) {
         adcSamples[sample] = static_cast<uint8_t>(
@@ -692,6 +714,37 @@ void drawCaptureTaskFailureIndicator() {
       "CAPTURE TASK FAILED",
       captureTaskIndicatorX + captureTaskIndicatorWidth / 2,
       captureTaskIndicatorY + 6, 1);
+}
+
+void drawCaptureDebugStats() {
+  if (!captureDebugEnabled) {
+    return;
+  }
+
+  const uint32_t capturedSamples =
+      adcLastCaptureSampleCount.load(std::memory_order_relaxed);
+  const int captureFailure =
+      adcLastCaptureFailure.load(std::memory_order_relaxed);
+  const bool requestIssued =
+      adcLastCaptureRequestIssued.load(std::memory_order_relaxed);
+  const String sampleStats =
+      "Sc: " + String(capturedSamples) + "/" +
+      String(static_cast<uint32_t>(adcCaptureSampleCount));
+  const String failureStats =
+      captureFailure < 0 ? "Sf: --"
+                         : captureFailure ? "Sf: YES" : "Sf: NO";
+  const String requestStats = requestIssued ? "Cr: YES" : "Cr: NO";
+  const String stats = sampleStats + " " + failureStats + " " + requestStats;
+  static String lastDrawnStats;
+  if (stats == lastDrawnStats) {
+    return;
+  }
+
+  display.fillRect(plotLeft, plotTop + plotHeight + 3,
+                   plotWidth, 22, backgroundColor);
+  display.setTextColor(TFT_WHITE, backgroundColor);
+  display.drawString(stats, plotLeft, plotTop + plotHeight + 5, 2);
+  lastDrawnStats = stats;
 }
 
 bool drawSignalPlot() {
@@ -1133,6 +1186,7 @@ void setup() {
   }
   lastControlUpdateMs = millis();
   drawDashboard();
+  drawCaptureDebugStats();
   displayRateWindowStartMs = millis();
   drawDisplayChangeRate();
   lastDashboardFrameUs = micros();
@@ -1189,6 +1243,7 @@ void loop() {
     bool frameChanged = drawDashboard();
     frameChanged |= drawOutOfRangeIndicator();
     drawDisplayChangeRate();
+    drawCaptureDebugStats();
     if (frameChanged && displayChangeFrames < UINT16_MAX) {
       ++displayChangeFrames;
     }
@@ -1217,6 +1272,7 @@ void loop() {
     captureSequenceAtRequest =
         adcCaptureSequence.load(std::memory_order_acquire);
     adcCaptureSamplingRate.store(Sampling_rate, std::memory_order_relaxed);
+    adcLastCaptureRequestIssued.store(true, std::memory_order_relaxed);
     adcCaptureRequested.store(true, std::memory_order_release);
     captureRequestPending = true;
   }
