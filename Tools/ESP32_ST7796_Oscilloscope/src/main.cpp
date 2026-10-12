@@ -13,6 +13,7 @@
 #include <rom/lldesc.h>
 
 #include <algorithm>
+#include <atomic>
 
 namespace {
 constexpr int peakDetectorPin = 35;
@@ -390,8 +391,8 @@ DMA_ATTR lldesc_t adcDmaDescriptors[adcDmaDescriptorCount];
 uint8_t adcSamples[adcCaptureSampleCount];
 TaskHandle_t adcCaptureTaskHandle = nullptr;
 volatile int requestedAdcSamplingRate = 0;
-volatile bool adcCaptureReady = false;
-volatile uint32_t adcCaptureSequence = 0;
+std::atomic<bool> adcCaptureRequested{false};
+std::atomic<uint32_t> adcCaptureSequence{0};
 volatile bool adcCaptureDmaFailed = false;
 volatile uint32_t adcCaptureDmaErrorCount = 0;
 intr_handle_t i2sInterruptHandle = nullptr;
@@ -555,12 +556,14 @@ void startAdcDmaCapture() {
 void adcCaptureTask(void*) {
   int activeSamplingRate = 0;
   for (;;) {
-    while (adcCaptureReady) {
+    if (!adcCaptureRequested.load(std::memory_order_acquire)) {
       vTaskDelay(pdMS_TO_TICKS(1));
+      continue;
     }
 
     const int requestedRate = requestedAdcSamplingRate;
     if (requestedRate <= 0) {
+      adcCaptureRequested.store(false, std::memory_order_release);
       vTaskDelay(pdMS_TO_TICKS(10));
       continue;
     }
@@ -597,10 +600,9 @@ void adcCaptureTask(void*) {
         adcSamples[sample] = static_cast<uint8_t>(
             255U - ((adcDmaWords[sample] >> 8) & 0xffU));
       }
-      ++adcCaptureSequence;
-      __sync_synchronize();
-      adcCaptureReady = true;
+      adcCaptureSequence.fetch_add(1, std::memory_order_release);
     }
+    adcCaptureRequested.store(false, std::memory_order_release);
   }
 }
 
@@ -1068,6 +1070,10 @@ void setup() {
 }
 
 void loop() {
+  static bool captureRequestPending = false;
+  static bool captureReadyForPlot = false;
+  static uint32_t captureSequenceAtRequest = 0;
+
   const uint32_t nowUs = micros();
   updatePeakDetectors(nowUs);
   updateFrequencyMeasurement(nowUs);
@@ -1106,16 +1112,29 @@ void loop() {
     }
   }
 
-  if (adcCaptureReady &&
+  if (captureRequestPending &&
+      !adcCaptureRequested.load(std::memory_order_acquire)) {
+    captureRequestPending = false;
+    captureReadyForPlot =
+        adcCaptureSequence.load(std::memory_order_acquire) !=
+        captureSequenceAtRequest;
+  }
+
+  if (captureReadyForPlot &&
       nowUs - lastPlotFrameUs >= minimumPlotFrameIntervalUs) {
     lastPlotFrameUs = nowUs;
     const bool frameChanged = drawSignalPlot();
-    __sync_synchronize();
-    adcCaptureReady = false;
-    __sync_synchronize();
+    captureReadyForPlot = false;
     if (frameChanged && displayChangeFrames < UINT16_MAX) {
       ++displayChangeFrames;
     }
+  }
+
+  if (!captureRequestPending && !captureReadyForPlot) {
+    captureSequenceAtRequest =
+        adcCaptureSequence.load(std::memory_order_acquire);
+    adcCaptureRequested.store(true, std::memory_order_release);
+    captureRequestPending = true;
   }
   taskYIELD();
 }
