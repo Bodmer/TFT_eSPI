@@ -9,6 +9,7 @@
 #include <esp_intr_alloc.h>
 #include <soc/gpio_sig_map.h>
 #include <soc/i2s_struct.h>
+#include <soc/pcnt_struct.h>
 #include <soc/periph_defs.h>
 #include <rom/lldesc.h>
 
@@ -371,9 +372,11 @@ uint64_t accumulatedPulseCount = 0;
 uint64_t accumulatedFrequencyWindowUs = 0;
 uint8_t accumulatedFrequencyWindows = 0;
 bool accumulatedFrequencyOverRange = false;
-std::atomic<bool> frequencyAwaitingStartPulse{false};
-std::atomic<bool> frequencyStartPulseTimestampReady{false};
+std::atomic<bool> frequencyMeasurementArmed{false};
+TaskHandle_t frequencyMeasurementTaskHandle = nullptr;
 volatile uint32_t frequencyStartPulseTimestampUs = 0;
+volatile int16_t frequencyStartPulseCount = 0;
+volatile bool frequencyStartPulseOverRange = false;
 uint32_t displayRateWindowStartMs = 0;
 uint32_t lastDashboardFrameUs = 0;
 uint32_t lastPlotFrameUs = 0;
@@ -426,11 +429,29 @@ void IRAM_ATTR i2sCaptureInterrupt(void*) {
 }
 
 void IRAM_ATTR frequencyStartPulseInterrupt() {
-  if (frequencyAwaitingStartPulse.exchange(false,
-                                           std::memory_order_acq_rel)) {
-    frequencyStartPulseTimestampUs = micros();
-    frequencyStartPulseTimestampReady.store(true,
-                                            std::memory_order_release);
+  if (!frequencyMeasurementArmed.exchange(false,
+                                          std::memory_order_acq_rel)) {
+    return;
+  }
+
+  GPIO.pin[frequencyInputPin].int_ena = 0;
+  frequencyStartPulseTimestampUs = micros();
+  PCNT.ctrl.val |= 1U << 1;
+  frequencyStartPulseCount =
+      static_cast<int16_t>(PCNT.cnt_unit[PCNT_UNIT_0].cnt_val);
+  frequencyStartPulseOverRange =
+      PCNT.status_unit[PCNT_UNIT_0].h_lim_lat != 0;
+  PCNT.ctrl.val |= 1U;
+  PCNT.ctrl.val &= ~1U;
+  PCNT.ctrl.val &= ~(1U << 1);
+
+  if (frequencyMeasurementTaskHandle != nullptr) {
+    BaseType_t higherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(frequencyMeasurementTaskHandle,
+                           &higherPriorityTaskWoken);
+    if (higherPriorityTaskWoken == pdTRUE) {
+      portYIELD_FROM_ISR();
+    }
   }
 }
 
@@ -874,7 +895,10 @@ void configureFrequencyCounter() {
   ESP_ERROR_CHECK(pcnt_filter_enable(PCNT_UNIT_0));
   ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
   ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
-  detachInterrupt(digitalPinToInterrupt(frequencyInputPin));
+  attachInterrupt(digitalPinToInterrupt(frequencyInputPin),
+                  frequencyStartPulseInterrupt, RISING);
+  ESP_ERROR_CHECK(gpio_intr_disable(
+      static_cast<gpio_num_t>(frequencyInputPin)));
   frequencyWindowStartUs = micros();
 }
 
@@ -900,70 +924,74 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
   const uint32_t targetWindowUs = static_cast<uint32_t>(
       std::min<uint64_t>(requestedWindowUs, maximumFrequencyWindowUs));
 
-  if (frequencyStartPulseTimestampReady.exchange(false,
-                                                 std::memory_order_acq_rel)) {
-    const uint32_t windowEndUs = frequencyStartPulseTimestampUs;
-    detachInterrupt(digitalPinToInterrupt(frequencyInputPin));
+  if (nowUs - frequencyWindowStartUs < targetWindowUs) {
+    return;
+  }
+
+  TaskHandle_t waitingTask = xTaskGetCurrentTaskHandle();
+  frequencyMeasurementTaskHandle = waitingTask;
+  ulTaskNotifyTake(pdTRUE, 0);
+  frequencyMeasurementArmed.store(true, std::memory_order_release);
+  ESP_ERROR_CHECK(gpio_intr_enable(
+      static_cast<gpio_num_t>(frequencyInputPin)));
+
+  if (ulTaskNotifyTake(pdTRUE,
+                       pdMS_TO_TICKS(maximumFrequencyWindowUs / 1000UL)) ==
+      0) {
+    ESP_ERROR_CHECK(gpio_intr_disable(
+        static_cast<gpio_num_t>(frequencyInputPin)));
+    frequencyMeasurementArmed.store(false, std::memory_order_release);
+    frequencyMeasurementTaskHandle = nullptr;
     ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
-    int16_t pulseCount = 0;
-    uint32_t eventStatus = 0;
-    ESP_ERROR_CHECK(pcnt_get_counter_value(PCNT_UNIT_0, &pulseCount));
-    ESP_ERROR_CHECK(pcnt_get_event_status(PCNT_UNIT_0, &eventStatus));
     ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
     ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
-
-    const uint32_t elapsedUs = windowEndUs - frequencyWindowStartUs;
-    frequencyWindowStartUs = windowEndUs;
-    const bool windowOverRange = (eventStatus & PCNT_EVT_H_LIM) != 0;
-    if (pulseCount <= 0 && !windowOverRange) {
-      clearFrequencyEstimate();
-      return;
-    }
-
-    const uint32_t recordWindows =
-        std::max<uint32_t>(
-            1, (elapsedUs + targetWindowUs - 1) / targetWindowUs);
-    const uint32_t measuredPulses =
-        windowOverRange ? frequencyCounterLimit : pulseCount;
-    const bool sparseSinglePulse =
-        measuredPulses == 1 && recordWindows == 1;
-    if (!sparseSinglePulse && measuredPulses < 2 * recordWindows) {
-      clearFrequencyEstimate();
-      return;
-    }
-
-    accumulatedPulseCount += measuredPulses;
-    accumulatedFrequencyWindowUs += elapsedUs;
-    accumulatedFrequencyOverRange |= windowOverRange;
-    accumulatedFrequencyWindows +=
-        static_cast<uint8_t>(std::min<uint32_t>(
-            recordWindows, frequencyAveragingWindows));
-
-    if (accumulatedFrequencyWindows >= frequencyAveragingWindows) {
-      measuredFrequencyHz =
-          static_cast<float>(accumulatedPulseCount) * 1000000.0f /
-          static_cast<float>(accumulatedFrequencyWindowUs);
-      freq = measuredFrequencyHz;
-      frequencyOverRange = accumulatedFrequencyOverRange;
-      frequencyKnown = true;
-      accumulatedPulseCount = 0;
-      accumulatedFrequencyWindowUs = 0;
-      accumulatedFrequencyWindows = 0;
-      accumulatedFrequencyOverRange = false;
-    }
+    frequencyWindowStartUs = micros();
+    clearFrequencyEstimate();
     return;
   }
 
-  if (frequencyAwaitingStartPulse.load(std::memory_order_acquire)) {
+  frequencyMeasurementTaskHandle = nullptr;
+  const uint32_t windowEndUs = frequencyStartPulseTimestampUs;
+  const int16_t pulseCount = frequencyStartPulseCount;
+  const bool windowOverRange = frequencyStartPulseOverRange;
+  const uint32_t elapsedUs = windowEndUs - frequencyWindowStartUs;
+  frequencyWindowStartUs = windowEndUs;
+
+  if (pulseCount <= 0 && !windowOverRange) {
+    clearFrequencyEstimate();
     return;
   }
 
-  if (nowUs - frequencyWindowStartUs >= targetWindowUs) {
-    frequencyStartPulseTimestampReady.store(false,
-                                            std::memory_order_relaxed);
-    frequencyAwaitingStartPulse.store(true, std::memory_order_release);
-    attachInterrupt(digitalPinToInterrupt(frequencyInputPin),
-                    frequencyStartPulseInterrupt, RISING);
+  const uint32_t recordWindows =
+      std::max<uint32_t>(
+          1, (elapsedUs + targetWindowUs - 1) / targetWindowUs);
+  const uint32_t measuredPulses =
+      windowOverRange ? frequencyCounterLimit : pulseCount;
+  const bool sparseSinglePulse =
+      measuredPulses == 1 && recordWindows == 1;
+  if (!sparseSinglePulse && measuredPulses < 2 * recordWindows) {
+    clearFrequencyEstimate();
+    return;
+  }
+
+  accumulatedPulseCount += measuredPulses;
+  accumulatedFrequencyWindowUs += elapsedUs;
+  accumulatedFrequencyOverRange |= windowOverRange;
+  accumulatedFrequencyWindows +=
+      static_cast<uint8_t>(std::min<uint32_t>(
+          recordWindows, frequencyAveragingWindows));
+
+  if (accumulatedFrequencyWindows >= frequencyAveragingWindows) {
+    measuredFrequencyHz =
+        static_cast<float>(accumulatedPulseCount) * 1000000.0f /
+        static_cast<float>(accumulatedFrequencyWindowUs);
+    freq = measuredFrequencyHz;
+    frequencyOverRange = accumulatedFrequencyOverRange;
+    frequencyKnown = true;
+    accumulatedPulseCount = 0;
+    accumulatedFrequencyWindowUs = 0;
+    accumulatedFrequencyWindows = 0;
+    accumulatedFrequencyOverRange = false;
   }
 }
 
@@ -1135,10 +1163,9 @@ void loop() {
     updateControlMeasurements();
     lastControlUpdateMs = nowMs;
     if (Sampling_rate != previousSamplingRate) {
-      detachInterrupt(digitalPinToInterrupt(frequencyInputPin));
-      frequencyAwaitingStartPulse.store(false, std::memory_order_release);
-      frequencyStartPulseTimestampReady.store(false,
-                                              std::memory_order_release);
+      ESP_ERROR_CHECK(gpio_intr_disable(
+          static_cast<gpio_num_t>(frequencyInputPin)));
+      frequencyMeasurementArmed.store(false, std::memory_order_release);
       ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
       ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
       ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
