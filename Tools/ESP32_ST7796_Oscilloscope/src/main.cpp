@@ -28,6 +28,8 @@ constexpr uint32_t potentiometerUpdatePeriodMs = 33;
 constexpr uint8_t potentiometerAverageCount = 10;
 constexpr uint8_t detectorAverageCount = 10;
 constexpr float gainSmoothingFactor = 0.1f;
+constexpr float frequencyScaleSmoothingFactor = 0.2f;
+constexpr float samplingRateIndexHysteresis = 0.65f;
 constexpr uint32_t maximumDashboardFrameRate = 10;
 constexpr uint32_t maximumPlotFrameRate = 60;
 constexpr uint32_t minimumDashboardFrameIntervalUs =
@@ -46,6 +48,7 @@ constexpr int plotHeight = 208;
 constexpr int horizontalDivisions = 8;
 constexpr int verticalDivisions = 4;
 constexpr int plotSampleCount = plotWidth-2;
+constexpr size_t adcCapturePlotPlaneCount = 5;
 constexpr int outOfRangeIndicatorX = 220;
 constexpr int outOfRangeIndicatorY = 5;
 constexpr int outOfRangeIndicatorWidth = 136;
@@ -57,8 +60,12 @@ constexpr int panelWidth = 100;
 constexpr int panelTop = 10;
 constexpr int panelRowHeight = 56;
 constexpr size_t adcCaptureSampleCount =
-    static_cast<size_t>(plotSampleCount) * 2;
+    static_cast<size_t>(plotSampleCount) * adcCapturePlotPlaneCount;
 constexpr size_t adcDmaWordCount = adcCaptureSampleCount;
+constexpr size_t adcDmaWordsPerDescriptor = 4092 / sizeof(uint32_t);
+constexpr size_t adcDmaDescriptorCount =
+    (adcDmaWordCount + adcDmaWordsPerDescriptor - 1) /
+    adcDmaWordsPerDescriptor;
 constexpr uint32_t adcClockSourceHz = 80000000UL;
 constexpr ledc_mode_t adcClockSpeedMode = LEDC_HIGH_SPEED_MODE;
 constexpr ledc_timer_t adcClockTimer = LEDC_TIMER_0;
@@ -371,12 +378,15 @@ uint32_t lastValleyRefreshUs = 0;
 bool detectorValuesInitialized = false;
 bool gainInitialized = false;
 float filteredGain = 0.0f;
+float filteredFrequencyScaleIndex = 0.0f;
+int selectedSamplingRateIndex = 0;
+bool frequencyScaleInitialized = false;
 int lastDacOutput = -1;
 int lastOutOfRangeIndicatorState = -1;
 String lastMeasurementValues[4];
 String lastFooterValues[3];
 DMA_ATTR uint32_t adcDmaWords[adcDmaWordCount];
-DMA_ATTR lldesc_t adcDmaDescriptor;
+DMA_ATTR lldesc_t adcDmaDescriptors[adcDmaDescriptorCount];
 uint8_t adcSamples[adcCaptureSampleCount];
 TaskHandle_t adcCaptureTaskHandle = nullptr;
 volatile int requestedAdcSamplingRate = 0;
@@ -478,13 +488,25 @@ void configureAdcCapture() {
   I2S0.sample_rate_conf.rx_bits_mod = 0;
   I2S0.timing.rx_dsync_sw = 1;
 
-  adcDmaDescriptor.size = sizeof(adcDmaWords);
-  adcDmaDescriptor.length = 0;
-  adcDmaDescriptor.sosf = 0;
-  adcDmaDescriptor.eof = 1;
-  adcDmaDescriptor.owner = 1;
-  adcDmaDescriptor.buf = reinterpret_cast<uint8_t*>(adcDmaWords);
-  adcDmaDescriptor.qe.stqe_next = nullptr;
+  size_t remainingWords = adcDmaWordCount;
+  for (size_t descriptorIndex = 0;
+       descriptorIndex < adcDmaDescriptorCount; ++descriptorIndex) {
+    lldesc_t& descriptor = adcDmaDescriptors[descriptorIndex];
+    const size_t descriptorWords =
+        std::min(remainingWords, adcDmaWordsPerDescriptor);
+    descriptor.size = descriptorWords * sizeof(uint32_t);
+    descriptor.length = 0;
+    descriptor.sosf = 0;
+    descriptor.eof = descriptorIndex == adcDmaDescriptorCount - 1;
+    descriptor.owner = 1;
+    descriptor.buf = reinterpret_cast<uint8_t*>(
+        &adcDmaWords[adcDmaWordCount - remainingWords]);
+    descriptor.qe.stqe_next =
+        descriptorIndex + 1 < adcDmaDescriptorCount
+            ? &adcDmaDescriptors[descriptorIndex + 1]
+            : nullptr;
+    remainingWords -= descriptorWords;
+  }
 
   ESP_ERROR_CHECK(esp_intr_alloc(ETS_I2S0_INTR_SOURCE,
                                  ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1,
@@ -505,8 +527,11 @@ void stopAdcDmaCapture() {
 }
 
 void startAdcDmaCapture() {
-  adcDmaDescriptor.length = 0;
-  adcDmaDescriptor.owner = 1;
+  for (size_t descriptorIndex = 0;
+       descriptorIndex < adcDmaDescriptorCount; ++descriptorIndex) {
+    adcDmaDescriptors[descriptorIndex].length = 0;
+    adcDmaDescriptors[descriptorIndex].owner = 1;
+  }
   I2S0.conf.rx_start = 0;
   I2S0.conf.rx_reset = 1;
   I2S0.conf.rx_reset = 0;
@@ -521,7 +546,7 @@ void startAdcDmaCapture() {
   I2S0.int_clr.val = I2S0.int_st.val;
   I2S0.rx_eof_num = adcCaptureSampleCount;
   I2S0.in_link.addr =
-      (reinterpret_cast<uint32_t>(&adcDmaDescriptor) & 0xfffff);
+      (reinterpret_cast<uint32_t>(&adcDmaDescriptors[0]) & 0xfffff);
   I2S0.in_link.start = 1;
   I2S0.int_ena.in_suc_eof = 1;
   I2S0.conf.rx_start = 1;
@@ -617,10 +642,6 @@ bool drawOutOfRangeIndicator() {
 }
 
 bool drawSignalPlot() {
-  if (!frequencyKnown) {
-    return false;
-  }
-
   const float targetSample =
       255.0f - ((peak + valley) * 0.5f) * (255.0f / 4095.0f);
   const float triggerTolerance = std::max(
@@ -978,14 +999,30 @@ void updateControlMeasurements() {
     filteredGain += gainSmoothingFactor * (measuredGain - filteredGain);
   }
   Gain = filteredGain;
-  int sampling_index = int(round(
-      (ADC_LUT[frequencyAdcAverage] * 1.05 - 122.85) * 0.010989));
-  if (sampling_index < 0) {
-    sampling_index = 0;
-  } else if (sampling_index > 45) {
-    sampling_index = 45;
+  float measuredSamplingRateIndex =
+      (ADC_LUT[frequencyAdcAverage] * 1.05f - 122.85f) * 0.010989f;
+  measuredSamplingRateIndex =
+      std::max(0.0f, std::min(45.0f, measuredSamplingRateIndex));
+  if (!frequencyScaleInitialized) {
+    filteredFrequencyScaleIndex = measuredSamplingRateIndex;
+    selectedSamplingRateIndex =
+        static_cast<int>(roundf(measuredSamplingRateIndex));
+    frequencyScaleInitialized = true;
+  } else {
+    filteredFrequencyScaleIndex +=
+        frequencyScaleSmoothingFactor *
+        (measuredSamplingRateIndex - filteredFrequencyScaleIndex);
+    if (filteredFrequencyScaleIndex >
+        selectedSamplingRateIndex + samplingRateIndexHysteresis) {
+      selectedSamplingRateIndex =
+          static_cast<int>(floorf(filteredFrequencyScaleIndex + 0.5f));
+    } else if (filteredFrequencyScaleIndex <
+               selectedSamplingRateIndex - samplingRateIndexHysteresis) {
+      selectedSamplingRateIndex =
+          static_cast<int>(floorf(filteredFrequencyScaleIndex + 0.5f));
+    }
   }
-  Sampling_rate = sampling_rates[sampling_index];
+  Sampling_rate = sampling_rates[selectedSamplingRateIndex];
   requestedAdcSamplingRate = Sampling_rate;
 }
 }  // namespace
