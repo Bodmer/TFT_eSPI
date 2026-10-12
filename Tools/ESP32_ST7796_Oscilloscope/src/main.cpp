@@ -54,6 +54,10 @@ constexpr int outOfRangeIndicatorX = 220;
 constexpr int outOfRangeIndicatorY = 5;
 constexpr int outOfRangeIndicatorWidth = 136;
 constexpr int outOfRangeIndicatorHeight = 22;
+constexpr int captureTaskIndicatorX = 70;
+constexpr int captureTaskIndicatorY = 5;
+constexpr int captureTaskIndicatorWidth = 140;
+constexpr int captureTaskIndicatorHeight = 22;
 constexpr uint8_t frequencyAveragingWindows = 5;
 constexpr float peakRetriggerRatio = 0.95f;
 constexpr int panelLeft = 368;
@@ -390,6 +394,7 @@ DMA_ATTR uint32_t adcDmaWords[adcDmaWordCount];
 DMA_ATTR lldesc_t adcDmaDescriptors[adcDmaDescriptorCount];
 uint8_t adcSamples[adcCaptureSampleCount];
 TaskHandle_t adcCaptureTaskHandle = nullptr;
+bool adcCaptureTaskCreated = false;
 volatile int requestedAdcSamplingRate = 0;
 std::atomic<bool> adcCaptureRequested{false};
 std::atomic<uint32_t> adcCaptureSequence{0};
@@ -641,6 +646,21 @@ bool drawOutOfRangeIndicator() {
                            outOfRangeIndicatorY + 6, 1);
   lastOutOfRangeIndicatorState = state;
   return true;
+}
+
+void drawCaptureTaskFailureIndicator() {
+  if (adcCaptureTaskCreated) {
+    return;
+  }
+
+  display.drawRect(captureTaskIndicatorX, captureTaskIndicatorY,
+                   captureTaskIndicatorWidth, captureTaskIndicatorHeight,
+                   TFT_RED);
+  display.setTextColor(TFT_RED, backgroundColor);
+  display.drawCentreString(
+      "CAPTURE TASK FAILED",
+      captureTaskIndicatorX + captureTaskIndicatorWidth / 2,
+      captureTaskIndicatorY + 6, 1);
 }
 
 bool drawSignalPlot() {
@@ -1050,9 +1070,13 @@ void setup() {
   updatePeakDetectors(micros());
   configureFrequencyCounter();
   configureAdcCapture();
-  if (xTaskCreatePinnedToCore(adcCaptureTask, "adc_capture", 4096, nullptr, 3,
-                              &adcCaptureTaskHandle, 0) != pdPASS) {
-    ESP_ERROR_CHECK(ESP_FAIL);
+  adcCaptureTaskCreated =
+      xTaskCreatePinnedToCore(adcCaptureTask, "adc_capture", 4096, nullptr, 3,
+                              &adcCaptureTaskHandle, 0) == pdPASS;
+  if (!adcCaptureTaskCreated) {
+    adcCaptureTaskHandle = nullptr;
+    Serial.println("ERROR: ADC capture task could not be created.");
+    drawCaptureTaskFailureIndicator();
   }
   lastControlUpdateMs = millis();
   drawDashboard();
@@ -1063,10 +1087,12 @@ void setup() {
   Serial.println(
       "Measurement inputs ready: detectors GPIO35/36, pots GPIO34/33; "
       "frequency counter GPIO27.");
-  Serial.printf(
-      "ADC capture ready: 8-bit D11..D4 on GPIO15,26,22,21,17,16,14,13; "
-      "clock GPIO32, loopback GPIO39; %u samples per capture.\n",
-      static_cast<unsigned>(adcCaptureSampleCount));
+  if (adcCaptureTaskCreated) {
+    Serial.printf(
+        "ADC capture ready: 8-bit D11..D4 on GPIO15,26,22,21,17,16,14,13; "
+        "clock GPIO32, loopback GPIO39; %u samples per capture.\n",
+        static_cast<unsigned>(adcCaptureSampleCount));
+  }
 }
 
 void loop() {
@@ -1130,7 +1156,8 @@ void loop() {
     }
   }
 
-  if (!captureRequestPending && !captureReadyForPlot) {
+  if (adcCaptureTaskCreated && !captureRequestPending &&
+      !captureReadyForPlot) {
     captureSequenceAtRequest =
         adcCaptureSequence.load(std::memory_order_acquire);
     adcCaptureRequested.store(true, std::memory_order_release);
