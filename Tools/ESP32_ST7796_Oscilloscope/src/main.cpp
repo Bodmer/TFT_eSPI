@@ -414,11 +414,15 @@ std::atomic<uint32_t> adcLastCaptureSampleCount{0};
 std::atomic<int> adcLastCaptureFailure{-1};
 std::atomic<bool> adcLastCaptureRequestIssued{false};
 volatile bool adcCaptureDmaFailed = false;
+volatile uint32_t adcCaptureInterruptSeen = 0;
+volatile uint32_t adcCaptureInterruptCount = 0;
 intr_handle_t i2sInterruptHandle = nullptr;
 uint8_t adcClockResolution = 1;
 
 void IRAM_ATTR i2sCaptureInterrupt(void*) {
   const uint32_t interruptStatus = I2S0.int_st.val;
+  adcCaptureInterruptSeen |= interruptStatus;
+  ++adcCaptureInterruptCount;
   I2S0.int_clr.val = interruptStatus;
   const bool captureError =
       (interruptStatus & ((1U << 10) | (1U << 13) | (1U << 15))) != 0;
@@ -722,7 +726,19 @@ void adcCaptureTask(void*) {
     adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
     adcLastCaptureFailure.store(2, std::memory_order_relaxed);
     adcCaptureDmaFailed = false;
+    adcCaptureInterruptSeen = 0;
+    adcCaptureInterruptCount = 0;
     startAdcDmaCapture();
+    const uint32_t startRxStarted = I2S0.conf.rx_start;
+    const uint32_t startDmaLinkStarted = I2S0.in_link.start;
+    const uint32_t startDmaParked = I2S0.in_link.park;
+    const uint32_t startDmaDescriptor = I2S0.in_link_dscr;
+    const uint32_t startDmaEofDescriptor = I2S0.in_eof_des_addr;
+    const uint32_t startInterruptEnable = I2S0.int_ena.val;
+    const uint32_t startInterruptRaw = I2S0.int_raw.val;
+    const uint32_t startFirstDescriptorState =
+        (static_cast<uint32_t>(adcDmaDescriptors[0].owner) << 16) |
+        adcDmaDescriptors[0].length;
     bool captureCompleted = false;
     bool captureTimedOut = false;
     bool captureDmaFailed = false;
@@ -731,15 +747,6 @@ void adcCaptureTask(void*) {
     uint32_t decimationPhase = 0;
     uint32_t decimationSum = 0;
     uint32_t decimationSampleCount = 0;
-    bool timeoutRxStarted = false;
-    bool timeoutDmaLinkStarted = false;
-    bool timeoutDmaParked = false;
-    uint32_t timeoutDmaEofDescriptor = 0;
-    uint32_t timeoutInterruptStatus = 0;
-    uint32_t timeoutRawInterruptStatus = 0;
-    uint32_t timeoutDmaDescriptor = 0;
-    uint32_t timeoutDmaDescriptorBuffer0 = 0;
-    uint32_t timeoutDmaDescriptorBuffer1 = 0;
     uint32_t timeoutI2sConf = 0;
     uint32_t timeoutI2sConf2 = 0;
     uint32_t timeoutI2sFifoConf = 0;
@@ -783,22 +790,30 @@ void adcCaptureTask(void*) {
       }
     }
 
-    const uint32_t captureInterruptEnable = I2S0.int_ena.val;
-    const uint32_t captureInterruptRaw = I2S0.int_raw.val;
-    if (captureTimedOut) {
-      timeoutRxStarted = I2S0.conf.rx_start != 0;
-      timeoutDmaLinkStarted = I2S0.in_link.start != 0;
-      timeoutDmaParked = I2S0.in_link.park != 0;
-      timeoutInterruptStatus = captureInterruptEnable;
-      timeoutRawInterruptStatus = captureInterruptRaw;
-    }
-
-    haltAdcDmaCapture();
-    if (captureTimedOut) {
-      timeoutDmaEofDescriptor = I2S0.in_eof_des_addr;
+    uint32_t timeoutRxStarted = 0;
+    uint32_t timeoutDmaLinkStarted = 0;
+    uint32_t timeoutDmaParked = 0;
+    uint32_t timeoutDmaEofDescriptor = 0;
+    uint32_t timeoutInterruptEnable = 0;
+    uint32_t timeoutInterruptRaw = 0;
+    uint32_t timeoutDmaDescriptor = 0;
+    uint32_t timeoutDmaDescriptorBuffer0 = 0;
+    uint32_t timeoutDmaDescriptorBuffer1 = 0;
+    const bool captureStoppedEarly = captureTimedOut || captureDmaFailed;
+    if (captureStoppedEarly) {
+      timeoutRxStarted = I2S0.conf.rx_start;
+      timeoutDmaLinkStarted = I2S0.in_link.start;
+      timeoutDmaParked = I2S0.in_link.park;
       timeoutDmaDescriptor = I2S0.in_link_dscr;
       timeoutDmaDescriptorBuffer0 = I2S0.in_link_dscr_bf0;
       timeoutDmaDescriptorBuffer1 = I2S0.in_link_dscr_bf1;
+      timeoutDmaEofDescriptor = I2S0.in_eof_des_addr;
+      timeoutInterruptEnable = I2S0.int_ena.val;
+      timeoutInterruptRaw = I2S0.int_raw.val;
+    }
+
+    haltAdcDmaCapture();
+    if (captureStoppedEarly) {
       timeoutI2sConf = I2S0.conf.val;
       timeoutI2sConf2 = I2S0.conf2.val;
       timeoutI2sFifoConf = I2S0.fifo_conf.val;
@@ -831,13 +846,30 @@ void adcCaptureTask(void*) {
         stopAdcClockMonitor(&clockMonitorLimitReached);
     adcLastCaptureSampleCount.store(outputSampleCount,
                                     std::memory_order_relaxed);
-    if (captureDmaFailed) {
-      Serial.printf("I2S DMA capture failed; raw interrupt status 0x%08lx.\n",
-                    static_cast<unsigned long>(captureInterruptRaw));
-    }
-    if (captureTimedOut) {
+    const uint32_t captureInterruptStatus = adcCaptureInterruptSeen;
+    const uint32_t captureInterruptCount = adcCaptureInterruptCount;
+    if (captureStoppedEarly) {
+      const uint32_t firstDmaWord0 =
+          *reinterpret_cast<const volatile uint32_t*>(
+              adcDmaDescriptors[0].buf);
+      const uint32_t firstDmaWord1 =
+          *reinterpret_cast<const volatile uint32_t*>(
+              adcDmaDescriptors[0].buf + sizeof(uint32_t));
       Serial.printf(
-          "I2S DMA capture timed out at %lu/%u output samples, "
+          "I2S start: RX/link/park %lu/%lu/%lu, descriptor/EOF "
+          "0x%08lx/0x%08lx, IRQ enabled/raw 0x%08lx/0x%08lx, "
+          "descriptor0 owner/length %lu/%lu.\n",
+          static_cast<unsigned long>(startRxStarted),
+          static_cast<unsigned long>(startDmaLinkStarted),
+          static_cast<unsigned long>(startDmaParked),
+          static_cast<unsigned long>(startDmaDescriptor),
+          static_cast<unsigned long>(startDmaEofDescriptor),
+          static_cast<unsigned long>(startInterruptEnable),
+          static_cast<unsigned long>(startInterruptRaw),
+          static_cast<unsigned long>(startFirstDescriptorState >> 16),
+          static_cast<unsigned long>(startFirstDescriptorState & 0xffffU));
+      Serial.printf(
+          "I2S DMA capture %s at %lu/%u output samples, "
           "requested rate %d SPS, ADC clock %lu SPS; "
           "GPIO39 rising edges %s%d, RX started %u, DMA link start/park "
           "%u/%u, descriptor 0x%08lx (buffers 0x%08lx/0x%08lx), "
@@ -846,7 +878,9 @@ void adcCaptureTask(void*) {
           "descriptor sizes %lu/%lu, next 0x%08lx/0x%08lx, "
           "FIFO count %lu, I2S conf/conf2/fifo/clock/rate/timing/LC "
           "0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx, "
-          "interrupts enabled/raw 0x%08lx/0x%08lx.\n",
+          "interrupts enabled/raw 0x%08lx/0x%08lx; "
+          "ISR count/status OR %lu/0x%08lx, DMA words 0x%08lx/0x%08lx.\n",
+          captureTimedOut ? "timed out" : "stopped on DMA error",
           static_cast<unsigned long>(outputSampleCount),
           static_cast<unsigned>(adcCaptureSampleCount), requestedRate,
           static_cast<unsigned long>(adcCaptureHardwareClockHz),
@@ -873,8 +907,12 @@ void adcCaptureTask(void*) {
           static_cast<unsigned long>(timeoutI2sSampleRateConf),
           static_cast<unsigned long>(timeoutI2sTiming),
           static_cast<unsigned long>(timeoutI2sLinkConf),
-          static_cast<unsigned long>(timeoutInterruptStatus),
-          static_cast<unsigned long>(timeoutRawInterruptStatus));
+          static_cast<unsigned long>(timeoutInterruptEnable),
+          static_cast<unsigned long>(timeoutInterruptRaw),
+          static_cast<unsigned long>(captureInterruptCount),
+          static_cast<unsigned long>(captureInterruptStatus),
+          static_cast<unsigned long>(firstDmaWord0),
+          static_cast<unsigned long>(firstDmaWord1));
     }
     adcLastCaptureFailure.store(captureCompleted && !captureTimedOut ? 0 : 1,
                                 std::memory_order_relaxed);
