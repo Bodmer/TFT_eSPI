@@ -35,7 +35,12 @@ constexpr float gainSmoothingFactor = 0.1f;
 constexpr float frequencyScaleSmoothingFactor = 0.2f;
 constexpr float samplingRateIndexHysteresis = 0.65f;
 
-constexpr bool captureDebugEnabled = true;
+// Master gate for the debug overlay and all capture diagnostics.
+constexpr bool captureDebugEnabled = false;
+// Detailed I2S/DMA diagnostics require both flags to be enabled.
+constexpr bool adcCaptureDiagnosticsEnabled = false;
+constexpr bool captureDiagnosticsActive =
+    captureDebugEnabled && adcCaptureDiagnosticsEnabled;
 
 constexpr uint32_t maximumDashboardFrameRate = 10;
 constexpr uint32_t maximumPlotFrameRate = 60;
@@ -72,7 +77,7 @@ constexpr int panelTop = 10;
 constexpr int panelRowHeight = 56;
 constexpr size_t adcCaptureSampleCount =
     static_cast<size_t>(plotSampleCount) * adcCapturePlotPlaneCount;
-constexpr uint32_t adcCaptureHardwareClockHz = 1000000UL;
+constexpr uint32_t adcCaptureHardwareClockHz = 10000000UL;
 constexpr int adcCaptureMaximumSamplingRateIndex = 36;
 constexpr size_t adcDmaWordsPerDescriptor = 1023;
 constexpr size_t adcDmaDescriptorCount = 16;
@@ -422,8 +427,10 @@ uint8_t adcClockResolution = 1;
 
 void IRAM_ATTR i2sCaptureInterrupt(void*) {
   const uint32_t interruptStatus = I2S0.int_st.val;
-  adcCaptureInterruptSeen |= interruptStatus;
-  ++adcCaptureInterruptCount;
+  if (captureDiagnosticsActive) {
+    adcCaptureInterruptSeen |= interruptStatus;
+    ++adcCaptureInterruptCount;
+  }
   I2S0.int_clr.val = interruptStatus;
   const bool captureError =
       (interruptStatus & ((1U << 10) | (1U << 13) | (1U << 15))) != 0;
@@ -499,7 +506,7 @@ void configureAdcClock(uint32_t samplingRate) {
   channelConfig.hpoint = 0;
   ESP_ERROR_CHECK(ledc_channel_config(&channelConfig));
   ESP_ERROR_CHECK(gpio_set_drive_capability(
-      static_cast<gpio_num_t>(adcClockOutputPin), GPIO_DRIVE_CAP_3));
+      static_cast<gpio_num_t>(adcClockOutputPin), GPIO_DRIVE_CAP_0));
 }
 
 void configureAdcCapture() {
@@ -593,11 +600,15 @@ AdcSoftwareTriggerDiagnostic pulseAdcSoftwareTrigger() {
       static_cast<gpio_num_t>(adcSoftwareTriggerPin), 0));
   delayMicroseconds(10);
   const int vsyncLowLevel =
-      gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin));
+      captureDiagnosticsActive
+          ? gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin))
+          : 0;
   ESP_ERROR_CHECK(gpio_set_level(
       static_cast<gpio_num_t>(adcSoftwareTriggerPin), 1));
   const int vsyncHighLevel =
-      gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin));
+      captureDiagnosticsActive
+          ? gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin))
+          : 0;
   return {vsyncLowLevel, vsyncHighLevel};
 }
 
@@ -750,8 +761,10 @@ void adcCaptureTask(void*) {
     const int requestedRate =
         adcCaptureSamplingRate.load(std::memory_order_relaxed);
     if (requestedRate <= 0) {
-      adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
-      adcLastCaptureFailure.store(1, std::memory_order_relaxed);
+      if (captureDebugEnabled) {
+        adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
+        adcLastCaptureFailure.store(1, std::memory_order_relaxed);
+      }
       completeAdcCaptureRequestOnCore0();
       vTaskDelay(pdMS_TO_TICKS(10));
       continue;
@@ -760,25 +773,41 @@ void adcCaptureTask(void*) {
     stopAdcDmaCapture();
     configureAdcClockInputRoute();
     prepareAdcSoftwareTrigger();
-    startAdcClockMonitor();
-    adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
-    adcLastCaptureFailure.store(2, std::memory_order_relaxed);
+    if (captureDiagnosticsActive) {
+      startAdcClockMonitor();
+    }
+    if (captureDebugEnabled) {
+      adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
+      adcLastCaptureFailure.store(2, std::memory_order_relaxed);
+    }
     adcCaptureDmaFailed = false;
-    adcCaptureInterruptSeen = 0;
-    adcCaptureInterruptCount = 0;
+    if (captureDiagnosticsActive) {
+      adcCaptureInterruptSeen = 0;
+      adcCaptureInterruptCount = 0;
+    }
     startAdcDmaCapture();
     const AdcSoftwareTriggerDiagnostic triggerDiagnostic =
         pulseAdcSoftwareTrigger();
-    const uint32_t startRxStarted = I2S0.conf.rx_start;
-    const uint32_t startDmaLinkStarted = I2S0.in_link.start;
-    const uint32_t startDmaParked = I2S0.in_link.park;
-    const uint32_t startDmaDescriptor = I2S0.in_link_dscr;
-    const uint32_t startDmaEofDescriptor = I2S0.in_eof_des_addr;
-    const uint32_t startInterruptEnable = I2S0.int_ena.val;
-    const uint32_t startInterruptRaw = I2S0.int_raw.val;
-    const uint32_t startFirstDescriptorState =
-        (static_cast<uint32_t>(adcDmaDescriptors[0].owner) << 16) |
-        adcDmaDescriptors[0].length;
+    uint32_t startRxStarted = 0;
+    uint32_t startDmaLinkStarted = 0;
+    uint32_t startDmaParked = 0;
+    uint32_t startDmaDescriptor = 0;
+    uint32_t startDmaEofDescriptor = 0;
+    uint32_t startInterruptEnable = 0;
+    uint32_t startInterruptRaw = 0;
+    uint32_t startFirstDescriptorState = 0;
+    if (captureDiagnosticsActive) {
+      startRxStarted = I2S0.conf.rx_start;
+      startDmaLinkStarted = I2S0.in_link.start;
+      startDmaParked = I2S0.in_link.park;
+      startDmaDescriptor = I2S0.in_link_dscr;
+      startDmaEofDescriptor = I2S0.in_eof_des_addr;
+      startInterruptEnable = I2S0.int_ena.val;
+      startInterruptRaw = I2S0.int_raw.val;
+      startFirstDescriptorState =
+          (static_cast<uint32_t>(adcDmaDescriptors[0].owner) << 16) |
+          adcDmaDescriptors[0].length;
+    }
     bool midCaptureSnapshotTaken = false;
     uint32_t midCaptureRxStarted = 0;
     uint32_t midCaptureDmaLinkStarted = 0;
@@ -838,7 +867,7 @@ void adcCaptureTask(void*) {
         captureTimedOut = true;
         break;
       }
-      if (!midCaptureSnapshotTaken &&
+      if (captureDiagnosticsActive && !midCaptureSnapshotTaken &&
           micros() - captureStartUs >= 100000UL) {
         midCaptureRxStarted = I2S0.conf.rx_start;
         midCaptureDmaLinkStarted = I2S0.in_link.start;
@@ -867,7 +896,7 @@ void adcCaptureTask(void*) {
     uint32_t timeoutDmaDescriptorBuffer0 = 0;
     uint32_t timeoutDmaDescriptorBuffer1 = 0;
     const bool captureStoppedEarly = captureTimedOut || captureDmaFailed;
-    if (captureStoppedEarly) {
+    if (captureDiagnosticsActive && captureStoppedEarly) {
       timeoutRxStarted = I2S0.conf.rx_start;
       timeoutDmaLinkStarted = I2S0.in_link.start;
       timeoutDmaParked = I2S0.in_link.park;
@@ -880,7 +909,7 @@ void adcCaptureTask(void*) {
     }
 
     haltAdcDmaCapture();
-    if (captureStoppedEarly) {
+    if (captureDiagnosticsActive && captureStoppedEarly) {
       timeoutI2sConf = I2S0.conf.val;
       timeoutI2sConf2 = I2S0.conf2.val;
       timeoutI2sFifoConf = I2S0.fifo_conf.val;
@@ -908,112 +937,122 @@ void adcCaptureTask(void*) {
           requestedRate, nextDescriptorIndex, outputSampleCount,
           decimationPhase, decimationSum, decimationSampleCount);
     }
-    bool clockMonitorLimitReached = false;
-    const int16_t clockEdges =
-        stopAdcClockMonitor(&clockMonitorLimitReached);
-    adcLastCaptureSampleCount.store(outputSampleCount,
-                                    std::memory_order_relaxed);
-    const uint32_t captureInterruptStatus = adcCaptureInterruptSeen;
-    const uint32_t captureInterruptCount = adcCaptureInterruptCount;
-    Serial.printf(
-        "I2S capture route: GPIO39 -> WS; %s, output %lu/%u, ISR count/status "
-        "OR %lu/0x%08lx.\n",
-        captureCompleted ? "capture complete"
-                         : captureTimedOut ? "capture timed out"
-                                           : "DMA error",
-        static_cast<unsigned long>(outputSampleCount),
-        static_cast<unsigned>(adcCaptureSampleCount),
-        static_cast<unsigned long>(captureInterruptCount),
-        static_cast<unsigned long>(captureInterruptStatus));
-    Serial.printf(
-        "VSYNC GPIO%d low/high %d/%d.\n", adcVsyncInputPin,
-        triggerDiagnostic.vsyncLowLevel, triggerDiagnostic.vsyncHighLevel);
-    if (captureStoppedEarly) {
-      const uint32_t firstDmaWord0 =
-          *reinterpret_cast<const volatile uint32_t*>(
-              adcDmaDescriptors[0].buf);
-      const uint32_t firstDmaWord1 =
-          *reinterpret_cast<const volatile uint32_t*>(
-              adcDmaDescriptors[0].buf + sizeof(uint32_t));
-      if (midCaptureSnapshotTaken) {
-        Serial.printf(
-            "I2S 100ms snapshot (WS): RX/link/park %lu/%lu/%lu, "
-            "descriptor 0x%08lx, EOF 0x%08lx, raw IRQ 0x%08lx, "
-            "FIFO 0x%08lx, descriptors owner/length %lu/%lu and %lu/%lu.\n",
-            static_cast<unsigned long>(midCaptureRxStarted),
-            static_cast<unsigned long>(midCaptureDmaLinkStarted),
-            static_cast<unsigned long>(midCaptureDmaParked),
-            static_cast<unsigned long>(midCaptureDmaDescriptor),
-            static_cast<unsigned long>(midCaptureEofDescriptor),
-            static_cast<unsigned long>(midCaptureInterruptRaw),
-            static_cast<unsigned long>(midCaptureFifoConf),
-            static_cast<unsigned long>(midCaptureDescriptor0State >> 16),
-            static_cast<unsigned long>(midCaptureDescriptor0State & 0xffffU),
-            static_cast<unsigned long>(midCaptureDescriptor1State >> 16),
-            static_cast<unsigned long>(midCaptureDescriptor1State & 0xffffU));
-      }
+    if (captureDiagnosticsActive) {
+      bool clockMonitorLimitReached = false;
+      const int16_t clockEdges =
+          stopAdcClockMonitor(&clockMonitorLimitReached);
+      const uint32_t captureInterruptStatus = adcCaptureInterruptSeen;
+      const uint32_t captureInterruptCount = adcCaptureInterruptCount;
       Serial.printf(
-          "I2S clock route: GPIO39 -> WS. "
-          "I2S start: RX/link/park %lu/%lu/%lu, descriptor/EOF "
-          "0x%08lx/0x%08lx, IRQ enabled/raw 0x%08lx/0x%08lx, "
-          "descriptor0 owner/length %lu/%lu.\n",
-          static_cast<unsigned long>(startRxStarted),
-          static_cast<unsigned long>(startDmaLinkStarted),
-          static_cast<unsigned long>(startDmaParked),
-          static_cast<unsigned long>(startDmaDescriptor),
-          static_cast<unsigned long>(startDmaEofDescriptor),
-          static_cast<unsigned long>(startInterruptEnable),
-          static_cast<unsigned long>(startInterruptRaw),
-          static_cast<unsigned long>(startFirstDescriptorState >> 16),
-          static_cast<unsigned long>(startFirstDescriptorState & 0xffffU));
-      Serial.printf(
-          "I2S DMA capture %s at %lu/%u output samples, "
-          "requested rate %d SPS, ADC clock %lu SPS; "
-          "GPIO39 rising edges %s%d, RX started %u, DMA link start/park "
-          "%u/%u, descriptor 0x%08lx (buffers 0x%08lx/0x%08lx), "
-          "EOF descriptor 0x%08lx, first descriptor owner/length %u/%lu, "
-          "second descriptor owner/length %u/%lu, "
-          "descriptor sizes %lu/%lu, next 0x%08lx/0x%08lx, "
-          "FIFO count %lu, I2S conf/conf2/fifo/clock/rate/timing/LC "
-          "0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx, "
-          "interrupts enabled/raw 0x%08lx/0x%08lx; "
-          "ISR count/status OR %lu/0x%08lx, DMA words 0x%08lx/0x%08lx.\n",
-          captureTimedOut ? "timed out" : "stopped on DMA error",
+          "I2S capture route: GPIO39 -> WS; %s, output %lu/%u, ISR "
+          "count/status OR %lu/0x%08lx.\n",
+          captureCompleted ? "capture complete"
+                           : captureTimedOut ? "capture timed out"
+                                             : "DMA error",
           static_cast<unsigned long>(outputSampleCount),
-          static_cast<unsigned>(adcCaptureSampleCount), requestedRate,
-          static_cast<unsigned long>(adcCaptureHardwareClockHz),
-          clockMonitorLimitReached ? ">=" : "",
-          static_cast<int>(clockEdges), timeoutRxStarted ? 1U : 0U,
-          timeoutDmaLinkStarted ? 1U : 0U, timeoutDmaParked ? 1U : 0U,
-          static_cast<unsigned long>(timeoutDmaDescriptor),
-          static_cast<unsigned long>(timeoutDmaDescriptorBuffer0),
-          static_cast<unsigned long>(timeoutDmaDescriptorBuffer1),
-          static_cast<unsigned long>(timeoutDmaEofDescriptor),
-          static_cast<unsigned>(timeoutFirstDescriptorOwner),
-          static_cast<unsigned long>(timeoutFirstDescriptorLength),
-          static_cast<unsigned>(timeoutSecondDescriptorOwner),
-          static_cast<unsigned long>(timeoutSecondDescriptorLength),
-          static_cast<unsigned long>(timeoutFirstDescriptorSize),
-          static_cast<unsigned long>(timeoutSecondDescriptorSize),
-          static_cast<unsigned long>(timeoutFirstDescriptorNext),
-          static_cast<unsigned long>(timeoutSecondDescriptorNext),
-          static_cast<unsigned long>(timeoutI2sFifoCount),
-          static_cast<unsigned long>(timeoutI2sConf),
-          static_cast<unsigned long>(timeoutI2sConf2),
-          static_cast<unsigned long>(timeoutI2sFifoConf),
-          static_cast<unsigned long>(timeoutI2sClockConf),
-          static_cast<unsigned long>(timeoutI2sSampleRateConf),
-          static_cast<unsigned long>(timeoutI2sTiming),
-          static_cast<unsigned long>(timeoutI2sLinkConf),
-          static_cast<unsigned long>(timeoutInterruptEnable),
-          static_cast<unsigned long>(timeoutInterruptRaw),
+          static_cast<unsigned>(adcCaptureSampleCount),
           static_cast<unsigned long>(captureInterruptCount),
-          static_cast<unsigned long>(captureInterruptStatus),
-          static_cast<unsigned long>(firstDmaWord0),
-          static_cast<unsigned long>(firstDmaWord1));
+          static_cast<unsigned long>(captureInterruptStatus));
+      Serial.printf(
+          "VSYNC GPIO%d low/high %d/%d.\n", adcVsyncInputPin,
+          triggerDiagnostic.vsyncLowLevel, triggerDiagnostic.vsyncHighLevel);
+      if (captureStoppedEarly) {
+        const uint32_t firstDmaWord0 =
+            *reinterpret_cast<const volatile uint32_t*>(
+                adcDmaDescriptors[0].buf);
+        const uint32_t firstDmaWord1 =
+            *reinterpret_cast<const volatile uint32_t*>(
+                adcDmaDescriptors[0].buf + sizeof(uint32_t));
+        if (midCaptureSnapshotTaken) {
+          Serial.printf(
+              "I2S 100ms snapshot (WS): RX/link/park %lu/%lu/%lu, "
+              "descriptor 0x%08lx, EOF 0x%08lx, raw IRQ 0x%08lx, "
+              "FIFO 0x%08lx, descriptors owner/length %lu/%lu and %lu/%lu."
+              "\n",
+              static_cast<unsigned long>(midCaptureRxStarted),
+              static_cast<unsigned long>(midCaptureDmaLinkStarted),
+              static_cast<unsigned long>(midCaptureDmaParked),
+              static_cast<unsigned long>(midCaptureDmaDescriptor),
+              static_cast<unsigned long>(midCaptureEofDescriptor),
+              static_cast<unsigned long>(midCaptureInterruptRaw),
+              static_cast<unsigned long>(midCaptureFifoConf),
+              static_cast<unsigned long>(midCaptureDescriptor0State >> 16),
+              static_cast<unsigned long>(midCaptureDescriptor0State &
+                                         0xffffU),
+              static_cast<unsigned long>(midCaptureDescriptor1State >> 16),
+              static_cast<unsigned long>(midCaptureDescriptor1State &
+                                         0xffffU));
+        }
+        Serial.printf(
+            "I2S clock route: GPIO39 -> WS. "
+            "I2S start: RX/link/park %lu/%lu/%lu, descriptor/EOF "
+            "0x%08lx/0x%08lx, IRQ enabled/raw 0x%08lx/0x%08lx, "
+            "descriptor0 owner/length %lu/%lu.\n",
+            static_cast<unsigned long>(startRxStarted),
+            static_cast<unsigned long>(startDmaLinkStarted),
+            static_cast<unsigned long>(startDmaParked),
+            static_cast<unsigned long>(startDmaDescriptor),
+            static_cast<unsigned long>(startDmaEofDescriptor),
+            static_cast<unsigned long>(startInterruptEnable),
+            static_cast<unsigned long>(startInterruptRaw),
+            static_cast<unsigned long>(startFirstDescriptorState >> 16),
+            static_cast<unsigned long>(startFirstDescriptorState &
+                                       0xffffU));
+        Serial.printf(
+            "I2S DMA capture %s at %lu/%u output samples, "
+            "requested rate %d SPS, ADC clock %lu SPS; "
+            "GPIO39 rising edges %s%d, RX started %u, DMA link start/park "
+            "%u/%u, descriptor 0x%08lx (buffers 0x%08lx/0x%08lx), "
+            "EOF descriptor 0x%08lx, first descriptor owner/length %u/%lu, "
+            "second descriptor owner/length %u/%lu, "
+            "descriptor sizes %lu/%lu, next 0x%08lx/0x%08lx, "
+            "FIFO count %lu, I2S conf/conf2/fifo/clock/rate/timing/LC "
+            "0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx, "
+            "interrupts enabled/raw 0x%08lx/0x%08lx; "
+            "ISR count/status OR %lu/0x%08lx, DMA words 0x%08lx/0x%08lx."
+            "\n",
+            captureTimedOut ? "timed out" : "stopped on DMA error",
+            static_cast<unsigned long>(outputSampleCount),
+            static_cast<unsigned>(adcCaptureSampleCount), requestedRate,
+            static_cast<unsigned long>(adcCaptureHardwareClockHz),
+            clockMonitorLimitReached ? ">=" : "",
+            static_cast<int>(clockEdges), timeoutRxStarted ? 1U : 0U,
+            timeoutDmaLinkStarted ? 1U : 0U, timeoutDmaParked ? 1U : 0U,
+            static_cast<unsigned long>(timeoutDmaDescriptor),
+            static_cast<unsigned long>(timeoutDmaDescriptorBuffer0),
+            static_cast<unsigned long>(timeoutDmaDescriptorBuffer1),
+            static_cast<unsigned long>(timeoutDmaEofDescriptor),
+            static_cast<unsigned>(timeoutFirstDescriptorOwner),
+            static_cast<unsigned long>(timeoutFirstDescriptorLength),
+            static_cast<unsigned>(timeoutSecondDescriptorOwner),
+            static_cast<unsigned long>(timeoutSecondDescriptorLength),
+            static_cast<unsigned long>(timeoutFirstDescriptorSize),
+            static_cast<unsigned long>(timeoutSecondDescriptorSize),
+            static_cast<unsigned long>(timeoutFirstDescriptorNext),
+            static_cast<unsigned long>(timeoutSecondDescriptorNext),
+            static_cast<unsigned long>(timeoutI2sFifoCount),
+            static_cast<unsigned long>(timeoutI2sConf),
+            static_cast<unsigned long>(timeoutI2sConf2),
+            static_cast<unsigned long>(timeoutI2sFifoConf),
+            static_cast<unsigned long>(timeoutI2sClockConf),
+            static_cast<unsigned long>(timeoutI2sSampleRateConf),
+            static_cast<unsigned long>(timeoutI2sTiming),
+            static_cast<unsigned long>(timeoutI2sLinkConf),
+            static_cast<unsigned long>(timeoutInterruptEnable),
+            static_cast<unsigned long>(timeoutInterruptRaw),
+            static_cast<unsigned long>(captureInterruptCount),
+            static_cast<unsigned long>(captureInterruptStatus),
+            static_cast<unsigned long>(firstDmaWord0),
+            static_cast<unsigned long>(firstDmaWord1));
+      }
     }
-    adcLastCaptureFailure.store(captureCompleted && !captureTimedOut ? 0 : 1,
-                                std::memory_order_relaxed);
+    if (captureDebugEnabled) {
+      adcLastCaptureSampleCount.store(outputSampleCount,
+                                      std::memory_order_relaxed);
+      adcLastCaptureFailure.store(
+          captureCompleted && !captureTimedOut ? 0 : 1,
+          std::memory_order_relaxed);
+    }
     if (captureCompleted) {
       adcCaptureSequence.fetch_add(1, std::memory_order_release);
     }
@@ -1542,7 +1581,9 @@ void setup() {
   configureFrequencyCounter();
   configureAdcClock(adcCaptureHardwareClockHz);
   configureAdcCapture();
-  configureAdcClockMonitor();
+  if (captureDiagnosticsActive) {
+    configureAdcClockMonitor();
+  }
   adcCaptureTaskCreated =
       xTaskCreatePinnedToCore(adcCaptureTask, "adc_capture", 4096, nullptr, 3,
                               &adcCaptureTaskHandle, 0) == pdPASS;
@@ -1553,21 +1594,25 @@ void setup() {
   }
   lastControlUpdateMs = millis();
   drawDashboard();
-  drawCaptureDebugStats();
+  if (captureDebugEnabled) {
+    drawCaptureDebugStats();
+  }
   displayRateWindowStartMs = millis();
   drawDisplayChangeRate();
   lastDashboardFrameUs = micros();
   lastPlotFrameUs = lastDashboardFrameUs;
-  Serial.println(
-      "Measurement inputs ready: detectors GPIO35/36, pots GPIO34/33; "
-      "frequency counter GPIO27.");
-  if (adcCaptureTaskCreated) {
+  if (captureDebugEnabled) {
     Serial.printf(
-        "ADC capture ready: D4..D11 on GPIO13,14,16,17,21,22,26,15; "
-        "%u MHz XCLK GPIO32, PCLK GPIO39; "
-        "%u decimated samples per capture.\n",
-        static_cast<unsigned>(adcCaptureHardwareClockHz / 1000000UL),
-        static_cast<unsigned>(adcCaptureSampleCount));
+        "Measurement inputs ready: detectors GPIO35/36, pots GPIO34/33; "
+        "frequency counter GPIO27.\n");
+    if (adcCaptureTaskCreated) {
+      Serial.printf(
+          "ADC capture ready: D4..D11 on GPIO13,14,16,17,21,22,26,15; "
+          "%u MHz XCLK GPIO32, PCLK GPIO39; "
+          "%u decimated samples per capture.\n",
+          static_cast<unsigned>(adcCaptureHardwareClockHz / 1000000UL),
+          static_cast<unsigned>(adcCaptureSampleCount));
+    }
   }
 }
 
@@ -1612,7 +1657,9 @@ void loop() {
     bool frameChanged = drawDashboard();
     frameChanged |= drawOutOfRangeIndicator();
     drawDisplayChangeRate();
-    drawCaptureDebugStats();
+    if (captureDebugEnabled) {
+      drawCaptureDebugStats();
+    }
     if (frameChanged && displayChangeFrames < UINT16_MAX) {
       ++displayChangeFrames;
     }
@@ -1642,7 +1689,9 @@ void loop() {
     captureSequenceAtRequest =
         adcCaptureSequence.load(std::memory_order_acquire);
     adcCaptureSamplingRate.store(Sampling_rate, std::memory_order_relaxed);
-    adcLastCaptureRequestIssued.store(true, std::memory_order_relaxed);
+    if (captureDebugEnabled) {
+      adcLastCaptureRequestIssued.store(true, std::memory_order_relaxed);
+    }
     adcCaptureRequested.store(true, std::memory_order_release);
     captureRequestPending = true;
   }
