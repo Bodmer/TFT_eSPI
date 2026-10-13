@@ -570,6 +570,16 @@ void configureAdcCapture() {
                                  &i2sInterruptHandle));
 }
 
+void configureAdcClockInputRoute(bool useBitClockInput) {
+  gpio_matrix_in(adcClockInputPin,
+                 useBitClockInput ? I2S0I_BCK_IN_IDX : I2S0I_WS_IN_IDX,
+                 false);
+  gpio_matrix_in(useBitClockInput ? GPIO_MATRIX_CONST_ZERO_INPUT
+                                  : adcClockInputPin,
+                 useBitClockInput ? I2S0I_WS_IN_IDX : I2S0I_BCK_IN_IDX,
+                 false);
+}
+
 void haltAdcDmaCapture() {
   I2S0.conf.rx_start = 0;
   I2S0.int_ena.in_suc_eof = 0;
@@ -705,6 +715,7 @@ void completeAdcCaptureRequestOnCore0() {
 }
 
 void adcCaptureTask(void*) {
+  bool useBitClockInput = false;
   for (;;) {
     if (!adcCaptureRequested.load(std::memory_order_acquire)) {
       vTaskDelay(pdMS_TO_TICKS(1));
@@ -722,6 +733,7 @@ void adcCaptureTask(void*) {
     }
 
     stopAdcDmaCapture();
+    configureAdcClockInputRoute(useBitClockInput);
     startAdcClockMonitor();
     adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
     adcLastCaptureFailure.store(2, std::memory_order_relaxed);
@@ -848,6 +860,17 @@ void adcCaptureTask(void*) {
                                     std::memory_order_relaxed);
     const uint32_t captureInterruptStatus = adcCaptureInterruptSeen;
     const uint32_t captureInterruptCount = adcCaptureInterruptCount;
+    Serial.printf(
+        "I2S A/B test: GPIO39 -> %s; %s, output %lu/%u, ISR count/status "
+        "OR %lu/0x%08lx.\n",
+        useBitClockInput ? "BCK" : "WS",
+        captureCompleted ? "capture complete"
+                         : captureTimedOut ? "capture timed out"
+                                           : "DMA error",
+        static_cast<unsigned long>(outputSampleCount),
+        static_cast<unsigned>(adcCaptureSampleCount),
+        static_cast<unsigned long>(captureInterruptCount),
+        static_cast<unsigned long>(captureInterruptStatus));
     if (captureStoppedEarly) {
       const uint32_t firstDmaWord0 =
           *reinterpret_cast<const volatile uint32_t*>(
@@ -856,9 +879,11 @@ void adcCaptureTask(void*) {
           *reinterpret_cast<const volatile uint32_t*>(
               adcDmaDescriptors[0].buf + sizeof(uint32_t));
       Serial.printf(
+          "I2S clock route: GPIO39 -> %s. "
           "I2S start: RX/link/park %lu/%lu/%lu, descriptor/EOF "
           "0x%08lx/0x%08lx, IRQ enabled/raw 0x%08lx/0x%08lx, "
           "descriptor0 owner/length %lu/%lu.\n",
+          useBitClockInput ? "BCK" : "WS",
           static_cast<unsigned long>(startRxStarted),
           static_cast<unsigned long>(startDmaLinkStarted),
           static_cast<unsigned long>(startDmaParked),
@@ -919,6 +944,7 @@ void adcCaptureTask(void*) {
     if (captureCompleted) {
       adcCaptureSequence.fetch_add(1, std::memory_order_release);
     }
+    useBitClockInput = !useBitClockInput;
     completeAdcCaptureRequestOnCore0();
   }
 }
