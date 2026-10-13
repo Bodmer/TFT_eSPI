@@ -22,9 +22,8 @@ constexpr int invertedPeakDetectorPin = 36;
 constexpr int gainPotPin = 34;
 constexpr int frequencyScalePotPin = 33;
 constexpr int frequencyInputPin = 27;
-constexpr int adcOutOfRangePin = 12;
-constexpr int adcSoftwareTriggerPin = 1;
-constexpr int adcVsyncInputPin = 3;
+constexpr int adcSoftwareTriggerPin = 19;
+constexpr int adcVsyncInputPin = 12;
 constexpr int adcClockOutputPin = 32;
 constexpr int adcClockInputPin = 39;
 // ADC D4..D11 map to consecutive I2S camera-mode data inputs 0..7.
@@ -577,8 +576,6 @@ void configureAdcCapture() {
 }
 
 void prepareAdcSoftwareTrigger() {
-  Serial.flush();
-  Serial.end();
   ESP_ERROR_CHECK(gpio_set_direction(
       static_cast<gpio_num_t>(adcSoftwareTriggerPin), GPIO_MODE_OUTPUT));
   gpio_matrix_out(adcSoftwareTriggerPin, SIG_GPIO_OUT_IDX, false, false);
@@ -586,26 +583,27 @@ void prepareAdcSoftwareTrigger() {
       static_cast<gpio_num_t>(adcSoftwareTriggerPin), 1));
 }
 
-void pulseAdcSoftwareTrigger() {
+struct AdcSoftwareTriggerDiagnostic {
+  int vsyncLowLevel;
+  int vsyncHighLevel;
+};
+
+AdcSoftwareTriggerDiagnostic pulseAdcSoftwareTrigger() {
   ESP_ERROR_CHECK(gpio_set_level(
       static_cast<gpio_num_t>(adcSoftwareTriggerPin), 0));
   delayMicroseconds(10);
+  const int vsyncLowLevel =
+      gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin));
   ESP_ERROR_CHECK(gpio_set_level(
       static_cast<gpio_num_t>(adcSoftwareTriggerPin), 1));
+  const int vsyncHighLevel =
+      gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin));
+  return {vsyncLowLevel, vsyncHighLevel};
 }
 
-void resumeAdcSerial() {
-  Serial.begin(115200);
-}
-
-void configureAdcClockInputRoute(bool useBitClockInput) {
-  gpio_matrix_in(adcClockInputPin,
-                 useBitClockInput ? I2S0I_BCK_IN_IDX : I2S0I_WS_IN_IDX,
-                 false);
-  gpio_matrix_in(useBitClockInput ? GPIO_MATRIX_CONST_ZERO_INPUT
-                                  : adcClockInputPin,
-                 useBitClockInput ? I2S0I_WS_IN_IDX : I2S0I_BCK_IN_IDX,
-                 false);
+void configureAdcClockInputRoute() {
+  gpio_matrix_in(adcClockInputPin, I2S0I_WS_IN_IDX, false);
+  gpio_matrix_in(GPIO_MATRIX_CONST_ZERO_INPUT, I2S0I_BCK_IN_IDX, false);
 }
 
 void haltAdcDmaCapture() {
@@ -743,7 +741,6 @@ void completeAdcCaptureRequestOnCore0() {
 }
 
 void adcCaptureTask(void*) {
-  bool useBitClockInput = false;
   for (;;) {
     if (!adcCaptureRequested.load(std::memory_order_acquire)) {
       vTaskDelay(pdMS_TO_TICKS(1));
@@ -761,7 +758,7 @@ void adcCaptureTask(void*) {
     }
 
     stopAdcDmaCapture();
-    configureAdcClockInputRoute(useBitClockInput);
+    configureAdcClockInputRoute();
     prepareAdcSoftwareTrigger();
     startAdcClockMonitor();
     adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
@@ -770,7 +767,8 @@ void adcCaptureTask(void*) {
     adcCaptureInterruptSeen = 0;
     adcCaptureInterruptCount = 0;
     startAdcDmaCapture();
-    pulseAdcSoftwareTrigger();
+    const AdcSoftwareTriggerDiagnostic triggerDiagnostic =
+        pulseAdcSoftwareTrigger();
     const uint32_t startRxStarted = I2S0.conf.rx_start;
     const uint32_t startDmaLinkStarted = I2S0.in_link.start;
     const uint32_t startDmaParked = I2S0.in_link.park;
@@ -917,11 +915,9 @@ void adcCaptureTask(void*) {
                                     std::memory_order_relaxed);
     const uint32_t captureInterruptStatus = adcCaptureInterruptSeen;
     const uint32_t captureInterruptCount = adcCaptureInterruptCount;
-    resumeAdcSerial();
     Serial.printf(
-        "I2S A/B test: GPIO39 -> %s; %s, output %lu/%u, ISR count/status "
+        "I2S capture route: GPIO39 -> WS; %s, output %lu/%u, ISR count/status "
         "OR %lu/0x%08lx.\n",
-        useBitClockInput ? "BCK" : "WS",
         captureCompleted ? "capture complete"
                          : captureTimedOut ? "capture timed out"
                                            : "DMA error",
@@ -929,6 +925,9 @@ void adcCaptureTask(void*) {
         static_cast<unsigned>(adcCaptureSampleCount),
         static_cast<unsigned long>(captureInterruptCount),
         static_cast<unsigned long>(captureInterruptStatus));
+    Serial.printf(
+        "VSYNC GPIO%d low/high %d/%d.\n", adcVsyncInputPin,
+        triggerDiagnostic.vsyncLowLevel, triggerDiagnostic.vsyncHighLevel);
     if (captureStoppedEarly) {
       const uint32_t firstDmaWord0 =
           *reinterpret_cast<const volatile uint32_t*>(
@@ -938,10 +937,9 @@ void adcCaptureTask(void*) {
               adcDmaDescriptors[0].buf + sizeof(uint32_t));
       if (midCaptureSnapshotTaken) {
         Serial.printf(
-            "I2S 100ms snapshot (%s): RX/link/park %lu/%lu/%lu, "
+            "I2S 100ms snapshot (WS): RX/link/park %lu/%lu/%lu, "
             "descriptor 0x%08lx, EOF 0x%08lx, raw IRQ 0x%08lx, "
             "FIFO 0x%08lx, descriptors owner/length %lu/%lu and %lu/%lu.\n",
-            useBitClockInput ? "BCK" : "WS",
             static_cast<unsigned long>(midCaptureRxStarted),
             static_cast<unsigned long>(midCaptureDmaLinkStarted),
             static_cast<unsigned long>(midCaptureDmaParked),
@@ -955,11 +953,10 @@ void adcCaptureTask(void*) {
             static_cast<unsigned long>(midCaptureDescriptor1State & 0xffffU));
       }
       Serial.printf(
-          "I2S clock route: GPIO39 -> %s. "
+          "I2S clock route: GPIO39 -> WS. "
           "I2S start: RX/link/park %lu/%lu/%lu, descriptor/EOF "
           "0x%08lx/0x%08lx, IRQ enabled/raw 0x%08lx/0x%08lx, "
           "descriptor0 owner/length %lu/%lu.\n",
-          useBitClockInput ? "BCK" : "WS",
           static_cast<unsigned long>(startRxStarted),
           static_cast<unsigned long>(startDmaLinkStarted),
           static_cast<unsigned long>(startDmaParked),
@@ -1020,7 +1017,6 @@ void adcCaptureTask(void*) {
     if (captureCompleted) {
       adcCaptureSequence.fetch_add(1, std::memory_order_release);
     }
-    useBitClockInput = !useBitClockInput;
     completeAdcCaptureRequestOnCore0();
   }
 }
@@ -1040,7 +1036,7 @@ void drawPlotGrid() {
 }
 
 bool drawOutOfRangeIndicator() {
-  const bool outOfRange = digitalRead(adcOutOfRangePin) == HIGH;
+  constexpr bool outOfRange = false;
   const int state = outOfRange ? 1 : 0;
   if (state == lastOutOfRangeIndicatorState) {
     return false;
@@ -1526,6 +1522,11 @@ void setup() {
   dac_output_voltage(DAC_CHANNEL_1, 127);
 
   Serial.begin(115200);
+  ESP_ERROR_CHECK(gpio_set_level(
+      static_cast<gpio_num_t>(adcSoftwareTriggerPin), 0));
+  ESP_ERROR_CHECK(gpio_set_direction(
+      static_cast<gpio_num_t>(adcSoftwareTriggerPin), GPIO_MODE_OUTPUT));
+  gpio_matrix_out(adcSoftwareTriggerPin, SIG_GPIO_OUT_IDX, false, false);
   analogReadResolution(12);
   analogSetPinAttenuation(peakDetectorPin, ADC_11db);
   analogSetPinAttenuation(invertedPeakDetectorPin, ADC_11db);
@@ -1535,7 +1536,6 @@ void setup() {
 
   display.init();
   drawStaticUi();
-  pinMode(adcOutOfRangePin, INPUT);
   drawOutOfRangeIndicator();
   updateControlMeasurements();
   updatePeakDetectors(micros());
