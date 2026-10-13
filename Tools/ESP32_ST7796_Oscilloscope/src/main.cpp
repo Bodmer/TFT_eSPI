@@ -23,6 +23,8 @@ constexpr int gainPotPin = 34;
 constexpr int frequencyScalePotPin = 33;
 constexpr int frequencyInputPin = 27;
 constexpr int adcOutOfRangePin = 12;
+constexpr int adcSoftwareTriggerPin = 1;
+constexpr int adcVsyncInputPin = 3;
 constexpr int adcClockOutputPin = 32;
 constexpr int adcClockInputPin = 39;
 // ADC D4..D11 map to consecutive I2S camera-mode data inputs 0..7.
@@ -517,12 +519,16 @@ void configureAdcCapture() {
                        GPIO_FLOATING);
     gpio_matrix_in(adcDataPins[bit], I2S0I_DATA_IN0_IDX + bit, false);
   }
+  ESP_ERROR_CHECK(gpio_set_direction(
+      static_cast<gpio_num_t>(adcVsyncInputPin), GPIO_MODE_INPUT));
+  gpio_set_pull_mode(static_cast<gpio_num_t>(adcVsyncInputPin),
+                     GPIO_FLOATING);
+  gpio_matrix_in(adcVsyncInputPin, I2S0I_V_SYNC_IDX, false);
   ESP_ERROR_CHECK(gpio_set_direction(static_cast<gpio_num_t>(adcClockInputPin),
                                      GPIO_MODE_INPUT));
   gpio_set_pull_mode(static_cast<gpio_num_t>(adcClockInputPin), GPIO_FLOATING);
   gpio_matrix_in(adcClockInputPin, I2S0I_WS_IN_IDX, false);
   gpio_matrix_in(GPIO_MATRIX_CONST_ZERO_INPUT, I2S0I_BCK_IN_IDX, false);
-  gpio_matrix_in(GPIO_MATRIX_CONST_ZERO_INPUT, I2S0I_V_SYNC_IDX, false);
   gpio_matrix_in(GPIO_MATRIX_CONST_ONE_INPUT, I2S0I_H_SYNC_IDX, false);
   gpio_matrix_in(GPIO_MATRIX_CONST_ONE_INPUT, I2S0I_H_ENABLE_IDX, false);
 
@@ -568,6 +574,28 @@ void configureAdcCapture() {
                                  ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1,
                                  i2sCaptureInterrupt, nullptr,
                                  &i2sInterruptHandle));
+}
+
+void prepareAdcSoftwareTrigger() {
+  Serial.flush();
+  Serial.end();
+  ESP_ERROR_CHECK(gpio_set_direction(
+      static_cast<gpio_num_t>(adcSoftwareTriggerPin), GPIO_MODE_OUTPUT));
+  gpio_matrix_out(adcSoftwareTriggerPin, SIG_GPIO_OUT_IDX, false, false);
+  ESP_ERROR_CHECK(gpio_set_level(
+      static_cast<gpio_num_t>(adcSoftwareTriggerPin), 1));
+}
+
+void pulseAdcSoftwareTrigger() {
+  ESP_ERROR_CHECK(gpio_set_level(
+      static_cast<gpio_num_t>(adcSoftwareTriggerPin), 0));
+  delayMicroseconds(10);
+  ESP_ERROR_CHECK(gpio_set_level(
+      static_cast<gpio_num_t>(adcSoftwareTriggerPin), 1));
+}
+
+void resumeAdcSerial() {
+  Serial.begin(115200);
 }
 
 void configureAdcClockInputRoute(bool useBitClockInput) {
@@ -734,6 +762,7 @@ void adcCaptureTask(void*) {
 
     stopAdcDmaCapture();
     configureAdcClockInputRoute(useBitClockInput);
+    prepareAdcSoftwareTrigger();
     startAdcClockMonitor();
     adcLastCaptureSampleCount.store(0, std::memory_order_relaxed);
     adcLastCaptureFailure.store(2, std::memory_order_relaxed);
@@ -741,6 +770,7 @@ void adcCaptureTask(void*) {
     adcCaptureInterruptSeen = 0;
     adcCaptureInterruptCount = 0;
     startAdcDmaCapture();
+    pulseAdcSoftwareTrigger();
     const uint32_t startRxStarted = I2S0.conf.rx_start;
     const uint32_t startDmaLinkStarted = I2S0.in_link.start;
     const uint32_t startDmaParked = I2S0.in_link.park;
@@ -751,6 +781,16 @@ void adcCaptureTask(void*) {
     const uint32_t startFirstDescriptorState =
         (static_cast<uint32_t>(adcDmaDescriptors[0].owner) << 16) |
         adcDmaDescriptors[0].length;
+    bool midCaptureSnapshotTaken = false;
+    uint32_t midCaptureRxStarted = 0;
+    uint32_t midCaptureDmaLinkStarted = 0;
+    uint32_t midCaptureDmaParked = 0;
+    uint32_t midCaptureDmaDescriptor = 0;
+    uint32_t midCaptureEofDescriptor = 0;
+    uint32_t midCaptureInterruptRaw = 0;
+    uint32_t midCaptureFifoConf = 0;
+    uint32_t midCaptureDescriptor0State = 0;
+    uint32_t midCaptureDescriptor1State = 0;
     bool captureCompleted = false;
     bool captureTimedOut = false;
     bool captureDmaFailed = false;
@@ -799,6 +839,23 @@ void adcCaptureTask(void*) {
       if (micros() - captureStartUs >= captureTimeoutUs) {
         captureTimedOut = true;
         break;
+      }
+      if (!midCaptureSnapshotTaken &&
+          micros() - captureStartUs >= 100000UL) {
+        midCaptureRxStarted = I2S0.conf.rx_start;
+        midCaptureDmaLinkStarted = I2S0.in_link.start;
+        midCaptureDmaParked = I2S0.in_link.park;
+        midCaptureDmaDescriptor = I2S0.in_link_dscr;
+        midCaptureEofDescriptor = I2S0.in_eof_des_addr;
+        midCaptureInterruptRaw = I2S0.int_raw.val;
+        midCaptureFifoConf = I2S0.fifo_conf.val;
+        midCaptureDescriptor0State =
+            (static_cast<uint32_t>(adcDmaDescriptors[0].owner) << 16) |
+            adcDmaDescriptors[0].length;
+        midCaptureDescriptor1State =
+            (static_cast<uint32_t>(adcDmaDescriptors[1].owner) << 16) |
+            adcDmaDescriptors[1].length;
+        midCaptureSnapshotTaken = true;
       }
     }
 
@@ -860,6 +917,7 @@ void adcCaptureTask(void*) {
                                     std::memory_order_relaxed);
     const uint32_t captureInterruptStatus = adcCaptureInterruptSeen;
     const uint32_t captureInterruptCount = adcCaptureInterruptCount;
+    resumeAdcSerial();
     Serial.printf(
         "I2S A/B test: GPIO39 -> %s; %s, output %lu/%u, ISR count/status "
         "OR %lu/0x%08lx.\n",
@@ -878,6 +936,24 @@ void adcCaptureTask(void*) {
       const uint32_t firstDmaWord1 =
           *reinterpret_cast<const volatile uint32_t*>(
               adcDmaDescriptors[0].buf + sizeof(uint32_t));
+      if (midCaptureSnapshotTaken) {
+        Serial.printf(
+            "I2S 100ms snapshot (%s): RX/link/park %lu/%lu/%lu, "
+            "descriptor 0x%08lx, EOF 0x%08lx, raw IRQ 0x%08lx, "
+            "FIFO 0x%08lx, descriptors owner/length %lu/%lu and %lu/%lu.\n",
+            useBitClockInput ? "BCK" : "WS",
+            static_cast<unsigned long>(midCaptureRxStarted),
+            static_cast<unsigned long>(midCaptureDmaLinkStarted),
+            static_cast<unsigned long>(midCaptureDmaParked),
+            static_cast<unsigned long>(midCaptureDmaDescriptor),
+            static_cast<unsigned long>(midCaptureEofDescriptor),
+            static_cast<unsigned long>(midCaptureInterruptRaw),
+            static_cast<unsigned long>(midCaptureFifoConf),
+            static_cast<unsigned long>(midCaptureDescriptor0State >> 16),
+            static_cast<unsigned long>(midCaptureDescriptor0State & 0xffffU),
+            static_cast<unsigned long>(midCaptureDescriptor1State >> 16),
+            static_cast<unsigned long>(midCaptureDescriptor1State & 0xffffU));
+      }
       Serial.printf(
           "I2S clock route: GPIO39 -> %s. "
           "I2S start: RX/link/park %lu/%lu/%lu, descriptor/EOF "
