@@ -78,7 +78,6 @@ constexpr int panelRowHeight = 56;
 constexpr size_t adcCaptureSampleCount =
     static_cast<size_t>(plotSampleCount) * adcCapturePlotPlaneCount;
 constexpr uint32_t adcCaptureHardwareClockHz = 10000000UL;
-constexpr int adcCaptureMaximumSamplingRateIndex = 36;
 constexpr size_t adcDmaWordsPerDescriptor = 1023;
 constexpr size_t adcDmaDescriptorCount = 16;
 constexpr size_t adcDmaWordCount =
@@ -506,7 +505,7 @@ void configureAdcClock(uint32_t samplingRate) {
   channelConfig.hpoint = 0;
   ESP_ERROR_CHECK(ledc_channel_config(&channelConfig));
   ESP_ERROR_CHECK(gpio_set_drive_capability(
-      static_cast<gpio_num_t>(adcClockOutputPin), GPIO_DRIVE_CAP_0));
+      static_cast<gpio_num_t>(adcClockOutputPin), GPIO_DRIVE_CAP_DEFAULT));
 }
 
 void configureAdcCapture() {
@@ -1549,8 +1548,6 @@ void updateControlMeasurements() {
           static_cast<int>(floorf(filteredFrequencyScaleIndex + 0.5f));
     }
   }
-  selectedSamplingRateIndex = std::min(
-      selectedSamplingRateIndex, adcCaptureMaximumSamplingRateIndex);
   Sampling_rate = sampling_rates[selectedSamplingRateIndex];
 }
 }  // namespace
