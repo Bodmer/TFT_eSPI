@@ -19,7 +19,7 @@
 namespace {
 constexpr int peakDetectorPin = 35;
 constexpr int invertedPeakDetectorPin = 36;
-constexpr int gainPotPin = 34;
+constexpr int gainPotPin = 13;
 constexpr int frequencyScalePotPin = 33;
 constexpr int frequencyInputPin = 27;
 constexpr int adcSoftwareTriggerPin = 19;
@@ -27,7 +27,7 @@ constexpr int adcVsyncInputPin = 12;
 constexpr int adcClockOutputPin = 32;
 constexpr int adcClockInputPin = 39;
 // ADC D4..D11 map to consecutive I2S camera-mode data inputs 0..7.
-constexpr int adcDataPins[] = {13, 14, 16, 17, 21, 22, 26, 15};
+constexpr int adcDataPins[] = {34, 14, 16, 17, 21, 22, 26, 15};
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
 constexpr uint8_t potentiometerAverageCount = 10;
 constexpr uint8_t detectorAverageCount = 10;
@@ -60,7 +60,7 @@ constexpr int plotHeight = 208;
 constexpr int horizontalDivisions = 8;
 constexpr int verticalDivisions = 4;
 constexpr int plotSampleCount = plotWidth-2;
-constexpr size_t adcCapturePlotPlaneCount = 5;
+constexpr size_t adcCapturePlotPlaneCount = 2;
 constexpr int outOfRangeIndicatorX = 220;
 constexpr int outOfRangeIndicatorY = 5;
 constexpr int outOfRangeIndicatorWidth = 136;
@@ -385,6 +385,8 @@ uint8_t accumulatedFrequencyWindows = 0;
 bool accumulatedFrequencyOverRange = false;
 std::atomic<bool> frequencyMeasurementArmed{false};
 TaskHandle_t frequencyMeasurementTaskHandle = nullptr;
+uint32_t frequencyMeasurementArmStartUs = 0;
+bool frequencyMeasurementPending = false;
 volatile uint32_t frequencyStartPulseTimestampUs = 0;
 volatile int16_t frequencyStartPulseCount = 0;
 volatile bool frequencyStartPulseOverRange = false;
@@ -520,8 +522,10 @@ void configureAdcCapture() {
   for (uint8_t bit = 0; bit < 8; ++bit) {
     ESP_ERROR_CHECK(gpio_set_direction(
         static_cast<gpio_num_t>(adcDataPins[bit]), GPIO_MODE_INPUT));
-    gpio_set_pull_mode(static_cast<gpio_num_t>(adcDataPins[bit]),
-                       GPIO_FLOATING);
+    if (adcDataPins[bit] < GPIO_NUM_34) {
+      ESP_ERROR_CHECK(gpio_set_pull_mode(
+          static_cast<gpio_num_t>(adcDataPins[bit]), GPIO_PULLDOWN_ONLY));
+    }
     gpio_matrix_in(adcDataPins[bit], I2S0I_DATA_IN0_IDX + bit, false);
   }
   ESP_ERROR_CHECK(gpio_set_direction(
@@ -1375,75 +1379,84 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
   const uint32_t targetWindowUs = static_cast<uint32_t>(
       std::min<uint64_t>(requestedWindowUs, maximumFrequencyWindowUs));
 
+  if (frequencyMeasurementPending) {
+    if (ulTaskNotifyTake(pdTRUE, 0) == 0) {
+      if (nowUs - frequencyMeasurementArmStartUs <
+          maximumFrequencyWindowUs) {
+        return;
+      }
+
+      ESP_ERROR_CHECK(gpio_intr_disable(
+          static_cast<gpio_num_t>(frequencyInputPin)));
+      frequencyMeasurementArmed.store(false, std::memory_order_release);
+      frequencyMeasurementPending = false;
+      frequencyMeasurementTaskHandle = nullptr;
+      ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
+      ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
+      ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
+      frequencyWindowStartUs = nowUs;
+      clearFrequencyEstimate();
+      return;
+    }
+
+    frequencyMeasurementPending = false;
+    frequencyMeasurementTaskHandle = nullptr;
+    const uint32_t windowEndUs = frequencyStartPulseTimestampUs;
+    const int16_t pulseCount = frequencyStartPulseCount;
+    const bool windowOverRange = frequencyStartPulseOverRange;
+    const uint32_t elapsedUs = windowEndUs - frequencyWindowStartUs;
+    frequencyWindowStartUs = windowEndUs;
+
+    if (pulseCount <= 0 && !windowOverRange) {
+      clearFrequencyEstimate();
+      return;
+    }
+
+    const uint32_t recordWindows =
+        std::max<uint32_t>(
+            1, (elapsedUs + targetWindowUs - 1) / targetWindowUs);
+    const uint32_t measuredPulses =
+        windowOverRange ? frequencyCounterLimit : pulseCount;
+    const bool sparseSinglePulse =
+        measuredPulses == 1 && recordWindows == 1;
+    if (!sparseSinglePulse && measuredPulses < 2 * recordWindows) {
+      clearFrequencyEstimate();
+      return;
+    }
+
+    accumulatedPulseCount += measuredPulses;
+    accumulatedFrequencyWindowUs += elapsedUs;
+    accumulatedFrequencyOverRange |= windowOverRange;
+    accumulatedFrequencyWindows +=
+        static_cast<uint8_t>(std::min<uint32_t>(
+            recordWindows, frequencyAveragingWindows));
+
+    if (accumulatedFrequencyWindows >= frequencyAveragingWindows) {
+      measuredFrequencyHz =
+          static_cast<float>(accumulatedPulseCount) * 1000000.0f /
+          static_cast<float>(accumulatedFrequencyWindowUs);
+      freq = measuredFrequencyHz;
+      frequencyOverRange = accumulatedFrequencyOverRange;
+      frequencyKnown = true;
+      accumulatedPulseCount = 0;
+      accumulatedFrequencyWindowUs = 0;
+      accumulatedFrequencyWindows = 0;
+      accumulatedFrequencyOverRange = false;
+    }
+    return;
+  }
+
   if (nowUs - frequencyWindowStartUs < targetWindowUs) {
     return;
   }
 
-  TaskHandle_t waitingTask = xTaskGetCurrentTaskHandle();
-  frequencyMeasurementTaskHandle = waitingTask;
+  frequencyMeasurementTaskHandle = xTaskGetCurrentTaskHandle();
   ulTaskNotifyTake(pdTRUE, 0);
+  frequencyMeasurementArmStartUs = nowUs;
+  frequencyMeasurementPending = true;
   frequencyMeasurementArmed.store(true, std::memory_order_release);
   ESP_ERROR_CHECK(gpio_intr_enable(
       static_cast<gpio_num_t>(frequencyInputPin)));
-
-  if (ulTaskNotifyTake(pdTRUE,
-                       pdMS_TO_TICKS(maximumFrequencyWindowUs / 1000UL)) ==
-      0) {
-    ESP_ERROR_CHECK(gpio_intr_disable(
-        static_cast<gpio_num_t>(frequencyInputPin)));
-    frequencyMeasurementArmed.store(false, std::memory_order_release);
-    frequencyMeasurementTaskHandle = nullptr;
-    ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
-    ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
-    ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
-    frequencyWindowStartUs = micros();
-    clearFrequencyEstimate();
-    return;
-  }
-
-  frequencyMeasurementTaskHandle = nullptr;
-  const uint32_t windowEndUs = frequencyStartPulseTimestampUs;
-  const int16_t pulseCount = frequencyStartPulseCount;
-  const bool windowOverRange = frequencyStartPulseOverRange;
-  const uint32_t elapsedUs = windowEndUs - frequencyWindowStartUs;
-  frequencyWindowStartUs = windowEndUs;
-
-  if (pulseCount <= 0 && !windowOverRange) {
-    clearFrequencyEstimate();
-    return;
-  }
-
-  const uint32_t recordWindows =
-      std::max<uint32_t>(
-          1, (elapsedUs + targetWindowUs - 1) / targetWindowUs);
-  const uint32_t measuredPulses =
-      windowOverRange ? frequencyCounterLimit : pulseCount;
-  const bool sparseSinglePulse =
-      measuredPulses == 1 && recordWindows == 1;
-  if (!sparseSinglePulse && measuredPulses < 2 * recordWindows) {
-    clearFrequencyEstimate();
-    return;
-  }
-
-  accumulatedPulseCount += measuredPulses;
-  accumulatedFrequencyWindowUs += elapsedUs;
-  accumulatedFrequencyOverRange |= windowOverRange;
-  accumulatedFrequencyWindows +=
-      static_cast<uint8_t>(std::min<uint32_t>(
-          recordWindows, frequencyAveragingWindows));
-
-  if (accumulatedFrequencyWindows >= frequencyAveragingWindows) {
-    measuredFrequencyHz =
-        static_cast<float>(accumulatedPulseCount) * 1000000.0f /
-        static_cast<float>(accumulatedFrequencyWindowUs);
-    freq = measuredFrequencyHz;
-    frequencyOverRange = accumulatedFrequencyOverRange;
-    frequencyKnown = true;
-    accumulatedPulseCount = 0;
-    accumulatedFrequencyWindowUs = 0;
-    accumulatedFrequencyWindows = 0;
-    accumulatedFrequencyOverRange = false;
-  }
 }
 
 uint32_t peakHoldPeriodUs() {
@@ -1600,11 +1613,11 @@ void setup() {
   lastPlotFrameUs = lastDashboardFrameUs;
   if (captureDebugEnabled) {
     Serial.printf(
-        "Measurement inputs ready: detectors GPIO35/36, pots GPIO34/33; "
+        "Measurement inputs ready: detectors GPIO35/36, pots GPIO13/33; "
         "frequency counter GPIO27.\n");
     if (adcCaptureTaskCreated) {
       Serial.printf(
-          "ADC capture ready: D4..D11 on GPIO13,14,16,17,21,22,26,15; "
+          "ADC capture ready: D4..D11 on GPIO34,14,16,17,21,22,26,15; "
           "%u MHz XCLK GPIO32, PCLK GPIO39; "
           "%u decimated samples per capture.\n",
           static_cast<unsigned>(adcCaptureHardwareClockHz / 1000000UL),
@@ -1632,6 +1645,9 @@ void loop() {
       ESP_ERROR_CHECK(gpio_intr_disable(
           static_cast<gpio_num_t>(frequencyInputPin)));
       frequencyMeasurementArmed.store(false, std::memory_order_release);
+      frequencyMeasurementPending = false;
+      frequencyMeasurementTaskHandle = nullptr;
+      ulTaskNotifyTake(pdTRUE, 0);
       ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
       ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
       ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
