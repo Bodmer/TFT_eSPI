@@ -7,6 +7,7 @@
 #include <driver/periph_ctrl.h>
 #include <driver/timer.h>
 #include <esp_err.h>
+#include <esp_adc_cal.h>
 #include <esp_intr_alloc.h>
 #include <soc/gpio_sig_map.h>
 #include <soc/i2s_struct.h>
@@ -33,45 +34,49 @@ constexpr int adcDataPins[] = {16, 17, 5, 18, 19, 21, 22, 23};
 
 // measurement parameters
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
-constexpr uint8_t potentiometerAverageCount = 20;
+constexpr uint32_t potentiometerSampleWindowUs = 5000;
 constexpr uint8_t detectorAverageCount = 10;
+constexpr float gainPotVoltageSmoothingFactor = 0.25f;
 constexpr uint32_t softwareTriggeredCaptureMaxRate = 100000;
 constexpr uint32_t livePlotMaxSampleRate = 4000;
 constexpr uint32_t softwareSampleTimerHz = 40000000;
 constexpr float gainSmoothingFactor = 0.1f;
 constexpr float frequencyScaleSmoothingFactor = 0.2f;
 constexpr float samplingRateIndexHysteresis = 0.65f;
-constexpr uint32_t minimumDetectorHoldUs = 1000;
+constexpr uint32_t minimumDetectorHoldUs = 100;
 struct GainCalibrationPoint {
   float voltage;
   float gain;
 };
 constexpr GainCalibrationPoint gainPotCalibration[] = {
-    {0.150f, 0.151939655f},
-    {0.160f, 0.179268293f},
-    {0.170f, 0.165384615f},
-    {0.180f, 0.217049719f},
-    {0.200f, 0.223076923f},
-    {0.290f, 0.451219512f},
-    {0.400f, 0.846153846f},
-    {0.630f, 2.557692308f},
-    {0.740f, 4.1875f},
-    {0.810f, 5.380952381f},
-    {0.950f, 9.1f},
-    {1.130f, 14.13793103f},
-    {1.170f, 16.66666667f},
-    {1.310f, 25.45454545f},
-    {1.330f, 24.82758621f},
-    {1.400f, 29.23076923f},
-    {1.490f, 32.85714286f},
-    {1.590f, 42.12765957f},
-    {1.680f, 61.875f},
-    {1.840f, 101.3333333f},
-    {1.900f, 107.4074074f},
-    {2.120f, 148.1481481f},
-    {2.370f, 243.3333333f},
-    {2.480f, 335.7142857f},
-    {2.610f, 392.8571429f},
+    {0.167f, 0.031061f},
+    {0.210f, 0.127165f},
+    {0.231f, 0.159632f},
+    {0.280f, 0.265625f},
+    {0.300f, 0.291992f},
+    {0.405f, 0.697674f},
+    {0.500f, 1.30814f},
+    {0.605f, 2.267442f},
+    {0.700f, 3.81877f},
+    {0.805f, 5.631068f},
+    {0.906f, 8.543689f},
+    {1.008f, 12.46914f},
+    {1.120f, 18.51852f},
+    {1.200f, 23.58025f},
+    {1.300f, 30.61728f},
+    {1.400f, 43.20755f},
+    {1.500f, 54.71698f},
+    {1.620f, 71.69811f},
+    {1.710f, 87.73585f},
+    {1.810f, 109.434f},
+    {1.900f, 131.1321f},
+    {2.010f, 156.6038f},
+    {2.110f, 194.3396f},
+    {2.200f, 213.2075f},
+    {2.300f, 264.1509f},
+    {2.410f, 298.1132f},
+    {2.625f, 447.6744f},
+    {2.925f, 639.5349f},
 };
 constexpr size_t gainPotCalibrationPointCount =
     sizeof(gainPotCalibration) / sizeof(gainPotCalibration[0]);
@@ -424,6 +429,7 @@ float peakDetectorSample = 0.0f;
 float invertedPeakDetectorSample = 0.0f;
 float gainPotMeasuredVoltage = 0.0f;
 float gainPotMeasuredGain = 0.0f;
+esp_adc_cal_characteristics_t potentiometerAdcCalibration = {};
 
 
 TFT_eSPI display;
@@ -453,6 +459,7 @@ uint32_t lastPeakRefreshUs = 0;
 uint32_t lastValleyRefreshUs = 0;
 bool detectorValuesInitialized = false;
 bool gainInitialized = false;
+bool gainPotVoltageInitialized = false;
 float filteredGain = 0.0f;
 float filteredFrequencyScaleIndex = 0.0f;
 int selectedSamplingRateIndex = 0;
@@ -1817,6 +1824,25 @@ float readDetectorAverage(int pin) {
   return total / detectorAverageCount;
 }
 
+float readPotentiometerAverageVoltage(int pin) {
+  analogRead(pin);
+  analogRead(pin);
+
+  const uint32_t sampleWindowStartUs = micros();
+  uint64_t rawCountsTotal = 0;
+  uint32_t sampleCount = 0;
+  do {
+    rawCountsTotal += analogRead(pin);
+    ++sampleCount;
+  } while (micros() - sampleWindowStartUs < potentiometerSampleWindowUs);
+
+  const uint32_t averageRawCounts = static_cast<uint32_t>(
+      (rawCountsTotal + sampleCount / 2) / sampleCount);
+  return esp_adc_cal_raw_to_voltage(averageRawCounts,
+                                    &potentiometerAdcCalibration) /
+         1000.0f;
+}
+
 float estimateGainFromPotVoltage(float voltage) {
   if (voltage <= gainPotCalibration[0].voltage) {
     return gainPotCalibration[0].gain;
@@ -1866,35 +1892,19 @@ void updatePeakDetectors(uint32_t nowUs) {
   }
 }
 
-void updateControlMeasurements(uint32_t nowMs) {
-  uint32_t gainPotMillivoltsTotal = 0;
-  uint32_t frequencyAdcTotal = 0;
-  uint32_t gainMeasCount = 0;
-  uint32_t freqMeasCount = 0;
-  // Discard the first two conversion after switching ADC channels.
-  analogReadMilliVolts(gainPotPin);
-  analogReadMilliVolts(gainPotPin);
-  // for (uint8_t sample = 0; sample < potentiometerAverageCount; ++sample) {
-  //   gainPotMillivoltsTotal += analogReadMilliVolts(gainPotPin);
-  // }
-  while (nowMs + 5 < millis()) {
-    gainPotMillivoltsTotal += analogReadMilliVolts(gainPotPin);
-    gainMeasCount++;
+void updateControlMeasurements() {
+  const float measuredGainPotVoltage =
+      readPotentiometerAverageVoltage(gainPotPin);
+  if (!gainPotVoltageInitialized) {
+    gainPotMeasuredVoltage = measuredGainPotVoltage;
+    gainPotVoltageInitialized = true;
+  } else {
+    gainPotMeasuredVoltage +=
+        gainPotVoltageSmoothingFactor *
+        (measuredGainPotVoltage - gainPotMeasuredVoltage);
   }
-  analogRead(frequencyScalePotPin);
-  analogRead(frequencyScalePotPin);
-  // for (uint8_t sample = 0; sample < potentiometerAverageCount; ++sample) {
-  //   frequencyAdcTotal += analogRead(frequencyScalePotPin);
-  // }
-  while (nowMs + 5 + 5 < millis()) {
-    frequencyAdcTotal += analogReadMilliVolts(frequencyScalePotPin);
-    freqMeasCount++;
-  }
-  float frequencyAdcAverage = frequencyAdcTotal / ( 1000.0f * freqMeasCount);
-
-  gainPotMeasuredVoltage =
-      static_cast<float>(gainPotMillivoltsTotal) /
-      (1000.0f * gainMeasCount);
+  const float frequencyPotMeasuredVoltage =
+      readPotentiometerAverageVoltage(frequencyScalePotPin);
   gainPotMeasuredGain = estimateGainFromPotVoltage(gainPotMeasuredVoltage);
   if (!gainInitialized) {
     filteredGain = gainPotMeasuredGain;
@@ -1905,9 +1915,11 @@ void updateControlMeasurements(uint32_t nowMs) {
   }
   Gain = filteredGain;
 
-  float const m = 45/(2.937-0.15);
-  float const c = 0-m*0.15;
-  float measuredSamplingRateIndex = frequencyAdcAverage * m + c;
+  const float samplingRateIndexPerVolt = 45.0f / (2.957f - 0.2176f);
+  const float samplingRateIndexOffset = -samplingRateIndexPerVolt * 0.15f;
+  float measuredSamplingRateIndex =
+      frequencyPotMeasuredVoltage * samplingRateIndexPerVolt +
+      samplingRateIndexOffset;
   measuredSamplingRateIndex =
       std::max(0.0f, std::min(45.0f, measuredSamplingRateIndex));
   if (!frequencyScaleInitialized) {
@@ -1949,6 +1961,8 @@ void setup() {
   analogSetPinAttenuation(invertedPeakDetectorPin, ADC_11db);
   analogSetPinAttenuation(gainPotPin, ADC_11db);
   analogSetPinAttenuation(frequencyScalePotPin, ADC_11db);
+  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12,
+                           1100, &potentiometerAdcCalibration);
   pinMode(frequencyInputPin, INPUT);
 
   display.init();
@@ -2014,7 +2028,7 @@ void loop() {
 
   if (nowMs - lastControlUpdateMs >= potentiometerUpdatePeriodMs) {
     const int previousSamplingRate = Sampling_rate;
-    updateControlMeasurements(nowMs);
+    updateControlMeasurements();
     lastControlUpdateMs = nowMs;
     if (Sampling_rate != previousSamplingRate) {
       ESP_ERROR_CHECK(gpio_intr_disable(
