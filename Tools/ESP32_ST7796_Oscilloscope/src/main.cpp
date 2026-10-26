@@ -1866,25 +1866,35 @@ void updatePeakDetectors(uint32_t nowUs) {
   }
 }
 
-void updateControlMeasurements() {
+void updateControlMeasurements(uint32_t nowMs) {
   uint32_t gainPotMillivoltsTotal = 0;
   uint32_t frequencyAdcTotal = 0;
-  // Discard the first conversion after switching ADC channels.
+  uint32_t gainMeasCount = 0;
+  uint32_t freqMeasCount = 0;
+  // Discard the first two conversion after switching ADC channels.
   analogReadMilliVolts(gainPotPin);
-  for (uint8_t sample = 0; sample < potentiometerAverageCount; ++sample) {
+  analogReadMilliVolts(gainPotPin);
+  // for (uint8_t sample = 0; sample < potentiometerAverageCount; ++sample) {
+  //   gainPotMillivoltsTotal += analogReadMilliVolts(gainPotPin);
+  // }
+  while (nowMs + 5 < millis()) {
     gainPotMillivoltsTotal += analogReadMilliVolts(gainPotPin);
+    gainMeasCount++;
   }
   analogRead(frequencyScalePotPin);
-  for (uint8_t sample = 0; sample < potentiometerAverageCount; ++sample) {
-    frequencyAdcTotal += analogRead(frequencyScalePotPin);
+  analogRead(frequencyScalePotPin);
+  // for (uint8_t sample = 0; sample < potentiometerAverageCount; ++sample) {
+  //   frequencyAdcTotal += analogRead(frequencyScalePotPin);
+  // }
+  while (nowMs + 5 + 5 < millis()) {
+    frequencyAdcTotal += analogReadMilliVolts(frequencyScalePotPin);
+    freqMeasCount++;
   }
-  const uint16_t frequencyAdcAverage =
-      (frequencyAdcTotal + potentiometerAverageCount / 2) /
-      potentiometerAverageCount;
+  float frequencyAdcAverage = frequencyAdcTotal / ( 1000.0f * freqMeasCount);
 
   gainPotMeasuredVoltage =
       static_cast<float>(gainPotMillivoltsTotal) /
-      (1000.0f * potentiometerAverageCount);
+      (1000.0f * gainMeasCount);
   gainPotMeasuredGain = estimateGainFromPotVoltage(gainPotMeasuredVoltage);
   if (!gainInitialized) {
     filteredGain = gainPotMeasuredGain;
@@ -1894,8 +1904,10 @@ void updateControlMeasurements() {
         gainSmoothingFactor * (gainPotMeasuredGain - filteredGain);
   }
   Gain = filteredGain;
-  float measuredSamplingRateIndex =
-      (ADC_LUT[frequencyAdcAverage] * 1.05f - 122.85f) * 0.010989f;
+
+  float const m = 45/(2.937-0.15);
+  float const c = 0-m*0.15;
+  float measuredSamplingRateIndex = frequencyAdcAverage * m + c;
   measuredSamplingRateIndex =
       std::max(0.0f, std::min(45.0f, measuredSamplingRateIndex));
   if (!frequencyScaleInitialized) {
@@ -2002,7 +2014,7 @@ void loop() {
 
   if (nowMs - lastControlUpdateMs >= potentiometerUpdatePeriodMs) {
     const int previousSamplingRate = Sampling_rate;
-    updateControlMeasurements();
+    updateControlMeasurements(nowMs);
     lastControlUpdateMs = nowMs;
     if (Sampling_rate != previousSamplingRate) {
       ESP_ERROR_CHECK(gpio_intr_disable(
