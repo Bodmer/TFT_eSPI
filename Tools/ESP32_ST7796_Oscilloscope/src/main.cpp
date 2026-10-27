@@ -34,7 +34,7 @@ constexpr int adcDataPins[] = {16, 17, 5, 18, 19, 21, 22, 23};
 
 // measurement parameters
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
-constexpr uint32_t potentiometerSampleWindowUs = 5000;
+constexpr uint32_t potentiometerSampleWindowUs = 10000;
 constexpr uint8_t detectorAverageCount = 10;
 constexpr float gainPotVoltageSmoothingFactor = 0.25f;
 constexpr uint32_t softwareTriggeredCaptureMaxRate = 100000;
@@ -108,6 +108,9 @@ constexpr int plotLeft = 12;
 constexpr int plotTop = 32;
 constexpr int plotWidth = 344;
 constexpr int plotHeight = 208;
+constexpr float plotMinimumVoltage = 0.3f;
+constexpr float plotMaximumVoltage = 3.0f;
+constexpr float plotSampleFullScaleVoltage = 3.3f;
 constexpr int horizontalDivisions = 8;
 constexpr int verticalDivisions = 4;
 constexpr int plotSampleCount = plotWidth-2;
@@ -1424,6 +1427,20 @@ void drawMeasurementDebugStats() {
   lastMeasurementDebugValues[1] = detectorStats;
 }
 
+int16_t mapPlotSampleToY(uint8_t sample) {
+  const float signalVoltage =
+      (255.0f - static_cast<float>(sample)) *
+      (plotSampleFullScaleVoltage / 255.0f);
+  const float clippedVoltage =
+      std::max(plotMinimumVoltage,
+               std::min(plotMaximumVoltage, signalVoltage));
+  const float verticalFraction =
+      (plotMaximumVoltage - clippedVoltage) /
+      (plotMaximumVoltage - plotMinimumVoltage);
+  return static_cast<int16_t>(
+      plotTop + 1 + roundf(verticalFraction * (plotHeight - 3)));
+}
+
 bool drawPlotSamples(const uint8_t* samples, size_t sampleCount) {
   if (sampleCount == 0) {
     return false;
@@ -1459,14 +1476,10 @@ bool drawPlotSamples(const uint8_t* samples, size_t sampleCount) {
   }
 
   int16_t currentPlotY[plotSampleCount];
-  currentPlotY[0] = static_cast<int16_t>(
-      plotTop + plotHeight - 2 -
-      (static_cast<int>(samples[triggerStart]) * (plotHeight - 3) / 255));
+  currentPlotY[0] = mapPlotSampleToY(samples[triggerStart]);
   for (size_t point = 1; point < displayedSampleCount; ++point) {
     const size_t sampleIndex = triggerStart + point;
-    currentPlotY[point] = static_cast<int16_t>(
-        plotTop + plotHeight - 2 -
-        (static_cast<int>(samples[sampleIndex]) * (plotHeight - 3) / 255));
+    currentPlotY[point] = mapPlotSampleToY(samples[sampleIndex]);
   }
 
   display.startWrite();

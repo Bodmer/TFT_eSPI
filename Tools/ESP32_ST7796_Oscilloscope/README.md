@@ -37,6 +37,8 @@ Capture uses two paths, with the acquisition-management task pinned to core 0. G
 
 Each plot refresh erases the previous waveform and redraws the grid before drawing the new trace, avoiding a full-area pixel clear on every frame. Plot drawing is enclosed in a single TFT write transaction to reduce per-line SPI transaction overhead.
 
+The plot's vertical voltage range is fixed at 0.3 V to 3.0 V: 3.0 V maps to the top interior edge and 0.3 V to the bottom interior edge. Samples outside this range are clipped vertically to the edge while retaining their original horizontal sample positions.
+
 | AD9235 signal | ESP32-WROOM-32 |
 | --- | --- |
 | AD9235 D4 | GPIO16 (camera D0) |
