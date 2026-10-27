@@ -1700,6 +1700,27 @@ void clearFrequencyEstimate() {
   frequencyOverRange = false;
 }
 
+void resetFrequencyMeasurement() {
+  ESP_ERROR_CHECK(gpio_intr_disable(
+      static_cast<gpio_num_t>(frequencyInputPin)));
+  frequencyMeasurementArmed.store(false, std::memory_order_release);
+  frequencyMeasurementPending = false;
+  frequencyMeasurementTaskHandle = nullptr;
+  frequencyMeasurementArmStartUs = 0;
+  frequencyStartPulseCount = 0;
+  frequencyStartPulseOverRange = false;
+  frequencyStartPulseTimestampUs = 0;
+  ulTaskNotifyTake(pdTRUE, 0);
+
+  ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
+  ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
+  clearFrequencyCounterEventStatus();
+  ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
+
+  frequencyWindowStartUs = micros();
+  clearFrequencyEstimate();
+}
+
 void updateFrequencyMeasurement(uint32_t nowUs) {
   if (Sampling_rate <= 0) {
     return;
@@ -1718,17 +1739,7 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
         return;
       }
 
-      ESP_ERROR_CHECK(gpio_intr_disable(
-          static_cast<gpio_num_t>(frequencyInputPin)));
-      frequencyMeasurementArmed.store(false, std::memory_order_release);
-      frequencyMeasurementPending = false;
-      frequencyMeasurementTaskHandle = nullptr;
-      ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
-      ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
-      clearFrequencyCounterEventStatus();
-      ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
-      frequencyWindowStartUs = nowUs;
-      clearFrequencyEstimate();
+      resetFrequencyMeasurement();
       return;
     }
 
@@ -2042,21 +2053,7 @@ void loop() {
     updateControlMeasurements();
     lastControlUpdateMs = nowMs;
     if (Sampling_rate != previousSamplingRate) {
-      ESP_ERROR_CHECK(gpio_intr_disable(
-          static_cast<gpio_num_t>(frequencyInputPin)));
-      frequencyMeasurementArmed.store(false, std::memory_order_release);
-      frequencyMeasurementPending = false;
-      frequencyMeasurementTaskHandle = nullptr;
-      frequencyStartPulseCount = 0;
-      frequencyStartPulseOverRange = false;
-      frequencyStartPulseTimestampUs = 0;
-      ulTaskNotifyTake(pdTRUE, 0);
-      ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
-      ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
-      clearFrequencyCounterEventStatus();
-      ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
-      frequencyWindowStartUs = micros();
-      clearFrequencyEstimate();
+      resetFrequencyMeasurement();
     }
     adcCaptureSamplingRate.store(Sampling_rate, std::memory_order_relaxed);
   }
