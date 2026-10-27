@@ -34,7 +34,7 @@ constexpr int adcDataPins[] = {16, 17, 5, 18, 19, 21, 22, 23};
 
 // measurement parameters
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
-constexpr uint32_t potentiometerSampleWindowUs = 10000;
+constexpr uint32_t potentiometerSampleWindowUs = 5000;
 constexpr uint8_t detectorAverageCount = 10;
 constexpr float gainPotVoltageSmoothingFactor = 0.25f;
 constexpr uint32_t softwareTriggeredCaptureMaxRate = 100000;
@@ -1833,6 +1833,8 @@ void updateHeldMinimum(float sample, float& heldValue,
 
 float readDetectorAverage(int pin) {
   float total = 0.0f;
+  analogRead(pin);
+  analogRead(pin);
   for (uint8_t sample = 0; sample < detectorAverageCount; ++sample) {
     total += ADC_LUT[analogRead(pin)];
   }
