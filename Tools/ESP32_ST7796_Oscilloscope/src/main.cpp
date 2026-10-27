@@ -34,7 +34,7 @@ constexpr int adcDataPins[] = {16, 17, 5, 18, 19, 21, 22, 23};
 
 // measurement parameters
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
-constexpr uint8_t potentiometerAverageCount = 50;
+constexpr uint8_t potentiometerAverageCount = 20;
 constexpr uint8_t detectorAverageCount = 10;
 constexpr float gainPotVoltageSmoothingFactor = 0.25f;
 constexpr uint32_t softwareTriggeredCaptureMaxRate = 100000;
@@ -44,41 +44,37 @@ constexpr float gainSmoothingFactor = 0.1f;
 constexpr float frequencyScaleSmoothingFactor = 0.2f;
 constexpr float samplingRateIndexHysteresis = 0.65f;
 constexpr uint32_t minimumDetectorHoldUs = 1000;
+
 struct GainCalibrationPoint {
   float voltage;
   float gain;
 };
+
 constexpr GainCalibrationPoint gainPotCalibration[] = {
-  {0.153f, 0.03125f},
-  {0.201f, 0.15625f},
-  {0.309f, 0.4296875f},
-  {0.401f, 0.775193798f},
-  {0.503f, 1.492248062f},
-  {0.603f, 2.46124031f},
-  {0.703f, 4.13001912f},
-  {0.804f, 6.156787763f},
-  {0.902f, 9.13957935f},
-  {1.005f, 12.92543021f},
-  {1.103f, 17.74378585f},
-  {1.205f, 23.32695985f},
-  {1.307f, 33.20754717f},
-  {1.402f, 42.64150943f},
-  {1.507f, 53.96226415f},
-  {1.604f, 65.28301887f},
-  {1.709f, 84.90566038f},
-  {1.81f, 102.6415094f},
-  {1.908f, 124.5283019f},
-  {2.008f, 148.6792453f},
-  {2.109f, 179.245283f},
-  {2.199f, 201.8867925f},
-  {2.304f, 254.7169811f},
-  {2.405f, 318.1818182f},
-  {2.499f, 363.6363636f},
-  {2.609f, 427.2727273f},
-  {2.72f, 469.0909091f},
-  {2.809f, 552.7272727f},
-  {2.902f, 590.9090909f}
+  {0.159,	0.030107527},
+  {0.207,	0.144086022},
+  {0.253,	0.248062016},
+  {0.337,	0.465116279},
+  {0.341,	0.480620155},
+  {0.347,	0.527131783},
+  {0.41,	0.821705426},
+  {0.505,	1.379844961},
+  {0.602,	2.365384615},
+  {0.713,	4.032258065},
+  {0.804,	5.622641509},
+  {0.896,	8.012820513},
+  {1.005,	12.45283019},
+  {1.095,	16.79245283},
+  {1.203,	20.6779661},
+  {1.17,	20.75471698},
+  {1.268,	25.90909091},
+  {1.311,	28.47457627},
+  {1.409,	36.94915254},
+  {1.501,	45.42372881},
+  {1.758,	91.15044248},
+  {2.16,	188.8888889},
 };
+
 
 constexpr size_t gainPotCalibrationPointCount =
     sizeof(gainPotCalibration) / sizeof(gainPotCalibration[0]);
@@ -2051,6 +2047,9 @@ void loop() {
       frequencyMeasurementArmed.store(false, std::memory_order_release);
       frequencyMeasurementPending = false;
       frequencyMeasurementTaskHandle = nullptr;
+      frequencyStartPulseCount = 0;
+      frequencyStartPulseOverRange = false;
+      frequencyStartPulseTimestampUs = 0;
       ulTaskNotifyTake(pdTRUE, 0);
       ESP_ERROR_CHECK(pcnt_counter_pause(PCNT_UNIT_0));
       ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
