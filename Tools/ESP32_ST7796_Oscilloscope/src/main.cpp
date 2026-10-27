@@ -34,7 +34,7 @@ constexpr int adcDataPins[] = {16, 17, 5, 18, 19, 21, 22, 23};
 
 // measurement parameters
 constexpr uint32_t potentiometerUpdatePeriodMs = 33;
-constexpr uint32_t potentiometerSampleWindowUs = 5000;
+constexpr uint8_t potentiometerAverageCount = 50;
 constexpr uint8_t detectorAverageCount = 10;
 constexpr float gainPotVoltageSmoothingFactor = 0.25f;
 constexpr uint32_t softwareTriggeredCaptureMaxRate = 100000;
@@ -43,7 +43,7 @@ constexpr uint32_t softwareSampleTimerHz = 40000000;
 constexpr float gainSmoothingFactor = 0.1f;
 constexpr float frequencyScaleSmoothingFactor = 0.2f;
 constexpr float samplingRateIndexHysteresis = 0.65f;
-constexpr uint32_t minimumDetectorHoldUs = 100;
+constexpr uint32_t minimumDetectorHoldUs = 1000;
 struct GainCalibrationPoint {
   float voltage;
   float gain;
@@ -110,8 +110,8 @@ constexpr int plotLeft = 12;
 constexpr int plotTop = 32;
 constexpr int plotWidth = 344;
 constexpr int plotHeight = 208;
-constexpr float plotMinimumVoltage = 0.3f;
-constexpr float plotMaximumVoltage = 3.0f;
+constexpr float plotMinimumVoltage = 0.2f;
+constexpr float plotMaximumVoltage = 3.1f;
 constexpr float plotSampleFullScaleVoltage = 3.3f;
 constexpr int horizontalDivisions = 8;
 constexpr int verticalDivisions = 4;
@@ -1845,16 +1845,14 @@ float readPotentiometerAverageVoltage(int pin) {
   analogRead(pin);
   analogRead(pin);
 
-  const uint32_t sampleWindowStartUs = micros();
   uint64_t rawCountsTotal = 0;
-  uint32_t sampleCount = 0;
-  do {
+  for (uint8_t sample = 0; sample < potentiometerAverageCount; ++sample) {
     rawCountsTotal += analogRead(pin);
-    ++sampleCount;
-  } while (micros() - sampleWindowStartUs < potentiometerSampleWindowUs);
+  }
 
   const uint32_t averageRawCounts = static_cast<uint32_t>(
-      (rawCountsTotal + sampleCount / 2) / sampleCount);
+      (rawCountsTotal + potentiometerAverageCount / 2) /
+      potentiometerAverageCount);
   return esp_adc_cal_raw_to_voltage(averageRawCounts,
                                     &potentiometerAdcCalibration) /
          1000.0f;
