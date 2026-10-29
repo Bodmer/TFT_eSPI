@@ -55,7 +55,7 @@ constexpr GainCalibrationPoint gainPotCalibration[] = {
   {0.252f,	0.152195f},
   {0.303f,	0.257813f},
   {0.355f,	0.402344f},
-  {0.399f,	0.511719f},
+  {0.399f,	0.536275f},
   {0.452f,	0.744186f},
   {0.502f,	1.065891f},
   {0.550f,	1.426357f},
@@ -1451,7 +1451,7 @@ void drawMeasurementDebugStats() {
 
 int16_t mapPlotSampleToY(uint8_t sample) {
   const float signalVoltage =
-      (255.0f - static_cast<float>(sample)) *
+      static_cast<float>(sample) *
       (plotSampleFullScaleVoltage / 255.0f);
   const float clippedVoltage =
       std::max(plotMinimumVoltage,
