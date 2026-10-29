@@ -51,29 +51,29 @@ struct GainCalibrationPoint {
 };
 
 constexpr GainCalibrationPoint gainPotCalibration[] = {
-  {0.201f,	0.070213f},
+  {0.208f,	0.086328f},
   {0.252f,	0.152195f},
-  {0.303f,	0.234146f},
-  {0.353f,	0.360976f},
-  {0.406f,	0.536585f},
+  {0.303f,	0.257813f},
+  {0.355f,	0.402344f},
+  {0.399f,	0.511719f},
   {0.452f,	0.744186f},
   {0.502f,	1.065891f},
-  {0.552f,	1.414729f},
-  {0.600f,	1.821705f},
-  {0.661f,	2.461240f},
-  {0.706f,	3.018868f},
-  {0.754f,	3.886792f},
-  {0.804f,	4.716981f},
-  {0.852f,	5.660377f},
+  {0.550f,	1.426357f},
+  {0.599f,	1.806202f},
+  {0.652f,	2.364341f},
+  {0.697f,	2.921875f},
+  {0.760f,	3.945313f},
+  {0.801f,	4.804688f},
+  {0.853f,	6.000000f},
   {0.900f,	7.018868f},
   {0.951f,	8.566038f},
-  {1.002f,	9.962264f},
-  {1.056f,	12.188679f},
-  {1.104f,	14.037736f},
+  {1.005f,	10.600000f},
+  {1.055f,	12.640000f},
+  {1.100f,	14.560000f},
   {1.154f,	16.792453f},
-  {1.206f,	20.000000f},
-  {1.258f,	22.264151f},
-  {1.306f,	27.559055f},
+  {1.206f,	20.600000f},
+  {1.258f,	23.600000f},
+  {1.300f,	28.346457f},
   {1.356f,	31.811024f},
   {1.405f,	36.417323f},
   {1.457f,	41.338583f},
@@ -924,7 +924,7 @@ uint32_t processCompletedAdcDmaDescriptors(
             (decimationSum + decimationSampleCount / 2) /
             decimationSampleCount;
         adcSamples[outputSampleCount++] =
-            static_cast<uint8_t>(255U - averagedSample);
+            static_cast<uint8_t>(255U - averagedSample - 4);
         decimationSum = 0;
         decimationSampleCount = 0;
       }
@@ -1927,7 +1927,7 @@ void updatePeakDetectors(uint32_t nowUs) {
                     lastValleyRefreshUs, nowUs, holdPeriodUs);
   detectorValuesInitialized = true;
 
-  offset = -((peak + valley)/2 * 3.3/4095 - 0.78f*2) / Gain;
+  offset = -((peak + valley)/2 * 3.3/4095 - 1.67f) / Gain;
   Vpp = (peak - valley) * 3.3/4095 / Gain;
 
   const int dacOutput =
