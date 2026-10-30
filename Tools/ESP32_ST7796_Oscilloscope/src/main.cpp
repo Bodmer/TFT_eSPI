@@ -519,9 +519,9 @@ namespace {
       constexpr int panelLeft = 368;
       constexpr int panelWidth = 100;
       constexpr int panelTop = 10;
-      constexpr int panelRowHeight = 56;
+      constexpr int panelRowHeight = 46;
 
-      String lastMeasurementValues[4];
+      String lastMeasurementValues[5];
       String lastFooterValues[3];
       String lastMeasurementDebugValues[2];
 
@@ -1540,6 +1540,8 @@ void drawStaticUi() {
   drawMeasurementBox(1, "Voffset", TFT_GREEN);
   drawMeasurementBox(2, "Sampling rate", TFT_ORANGE);
   drawMeasurementBox(3, "Frequency", TFT_YELLOW);
+  const String multimeterTitle = String("Multimeter ") + multiMeterModes[multiMeterMode];
+  drawMeasurementBox(4, multimeterTitle.c_str(), TFT_GOLD);
 
   display.drawFastHLine(12, 274, display.width() - 24, TFT_DARKGREY);
 }
@@ -1631,6 +1633,8 @@ bool drawFooterValue(int index, int x, int width, const String& value) {
   return true;
 }
 
+
+
 bool drawDashboard() {
   bool changed = false;
   changed |= drawMeasurementValue(0, formatVoltage(Vpp));
@@ -1641,6 +1645,14 @@ bool drawDashboard() {
       ? ">" + formatFrequency(measuredFrequencyHz)
       : frequencyKnown ? formatFrequency(measuredFrequencyHz) : "?";
   changed |= drawMeasurementValue(3, frequencyValue);
+
+  if (prevMultiMeterMode != multiMeterMode) {
+    const String multimeterTitle = String("Multimeter ") + multiMeterModes[multiMeterMode];
+    drawMeasurementBox(4, multimeterTitle.c_str(), TFT_GOLD);
+    prevMultiMeterMode = multiMeterMode;
+  }
+  
+  changed |= drawMeasurementValue(4, multiMeterMeas);
 
   const float voltsPerDivision = 3.3 / Gain / static_cast<float>(verticalDivisions);
   const float timePerDivision = (static_cast<float>(plotSampleCount) / Sampling_rate) / 
@@ -1919,6 +1931,52 @@ void updateControlMeasurements() {
   }
   Sampling_rate = sampling_rates[selectedSamplingRateIndex];
 }
+
+const String multiMeterModes[] = {"--","VAC","VDC","A","Ohm"};
+  // AC voltage
+  // DC voltage
+  // Current
+  // Resistance
+
+uint8_t multiMeterMode = 0;
+uint8_t prevMultiMeterMode = 0;
+String multiMeterMeas = "--";
+bool integration_efforts = true;
+
+void process_UART() {
+  // just making sure that the serial comms is done
+  int prev = Serial.available();
+  bool loop = true;
+  int breakTheLoop = micros(); // just in case there is a constant input that 
+  while (loop) {
+    if (micros() - breakTheLoop >= 1000) {
+      return;
+    }
+    int nowUs = micros();
+    while (micros() - nowUs >= 90) {
+      continue;
+    }
+    if (prev == Serial.available()) {
+      loop = false;
+    } else {
+      prev = Serial.available();
+    }
+  }
+
+  String message = (String)Serial.readStringUntil('\n');
+  if ((message[0] == '1' || message[0] == '2' || message[0] == '3' || message[0] == '4') && message[1] == ';') {
+    multiMeterMode = static_cast<uint8_t>(message[0]);
+    message.remove(0);
+    message.remove(0);
+    multiMeterMeas = message;
+    Serial.readString();
+    Serial.print(";)\n");
+  } else {
+    multiMeterMode = 0;
+    multiMeterMeas = "--";
+  }
+}
+
 }  // namespace
 
 void setup() {
@@ -1927,15 +1985,18 @@ void setup() {
   dac_output_voltage(DAC_CHANNEL_1, 127);
 
   Serial.begin(115200);
+
   ESP_ERROR_CHECK(gpio_set_level(static_cast<gpio_num_t>(adcSoftwareTriggerPin), 0));
   ESP_ERROR_CHECK(gpio_set_direction(static_cast<gpio_num_t>(adcSoftwareTriggerPin), GPIO_MODE_OUTPUT));
   gpio_matrix_out(adcSoftwareTriggerPin, SIG_GPIO_OUT_IDX, false, false);
+
   analogReadResolution(12);
   analogSetPinAttenuation(peakDetectorPin, ADC_11db);
   analogSetPinAttenuation(invertedPeakDetectorPin, ADC_11db);
   analogSetPinAttenuation(gainPotPin, ADC_11db);
   analogSetPinAttenuation(sampleRatePotPin, ADC_11db);
   esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &onboardAdcCalibration);
+
   pinMode(frequencyInputPin, INPUT);
 
   display.init();
@@ -1969,17 +2030,22 @@ void setup() {
   drawDisplayChangeRate();
   lastDashboardFrameUs = micros();
   lastPlotFrameUs = lastDashboardFrameUs;
-  if (captureDebugEnabled) {
-    Serial.printf("Measurement inputs ready: detectors GPIO35/34, pots GPIO36/33; "
-                  "frequency counter GPIO26.\n");
-    if (adcCaptureTaskCreated) {
-      Serial.printf("ADC capture ready: D4..D11 on GPIO16,17,5,18,19,21,22,23; "
-                    "%u MHz XCLK GPIO32, PCLK GPIO39; "
-                    "%u decimated samples per capture.\n",
-                    static_cast<unsigned>(adcCaptureHardwareClockHz / 1000000UL),
-                    static_cast<unsigned>(adcCaptureSampleCount));
+  if (!integration_efforts) {
+    if (captureDebugEnabled) {
+      Serial.printf("Measurement inputs ready: detectors GPIO35/34, pots GPIO36/33; "
+                    "frequency counter GPIO26.\n");
+      if (adcCaptureTaskCreated) {
+        Serial.printf("ADC capture ready: D4..D11 on GPIO16,17,5,18,19,21,22,23; "
+                      "%u MHz XCLK GPIO32, PCLK GPIO39; "
+                      "%u decimated samples per capture.\n",
+                      static_cast<unsigned>(adcCaptureHardwareClockHz / 1000000UL),
+                      static_cast<unsigned>(adcCaptureSampleCount));
+      }
     }
+  } else {
+    Serial.println(";)");
   }
+
 }
 
 void loop() {
@@ -2012,6 +2078,10 @@ void loop() {
     displayRateWindowStartMs = nowMs;
     displayRateReady = true;
   }
+  
+  if (Serial.available()) {
+    process_UART();
+  }
 
   if (nowUs - lastDashboardFrameUs >= minimumDashboardFrameIntervalUs) {
     lastDashboardFrameUs = nowUs;
@@ -2026,14 +2096,12 @@ void loop() {
     }
   }
 
-  const bool livePlotActive =
-      adcSoftwareLivePlotActive.load(std::memory_order_acquire);
+  const bool livePlotActive = adcSoftwareLivePlotActive.load(std::memory_order_acquire);
   if (livePlotActive && !wasLivePlotActive) {
     lastLivePlotSampleCount = UINT32_MAX;
   }
   wasLivePlotActive = livePlotActive;
-  if (livePlotActive &&
-      nowUs - lastPlotFrameUs >= minimumPlotFrameIntervalUs) {
+  if (livePlotActive && nowUs - lastPlotFrameUs >= minimumPlotFrameIntervalUs) {
     const uint32_t liveSampleCount = adcSoftwareLiveSampleCount.load(std::memory_order_acquire);
     if (liveSampleCount != lastLivePlotSampleCount && drawLiveSignalPlot()) {
       lastLivePlotSampleCount = liveSampleCount;
@@ -2068,5 +2136,6 @@ void loop() {
     adcCaptureRequested.store(true, std::memory_order_release);
     captureRequestPending = true;
   }
+
   taskYIELD();
 }
