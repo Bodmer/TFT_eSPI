@@ -331,7 +331,7 @@ namespace {
 
     // gain stuff
 
-      constexpr float gainPotVoltageSmoothingFactor = 0.25f;
+      constexpr float gainPotVoltSmoothingFactor = 0.25f;
       constexpr float gainSmoothingFactor = 0.1f;
       
       struct GainCalibrationPoint {
@@ -387,15 +387,16 @@ namespace {
         {2.402f,	270.588235f},
         {2.458f,	300.000000f},
       };
-      constexpr size_t gainPotCalibrationPointCount = sizeof(gainPotCalibration) / sizeof(gainPotCalibration[0]);
+      constexpr size_t gainPotCalibrationPointCount = sizeof(gainPotCalibration) / 
+                                                      sizeof(gainPotCalibration[0]);
 
       // related variables
 
-      float gainPotMeasuredVoltage = 0.0f;
-      float gainPotMeasuredGain = 0.0f;
+      float gainPotMeasVolt = 0.0f;
+      float estimatedGain = 0.0f;
       
       bool gainInitialized = false;
-      bool gainPotVoltageInitialized = false;
+      bool gainPotVoltInit = false;
 
       float filteredGain = 0.0f;
 
@@ -404,8 +405,13 @@ namespace {
     // sample rate stuff
       
       constexpr float sampleRateSmoothingFactor = 0.2f;
+      constexpr float samplingRateIndexHysteresis = 0.65f;
       // possible sampling rates i decided on for the external ADC
-      const int sampling_rates[] = {100,200,300,400,500,600,700,800,900,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,200000,300000,400000,500000,600000,700000,800000,900000,1000000,2000000,3000000,4000000,5000000,6000000,7000000,8000000,9000000,10000000};
+      const int sampling_rates[] = 
+        {100,200,300,400,500,600,700,800,900,1000,2000,3000,4000,5000,6000,7000,8000,9000,
+        10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,200000,300000,400000,
+        500000,600000,700000,800000,900000,1000000,2000000,3000000,4000000,5000000,6000000,
+        7000000,8000000,9000000,10000000};
 
       // related variable
 
@@ -466,12 +472,6 @@ namespace {
     int lastDacOutput = -1;
     float freq = 0;
 
-  // dont know quite yet
-
-    constexpr uint32_t softwareSampleTimerHz = 40000000;
-    constexpr float samplingRateIndexHysteresis = 0.65f;
-
-
   // display parameters
 
     TFT_eSPI display;
@@ -480,8 +480,10 @@ namespace {
 
       constexpr uint32_t maximumDashboardFrameRate = 10;
       constexpr uint32_t maximumPlotFrameRate = 60;
-      constexpr uint32_t minimumDashboardFrameIntervalUs = (1000000UL + maximumDashboardFrameRate - 1) / maximumDashboardFrameRate;
-      constexpr uint32_t minimumPlotFrameIntervalUs = (1000000UL + maximumPlotFrameRate - 1) / maximumPlotFrameRate;
+      constexpr uint32_t minimumDashboardFrameIntervalUs = (1000000UL + maximumDashboardFrameRate - 1) / 
+                                                            maximumDashboardFrameRate;
+      constexpr uint32_t minimumPlotFrameIntervalUs = (1000000UL + maximumPlotFrameRate - 1) / 
+                                                      maximumPlotFrameRate;
       constexpr uint32_t maximumFrequencyWindowUs = 10UL * 1000000UL;
       constexpr uint16_t backgroundColor = TFT_BLACK;
 
@@ -525,6 +527,11 @@ namespace {
 
   // external ADC control stuff
 
+    struct AdcSoftwareTriggerDiagnostic {
+      int vsyncLowLevel;
+      int vsyncHighLevel;
+    };
+
     constexpr size_t adcCapturePlotPlaneCount = 2;
     constexpr size_t adcCaptureSampleCount = static_cast<size_t>(plotSampleCount) * adcCapturePlotPlaneCount;
     constexpr uint32_t adcCaptureHardwareClockHz = 10000000UL;
@@ -532,6 +539,7 @@ namespace {
     // The reason that is a problem is because it takes time to process everything in the buffer,
     // and that delay causes sections of the signal to be cut off, making it a discontinuous mess.
     constexpr uint32_t softwareTriggeredCaptureMaxRate = 100000;
+    constexpr uint32_t softwareSampleTimerHz = 40000000;
     // this is here because the refresh rate at the lowest sample rates 
     // misleading name, the sample rate below it (3000) is the max
     constexpr uint32_t livePlotMaxSampleRate = 4000;
@@ -590,6 +598,11 @@ namespace {
 
   // end of the variables and constants
 
+
+
+
+// this interrupt is used for debugging and diagnostics for the external ADC sample capturing
+// keeping this here just in case
 void IRAM_ATTR i2sCaptureInterrupt(void*) {
   const uint32_t interruptStatus = I2S0.int_st.val;
   if (captureDiagnosticsActive) {
@@ -597,8 +610,7 @@ void IRAM_ATTR i2sCaptureInterrupt(void*) {
     ++adcCaptureInterruptCount;
   }
   I2S0.int_clr.val = interruptStatus;
-  const bool captureError =
-      (interruptStatus & ((1U << 10) | (1U << 13) | (1U << 15))) != 0;
+  const bool captureError = (interruptStatus & ((1U << 10) | (1U << 13) | (1U << 15))) != 0;
   const bool captureComplete = (interruptStatus & (1U << 9)) != 0;
   if (captureError) {
     adcCaptureDmaFailed = true;
@@ -612,18 +624,13 @@ void IRAM_ATTR i2sCaptureInterrupt(void*) {
   }
 }
 
-void IRAM_ATTR clearFrequencyCounterEventStatus() {
-  PCNT.int_clr.val = 1U << PCNT_UNIT_0;
-}
-
 uint8_t IRAM_ATTR readAdcParallelSampleWithTrigger() {
   constexpr uint32_t triggerMask = 1U << adcSoftwareTriggerPin;
   GPIO.out_w1tc = triggerMask;
   const uint32_t gpioSnapshot = GPIO.in;
   GPIO.out_w1ts = triggerMask;
 
-  const uint8_t sample =
-      static_cast<uint8_t>(
+  const uint8_t sample = static_cast<uint8_t>(
           ((gpioSnapshot >> 16) & 1U) |
           (((gpioSnapshot >> 17) & 1U) << 1) |
           (((gpioSnapshot >> 5) & 1U) << 2) |
@@ -640,12 +647,9 @@ void IRAM_ATTR adcSoftwareSampleTimerInterrupt() {
     if (!adcSoftwareLivePlotActive.load(std::memory_order_relaxed)) {
       return;
     }
-    const uint32_t liveSampleCount =
-        adcSoftwareLiveSampleCount.load(std::memory_order_relaxed);
-    adcLivePlotSamples[liveSampleCount % plotSampleCount] =
-        readAdcParallelSampleWithTrigger();
-    adcSoftwareLiveSampleCount.store(liveSampleCount + 1,
-                                     std::memory_order_release);
+    const uint32_t liveSampleCount = adcSoftwareLiveSampleCount.load(std::memory_order_relaxed);
+    adcLivePlotSamples[liveSampleCount % plotSampleCount] = readAdcParallelSampleWithTrigger();
+    adcSoftwareLiveSampleCount.store(liveSampleCount + 1, std::memory_order_release);
     return;
   }
 
@@ -657,8 +661,7 @@ void IRAM_ATTR adcSoftwareSampleTimerInterrupt() {
   adcSamples[sampleIndex] = readAdcParallelSampleWithTrigger();
   adcSoftwareSampleCount = sampleIndex + 1;
 
-  if (sampleIndex + 1 == adcCaptureSampleCount &&
-      adcCaptureTaskHandle != nullptr) {
+  if (sampleIndex + 1 == adcCaptureSampleCount && adcCaptureTaskHandle != nullptr) {
     BaseType_t higherPriorityTaskWoken = pdFALSE;
     vTaskNotifyGiveFromISR(adcCaptureTaskHandle, &higherPriorityTaskWoken);
     if (higherPriorityTaskWoken == pdTRUE) {
@@ -667,19 +670,22 @@ void IRAM_ATTR adcSoftwareSampleTimerInterrupt() {
   }
 }
 
+
+
+void IRAM_ATTR clearFrequencyCounterEventStatus() {
+  PCNT.int_clr.val = 1U << PCNT_UNIT_0;
+}
+
 void IRAM_ATTR frequencyStartPulseInterrupt() {
-  if (!frequencyMeasurementArmed.exchange(false,
-                                          std::memory_order_acq_rel)) {
+  if (!frequencyMeasurementArmed.exchange(false, std::memory_order_acq_rel)) {
     return;
   }
 
   GPIO.pin[frequencyInputPin].int_ena = 0;
   frequencyStartPulseTimestampUs = micros();
   PCNT.ctrl.val |= 1U << 1;
-  frequencyStartPulseCount =
-      static_cast<int16_t>(PCNT.cnt_unit[PCNT_UNIT_0].cnt_val);
-  frequencyStartPulseOverRange =
-      PCNT.status_unit[PCNT_UNIT_0].h_lim_lat != 0;
+  frequencyStartPulseCount = static_cast<int16_t>(PCNT.cnt_unit[PCNT_UNIT_0].cnt_val);
+  frequencyStartPulseOverRange = PCNT.status_unit[PCNT_UNIT_0].h_lim_lat != 0;
   clearFrequencyCounterEventStatus();
   PCNT.ctrl.val |= 1U;
   PCNT.ctrl.val &= ~1U;
@@ -687,20 +693,20 @@ void IRAM_ATTR frequencyStartPulseInterrupt() {
 
   if (frequencyMeasurementTaskHandle != nullptr) {
     BaseType_t higherPriorityTaskWoken = pdFALSE;
-    vTaskNotifyGiveFromISR(frequencyMeasurementTaskHandle,
-                           &higherPriorityTaskWoken);
+    vTaskNotifyGiveFromISR(frequencyMeasurementTaskHandle, &higherPriorityTaskWoken);
     if (higherPriorityTaskWoken == pdTRUE) {
       portYIELD_FROM_ISR();
     }
   }
 }
 
+
+
 void configureAdcClock(uint32_t samplingRate) {
   uint8_t resolution = 1;
   for (uint8_t candidate = 1; candidate <= 13; ++candidate) {
-    const double divider =
-        static_cast<double>(adcClockSourceHz) /
-        (static_cast<double>(samplingRate) * (1U << candidate));
+    const double divider = static_cast<double>(adcClockSourceHz) /
+                          (static_cast<double>(samplingRate) * (1U << candidate));
     if (divider >= 1.0 && divider <= 1024.0) {
       resolution = candidate;
     }
@@ -709,8 +715,7 @@ void configureAdcClock(uint32_t samplingRate) {
 
   ledc_timer_config_t timerConfig = {};
   timerConfig.speed_mode = adcClockSpeedMode;
-  timerConfig.duty_resolution =
-      static_cast<ledc_timer_bit_t>(adcClockResolution);
+  timerConfig.duty_resolution = static_cast<ledc_timer_bit_t>(adcClockResolution);
   timerConfig.timer_num = adcClockTimer;
   timerConfig.freq_hz = samplingRate;
   timerConfig.clk_cfg = LEDC_USE_APB_CLK;
@@ -726,8 +731,8 @@ void configureAdcClock(uint32_t samplingRate) {
   channelConfig.duty = duty;
   channelConfig.hpoint = 0;
   ESP_ERROR_CHECK(ledc_channel_config(&channelConfig));
-  ESP_ERROR_CHECK(gpio_set_drive_capability(
-      static_cast<gpio_num_t>(adcClockOutputPin), GPIO_DRIVE_CAP_DEFAULT));
+  ESP_ERROR_CHECK(gpio_set_drive_capability(static_cast<gpio_num_t>(adcClockOutputPin), 
+                                            GPIO_DRIVE_CAP_DEFAULT));
 }
 
 void configureAdcCapture() {
@@ -740,21 +745,16 @@ void configureAdcCapture() {
   I2S0.timing.val = 0;
 
   for (uint8_t bit = 0; bit < 8; ++bit) {
-    ESP_ERROR_CHECK(gpio_set_direction(
-        static_cast<gpio_num_t>(adcDataPins[bit]), GPIO_MODE_INPUT));
+    ESP_ERROR_CHECK(gpio_set_direction(static_cast<gpio_num_t>(adcDataPins[bit]), GPIO_MODE_INPUT));
     if (adcDataPins[bit] < GPIO_NUM_34) {
-      ESP_ERROR_CHECK(gpio_set_pull_mode(
-          static_cast<gpio_num_t>(adcDataPins[bit]), GPIO_PULLDOWN_ONLY));
+      ESP_ERROR_CHECK(gpio_set_pull_mode(static_cast<gpio_num_t>(adcDataPins[bit]), GPIO_PULLDOWN_ONLY));
     }
     gpio_matrix_in(adcDataPins[bit], I2S0I_DATA_IN0_IDX + bit, false);
   }
-  ESP_ERROR_CHECK(gpio_set_direction(
-      static_cast<gpio_num_t>(adcVsyncInputPin), GPIO_MODE_INPUT));
-  gpio_set_pull_mode(static_cast<gpio_num_t>(adcVsyncInputPin),
-                     GPIO_FLOATING);
+  ESP_ERROR_CHECK(gpio_set_direction(static_cast<gpio_num_t>(adcVsyncInputPin), GPIO_MODE_INPUT));
+  gpio_set_pull_mode(static_cast<gpio_num_t>(adcVsyncInputPin), GPIO_FLOATING);
   gpio_matrix_in(adcVsyncInputPin, I2S0I_V_SYNC_IDX, false);
-  ESP_ERROR_CHECK(gpio_set_direction(static_cast<gpio_num_t>(adcClockInputPin),
-                                     GPIO_MODE_INPUT));
+  ESP_ERROR_CHECK(gpio_set_direction(static_cast<gpio_num_t>(adcClockInputPin), GPIO_MODE_INPUT));
   gpio_set_pull_mode(static_cast<gpio_num_t>(adcClockInputPin), GPIO_FLOATING);
   gpio_matrix_in(adcClockInputPin, I2S0I_WS_IN_IDX, false);
   gpio_matrix_in(GPIO_MATRIX_CONST_ZERO_INPUT, I2S0I_BCK_IN_IDX, false);
@@ -780,19 +780,16 @@ void configureAdcCapture() {
   I2S0.timing.rx_dsync_sw = 1;
 
   size_t remainingWords = adcDmaWordCount;
-  for (size_t descriptorIndex = 0;
-       descriptorIndex < adcDmaDescriptorCount; ++descriptorIndex) {
+  for (size_t descriptorIndex = 0; descriptorIndex < adcDmaDescriptorCount; ++descriptorIndex) {
     lldesc_t& descriptor = adcDmaDescriptors[descriptorIndex];
-    const size_t descriptorWords =
-        std::min(remainingWords, adcDmaWordsPerDescriptor);
+    const size_t descriptorWords = std::min(remainingWords, adcDmaWordsPerDescriptor);
     descriptor.size = descriptorWords * sizeof(uint32_t);
     descriptor.length = 0;
     descriptor.sosf = 0;
     descriptor.eof = 0;
     descriptor.owner = 1;
-    descriptor.buf = reinterpret_cast<uint8_t*>(
-        &adcDmaWords[adcDmaWordCount - remainingWords]);
-    descriptor.qe.stqe_next =
+    descriptor.buf = reinterpret_cast<uint8_t*>(&adcDmaWords[adcDmaWordCount - remainingWords]);
+    descriptor.qe.stqe_next = 
         descriptorIndex + 1 < adcDmaDescriptorCount
             ? &adcDmaDescriptors[descriptorIndex + 1]
             : &adcDmaDescriptors[0];
@@ -806,11 +803,9 @@ void configureAdcCapture() {
 }
 
 void prepareAdcSoftwareTrigger() {
-  ESP_ERROR_CHECK(gpio_set_direction(
-      static_cast<gpio_num_t>(adcSoftwareTriggerPin), GPIO_MODE_OUTPUT));
+  ESP_ERROR_CHECK(gpio_set_direction(static_cast<gpio_num_t>(adcSoftwareTriggerPin), GPIO_MODE_OUTPUT));
   gpio_matrix_out(adcSoftwareTriggerPin, SIG_GPIO_OUT_IDX, false, false);
-  ESP_ERROR_CHECK(gpio_set_level(
-      static_cast<gpio_num_t>(adcSoftwareTriggerPin), 1));
+  ESP_ERROR_CHECK(gpio_set_level(static_cast<gpio_num_t>(adcSoftwareTriggerPin), 1));
 }
 
 bool configureAdcSoftwareSampleTimer() {
@@ -819,8 +814,7 @@ bool configureAdcSoftwareSampleTimer() {
     return false;
   }
 
-  timerAttachInterrupt(adcSoftwareSampleTimer,
-                       adcSoftwareSampleTimerInterrupt, true);
+  timerAttachInterrupt(adcSoftwareSampleTimer, adcSoftwareSampleTimerInterrupt, true);
   timerAlarmWrite(adcSoftwareSampleTimer, softwareSampleTimerHz / 100, true);
   timerAlarmDisable(adcSoftwareSampleTimer);
   return true;
@@ -828,8 +822,7 @@ bool configureAdcSoftwareSampleTimer() {
 
 void setAdcSoftwareSampleTimerRate(int requestedRate) {
   const uint64_t timerPeriodTicks =
-      (softwareSampleTimerHz + static_cast<uint32_t>(requestedRate) / 2) /
-      static_cast<uint32_t>(requestedRate);
+      (softwareSampleTimerHz + static_cast<uint32_t>(requestedRate) / 2) / static_cast<uint32_t>(requestedRate);
   timerAlarmDisable(adcSoftwareSampleTimer);
   timerWrite(adcSoftwareSampleTimer, 0);
   timerAlarmWrite(adcSoftwareSampleTimer, timerPeriodTicks, true);
@@ -847,8 +840,7 @@ void captureAdcLivePlotWithSoftwareTrigger(int requestedRate) {
   while (adcCaptureRequested.load(std::memory_order_acquire)) {
     const int updatedRate =
         adcCaptureSamplingRate.load(std::memory_order_relaxed);
-    if (updatedRate >= static_cast<int>(livePlotMaxSampleRate) ||
-        updatedRate <= 0) {
+    if (updatedRate >= static_cast<int>(livePlotMaxSampleRate) || updatedRate <= 0) {
       break;
     }
     if (updatedRate != activeRate) {
@@ -863,8 +855,7 @@ void captureAdcLivePlotWithSoftwareTrigger(int requestedRate) {
   adcSoftwareLiveCaptureMode.store(false, std::memory_order_release);
 }
 
-bool captureAdcSamplesWithSoftwareTrigger(int requestedRate,
-                                          uint32_t& capturedSamples) {
+bool captureAdcSamplesWithSoftwareTrigger(int requestedRate, uint32_t& capturedSamples) {
   capturedSamples = 0;
   if (!adcSoftwareSampleTimerReady) {
     return false;
@@ -874,12 +865,11 @@ bool captureAdcSamplesWithSoftwareTrigger(int requestedRate,
   adcSoftwareSampleCount = 0;
   ulTaskNotifyTake(pdTRUE, 0);
 
-  const uint64_t estimatedDurationMs =
-      (static_cast<uint64_t>(adcCaptureSampleCount) * 1000ULL +
-       static_cast<uint32_t>(requestedRate) - 1) /
-      static_cast<uint32_t>(requestedRate);
+  const uint64_t estimatedDurationMs = (static_cast<uint64_t>(adcCaptureSampleCount) * 1000ULL +
+                                        static_cast<uint32_t>(requestedRate) - 1) /
+                                        static_cast<uint32_t>(requestedRate);
   const uint32_t timeoutMs = static_cast<uint32_t>(
-      std::max<uint64_t>(2000ULL, estimatedDurationMs * 2ULL + 1000ULL));
+                              std::max<uint64_t>(2000ULL, estimatedDurationMs * 2ULL + 1000ULL));
 
   setAdcSoftwareSampleTimerRate(requestedRate);
   ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(timeoutMs));
@@ -889,25 +879,18 @@ bool captureAdcSamplesWithSoftwareTrigger(int requestedRate,
   return capturedSamples == adcCaptureSampleCount;
 }
 
-struct AdcSoftwareTriggerDiagnostic {
-  int vsyncLowLevel;
-  int vsyncHighLevel;
-};
-
 AdcSoftwareTriggerDiagnostic pulseAdcSoftwareTrigger() {
   ESP_ERROR_CHECK(gpio_set_level(
       static_cast<gpio_num_t>(adcSoftwareTriggerPin), 0));
   delayMicroseconds(10);
-  const int vsyncLowLevel =
-      captureDiagnosticsActive
-          ? gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin))
-          : 0;
+  const int vsyncLowLevel = captureDiagnosticsActive
+                          ? gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin))
+                          : 0;
   ESP_ERROR_CHECK(gpio_set_level(
       static_cast<gpio_num_t>(adcSoftwareTriggerPin), 1));
-  const int vsyncHighLevel =
-      captureDiagnosticsActive
-          ? gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin))
-          : 0;
+  const int vsyncHighLevel =  captureDiagnosticsActive
+                            ? gpio_get_level(static_cast<gpio_num_t>(adcVsyncInputPin))
+                            : 0;
   return {vsyncLowLevel, vsyncHighLevel};
 }
 
@@ -968,36 +951,24 @@ void startAdcDmaCapture() {
   I2S0.conf.rx_start = 1;
 }
 
-uint32_t processCompletedAdcDmaDescriptors(
-    int requestedRate, size_t& nextDescriptorIndex,
-    uint32_t& outputSampleCount, uint32_t& decimationPhase,
-    uint32_t& decimationSum, uint32_t& decimationSampleCount) {
-  for (size_t processedDescriptors = 0;
-       processedDescriptors < adcDmaDescriptorCount;
-       ++processedDescriptors) {
+uint32_t processCompletedAdcDmaDescriptors(int requestedRate, size_t& nextDescriptorIndex,
+                                           uint32_t& outputSampleCount, uint32_t& decimationPhase,
+                                           uint32_t& decimationSum, uint32_t& decimationSampleCount) {
+  for (size_t processedDescriptors = 0; processedDescriptors < adcDmaDescriptorCount; ++processedDescriptors) {
     lldesc_t& descriptor = adcDmaDescriptors[nextDescriptorIndex];
     if (descriptor.owner != 0) {
       break;
     }
 
     const size_t receivedWords = descriptor.length / sizeof(uint32_t);
-    for (size_t wordIndex = 0;
-         wordIndex < receivedWords &&
-         outputSampleCount < adcCaptureSampleCount;
-         ++wordIndex) {
-      decimationSum +=
-          (reinterpret_cast<const volatile uint32_t*>(descriptor.buf)[wordIndex] >>
-           16) &
-          0xffU;
+    for (size_t wordIndex = 0; wordIndex < receivedWords && outputSampleCount < adcCaptureSampleCount; ++wordIndex) {
+      decimationSum += (reinterpret_cast<const volatile uint32_t*>(descriptor.buf)[wordIndex] >> 16) & 0xffU;
       ++decimationSampleCount;
       decimationPhase += static_cast<uint32_t>(requestedRate);
       if (decimationPhase >= adcCaptureHardwareClockHz) {
         decimationPhase -= adcCaptureHardwareClockHz;
-        const uint32_t averagedSample =
-            (decimationSum + decimationSampleCount / 2) /
-            decimationSampleCount;
-        adcSamples[outputSampleCount++] =
-            static_cast<uint8_t>(255U - averagedSample - 4);
+        const uint32_t averagedSample = (decimationSum + decimationSampleCount / 2) / decimationSampleCount;
+        adcSamples[outputSampleCount++] = static_cast<uint8_t>(255U - averagedSample - 4);
         decimationSum = 0;
         decimationSampleCount = 0;
       }
@@ -1005,8 +976,7 @@ uint32_t processCompletedAdcDmaDescriptors(
 
     descriptor.length = 0;
     descriptor.owner = 1;
-    nextDescriptorIndex =
-        (nextDescriptorIndex + 1) % adcDmaDescriptorCount;
+    nextDescriptorIndex = (nextDescriptorIndex + 1) % adcDmaDescriptorCount;
   }
 
   return outputSampleCount;
@@ -1050,6 +1020,7 @@ void completeAdcCaptureRequestOnCore0() {
   adcCaptureRequested.store(false, std::memory_order_release);
 }
 
+// happens on the second core
 void adcCaptureTask(void*) {
   for (;;) {
     if (!adcCaptureRequested.load(std::memory_order_acquire)) {
@@ -1079,31 +1050,26 @@ void adcCaptureTask(void*) {
         startAdcClockMonitor();
       }
       captureAdcLivePlotWithSoftwareTrigger(requestedRate);
-      const uint32_t capturedSamples =
-          adcSoftwareLiveSampleCount.load(std::memory_order_acquire);
+      const uint32_t capturedSamples = adcSoftwareLiveSampleCount.load(std::memory_order_acquire);
       if (captureDiagnosticsActive) {
         bool clockMonitorLimitReached = false;
-        const int16_t clockEdges =
-            stopAdcClockMonitor(&clockMonitorLimitReached);
-        Serial.printf(
-            "Live software-trigger plot stopped at %lu samples, rate %d SPS; "
-            "GPIO39 clock edges %s%d.\n",
-            static_cast<unsigned long>(capturedSamples), requestedRate,
-            clockMonitorLimitReached ? ">=" : "",
-            static_cast<int>(clockEdges));
+        const int16_t clockEdges = stopAdcClockMonitor(&clockMonitorLimitReached);
+        Serial.printf("Live software-trigger plot stopped at %lu samples, rate %d SPS; "
+                      "GPIO39 clock edges %s%d.\n",
+                      static_cast<unsigned long>(capturedSamples), requestedRate,
+                      clockMonitorLimitReached ? ">=" : "",
+                      static_cast<int>(clockEdges));
       }
       if (captureDebugEnabled) {
-        adcLastCaptureSampleCount.store(
-            std::min<uint32_t>(capturedSamples, adcCaptureSampleCount),
-            std::memory_order_relaxed);
+        adcLastCaptureSampleCount.store(std::min<uint32_t>(capturedSamples, adcCaptureSampleCount),
+                                        std::memory_order_relaxed);
         adcLastCaptureFailure.store(0, std::memory_order_relaxed);
       }
       completeAdcCaptureRequestOnCore0();
       continue;
     }
 
-    if (requestedRate <=
-        static_cast<int>(softwareTriggeredCaptureMaxRate)) {
+    if (requestedRate <= static_cast<int>(softwareTriggeredCaptureMaxRate)) {
       stopAdcDmaCapture();
       uint32_t capturedSamples = 0;
       if (captureDebugEnabled) {
@@ -1113,27 +1079,21 @@ void adcCaptureTask(void*) {
       if (captureDiagnosticsActive) {
         startAdcClockMonitor();
       }
-      const bool captureCompleted =
-          captureAdcSamplesWithSoftwareTrigger(requestedRate,
-                                               capturedSamples);
+      const bool captureCompleted = captureAdcSamplesWithSoftwareTrigger(requestedRate, capturedSamples);
       if (captureDiagnosticsActive) {
         bool clockMonitorLimitReached = false;
-        const int16_t clockEdges =
-            stopAdcClockMonitor(&clockMonitorLimitReached);
-        Serial.printf(
-            "Software-trigger capture %s, samples %lu/%u at %d SPS; "
-            "GPIO39 clock edges %s%d.\n",
-            captureCompleted ? "complete" : "timed out",
-            static_cast<unsigned long>(capturedSamples),
-            static_cast<unsigned>(adcCaptureSampleCount), requestedRate,
-            clockMonitorLimitReached ? ">=" : "",
-            static_cast<int>(clockEdges));
+        const int16_t clockEdges = stopAdcClockMonitor(&clockMonitorLimitReached);
+        Serial.printf("Software-trigger capture %s, samples %lu/%u at %d SPS; "
+                      "GPIO39 clock edges %s%d.\n",
+                      captureCompleted ? "complete" : "timed out",
+                      static_cast<unsigned long>(capturedSamples),
+                      static_cast<unsigned>(adcCaptureSampleCount), requestedRate,
+                      clockMonitorLimitReached ? ">=" : "",
+                      static_cast<int>(clockEdges));
       }
       if (captureDebugEnabled) {
-        adcLastCaptureSampleCount.store(capturedSamples,
-                                        std::memory_order_relaxed);
-        adcLastCaptureFailure.store(captureCompleted ? 0 : 1,
-                                    std::memory_order_relaxed);
+        adcLastCaptureSampleCount.store(capturedSamples, std::memory_order_relaxed);
+        adcLastCaptureFailure.store(captureCompleted ? 0 : 1, std::memory_order_relaxed);
       }
       if (captureCompleted) {
         adcCaptureSequence.fetch_add(1, std::memory_order_release);
@@ -1158,8 +1118,7 @@ void adcCaptureTask(void*) {
       adcCaptureInterruptCount = 0;
     }
     startAdcDmaCapture();
-    const AdcSoftwareTriggerDiagnostic triggerDiagnostic =
-        pulseAdcSoftwareTrigger();
+    const AdcSoftwareTriggerDiagnostic triggerDiagnostic = pulseAdcSoftwareTrigger();
     uint32_t startRxStarted = 0;
     uint32_t startDmaLinkStarted = 0;
     uint32_t startDmaParked = 0;
@@ -1176,9 +1135,8 @@ void adcCaptureTask(void*) {
       startDmaEofDescriptor = I2S0.in_eof_des_addr;
       startInterruptEnable = I2S0.int_ena.val;
       startInterruptRaw = I2S0.int_raw.val;
-      startFirstDescriptorState =
-          (static_cast<uint32_t>(adcDmaDescriptors[0].owner) << 16) |
-          adcDmaDescriptors[0].length;
+      startFirstDescriptorState = (static_cast<uint32_t>(adcDmaDescriptors[0].owner) << 16) | 
+                                  adcDmaDescriptors[0].length;
     }
     bool midCaptureSnapshotTaken = false;
     uint32_t midCaptureRxStarted = 0;
@@ -1214,11 +1172,10 @@ void adcCaptureTask(void*) {
     uint32_t timeoutSecondDescriptorSize = 0;
     uint32_t timeoutSecondDescriptorNext = 0;
     uint8_t timeoutSecondDescriptorOwner = 0;
-    const uint64_t estimatedCaptureUs =
-        static_cast<uint64_t>(adcCaptureSampleCount) * 1000000ULL /
-        static_cast<uint32_t>(requestedRate);
+    const uint64_t estimatedCaptureUs = static_cast<uint64_t>(adcCaptureSampleCount) * 1000000ULL /
+                                        static_cast<uint32_t>(requestedRate);
     const uint32_t captureTimeoutUs = static_cast<uint32_t>(
-        std::max<uint64_t>(2000000ULL, estimatedCaptureUs * 2ULL + 1000000ULL));
+                            std::max<uint64_t>(2000000ULL, estimatedCaptureUs * 2ULL + 1000000ULL));
     const uint32_t captureStartUs = micros();
     while (!captureCompleted) {
       ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(2));
@@ -1227,9 +1184,8 @@ void adcCaptureTask(void*) {
         break;
       }
 
-      processCompletedAdcDmaDescriptors(
-          requestedRate, nextDescriptorIndex, outputSampleCount,
-          decimationPhase, decimationSum, decimationSampleCount);
+      processCompletedAdcDmaDescriptors(requestedRate, nextDescriptorIndex, outputSampleCount,
+                                        decimationPhase, decimationSum, decimationSampleCount);
       captureCompleted = outputSampleCount >= adcCaptureSampleCount;
       if (captureCompleted) {
         break;
@@ -1239,8 +1195,7 @@ void adcCaptureTask(void*) {
         captureTimedOut = true;
         break;
       }
-      if (captureDiagnosticsActive && !midCaptureSnapshotTaken &&
-          micros() - captureStartUs >= 100000UL) {
+      if (captureDiagnosticsActive && !midCaptureSnapshotTaken && micros() - captureStartUs >= 100000UL) {
         midCaptureRxStarted = I2S0.conf.rx_start;
         midCaptureDmaLinkStarted = I2S0.in_link.start;
         midCaptureDmaParked = I2S0.in_link.park;
@@ -1248,12 +1203,10 @@ void adcCaptureTask(void*) {
         midCaptureEofDescriptor = I2S0.in_eof_des_addr;
         midCaptureInterruptRaw = I2S0.int_raw.val;
         midCaptureFifoConf = I2S0.fifo_conf.val;
-        midCaptureDescriptor0State =
-            (static_cast<uint32_t>(adcDmaDescriptors[0].owner) << 16) |
-            adcDmaDescriptors[0].length;
-        midCaptureDescriptor1State =
-            (static_cast<uint32_t>(adcDmaDescriptors[1].owner) << 16) |
-            adcDmaDescriptors[1].length;
+        midCaptureDescriptor0State = (static_cast<uint32_t>(adcDmaDescriptors[0].owner) << 16) | 
+                                      adcDmaDescriptors[0].length;
+        midCaptureDescriptor1State = (static_cast<uint32_t>(adcDmaDescriptors[1].owner) << 16) |
+                                      adcDmaDescriptors[1].length;
         midCaptureSnapshotTaken = true;
       }
     }
@@ -1292,138 +1245,115 @@ void adcCaptureTask(void*) {
       timeoutI2sFifoCount = I2S0.fifo_conf.rx_data_num;
       timeoutFirstDescriptorLength = adcDmaDescriptors[0].length;
       timeoutFirstDescriptorSize = adcDmaDescriptors[0].size;
-      timeoutFirstDescriptorNext = static_cast<uint32_t>(
-          reinterpret_cast<uintptr_t>(
-              adcDmaDescriptors[0].qe.stqe_next));
+      timeoutFirstDescriptorNext = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(adcDmaDescriptors[0].qe.stqe_next));
       timeoutFirstDescriptorOwner = adcDmaDescriptors[0].owner;
       timeoutSecondDescriptorLength = adcDmaDescriptors[1].length;
       timeoutSecondDescriptorSize = adcDmaDescriptors[1].size;
-      timeoutSecondDescriptorNext = static_cast<uint32_t>(
-          reinterpret_cast<uintptr_t>(
-              adcDmaDescriptors[1].qe.stqe_next));
+      timeoutSecondDescriptorNext = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(adcDmaDescriptors[1].qe.stqe_next));
       timeoutSecondDescriptorOwner = adcDmaDescriptors[1].owner;
     }
     resetAdcDmaCapture();
     if (!captureCompleted) {
-      processCompletedAdcDmaDescriptors(
-          requestedRate, nextDescriptorIndex, outputSampleCount,
-          decimationPhase, decimationSum, decimationSampleCount);
+      processCompletedAdcDmaDescriptors(requestedRate, nextDescriptorIndex, outputSampleCount,
+                                        decimationPhase, decimationSum, decimationSampleCount);
     }
     if (captureDiagnosticsActive) {
       bool clockMonitorLimitReached = false;
-      const int16_t clockEdges =
-          stopAdcClockMonitor(&clockMonitorLimitReached);
+      const int16_t clockEdges = stopAdcClockMonitor(&clockMonitorLimitReached);
       const uint32_t captureInterruptStatus = adcCaptureInterruptSeen;
       const uint32_t captureInterruptCount = adcCaptureInterruptCount;
-      Serial.printf(
-          "I2S capture route: GPIO39 -> WS; %s, output %lu/%u, ISR "
-          "count/status OR %lu/0x%08lx.\n",
-          captureCompleted ? "capture complete"
-                           : captureTimedOut ? "capture timed out"
-                                             : "DMA error",
-          static_cast<unsigned long>(outputSampleCount),
-          static_cast<unsigned>(adcCaptureSampleCount),
-          static_cast<unsigned long>(captureInterruptCount),
-          static_cast<unsigned long>(captureInterruptStatus));
-      Serial.printf(
-          "VSYNC GPIO%d low/high %d/%d.\n", adcVsyncInputPin,
-          triggerDiagnostic.vsyncLowLevel, triggerDiagnostic.vsyncHighLevel);
+      Serial.printf("I2S capture route: GPIO39 -> WS; %s, output %lu/%u, ISR "
+                    "count/status OR %lu/0x%08lx.\n",
+                    captureCompleted ? "capture complete" :
+                    captureTimedOut ? "capture timed out" : "DMA error",
+                    static_cast<unsigned long>(outputSampleCount),
+                    static_cast<unsigned>(adcCaptureSampleCount),
+                    static_cast<unsigned long>(captureInterruptCount),
+                    static_cast<unsigned long>(captureInterruptStatus));
+      Serial.printf("VSYNC GPIO%d low/high %d/%d.\n", adcVsyncInputPin,
+                    triggerDiagnostic.vsyncLowLevel, triggerDiagnostic.vsyncHighLevel);
       if (captureStoppedEarly) {
-        const uint32_t firstDmaWord0 =
-            *reinterpret_cast<const volatile uint32_t*>(
-                adcDmaDescriptors[0].buf);
-        const uint32_t firstDmaWord1 =
-            *reinterpret_cast<const volatile uint32_t*>(
-                adcDmaDescriptors[0].buf + sizeof(uint32_t));
+        const uint32_t firstDmaWord0 = *reinterpret_cast<const volatile uint32_t*>(adcDmaDescriptors[0].buf);
+        const uint32_t firstDmaWord1 =*reinterpret_cast<const volatile uint32_t*>(adcDmaDescriptors[0].buf +
+                                                                                  sizeof(uint32_t));
         if (midCaptureSnapshotTaken) {
-          Serial.printf(
-              "I2S 100ms snapshot (WS): RX/link/park %lu/%lu/%lu, "
-              "descriptor 0x%08lx, EOF 0x%08lx, raw IRQ 0x%08lx, "
-              "FIFO 0x%08lx, descriptors owner/length %lu/%lu and %lu/%lu."
-              "\n",
-              static_cast<unsigned long>(midCaptureRxStarted),
-              static_cast<unsigned long>(midCaptureDmaLinkStarted),
-              static_cast<unsigned long>(midCaptureDmaParked),
-              static_cast<unsigned long>(midCaptureDmaDescriptor),
-              static_cast<unsigned long>(midCaptureEofDescriptor),
-              static_cast<unsigned long>(midCaptureInterruptRaw),
-              static_cast<unsigned long>(midCaptureFifoConf),
-              static_cast<unsigned long>(midCaptureDescriptor0State >> 16),
-              static_cast<unsigned long>(midCaptureDescriptor0State &
-                                         0xffffU),
-              static_cast<unsigned long>(midCaptureDescriptor1State >> 16),
-              static_cast<unsigned long>(midCaptureDescriptor1State &
-                                         0xffffU));
+          Serial.printf("I2S 100ms snapshot (WS): RX/link/park %lu/%lu/%lu, "
+                        "descriptor 0x%08lx, EOF 0x%08lx, raw IRQ 0x%08lx, "
+                        "FIFO 0x%08lx, descriptors owner/length %lu/%lu and %lu/%lu.""\n",
+                        static_cast<unsigned long>(midCaptureRxStarted),
+                        static_cast<unsigned long>(midCaptureDmaLinkStarted),
+                        static_cast<unsigned long>(midCaptureDmaParked),
+                        static_cast<unsigned long>(midCaptureDmaDescriptor),
+                        static_cast<unsigned long>(midCaptureEofDescriptor),
+                        static_cast<unsigned long>(midCaptureInterruptRaw),
+                        static_cast<unsigned long>(midCaptureFifoConf),
+                        static_cast<unsigned long>(midCaptureDescriptor0State >> 16),
+                        static_cast<unsigned long>(midCaptureDescriptor0State & 0xffffU),
+                        static_cast<unsigned long>(midCaptureDescriptor1State >> 16),
+                        static_cast<unsigned long>(midCaptureDescriptor1State & 0xffffU));
         }
-        Serial.printf(
-            "I2S clock route: GPIO39 -> WS. "
-            "I2S start: RX/link/park %lu/%lu/%lu, descriptor/EOF "
-            "0x%08lx/0x%08lx, IRQ enabled/raw 0x%08lx/0x%08lx, "
-            "descriptor0 owner/length %lu/%lu.\n",
-            static_cast<unsigned long>(startRxStarted),
-            static_cast<unsigned long>(startDmaLinkStarted),
-            static_cast<unsigned long>(startDmaParked),
-            static_cast<unsigned long>(startDmaDescriptor),
-            static_cast<unsigned long>(startDmaEofDescriptor),
-            static_cast<unsigned long>(startInterruptEnable),
-            static_cast<unsigned long>(startInterruptRaw),
-            static_cast<unsigned long>(startFirstDescriptorState >> 16),
-            static_cast<unsigned long>(startFirstDescriptorState &
-                                       0xffffU));
-        Serial.printf(
-            "I2S DMA capture %s at %lu/%u output samples, "
-            "requested rate %d SPS, ADC clock %lu SPS; "
-            "GPIO39 rising edges %s%d, RX started %u, DMA link start/park "
-            "%u/%u, descriptor 0x%08lx (buffers 0x%08lx/0x%08lx), "
-            "EOF descriptor 0x%08lx, first descriptor owner/length %u/%lu, "
-            "second descriptor owner/length %u/%lu, "
-            "descriptor sizes %lu/%lu, next 0x%08lx/0x%08lx, "
-            "FIFO count %lu, I2S conf/conf2/fifo/clock/rate/timing/LC "
-            "0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx, "
-            "interrupts enabled/raw 0x%08lx/0x%08lx; "
-            "ISR count/status OR %lu/0x%08lx, DMA words 0x%08lx/0x%08lx."
-            "\n",
-            captureTimedOut ? "timed out" : "stopped on DMA error",
-            static_cast<unsigned long>(outputSampleCount),
-            static_cast<unsigned>(adcCaptureSampleCount), requestedRate,
-            static_cast<unsigned long>(adcCaptureHardwareClockHz),
-            clockMonitorLimitReached ? ">=" : "",
-            static_cast<int>(clockEdges), timeoutRxStarted ? 1U : 0U,
-            timeoutDmaLinkStarted ? 1U : 0U, timeoutDmaParked ? 1U : 0U,
-            static_cast<unsigned long>(timeoutDmaDescriptor),
-            static_cast<unsigned long>(timeoutDmaDescriptorBuffer0),
-            static_cast<unsigned long>(timeoutDmaDescriptorBuffer1),
-            static_cast<unsigned long>(timeoutDmaEofDescriptor),
-            static_cast<unsigned>(timeoutFirstDescriptorOwner),
-            static_cast<unsigned long>(timeoutFirstDescriptorLength),
-            static_cast<unsigned>(timeoutSecondDescriptorOwner),
-            static_cast<unsigned long>(timeoutSecondDescriptorLength),
-            static_cast<unsigned long>(timeoutFirstDescriptorSize),
-            static_cast<unsigned long>(timeoutSecondDescriptorSize),
-            static_cast<unsigned long>(timeoutFirstDescriptorNext),
-            static_cast<unsigned long>(timeoutSecondDescriptorNext),
-            static_cast<unsigned long>(timeoutI2sFifoCount),
-            static_cast<unsigned long>(timeoutI2sConf),
-            static_cast<unsigned long>(timeoutI2sConf2),
-            static_cast<unsigned long>(timeoutI2sFifoConf),
-            static_cast<unsigned long>(timeoutI2sClockConf),
-            static_cast<unsigned long>(timeoutI2sSampleRateConf),
-            static_cast<unsigned long>(timeoutI2sTiming),
-            static_cast<unsigned long>(timeoutI2sLinkConf),
-            static_cast<unsigned long>(timeoutInterruptEnable),
-            static_cast<unsigned long>(timeoutInterruptRaw),
-            static_cast<unsigned long>(captureInterruptCount),
-            static_cast<unsigned long>(captureInterruptStatus),
-            static_cast<unsigned long>(firstDmaWord0),
-            static_cast<unsigned long>(firstDmaWord1));
+        Serial.printf("I2S clock route: GPIO39 -> WS. "
+                      "I2S start: RX/link/park %lu/%lu/%lu, descriptor/EOF "
+                      "0x%08lx/0x%08lx, IRQ enabled/raw 0x%08lx/0x%08lx, "
+                      "descriptor0 owner/length %lu/%lu.\n",
+                      static_cast<unsigned long>(startRxStarted),
+                      static_cast<unsigned long>(startDmaLinkStarted),
+                      static_cast<unsigned long>(startDmaParked),
+                      static_cast<unsigned long>(startDmaDescriptor),
+                      static_cast<unsigned long>(startDmaEofDescriptor),
+                      static_cast<unsigned long>(startInterruptEnable),
+                      static_cast<unsigned long>(startInterruptRaw),
+                      static_cast<unsigned long>(startFirstDescriptorState >> 16),
+                      static_cast<unsigned long>(startFirstDescriptorState & 0xffffU));
+        Serial.printf("I2S DMA capture %s at %lu/%u output samples, "
+                      "requested rate %d SPS, ADC clock %lu SPS; "
+                      "GPIO39 rising edges %s%d, RX started %u, DMA link start/park "
+                      "%u/%u, descriptor 0x%08lx (buffers 0x%08lx/0x%08lx), "
+                      "EOF descriptor 0x%08lx, first descriptor owner/length %u/%lu, "
+                      "second descriptor owner/length %u/%lu, "
+                      "descriptor sizes %lu/%lu, next 0x%08lx/0x%08lx, "
+                      "FIFO count %lu, I2S conf/conf2/fifo/clock/rate/timing/LC "
+                      "0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx/0x%08lx, "
+                      "interrupts enabled/raw 0x%08lx/0x%08lx; "
+                      "ISR count/status OR %lu/0x%08lx, DMA words 0x%08lx/0x%08lx.""\n",
+                      captureTimedOut ? "timed out" : "stopped on DMA error",
+                      static_cast<unsigned long>(outputSampleCount),
+                      static_cast<unsigned>(adcCaptureSampleCount), requestedRate,
+                      static_cast<unsigned long>(adcCaptureHardwareClockHz),
+                      clockMonitorLimitReached ? ">=" : "",
+                      static_cast<int>(clockEdges), timeoutRxStarted ? 1U : 0U,
+                      timeoutDmaLinkStarted ? 1U : 0U, timeoutDmaParked ? 1U : 0U,
+                      static_cast<unsigned long>(timeoutDmaDescriptor),
+                      static_cast<unsigned long>(timeoutDmaDescriptorBuffer0),
+                      static_cast<unsigned long>(timeoutDmaDescriptorBuffer1),
+                      static_cast<unsigned long>(timeoutDmaEofDescriptor),
+                      static_cast<unsigned>(timeoutFirstDescriptorOwner),
+                      static_cast<unsigned long>(timeoutFirstDescriptorLength),
+                      static_cast<unsigned>(timeoutSecondDescriptorOwner),
+                      static_cast<unsigned long>(timeoutSecondDescriptorLength),
+                      static_cast<unsigned long>(timeoutFirstDescriptorSize),
+                      static_cast<unsigned long>(timeoutSecondDescriptorSize),
+                      static_cast<unsigned long>(timeoutFirstDescriptorNext),
+                      static_cast<unsigned long>(timeoutSecondDescriptorNext),
+                      static_cast<unsigned long>(timeoutI2sFifoCount),
+                      static_cast<unsigned long>(timeoutI2sConf),
+                      static_cast<unsigned long>(timeoutI2sConf2),
+                      static_cast<unsigned long>(timeoutI2sFifoConf),
+                      static_cast<unsigned long>(timeoutI2sClockConf),
+                      static_cast<unsigned long>(timeoutI2sSampleRateConf),
+                      static_cast<unsigned long>(timeoutI2sTiming),
+                      static_cast<unsigned long>(timeoutI2sLinkConf),
+                      static_cast<unsigned long>(timeoutInterruptEnable),
+                      static_cast<unsigned long>(timeoutInterruptRaw),
+                      static_cast<unsigned long>(captureInterruptCount),
+                      static_cast<unsigned long>(captureInterruptStatus),
+                      static_cast<unsigned long>(firstDmaWord0),
+                      static_cast<unsigned long>(firstDmaWord1));
       }
     }
     if (captureDebugEnabled) {
-      adcLastCaptureSampleCount.store(outputSampleCount,
-                                      std::memory_order_relaxed);
-      adcLastCaptureFailure.store(
-          captureCompleted && !captureTimedOut ? 0 : 1,
-          std::memory_order_relaxed);
+      adcLastCaptureSampleCount.store(outputSampleCount, std::memory_order_relaxed);
+      adcLastCaptureFailure.store(captureCompleted && !captureTimedOut ? 0 : 1,std::memory_order_relaxed);
     }
     if (captureCompleted) {
       adcCaptureSequence.fetch_add(1, std::memory_order_release);
@@ -1453,14 +1383,12 @@ void drawCaptureTaskFailureIndicator() {
     return;
   }
 
-  display.drawRect(captureTaskIndicatorX, captureTaskIndicatorY,
-                   captureTaskIndicatorWidth, captureTaskIndicatorHeight,
-                   TFT_RED);
+  display.drawRect(captureTaskIndicatorX, captureTaskIndicatorY, captureTaskIndicatorWidth, 
+                   captureTaskIndicatorHeight, TFT_RED);
   display.setTextColor(TFT_RED, backgroundColor);
-  display.drawCentreString(
-      "CAPTURE TASK FAILED",
-      captureTaskIndicatorX + captureTaskIndicatorWidth / 2,
-      captureTaskIndicatorY + 6, 1);
+  display.drawCentreString("CAPTURE TASK FAILED", 
+                           captureTaskIndicatorX + captureTaskIndicatorWidth / 2,
+                           captureTaskIndicatorY + 6, 1);
 }
 
 void drawCaptureDebugStats() {
@@ -1468,20 +1396,15 @@ void drawCaptureDebugStats() {
     return;
   }
 
-  const uint32_t capturedSamples =
-      adcLastCaptureSampleCount.load(std::memory_order_relaxed);
-  const int captureFailure =
-      adcLastCaptureFailure.load(std::memory_order_relaxed);
-  const bool requestIssued =
-      adcLastCaptureRequestIssued.load(std::memory_order_relaxed);
-  const String sampleStats =
-      "Sc: " + String(capturedSamples) + "/" +
-      String(static_cast<uint32_t>(adcCaptureSampleCount));
-  const String failureStats =
-      captureFailure < 0 ? "Sf: --"
-      : captureFailure == 2 ? "Sf: RUN"
-      : captureFailure == 1 ? "Sf: YES"
-                            : "Sf: NO";
+  const uint32_t capturedSamples = adcLastCaptureSampleCount.load(std::memory_order_relaxed);
+  const int captureFailure = adcLastCaptureFailure.load(std::memory_order_relaxed);
+  const bool requestIssued = adcLastCaptureRequestIssued.load(std::memory_order_relaxed);
+  const String sampleStats = "Sc: " + String(capturedSamples) + "/" +
+                              String(static_cast<uint32_t>(adcCaptureSampleCount));
+  const String failureStats = captureFailure < 0 ? "Sf: --"
+                            : captureFailure == 2 ? "Sf: RUN"
+                            : captureFailure == 1 ? "Sf: YES"
+                                                  : "Sf: NO";
   const String requestStats = requestIssued ? "Cr: YES" : "Cr: NO";
   const String stats = sampleStats + " " + failureStats + " " + requestStats;
   static String lastDrawnStats;
@@ -1489,8 +1412,7 @@ void drawCaptureDebugStats() {
     return;
   }
 
-  display.fillRect(plotLeft, plotTop + plotHeight + 2,
-                   plotWidth, 10, backgroundColor);
+  display.fillRect(plotLeft, plotTop + plotHeight + 2, plotWidth, 10, backgroundColor);
   display.setTextColor(TFT_WHITE, backgroundColor);
   display.drawString(stats, plotLeft, plotTop + plotHeight + 3, 1);
   lastDrawnStats = stats;
@@ -1501,20 +1423,16 @@ void drawMeasurementDebugStats() {
     return;
   }
 
-  const String gainStats =
-      "Gp: " + formatVoltage(gainPotMeasuredVoltage) +
-      "  G: " + formatNumber(gainPotMeasuredGain) +
-      "  Gf: " + formatNumber(Gain);
-  const String detectorStats =
-      "Pk: " + formatVoltage(peak * 3.3f / 4095.0f) +
-      "  Vl: " + formatVoltage(valley * 3.3f / 4095.0f);
-  if (lastMeasurementDebugValues[0] == gainStats &&
-      lastMeasurementDebugValues[1] == detectorStats) {
+  const String gainStats = "Gp: " + formatVoltage(gainPotMeasVolt) +
+                           "  G: " + formatNumber(estimatedGain) +
+                           "  Gf: " + formatNumber(Gain);
+  const String detectorStats = "Pk: " + formatVoltage(peak * 3.3f / 4095.0f) +
+                               "  Vl: " + formatVoltage(valley * 3.3f / 4095.0f);
+  if (lastMeasurementDebugValues[0] == gainStats && lastMeasurementDebugValues[1] == detectorStats) {
     return;
   }
 
-  display.fillRect(plotLeft, plotTop + plotHeight + 12, plotWidth, 20,
-                   backgroundColor);
+  display.fillRect(plotLeft, plotTop + plotHeight + 12, plotWidth, 20, backgroundColor);
   display.setTextColor(TFT_WHITE, backgroundColor);
   display.drawString(gainStats, plotLeft, plotTop + plotHeight + 13, 1);
   display.drawString(detectorStats, plotLeft, plotTop + plotHeight + 23, 1);
@@ -1523,17 +1441,11 @@ void drawMeasurementDebugStats() {
 }
 
 int16_t mapPlotSampleToY(uint8_t sample) {
-  const float signalVoltage =
-      static_cast<float>(sample) *
-      (plotSampleFullScaleVoltage / 255.0f);
-  const float clippedVoltage =
-      std::max(plotMinimumVoltage,
-               std::min(plotMaximumVoltage, signalVoltage));
-  const float verticalFraction =
-      (plotMaximumVoltage - clippedVoltage) /
-      (plotMaximumVoltage - plotMinimumVoltage);
-  return static_cast<int16_t>(
-      plotTop + 1 + roundf(verticalFraction * (plotHeight - 3)));
+  const float signalVoltage = static_cast<float>(sample) * (plotSampleFullScaleVoltage / 255.0f);
+  const float clippedVoltage = std::max(plotMinimumVoltage, std::min(plotMaximumVoltage, signalVoltage));
+  const float verticalFraction = (plotMaximumVoltage - clippedVoltage) / 
+                                 (plotMaximumVoltage - plotMinimumVoltage);
+  return static_cast<int16_t>(plotTop + 1 + roundf(verticalFraction * (plotHeight - 3)));
 }
 
 bool drawPlotSamples(const uint8_t* samples, size_t sampleCount) {
@@ -1542,15 +1454,11 @@ bool drawPlotSamples(const uint8_t* samples, size_t sampleCount) {
   }
   static int16_t previousPlotY[plotSampleCount];
   static size_t previousPlotPointCount = 0;
-  const size_t displayedSampleCount =
-      std::min(sampleCount, static_cast<size_t>(plotSampleCount));
+  const size_t displayedSampleCount = std::min(sampleCount, static_cast<size_t>(plotSampleCount));
 
-  const float targetSample =
-      255.0f - ((peak + valley) * 0.5f) * (255.0f / 4095.0f);
-  const float triggerTolerance = std::max(
-      1.0f, fabsf(peak - valley) * (255.0f / 4095.0f) * 0.05f);
-  const size_t lastTriggerStart =
-      sampleCount - displayedSampleCount;
+  const float targetSample = 255.0f - ((peak + valley) * 0.5f) * (255.0f / 4095.0f);
+  const float triggerTolerance = std::max(1.0f, fabsf(peak - valley) * (255.0f / 4095.0f) * 0.05f);
+  const size_t lastTriggerStart = sampleCount - displayedSampleCount;
   size_t closestStart = 0;
   float closestDistance = 256.0f;
   size_t triggerStart = sampleCount;
@@ -1595,8 +1503,7 @@ bool drawPlotSamples(const uint8_t* samples, size_t sampleCount) {
     previousX = x;
     previousY = y;
   }
-  std::copy(currentPlotY, currentPlotY + displayedSampleCount,
-            previousPlotY);
+  std::copy(currentPlotY, currentPlotY + displayedSampleCount, previousPlotY);
   previousPlotPointCount = displayedSampleCount;
   display.endWrite();
   return true;
@@ -1607,20 +1514,16 @@ bool drawSignalPlot() {
 }
 
 bool drawLiveSignalPlot() {
-  const uint32_t sampleCount =
-      adcSoftwareLiveSampleCount.load(std::memory_order_acquire);
+  const uint32_t sampleCount = adcSoftwareLiveSampleCount.load(std::memory_order_acquire);
   if (sampleCount == 0) {
     return false;
   }
 
-  const size_t visibleSampleCount =
-      std::min(sampleCount, static_cast<uint32_t>(plotSampleCount));
+  const size_t visibleSampleCount = std::min(sampleCount, static_cast<uint32_t>(plotSampleCount));
   uint8_t samples[plotSampleCount];
-  const uint32_t firstSample =
-      sampleCount - static_cast<uint32_t>(visibleSampleCount);
+  const uint32_t firstSample = sampleCount - static_cast<uint32_t>(visibleSampleCount);
   for (size_t index = 0; index < visibleSampleCount; ++index) {
-    samples[index] =
-        adcLivePlotSamples[(firstSample + index) % plotSampleCount];
+    samples[index] = adcLivePlotSamples[(firstSample + index) % plotSampleCount];
   }
   return drawPlotSamples(samples, visibleSampleCount);
 }
@@ -1643,7 +1546,8 @@ void drawStaticUi() {
 
 String formatNumber(float value) {
   const float magnitude = fabsf(value);
-  const uint8_t decimals = magnitude >= 100.0f ? 0 : magnitude >= 10.0f ? 1 : 2;
+  const uint8_t decimals = magnitude >= 100.0f ? 0 : 
+                           magnitude >= 10.0f ? 1 : 2;
   return String(value, static_cast<unsigned int>(decimals));
 }
 
@@ -1708,8 +1612,7 @@ bool drawMeasurementValue(int row, const String& value) {
   }
 
   const int y = panelTop + row * panelRowHeight;
-  display.fillRect(panelLeft + 2, y + 19, panelWidth - 4, 28,
-                   backgroundColor);
+  display.fillRect(panelLeft + 2, y + 19, panelWidth - 4, 28, backgroundColor);
   display.setTextColor(TFT_WHITE, backgroundColor);
   display.drawCentreString(value, panelLeft + panelWidth / 2, y + 20, 2);
   lastMeasurementValues[row] = value;
@@ -1739,22 +1642,18 @@ bool drawDashboard() {
       : frequencyKnown ? formatFrequency(measuredFrequencyHz) : "?";
   changed |= drawMeasurementValue(3, frequencyValue);
 
-  const float voltsPerDivision =
-      3.3 / Gain / static_cast<float>(verticalDivisions);
-  const float timePerDivision =
-      (static_cast<float>(plotSampleCount) / Sampling_rate) /
-      horizontalDivisions;
-  changed |= drawFooterValue(
-      0, 12, 126, "V/div " + formatVoltage(voltsPerDivision));
-  changed |= drawFooterValue(
-      1, 146, 184, "T/div " + formatTime(timePerDivision));
+  const float voltsPerDivision = 3.3 / Gain / static_cast<float>(verticalDivisions);
+  const float timePerDivision = (static_cast<float>(plotSampleCount) / Sampling_rate) / 
+                                horizontalDivisions;
+  changed |= drawFooterValue(0, 12, 126, "V/div " + formatVoltage(voltsPerDivision));
+  changed |= drawFooterValue(1, 146, 184, "T/div " + formatTime(timePerDivision));
   return changed;
 }
 
 void drawDisplayChangeRate() {
-  const String rateValue = displayRateReady
-      ? "Frame rate: " + formatNumber(displayChangeRateHz) + " fps"
-      : "Frame rate: -- fps";
+  const String rateValue = displayRateReady 
+                        ? "Frame rate: " + formatNumber(displayChangeRateHz) + " fps"
+                        : "Frame rate: -- fps";
   drawFooterValue(2, 340, 128, rateValue);
 }
 
@@ -1773,16 +1672,13 @@ void configureFrequencyCounter() {
 
   ESP_ERROR_CHECK(pcnt_unit_config(&config));
   ESP_ERROR_CHECK(pcnt_event_enable(PCNT_UNIT_0, PCNT_EVT_H_LIM));
-  ESP_ERROR_CHECK(pcnt_set_filter_value(
-      PCNT_UNIT_0, frequencyInputGlitchFilterApbCycles));
+  ESP_ERROR_CHECK(pcnt_set_filter_value(PCNT_UNIT_0, frequencyInputGlitchFilterApbCycles));
   ESP_ERROR_CHECK(pcnt_filter_enable(PCNT_UNIT_0));
   ESP_ERROR_CHECK(pcnt_counter_clear(PCNT_UNIT_0));
   clearFrequencyCounterEventStatus();
   ESP_ERROR_CHECK(pcnt_counter_resume(PCNT_UNIT_0));
-  attachInterrupt(digitalPinToInterrupt(frequencyInputPin),
-                  frequencyStartPulseInterrupt, RISING);
-  ESP_ERROR_CHECK(gpio_intr_disable(
-      static_cast<gpio_num_t>(frequencyInputPin)));
+  attachInterrupt(digitalPinToInterrupt(frequencyInputPin),frequencyStartPulseInterrupt, RISING);
+  ESP_ERROR_CHECK(gpio_intr_disable(static_cast<gpio_num_t>(frequencyInputPin)));
   frequencyWindowStartUs = micros();
 }
 
@@ -1798,8 +1694,7 @@ void clearFrequencyEstimate() {
 }
 
 void resetFrequencyMeasurement() {
-  ESP_ERROR_CHECK(gpio_intr_disable(
-      static_cast<gpio_num_t>(frequencyInputPin)));
+  ESP_ERROR_CHECK(gpio_intr_disable(static_cast<gpio_num_t>(frequencyInputPin)));
   frequencyMeasurementArmed.store(false, std::memory_order_release);
   frequencyMeasurementPending = false;
   frequencyMeasurementTaskHandle = nullptr;
@@ -1823,16 +1718,14 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
     return;
   }
 
-  const uint64_t requestedWindowUs =
-      100ULL * 100ULL * 1000000ULL /
-      static_cast<uint32_t>(Sampling_rate);
-  const uint32_t targetWindowUs = static_cast<uint32_t>(
-      std::min<uint64_t>(requestedWindowUs, maximumFrequencyWindowUs));
+  const uint64_t requestedWindowUs = 100ULL * 100ULL * 1000000ULL / 
+                                     static_cast<uint32_t>(Sampling_rate);
+  const uint32_t targetWindowUs = static_cast<uint32_t>(std::min<uint64_t>(requestedWindowUs, 
+                                                                           maximumFrequencyWindowUs));
 
   if (frequencyMeasurementPending) {
     if (ulTaskNotifyTake(pdTRUE, 0) == 0) {
-      if (nowUs - frequencyMeasurementArmStartUs <
-          maximumFrequencyWindowUs) {
+      if (nowUs - frequencyMeasurementArmStartUs < maximumFrequencyWindowUs) {
         return;
       }
 
@@ -1853,13 +1746,9 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
       return;
     }
 
-    const uint32_t recordWindows =
-        std::max<uint32_t>(
-            1, (elapsedUs + targetWindowUs - 1) / targetWindowUs);
-    const uint32_t measuredPulses =
-        windowOverRange ? frequencyCounterLimit : pulseCount;
-    const bool sparseSinglePulse =
-        measuredPulses == 1 && recordWindows == 1;
+    const uint32_t recordWindows =std::max<uint32_t>(1, (elapsedUs + targetWindowUs - 1) / targetWindowUs);
+    const uint32_t measuredPulses =windowOverRange ? frequencyCounterLimit : pulseCount;
+    const bool sparseSinglePulse =measuredPulses == 1 && recordWindows == 1;
     if (!sparseSinglePulse && measuredPulses < 2 * recordWindows) {
       clearFrequencyEstimate();
       return;
@@ -1868,14 +1757,12 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
     accumulatedPulseCount += measuredPulses;
     accumulatedFrequencyWindowUs += elapsedUs;
     accumulatedFrequencyOverRange |= windowOverRange;
-    accumulatedFrequencyWindows +=
-        static_cast<uint8_t>(std::min<uint32_t>(
-            recordWindows, frequencyAveragingWindows));
+    accumulatedFrequencyWindows += static_cast<uint8_t>(std::min<uint32_t>(recordWindows, 
+                                                                           frequencyAveragingWindows));
 
     if (accumulatedFrequencyWindows >= frequencyAveragingWindows) {
-      measuredFrequencyHz =
-          static_cast<float>(accumulatedPulseCount) * 1000000.0f /
-          static_cast<float>(accumulatedFrequencyWindowUs);
+      measuredFrequencyHz = static_cast<float>(accumulatedPulseCount) * 1000000.0f /
+                            static_cast<float>(accumulatedFrequencyWindowUs);
       freq = measuredFrequencyHz;
       frequencyOverRange = accumulatedFrequencyOverRange;
       frequencyKnown = true;
@@ -1896,24 +1783,20 @@ void updateFrequencyMeasurement(uint32_t nowUs) {
   frequencyMeasurementArmStartUs = nowUs;
   frequencyMeasurementPending = true;
   frequencyMeasurementArmed.store(true, std::memory_order_release);
-  ESP_ERROR_CHECK(gpio_intr_enable(
-      static_cast<gpio_num_t>(frequencyInputPin)));
+  ESP_ERROR_CHECK(gpio_intr_enable(static_cast<gpio_num_t>(frequencyInputPin)));
 }
 
 uint32_t peakHoldPeriodUs() {
   if (Sampling_rate <= 0) {
     return 1000000UL;
   }
-  const float samplingRateWindowUs =
-      100000000.0f / static_cast<float>(Sampling_rate);
-  return static_cast<uint32_t>(
-      std::max(static_cast<float>(minimumDetectorHoldUs),
-               std::min(1000000.0f, samplingRateWindowUs)));
+  const float samplingRateWindowUs = 100000000.0f / static_cast<float>(Sampling_rate);
+  return static_cast<uint32_t>(std::max(static_cast<float>(minimumDetectorHoldUs),
+                                        std::min(1000000.0f, samplingRateWindowUs)));
 }
 
-void updateHeldExtreme(float sample, float& heldValue,
-                       uint32_t& lastRefreshUs, uint32_t nowUs,
-                       uint32_t holdPeriodUs) {
+void updateHeldExtreme(float sample, float& heldValue, uint32_t& lastRefreshUs,
+                       uint32_t nowUs, uint32_t holdPeriodUs) {
   if (!detectorValuesInitialized || sample > heldValue) {
     heldValue = sample;
     lastRefreshUs = nowUs;
@@ -1923,9 +1806,8 @@ void updateHeldExtreme(float sample, float& heldValue,
   }
 }
 
-void updateHeldMinimum(float sample, float& heldValue,
-                       uint32_t& lastRefreshUs, uint32_t nowUs,
-                       uint32_t holdPeriodUs) {
+void updateHeldMinimum(float sample, float& heldValue, uint32_t& lastRefreshUs, 
+                       uint32_t nowUs, uint32_t holdPeriodUs) {
   if (!detectorValuesInitialized || sample < heldValue) {
     heldValue = sample;
     lastRefreshUs = nowUs;
@@ -1945,7 +1827,7 @@ float readDetectorAverage(int pin) {
   return total / peakDetectorSamplesToAve;
 }
 
-float readPotentiometerAverageVoltage(int pin) {
+float readPotAveVolt(int pin) {
   analogRead(pin);
   analogRead(pin);
 
@@ -1954,15 +1836,12 @@ float readPotentiometerAverageVoltage(int pin) {
     rawCountsTotal += analogRead(pin);
   }
 
-  const uint32_t averageRawCounts = static_cast<uint32_t>(
-      (rawCountsTotal + potSamplesToAve / 2) /
-      potSamplesToAve);
-  return esp_adc_cal_raw_to_voltage(averageRawCounts,
-                                    &onboardAdcCalibration) /
-         1000.0f;
+  const uint32_t averageRawCounts = static_cast<uint32_t>((rawCountsTotal + potSamplesToAve / 2) /
+                                                          potSamplesToAve);
+  return esp_adc_cal_raw_to_voltage(averageRawCounts, &onboardAdcCalibration) / 1000.0f;
 }
 
-float estimateGainFromPotVoltage(float voltage) {
+float estGainFromPotVolt(float voltage) {
   if (voltage <= gainPotCalibration[0].voltage) {
     return gainPotCalibration[0].gain;
   }
@@ -1971,40 +1850,31 @@ float estimateGainFromPotVoltage(float voltage) {
     const GainCalibrationPoint& upper = gainPotCalibration[point];
     if (voltage <= upper.voltage) {
       const GainCalibrationPoint& lower = gainPotCalibration[point - 1];
-      const float fraction =
-          (voltage - lower.voltage) / (upper.voltage - lower.voltage);
+      const float fraction = (voltage - lower.voltage) / (upper.voltage - lower.voltage);
       return lower.gain + fraction * (upper.gain - lower.gain);
     }
   }
 
-  const GainCalibrationPoint& last =
-      gainPotCalibration[gainPotCalibrationPointCount - 1];
-  const GainCalibrationPoint& previous =
-      gainPotCalibration[gainPotCalibrationPointCount - 2];
-  const float finalSegmentSlope =
-      (last.gain - previous.gain) / (last.voltage - previous.voltage);
+  const GainCalibrationPoint& last = gainPotCalibration[gainPotCalibrationPointCount - 1];
+  const GainCalibrationPoint& previous = gainPotCalibration[gainPotCalibrationPointCount - 2];
+  const float finalSegmentSlope = (last.gain - previous.gain) / (last.voltage - previous.voltage);
   return last.gain + (voltage - last.voltage) * finalSegmentSlope;
 }
 
 void updatePeakDetectors(uint32_t nowUs) {
   peakDetectorSample = readDetectorAverage(peakDetectorPin);
-  invertedPeakDetectorSample =
-      readDetectorAverage(invertedPeakDetectorPin);
-  const float invertedValleySample =
-      1.69*2*4096/3.3 - invertedPeakDetectorSample;
+  invertedPeakDetectorSample = readDetectorAverage(invertedPeakDetectorPin);
+  const float invertedValleySample = 1.69*2*4096/3.3 - invertedPeakDetectorSample;
   const uint32_t holdPeriodUs = peakHoldPeriodUs();
 
-  updateHeldExtreme(peakDetectorSample, peak, lastPeakRefreshUs, nowUs,
-                    holdPeriodUs);
-  updateHeldMinimum(invertedValleySample, valley,
-                    lastValleyRefreshUs, nowUs, holdPeriodUs);
+  updateHeldExtreme(peakDetectorSample, peak, lastPeakRefreshUs, nowUs, holdPeriodUs);
+  updateHeldMinimum(invertedValleySample, valley, lastValleyRefreshUs, nowUs, holdPeriodUs);
   detectorValuesInitialized = true;
 
   offset = -((peak + valley)/2 * 3.3/4095 - 1.67f) / Gain;
   Vpp = (peak - valley) * 3.3/4095 / Gain;
 
-  const int dacOutput =
-      static_cast<int>((peak + valley)/2 * 255/4095 /2 +255/4);
+  const int dacOutput = static_cast<int>((peak + valley)/2 * 255/4095 /2 +255/4);
   if (dacOutput != lastDacOutput) {
     dac_output_voltage(DAC_CHANNEL_1, dacOutput);
     lastDacOutput = dacOutput;
@@ -2012,52 +1882,39 @@ void updatePeakDetectors(uint32_t nowUs) {
 }
 
 void updateControlMeasurements() {
-  const float measuredGainPotVoltage =
-      readPotentiometerAverageVoltage(gainPotPin);
-  if (!gainPotVoltageInitialized) {
-    gainPotMeasuredVoltage = measuredGainPotVoltage;
-    gainPotVoltageInitialized = true;
+  const float measGainPotVolt = readPotAveVolt(gainPotPin);
+  if (!gainPotVoltInit) {
+    gainPotMeasVolt = measGainPotVolt;
+    gainPotVoltInit = true;
   } else {
-    gainPotMeasuredVoltage +=
-        gainPotVoltageSmoothingFactor *
-        (measuredGainPotVoltage - gainPotMeasuredVoltage);
+    gainPotMeasVolt += gainPotVoltSmoothingFactor * (measGainPotVolt - gainPotMeasVolt);
   }
-  const float sampleRatePotMeasuredVoltage =
-      readPotentiometerAverageVoltage(sampleRatePotPin);
-  gainPotMeasuredGain = estimateGainFromPotVoltage(gainPotMeasuredVoltage);
+  const float sampleRatePotMeasVolt = readPotAveVolt(sampleRatePotPin);
+  estimatedGain = estGainFromPotVolt(gainPotMeasVolt);
   if (!gainInitialized) {
-    filteredGain = gainPotMeasuredGain;
+    filteredGain = estimatedGain;
     gainInitialized = true;
   } else {
-    filteredGain +=
-        gainSmoothingFactor * (gainPotMeasuredGain - filteredGain);
+    filteredGain += gainSmoothingFactor * (estimatedGain - filteredGain);
   }
   Gain = filteredGain;
 
   const float samplingRateIndexPerVolt = 45.0f / (2.957f - 0.2176f);
   const float samplingRateIndexOffset = -samplingRateIndexPerVolt * 0.15f;
-  float measuredSamplingRateIndex =
-      sampleRatePotMeasuredVoltage * samplingRateIndexPerVolt +
-      samplingRateIndexOffset;
-  measuredSamplingRateIndex =
-      std::max(0.0f, std::min(45.0f, measuredSamplingRateIndex));
-  if (!sampleRateInitialized) {
+  float measuredSamplingRateIndex = sampleRatePotMeasVolt * samplingRateIndexPerVolt +
+                                    samplingRateIndexOffset;
+  measuredSamplingRateIndex = std::max(0.0f, std::min(45.0f, measuredSamplingRateIndex));
+  if (!sampleRateInitialized) { 
     filteredSampleRateIndex = measuredSamplingRateIndex;
-    selectedSamplingRateIndex =
-        static_cast<int>(roundf(measuredSamplingRateIndex));
+    selectedSamplingRateIndex = static_cast<int>(roundf(measuredSamplingRateIndex));
     sampleRateInitialized = true;
   } else {
-    filteredSampleRateIndex +=
-        sampleRateSmoothingFactor *
-        (measuredSamplingRateIndex - filteredSampleRateIndex);
-    if (filteredSampleRateIndex >
-        selectedSamplingRateIndex + samplingRateIndexHysteresis) {
-      selectedSamplingRateIndex =
-          static_cast<int>(floorf(filteredSampleRateIndex + 0.5f));
-    } else if (filteredSampleRateIndex <
-               selectedSamplingRateIndex - samplingRateIndexHysteresis) {
-      selectedSamplingRateIndex =
-          static_cast<int>(floorf(filteredSampleRateIndex + 0.5f));
+    filteredSampleRateIndex += sampleRateSmoothingFactor * 
+                               (measuredSamplingRateIndex - filteredSampleRateIndex);
+    if (filteredSampleRateIndex > selectedSamplingRateIndex + samplingRateIndexHysteresis) {
+      selectedSamplingRateIndex = static_cast<int>(floorf(filteredSampleRateIndex + 0.5f));
+    } else if (filteredSampleRateIndex < selectedSamplingRateIndex - samplingRateIndexHysteresis) {
+      selectedSamplingRateIndex = static_cast<int>(floorf(filteredSampleRateIndex + 0.5f));
     }
   }
   Sampling_rate = sampling_rates[selectedSamplingRateIndex];
@@ -2070,18 +1927,15 @@ void setup() {
   dac_output_voltage(DAC_CHANNEL_1, 127);
 
   Serial.begin(115200);
-  ESP_ERROR_CHECK(gpio_set_level(
-      static_cast<gpio_num_t>(adcSoftwareTriggerPin), 0));
-  ESP_ERROR_CHECK(gpio_set_direction(
-      static_cast<gpio_num_t>(adcSoftwareTriggerPin), GPIO_MODE_OUTPUT));
+  ESP_ERROR_CHECK(gpio_set_level(static_cast<gpio_num_t>(adcSoftwareTriggerPin), 0));
+  ESP_ERROR_CHECK(gpio_set_direction(static_cast<gpio_num_t>(adcSoftwareTriggerPin), GPIO_MODE_OUTPUT));
   gpio_matrix_out(adcSoftwareTriggerPin, SIG_GPIO_OUT_IDX, false, false);
   analogReadResolution(12);
   analogSetPinAttenuation(peakDetectorPin, ADC_11db);
   analogSetPinAttenuation(invertedPeakDetectorPin, ADC_11db);
   analogSetPinAttenuation(gainPotPin, ADC_11db);
   analogSetPinAttenuation(sampleRatePotPin, ADC_11db);
-  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12,
-                           1100, &onboardAdcCalibration);
+  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &onboardAdcCalibration);
   pinMode(frequencyInputPin, INPUT);
 
   display.init();
@@ -2093,15 +1947,13 @@ void setup() {
   configureAdcCapture();
   adcSoftwareSampleTimerReady = configureAdcSoftwareSampleTimer();
   if (!adcSoftwareSampleTimerReady) {
-    Serial.println(
-        "ERROR: software-trigger sample timer could not be configured.");
+    Serial.println("ERROR: software-trigger sample timer could not be configured.");
   }
   if (captureDiagnosticsActive) {
     configureAdcClockMonitor();
   }
-  adcCaptureTaskCreated =
-      xTaskCreatePinnedToCore(adcCaptureTask, "adc_capture", 4096, nullptr, 3,
-                              &adcCaptureTaskHandle, 0) == pdPASS;
+  adcCaptureTaskCreated = xTaskCreatePinnedToCore(adcCaptureTask, "adc_capture", 4096, nullptr, 3,
+                                                  &adcCaptureTaskHandle, 0) == pdPASS;
   if (!adcCaptureTaskCreated) {
     adcCaptureTaskHandle = nullptr;
     Serial.println("ERROR: ADC capture task could not be created.");
@@ -2118,16 +1970,14 @@ void setup() {
   lastDashboardFrameUs = micros();
   lastPlotFrameUs = lastDashboardFrameUs;
   if (captureDebugEnabled) {
-    Serial.printf(
-        "Measurement inputs ready: detectors GPIO35/34, pots GPIO36/33; "
-        "frequency counter GPIO26.\n");
+    Serial.printf("Measurement inputs ready: detectors GPIO35/34, pots GPIO36/33; "
+                  "frequency counter GPIO26.\n");
     if (adcCaptureTaskCreated) {
-      Serial.printf(
-          "ADC capture ready: D4..D11 on GPIO16,17,5,18,19,21,22,23; "
-          "%u MHz XCLK GPIO32, PCLK GPIO39; "
-          "%u decimated samples per capture.\n",
-          static_cast<unsigned>(adcCaptureHardwareClockHz / 1000000UL),
-          static_cast<unsigned>(adcCaptureSampleCount));
+      Serial.printf("ADC capture ready: D4..D11 on GPIO16,17,5,18,19,21,22,23; "
+                    "%u MHz XCLK GPIO32, PCLK GPIO39; "
+                    "%u decimated samples per capture.\n",
+                    static_cast<unsigned>(adcCaptureHardwareClockHz / 1000000UL),
+                    static_cast<unsigned>(adcCaptureSampleCount));
     }
   }
 }
@@ -2157,8 +2007,7 @@ void loop() {
 
   const uint32_t rateWindowElapsedMs = nowMs - displayRateWindowStartMs;
   if (rateWindowElapsedMs >= 1000) {
-    displayChangeRateHz =
-        displayChangeFrames * (1000.0f / rateWindowElapsedMs);
+    displayChangeRateHz = displayChangeFrames * (1000.0f / rateWindowElapsedMs);
     displayChangeFrames = 0;
     displayRateWindowStartMs = nowMs;
     displayRateReady = true;
@@ -2185,10 +2034,8 @@ void loop() {
   wasLivePlotActive = livePlotActive;
   if (livePlotActive &&
       nowUs - lastPlotFrameUs >= minimumPlotFrameIntervalUs) {
-    const uint32_t liveSampleCount =
-        adcSoftwareLiveSampleCount.load(std::memory_order_acquire);
-    if (liveSampleCount != lastLivePlotSampleCount &&
-        drawLiveSignalPlot()) {
+    const uint32_t liveSampleCount = adcSoftwareLiveSampleCount.load(std::memory_order_acquire);
+    if (liveSampleCount != lastLivePlotSampleCount && drawLiveSignalPlot()) {
       lastLivePlotSampleCount = liveSampleCount;
       lastPlotFrameUs = nowUs;
       if (displayChangeFrames < UINT16_MAX) {
@@ -2197,16 +2044,12 @@ void loop() {
     }
   }
 
-  if (captureRequestPending &&
-      !adcCaptureRequested.load(std::memory_order_acquire)) {
+  if (captureRequestPending && !adcCaptureRequested.load(std::memory_order_acquire)) {
     captureRequestPending = false;
-    captureReadyForPlot =
-        adcCaptureSequence.load(std::memory_order_acquire) !=
-        captureSequenceAtRequest;
+    captureReadyForPlot = adcCaptureSequence.load(std::memory_order_acquire) != captureSequenceAtRequest;
   }
 
-  if (captureReadyForPlot &&
-      nowUs - lastPlotFrameUs >= minimumPlotFrameIntervalUs) {
+  if (captureReadyForPlot && nowUs - lastPlotFrameUs >= minimumPlotFrameIntervalUs) {
     lastPlotFrameUs = nowUs;
     if (drawSignalPlot()) {
       captureReadyForPlot = false;
@@ -2216,10 +2059,8 @@ void loop() {
     }
   }
 
-  if (adcCaptureTaskCreated && !captureRequestPending &&
-      !captureReadyForPlot) {
-    captureSequenceAtRequest =
-        adcCaptureSequence.load(std::memory_order_acquire);
+  if (adcCaptureTaskCreated && !captureRequestPending && !captureReadyForPlot) {
+    captureSequenceAtRequest = adcCaptureSequence.load(std::memory_order_acquire);
     adcCaptureSamplingRate.store(Sampling_rate, std::memory_order_relaxed);
     if (captureDebugEnabled) {
       adcLastCaptureRequestIssued.store(true, std::memory_order_relaxed);
