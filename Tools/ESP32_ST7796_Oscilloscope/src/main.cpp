@@ -17,6 +17,8 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cmath>
+#include <cstdlib>
 
 namespace {
   // debug flags
@@ -27,7 +29,7 @@ namespace {
     constexpr bool measurementDebugDisplayEnabled = false;
     constexpr bool measurementDebugDisplayActive = captureDebugEnabled && measurementDebugDisplayEnabled;
 
-    constexpr bool serialDebug = false;
+    constexpr bool serialDebug = true;
 
     // Detailed I2S/DMA diagnostics, only works at low sampling rates
     constexpr bool adcCaptureDiagnosticsEnabled = false;
@@ -420,6 +422,7 @@ namespace {
       bool sampleRateInitialized = false;
 
       float filteredSampleRateIndex = 0.0f;
+      float sampleRatePotMeasVolt = 0.0f;
       int selectedSamplingRateIndex = 0;
 
       int Sampling_rate = 0; 
@@ -610,7 +613,8 @@ namespace {
 
       uint8_t multiMeterMode = 0;
       uint8_t prevMultiMeterMode = 0;
-      String multiMeterMeas = "--";
+      float multiMeterMeas = 0.0f;
+      bool multiMeterMeasValid = false;
       bool integration_efforts = true;
 
       // debug stuff
@@ -1448,7 +1452,8 @@ void drawMeasurementDebugStats() {
                            "  G: " + formatNumber(estimatedGain) +
                            "  Gf: " + formatNumber(Gain);
   const String detectorStats = "Pk: " + formatVoltage(peak * 3.3f / 4095.0f) +
-                               "  Vl: " + formatVoltage(valley * 3.3f / 4095.0f);
+                               "  Vl: " + formatVoltage(valley * 3.3f / 4095.0f) +
+                           "  Srp: " + formatVoltage(sampleRatePotMeasVolt);
   if (lastMeasurementDebugValues[0] == gainStats && lastMeasurementDebugValues[1] == detectorStats) {
     return;
   }
@@ -1466,7 +1471,8 @@ void drawSerialDebug() {
     return;
   }
   static String prev = "";
-  String printStr = recieved_message + " m " + multiMeterMode + " M " + multiMeterMeas;
+  String printStr = recieved_message + " m " + multiMeterMode + " M " +
+                    (multiMeterMeasValid ? formatNumber(multiMeterMeas) : "--");
   if (prev == printStr) {
     return;
   }
@@ -1584,6 +1590,8 @@ void drawStaticUi() {
   display.drawFastHLine(12, 274, display.width() - 24, TFT_DARKGREY);
 }
 
+
+
 String formatNumber(float value) {
   const float magnitude = fabsf(value);
   const uint8_t decimals = magnitude >= 100.0f ? 0 : 
@@ -1638,6 +1646,33 @@ String formatTime(float seconds) {
   }
   return formatNumber(seconds * 1000000000.0f) + " ns";
 }
+
+String formatAmps(float amps) {
+  const float magnitude = fabsf(amps);
+  if (magnitude >= 1000.0f) {
+    return formatNumber(amps / 1000.0f) + " kA";
+  }
+  if (magnitude >= 1.0f) {
+    return formatNumber(amps) + " A";
+  }
+  if (magnitude >= 0.001f) {
+    return formatNumber(amps * 1000.0f) + " mA";
+  }
+  return formatNumber(amps * 1000000.0f) + " \xC2\xB5""A";
+}
+
+String formatOhms(float ohms) {
+  const float magnitude = fabsf(ohms);
+  if (magnitude >= 1000000.0f) {
+    return formatNumber(ohms / 1000000.0f) + " MOhm";
+  }
+  if (magnitude >= 1000.0f) {
+    return formatNumber(ohms / 1000.0f) + " kOhm";
+  }
+  return formatNumber(ohms) + " Ohm";
+}
+
+
 
 void drawMeasurementBox(int row, const char* title, uint16_t color) {
   const int y = panelTop + row * panelRowHeight;
@@ -1694,7 +1729,11 @@ bool drawDashboard() {
     prevMultiMeterMode = multiMeterMode;
   }
   
-  changed |= drawMeasurementValue(4, multiMeterMeas);
+  const String multiMeterValue = !multiMeterMeasValid ? "--"
+                                : multiMeterMode == 3 ? formatAmps(multiMeterMeas)
+                                : multiMeterMode == 4 ? formatOhms(multiMeterMeas)
+                                : formatVoltage(multiMeterMeas);
+  changed |= drawMeasurementValue(4, multiMeterValue);
 
   const float voltsPerDivision = 3.3 / Gain / static_cast<float>(verticalDivisions);
   const float timePerDivision = (static_cast<float>(plotSampleCount) / Sampling_rate) / 
@@ -1943,7 +1982,7 @@ void updateControlMeasurements() {
   } else {
     gainPotMeasVolt += gainPotVoltSmoothingFactor * (measGainPotVolt - gainPotMeasVolt);
   }
-  const float sampleRatePotMeasVolt = readPotAveVolt(sampleRatePotPin);
+  sampleRatePotMeasVolt = readPotAveVolt(sampleRatePotPin);
   estimatedGain = estGainFromPotVolt(gainPotMeasVolt);
   if (!gainInitialized) {
     filteredGain = estimatedGain;
@@ -1953,8 +1992,8 @@ void updateControlMeasurements() {
   }
   Gain = filteredGain;
 
-  const float samplingRateIndexPerVolt = 45.0f / (2.957f - 0.2176f);
-  const float samplingRateIndexOffset = -samplingRateIndexPerVolt * 0.15f;
+  const float samplingRateIndexPerVolt = 45.0f / (2.957f - 0.18f);
+  const float samplingRateIndexOffset = -samplingRateIndexPerVolt * 0.200f;
   float measuredSamplingRateIndex = sampleRatePotMeasVolt * samplingRateIndexPerVolt +
                                     samplingRateIndexOffset;
   measuredSamplingRateIndex = std::max(0.0f, std::min(45.0f, measuredSamplingRateIndex));
@@ -1978,40 +2017,63 @@ void updateControlMeasurements() {
 
 void process_UART() {
   // just making sure that the serial comms is done
-  int prev = Serial.available();
-  bool loop = true;
-  int breakTheLoop = micros(); // just in case there is a constant input that 
-  while (loop) {
-    if (micros() - breakTheLoop >= 1000) {
-      Serial.readString();
-      return;
-    }
-    int nowUs = micros();
-    while (micros() - nowUs >= 90) {
-      continue;
-    }
-    if (prev == Serial.available()) {
-      loop = false;
-    } else {
-      prev = Serial.available();
-    }
-  }
+  // int prev = Serial.available();
+  // bool loop = true;
+  // int breakTheLoop = micros(); // just in case there is a constant input that 
+  // while (loop) {
+  //   if (micros() - breakTheLoop >= 1000) {
+  //     Serial.flush();
+  //     return;
+  //   }
+  //   int nowUs = micros();
+  //   while (micros() - nowUs >= 90) {
+  //     continue;
+  //   }
+  //   if (prev == Serial.available()) {
+  //     loop = false;
+  //   } else {
+  //     prev = Serial.available();
+  //   }
+  // }
 
   String message = (String)Serial.readStringUntil('\n');
   if (serialDebug) {
     recieved_message = message;
   }
-  if ((message[0] == '1' || message[0] == '2' || message[0] == '3' || message[0] == '4') && message[1] == ';') {
-    multiMeterMode = static_cast<uint8_t>(message[0] - '0'); 
-    message.remove(0,2);
-    // message.remove(0);
-    multiMeterMeas = message;
-    Serial.readString();
+  if (message.endsWith("\r")) {
+    message.remove(message.length() - 1);
+  }
+
+  const bool supportedMode =
+      message.length() == 18 &&
+      (message[0] == '1' || message[0] == '2' ||
+       message[0] == '3' || message[0] == '4') &&
+      message[1] == ';';
+  bool measurementParsed = false;
+  float parsedMeasurement = 0.0f;
+  if (supportedMode) {
+    const char* measurementText = message.c_str() + 2;
+    char* parseEnd = nullptr;
+    parsedMeasurement = strtof(measurementText, &parseEnd);
+    if (parseEnd != nullptr && parseEnd != measurementText &&
+        std::isfinite(parsedMeasurement)) {
+      while (*parseEnd == ' ' || *parseEnd == '\t') {
+        ++parseEnd;
+      }
+      measurementParsed = *parseEnd == '\0';
+    }
+  }
+
+  if (measurementParsed) {
+    multiMeterMode = static_cast<uint8_t>(message[0] - '0');
+    multiMeterMeas = parsedMeasurement;
+    multiMeterMeasValid = true;
     Serial.print(";)\n");
   } else {
     multiMeterMode = 0;
-    multiMeterMeas = "--";
+    multiMeterMeasValid = false;
   }
+  Serial.flush();
 }
 
 }  // namespace
@@ -2080,7 +2142,8 @@ void setup() {
       }
     }
   } else {
-    Serial.println(";)");
+    Serial.print(";)\n");
+    Serial.flush();
   }
 
 }
