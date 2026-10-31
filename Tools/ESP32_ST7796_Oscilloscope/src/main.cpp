@@ -23,8 +23,8 @@ namespace {
 
     // debug info on the display
 
-    constexpr bool captureDebugEnabled = true;
-    constexpr bool measurementDebugDisplayEnabled = true;
+    constexpr bool captureDebugEnabled = false;
+    constexpr bool measurementDebugDisplayEnabled = false;
     constexpr bool measurementDebugDisplayActive = captureDebugEnabled && measurementDebugDisplayEnabled;
 
     // Detailed I2S/DMA diagnostics, only works at low sampling rates
@@ -596,6 +596,19 @@ namespace {
       intr_handle_t i2sInterruptHandle = nullptr;
       uint8_t adcClockResolution = 1;
 
+  // integration stuff for the multimeter
+    
+      const String multiMeterModes[] = {"--","VAC","VDC","A","Ohm"};
+        // AC voltage
+        // DC voltage
+        // Current
+        // Resistance
+
+      uint8_t multiMeterMode = 0;
+      uint8_t prevMultiMeterMode = 0;
+      String multiMeterMeas = "--";
+      bool integration_efforts = true;
+  
   // end of the variables and constants
 
 
@@ -1932,16 +1945,7 @@ void updateControlMeasurements() {
   Sampling_rate = sampling_rates[selectedSamplingRateIndex];
 }
 
-const String multiMeterModes[] = {"--","VAC","VDC","A","Ohm"};
-  // AC voltage
-  // DC voltage
-  // Current
-  // Resistance
 
-uint8_t multiMeterMode = 0;
-uint8_t prevMultiMeterMode = 0;
-String multiMeterMeas = "--";
-bool integration_efforts = true;
 
 void process_UART() {
   // just making sure that the serial comms is done
