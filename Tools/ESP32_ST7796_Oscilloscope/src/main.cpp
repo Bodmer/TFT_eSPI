@@ -27,6 +27,8 @@ namespace {
     constexpr bool measurementDebugDisplayEnabled = false;
     constexpr bool measurementDebugDisplayActive = captureDebugEnabled && measurementDebugDisplayEnabled;
 
+    constexpr bool serialDebug = false;
+
     // Detailed I2S/DMA diagnostics, only works at low sampling rates
     constexpr bool adcCaptureDiagnosticsEnabled = false;
     constexpr bool captureDiagnosticsActive = captureDebugEnabled && adcCaptureDiagnosticsEnabled;
@@ -519,7 +521,9 @@ namespace {
       constexpr int panelLeft = 368;
       constexpr int panelWidth = 100;
       constexpr int panelTop = 10;
-      constexpr int panelRowHeight = 46;
+      constexpr int panelRowHeight = 50;
+      
+      uint8_t measurementTextTop = 19;
 
       String lastMeasurementValues[5];
       String lastFooterValues[3];
@@ -608,6 +612,10 @@ namespace {
       uint8_t prevMultiMeterMode = 0;
       String multiMeterMeas = "--";
       bool integration_efforts = true;
+
+      // debug stuff
+
+        String recieved_message = "";
   
   // end of the variables and constants
 
@@ -1453,6 +1461,23 @@ void drawMeasurementDebugStats() {
   lastMeasurementDebugValues[1] = detectorStats;
 }
 
+void drawSerialDebug() {
+  if (!serialDebug) {
+    return;
+  }
+  static String prev = "";
+  String printStr = recieved_message + " m " + multiMeterMode + " M " + multiMeterMeas;
+  if (prev == printStr) {
+    return;
+  }
+  display.setTextColor(backgroundColor, backgroundColor);
+  display.drawString(prev, panelLeft, panelTop+panelRowHeight*5,1);
+  display.setTextColor(TFT_WHITE, backgroundColor);
+  display.drawString(printStr, panelLeft, panelTop+panelRowHeight*5,1);
+
+  prev = printStr;
+}
+
 int16_t mapPlotSampleToY(uint8_t sample) {
   const float signalVoltage = static_cast<float>(sample) * (plotSampleFullScaleVoltage / 255.0f);
   const float clippedVoltage = std::max(plotMinimumVoltage, std::min(plotMaximumVoltage, signalVoltage));
@@ -1627,9 +1652,11 @@ bool drawMeasurementValue(int row, const String& value) {
   }
 
   const int y = panelTop + row * panelRowHeight;
-  display.fillRect(panelLeft + 2, y + 19, panelWidth - 4, 28, backgroundColor);
+  // display.fillRect(panelLeft + 2, y + 19, panelWidth - 4, 28, backgroundColor);
+  display.setTextColor(backgroundColor, backgroundColor);
+  display.drawCentreString(lastMeasurementValues[row], panelLeft + panelWidth / 2, y + measurementTextTop, 2);
   display.setTextColor(TFT_WHITE, backgroundColor);
-  display.drawCentreString(value, panelLeft + panelWidth / 2, y + 20, 2);
+  display.drawCentreString(value, panelLeft + panelWidth / 2, y + measurementTextTop, 2);
   lastMeasurementValues[row] = value;
   return true;
 }
@@ -1639,7 +1666,9 @@ bool drawFooterValue(int index, int x, int width, const String& value) {
     return false;
   }
 
-  display.fillRect(x, 282, width, 24, backgroundColor);
+  // display.fillRect(x, 282, width, 24, backgroundColor);
+  display.setTextColor(backgroundColor, backgroundColor);
+  display.drawString(lastFooterValues[index], x, 283, 2);
   display.setTextColor(TFT_WHITE, backgroundColor);
   display.drawString(value, x, 283, 2);
   lastFooterValues[index] = value;
@@ -1954,6 +1983,7 @@ void process_UART() {
   int breakTheLoop = micros(); // just in case there is a constant input that 
   while (loop) {
     if (micros() - breakTheLoop >= 1000) {
+      Serial.readString();
       return;
     }
     int nowUs = micros();
@@ -1968,10 +1998,13 @@ void process_UART() {
   }
 
   String message = (String)Serial.readStringUntil('\n');
+  if (serialDebug) {
+    recieved_message = message;
+  }
   if ((message[0] == '1' || message[0] == '2' || message[0] == '3' || message[0] == '4') && message[1] == ';') {
-    multiMeterMode = static_cast<uint8_t>(message[0]);
-    message.remove(0);
-    message.remove(0);
+    multiMeterMode = static_cast<uint8_t>(message[0] - '0'); 
+    message.remove(0,2);
+    // message.remove(0);
     multiMeterMeas = message;
     Serial.readString();
     Serial.print(";)\n");
@@ -2095,6 +2128,9 @@ void loop() {
       drawCaptureDebugStats();
     }
     drawMeasurementDebugStats();
+    if(serialDebug) {
+      drawSerialDebug();
+    }
     if (frameChanged && displayChangeFrames < UINT16_MAX) {
       ++displayChangeFrames;
     }
