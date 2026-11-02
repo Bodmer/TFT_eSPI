@@ -1,0 +1,79 @@
+# ESP32 ST7796 Oscilloscope
+
+Measurement input starter project for an ESP32-WROOM-32 development board and a generic SPI ST7796 display. It builds against the TFT_eSPI library in this checkout and keeps its display configuration local to this project.
+
+## Wiring
+
+Connect the display to 3.3V logic and a common ground. The starter pin map is in `include/TFT_User_Setup.h`:
+
+| Display | ESP32-WROOM-32 |
+| --- | --- |
+| SCK / CLK | GPIO14 |
+| SDI / MOSI | GPIO13 |
+| SDO / MISO | Not connected |
+| CS | GPIO15 |
+| DC / RS | GPIO2 |
+| RESET | GPIO4 |
+| LED / BL | 3.3V, subject to the display module's backlight requirements |
+| VCC / GND | Per the module's power requirements / GND |
+
+Connect all measurement grounds to ESP32 GND. Wire the inputs as follows:
+
+| Measurement | ESP32-WROOM-32 |
+| --- | --- |
+| Peak detector output | GPIO35 (ADC1) |
+| Inverted peak detector output | GPIO36 (ADC1) |
+| Gain potentiometer wiper | GPIO36 (ADC1) |
+| Frequency-scale potentiometer wiper | GPIO33 (ADC1) |
+| Square-wave frequency input | GPIO26 |
+
+The display shows Vpeak-peak, Voffset, the selected effective sampling rate, and the square-wave frequency in four right-side boxes. Voltage, time, frequency, and sampling-rate values use SI prefixes. Dashboard measurements are capped at 10 fps, while the plot plane is independently capped at 60 fps; changed values are redrawn only when needed, and completed traces wait for the next available plot update. Each detector ADC reading is averaged from ten consecutive samples on every main-loop pass. Each potentiometer is measured about 30 times per second by averaging 50 raw ADC reads and converting the average with the ESP32 ADC calibration; the gain-pot voltage is further smoothed with a 0.25 exponential factor. Gain is smoothed with a 0.1 exponential-filter factor and estimated by piecewise-linear interpolation through the current gain-pot measurements in the source. The table is sorted by voltage and retains all supplied measured gain values, including any nonmonotonic behavior; below 0.167 V, gain is clamped to 0.031061, and above 2.925 V, the final segment is extrapolated and uncertain. The peak detector tracks its maximum output. Each inverted-detector sample is immediately converted to the valley polarity using the 3.20 V reference, then firmware holds the minimum converted value; this uses the measured 1.68 V peak-channel maximum and 2.80 V inverted-channel maximum with matching 1.28 Vpp ranges. The hold window is independent of GPIO26 frequency because that frequency depends on the DAC output, which is itself calculated from detector-derived offset. It is based on the effective sampling-rate setting and clamped to 1 ms–1 s (defaulting to 1 s if the rate is unavailable). A detector maximum/minimum starts the hold timer; only a newly exceeded maximum or lower minimum restarts it. If no new extreme arrives during the hold window, the detector rearms to the current reading. Vpeak-peak and Voffset always show the latest detector-based calculations, including when the frequency estimate is unknown. V/div is based on Vpeak-peak divided across four vertical divisions. T/div uses the configured `plotSampleCount` across eight horizontal divisions. Frame rate counts dashboard and trace refreshes per second; changes to the rate readout itself are excluded. GPIO26 frequency is counted by the ESP32 pulse counter with a 1 µs glitch filter to reject shorter spurious transitions; input high and low phases must each exceed 1 µs. Each frequency-measurement interval lasts `100 * 100 / Sampling_rate` seconds, capped at 10 seconds. The main loop starts a one-shot rising-edge measurement without blocking; the ISR records the edge timestamp, pauses PCNT, snapshots the counter and high-limit status, clears the counter, resumes counting, disables the GPIO interrupt, and notifies the loop. The loop uses the captured count and time interval to update the five-window frequency estimate. If no edge arrives before the 10-second timeout, the estimate is cleared without blocking display updates. Plotting a captured trace is independent of whether the frequency estimate is known.
+
+Each potentiometer measurement discards two settling reads, then averages 50 fast raw ADC reads before converting the result to voltage with the ESP32 ADC calibration. The gain-pot voltage also uses a 0.25 exponential smoothing factor across updates, and this filtered voltage is used for both the display and gain calibration. The two pots are sampled sequentially; updates remain scheduled about every 33 ms.
+
+Whenever the selected sample rate changes, the active frequency window, pulse counter, pending interrupt notification, accumulated averaging state, and displayed frequency estimate are reset. Frequency measurement then restarts using the new rate.
+
+### AD9235 parallel capture
+
+Capture uses two paths, with the acquisition-management task pinned to core 0. GPIO32 supplies a fixed 10 MHz ADC clock, while the frequency-scale potentiometer selects the plotted sample rate from 100 SPS through 10 MSPS. At rates below 3 kSPS, a hardware timer drives one short GPIO27 software-trigger pulse per sample and the timer ISR snapshots the parallel data pins. Samples are written to a rolling buffer and the TFT plot refreshes as they arrive, up to 60 fps; the plot initially grows from left to right until it fills, then scrolls through the newest samples. At rates from 3 kSPS through 100 kSPS, the timer captures a finite buffer of two plot-plane widths (`2 * plotSampleCount`, 684 samples with the current plot width) before drawing. Above 100 kSPS, I2S0 camera-mode DMA captures the continuous stream and core 0 averages consecutive samples to decimate it to the selected rate. Each 32-bit DMA word carries a sample in bits 23:16; firmware extracts that byte, corresponding to the ADC's upper eight bits (D11 through D4), inverts it (`255 - value`), and stores it in `adcSamples`. The capture does not wait for the independent GPIO26 frequency measurement. For finite captures, plotting searches the start positions that leave a full plot's worth of samples, selects the first sample within 5% of the measured peak-to-valley code span from the offset-derived target, then draws the following `plotSampleCount` points. If no point is within that tolerance, it uses the closest candidate. The offset-derived 8-bit target is `255 - ((peak + valley) / 2 * 255 / 4095)`.
+
+Each plot refresh erases the previous waveform and redraws the grid before drawing the new trace, avoiding a full-area pixel clear on every frame. Plot drawing is enclosed in a single TFT write transaction to reduce per-line SPI transaction overhead.
+
+The plot's vertical voltage range is fixed at 0.3 V to 3.0 V: 3.0 V maps to the top interior edge and 0.3 V to the bottom interior edge. Samples outside this range are clipped vertically to the edge while retaining their original horizontal sample positions.
+
+| AD9235 signal | ESP32-WROOM-32 |
+| --- | --- |
+| AD9235 D4 | GPIO16 (camera D0) |
+| AD9235 D5 | GPIO17 (camera D1) |
+| AD9235 D6 | GPIO5 (camera D2) |
+| AD9235 D7 | GPIO18 (camera D3) |
+| AD9235 D8 | GPIO19 (camera D4) |
+| AD9235 D9 | GPIO21 (camera D5) |
+| AD9235 D10 | GPIO22 (camera D6) |
+| AD9235 D11 | GPIO23 (camera D7) |
+| Sampling clock output / XCLK | GPIO32 |
+| Sampling clock input / PCLK | GPIO39 |
+| Software trigger output | GPIO27 |
+| VSYNC input (jumper from GPIO27) | GPIO12 |
+
+GPIO32 generates a fixed 10 MHz clock continuously from setup onward, using the ESP-IDF default GPIO drive capability. The LEDC clock configuration uses an 80 MHz source with an exact divider/resolution combination for a nominal 50% duty-cycle output; verify the actual waveform on the hardware. Connect the clock to the AD9235 clock input and GPIO39 through a 100 Ω series resistor placed close to GPIO32. Keep the clock connection and its ground return short. Before connecting it to the ADC, scope the signal at the ADC CLK pin with a 10× probe and a short ground spring; confirm ringing/overshoot stays within the ADC's specified input limits. Do not reconnect the clock while the ESP32 resets or if the waveform exceeds those limits. Above 100 kSPS, the tested WS route captures the requested I2S DMA buffer; routing GPIO39 to BCK timed out without data, so the firmware keeps GPIO39 routed to I2S0's camera-mode word-select (WS) input. In that DMA path, I2S0 camera mode receives the byte lanes D4..D11 as D0..D7 and each acquisition starts DMA before a single 10-microsecond low/high pulse on GPIO27. At or below 100 kSPS, the timer generates a short active-low GPIO27 pulse for every sample and reads the data pins once in the timer ISR; below 3 kSPS, the resulting samples are streamed into a rolling buffer and redrawn live on the TFT. Connect GPIO27 to GPIO12 so the trigger reaches the input; GPIO12 is an ESP32 boot-strapping pin and must remain low while the chip resets/boots. GPIO27 is high-impedance during reset and is driven low by firmware after boot; do not connect any external signal that can drive GPIO12 high during startup. GPIO5 is also an ESP32 strapping pin and is connected to AD9235 D6; ensure the ADC output level on D6 cannot violate the required GPIO5 strap level during reset, or use a suitable buffer/isolation arrangement. Leave the AD9235 out-of-range output disconnected from GPIO12. The interface needs the eight ADC data connections, clock output and feedback, plus the GPIO27-to-GPIO12 software-trigger jumper.
+
+For I2S captures, the `VSYNC GPIO12 low/high` diagnostic should read `0/1`, confirming the trigger pulse reaches the input pad. GPIO27 is an output, so its input-pad readback is not used as a trigger diagnostic.
+
+GPIO1 and GPIO3 remain available for UART0 TX/RX and serial monitoring during capture. The GPIO25 DAC output is unchanged. The display's GPIO2 DC connection is unchanged. GPIO35/34 are detector inputs, GPIO36 is the gain-pot input, GPIO33 is the frequency-scale pot, and GPIO26 is the measured-frequency input. GPIO13/14/15 are now the display MOSI/SCLK/CS pins. GPIO5 is used by ADC D6 and must meet its boot-strapping level while the ESP32 resets. The XCLK is configured for 10 MHz, and the frequency-scale potentiometer selects among the available rates up to that 10 MSPS hardware-clock limit.
+
+Keep the clock/data wiring short and connect all grounds. GPIO39 and all data inputs must stay within the ESP32's permitted voltage range and never go below ground; use suitable high-speed buffering/level translation if required. Verify the actual clock and ADC output voltages at the ESP32 pins before connecting them.
+
+GPIO34 and GPIO36 are input-only ESP32 pins; GPIO34 is used for the inverted detector and GPIO36 for the gain potentiometer. The ADC data input GPIOs are configured with pulldowns where the ESP32 supports them; GPIO34/35/36/39 do not have internal pull resistors. GPIO5 is a strapping pin used by AD9235 D6, so verify its level during reset. GPIO15 is also a strapping pin, now used for display CS; ensure the display does not force it to an unintended strap level while the ESP32 resets. The sampling-rate control is averaged, low-pass filtered, and uses hysteresis when selecting a discrete rate to reduce rate changes caused by small ADC fluctuations.
+
+Core 1 snapshots the selected effective sample rate in `adcCaptureSamplingRate` and then sets the atomic `adcCaptureRequested` flag. Below 3 kSPS, core 0 keeps the timer-driven GPIO27 sampler running and core 1 redraws the rolling sample buffer live; the timer period follows changes in selected sample rate without ending live plotting. From 3 kSPS through 100 kSPS, core 0 samples the GPIO data bus once per timer-driven GPIO27 pulse into a finite capture buffer. Above 100 kSPS it starts the circular I2S camera-mode DMA buffer and decimates completed blocks into `adcSamples`. The GPIO32 clock remains on at 10 MHz in every mode and is not started, stopped, or retuned by the capture task. Core 0 clears the request when the selected rate leaves live mode or a finite capture completes; completed finite captures increment `adcCaptureSequence`. Core 1 plots a completed buffer before requesting another finite capture, keeping the shared finite-capture buffer stable while it is drawn. If the capture task cannot be created, setup continues without issuing capture requests and a red `CAPTURE TASK FAILED` indicator appears above the plot.
+
+`captureDebugEnabled` is the master debug switch and is currently `true`. When enabled, the line below the plot shows `Sc:` captured samples versus expected, `Sf:` capture state, and `Cr:` whether core 1 issued a capture request. `adcCaptureDiagnosticsEnabled` is a separate, currently `false` switch for verbose I2S/DMA snapshots and Serial reports; those diagnostics run only when both flags are `true`. `measurementDebugDisplayEnabled` is another separate, currently `true` switch. With both measurement-display and master flags enabled, the strip below the plot shows gain-pot voltage, calculated and filtered gain, and held peak/valley voltages. Measurement debug values are displayed only on the TFT and are not written to Serial. With the master flag `false`, debug overlays and diagnostics do not run. The I2S ISR still reads and clears interrupt status needed to manage DMA and detect errors. UART0 remains available during capture. The task-creation error message remains enabled because it reports an operational failure, not debug output.
+
+## Input limits
+
+This is a learning/demo instrument, not a calibrated or protected instrument. All ESP32 ADC/GPIO inputs, including the AD9235 data outputs, must stay within the ESP32's permitted input-voltage range and must never receive a negative voltage. The GPIO26 frequency input must be a 3.3V-compatible square wave with both high and low phases longer than the configured 1 µs glitch filter. Use suitable dividers, level translation, and input protection where required, and verify signal levels before connecting them. Do not connect this circuit directly to mains or other hazardous voltages.
+
+## Build and upload
+
+Open this directory as a PlatformIO project, select the `esp32dev` environment, then build and upload. Detector readings are sampled continuously; each detector value averages ten analog readings per main-loop update. Each potentiometer measurement discards two settling reads, then averages 50 fast raw ADC reads before converting the result to voltage with ESP32 ADC calibration; the two pots are sampled sequentially and updated about 30 times per second. Dashboard measurements are capped at 10 fps and the plot plane at 60 fps. Each plot update follows an ADC burst of two plot-plane widths, clocked at 10 MHz and decimated to the effective sample rate selected by the frequency-scale potentiometer (100 SPS to 10 MSPS); frequency-edge measurement runs asynchronously so a missing GPIO26 edge does not block display updates. The sample-rate pot selection is filtered and uses hysteresis to reduce oscillation between adjacent rates. Frequency is calculated from rising-edge counts over five consecutive windows; each window lasts `100 * 100 / Sampling_rate` seconds, capped at 10 seconds. Zero or insufficient pulses make the frequency unknown. Counts reaching the pulse-counter limit are reported as a lower-bound frequency. Detector measurements use the project's ADC lookup and calibration formulas; confirm those against the actual analog front end before relying on their absolute values.
