@@ -64,7 +64,7 @@ Lots of example sketches are provided which demonstrate using the functions in t
 Optimised drivers have been tested with the following processors:
 
 * RP2040, e.g. Raspberry Pi Pico
-* ESP32 and ESP32-S2, ESP32-C3, ESP32-S3
+* ESP32 and ESP32-S2, ESP32-C3, ESP32-C5 (SPI), ESP32-S3
 * ESP8266
 * STM32F1xx, STM32F2xx, STM32F4xx, STM32F767 (higher RAM processors recommended)
 
@@ -75,11 +75,16 @@ The library supports the following interface types for these processors:
 | RP2040    |     Yes    |      Yes       |       Yes       |  Yes (all)       |
 | ESP32     |     Yes    |      Yes       |       No        |  Yes (SPI only)  |
 | ESP32 C3  |     Yes    |      No        |       No        |  No              |
+| ESP32 C5  |     Yes    |      No        |       No        |  Not validated   |
 | ESP32 S2  |     Yes    |      No        |       No        |  No              |
 | ESP32 S3  |     Yes    |      Yes       |       No        |  Yes (SPI only)  |
 | ESP8266   |     Yes    |      No        |       No        |  No              |
 | STM32Fxxx |     Yes    |      Yes       |       No        |  Yes (SPI only)  |
 | Other     |     Yes    |      No        |       No        |  No              |
+
+ESP32-C5 SPI writes have been tested with Arduino-ESP32 3.3.12 and an ILI9488.
+Initial C5 support is SPI-only; panel readback and DMA operation have not been
+hardware validated. The existing ILI9488 18-bit SPI path does not enable the DMA APIs.
 
 For other (generic) processors only SPI interface displays are supported and the slower Arduino SPI library functions are used by the library. Higher clock speed processors such as used for the Teensy 3.x and 4.x boards will still provide a very good performance with the generic Arduino SPI functions.
 
