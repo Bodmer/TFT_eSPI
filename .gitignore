@@ -50,3 +50,8 @@ debug_custom.json
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Lokale PlatformIO Entwicklungs-Dateien für WSL
+.pio/
+.vscode/
+platformio.ini
